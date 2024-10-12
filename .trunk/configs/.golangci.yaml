@@ -1,0 +1,36 @@
+linters:
+  enable:
+    - errcheck
+    - exportloopref
+    - forcetypeassert
+    - gocritic
+    - revive
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - promlinter
+    - revive
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unused
+linters-settings:
+  exhaustive:
+    check-generated: false
+  staticcheck:
+    checks: ["all"]
+  revive:
+    rules:
+      - name: exported
+        disabled: true
+  govet:
+    enable:
+      - shadow
+    settings:
+      shadow:
+        strict: true
+  gosec:
+    excludes:
+      - G107 # variable urls
