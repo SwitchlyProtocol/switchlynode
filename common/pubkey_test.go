@@ -23,6 +23,7 @@ type KeyData struct {
 	addrBCH  KeyDataAddr
 	addrETH  KeyDataAddr
 	addrDOGE KeyDataAddr
+	addrXLM  KeyDataAddr
 }
 
 type PubKeyTestSuite struct {
@@ -56,6 +57,10 @@ func (s *PubKeyTestSuite) SetUpSuite(_ *C) {
 				mainnet: "DJcczDr7oNvfj5qP17Qa7p9ZUNTfnYYDJC",
 				mocknet: "mtzUk1zTJzTdyC8Pz6PPPyCHTEL5RLVyDJ",
 			},
+			addrXLM: KeyDataAddr{
+				mainnet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+				mocknet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+			},
 		},
 		{
 			priv: "289c2857d4598e37fb9647507e47a309d6133539bf21a8b9cb6df88fd5232032",
@@ -79,6 +84,10 @@ func (s *PubKeyTestSuite) SetUpSuite(_ *C) {
 			addrDOGE: KeyDataAddr{
 				mainnet: "D7EnB23qxiWTBGD1z9N6Ui7VXonCgY9eeE",
 				mocknet: "mhcdvpCBUL3RRNW2y8LuksADWfecEmkzju",
+			},
+			addrXLM: KeyDataAddr{
+				mainnet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+				mocknet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
 			},
 		},
 		{
@@ -104,6 +113,10 @@ func (s *PubKeyTestSuite) SetUpSuite(_ *C) {
 				mainnet: "D59u6XAtQCybdvFB4ZLWH4h8cK5SY8show",
 				mocknet: "mfXkrKKDupWZt2YC3YKKZDjrbAwrBFwj8W",
 			},
+			addrXLM: KeyDataAddr{
+				mainnet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+				mocknet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+			},
 		},
 		{
 			priv: "a96e62ed3955e65be32703f12d87b6b5cf26039ecfa948dc5107a495418e5330",
@@ -128,6 +141,10 @@ func (s *PubKeyTestSuite) SetUpSuite(_ *C) {
 				mainnet: "DGTegdtiJ6Y9fteiWtHNS5bpjCJSrY4Kiz",
 				mocknet: "mrqWSS33oi57uzwjVsGBiEeYi4ArRRWHV4",
 			},
+			addrXLM: KeyDataAddr{
+				mainnet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+				mocknet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+			},
 		},
 		{
 			priv: "9294f4d108465fd293f7fe299e6923ef71a77f2cb1eb6d4394839c64ec25d5c0",
@@ -151,6 +168,10 @@ func (s *PubKeyTestSuite) SetUpSuite(_ *C) {
 			addrDOGE: KeyDataAddr{
 				mainnet: "DJbKker23xfz3ufxAbqUuQwp1EBibGJJHu",
 				mocknet: "mtyBWSzMZaCxJ1xy9apJBZzXz648BZrpJg",
+			},
+			addrXLM: KeyDataAddr{
+				mainnet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
+				mocknet: "GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q",
 			},
 		},
 	}

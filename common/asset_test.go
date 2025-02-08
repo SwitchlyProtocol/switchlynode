@@ -81,6 +81,14 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "LTC.LTC")
 
+	// XLM test
+	asset, err = NewAsset("xlm.xlm")
+	c.Assert(err, IsNil)
+	c.Check(asset.Valid(), IsNil)
+	c.Check(asset.Chain.Equals(STELLARChain), Equals, true)
+	c.Check(asset.Equals(XLMAsset), Equals, true)
+	
+
 	// btc/btc
 	asset, err = NewAsset("btc/btc")
 	c.Check(err, IsNil)
