@@ -15,6 +15,7 @@ import (
 	"github.com/gcash/bchutil"
 	ltcchaincfg "github.com/ltcsuite/ltcd/chaincfg"
 	"github.com/ltcsuite/ltcutil"
+	"github.com/stellar/go/strkey"
 
 	"gitlab.com/thorchain/thornode/common/cosmos"
 )
@@ -29,7 +30,7 @@ const (
 
 var alphaNumRegex = regexp.MustCompile("^[:A-Za-z0-9]*$")
 
-// NewAddress create a new Address. Supports Binance, Bitcoin, and Ethereum
+// NewAddress create a new Address. Supports Binance, Bitcoin, Ethereum
 func NewAddress(address string) (Address, error) {
 	if len(address) == 0 {
 		return NoAddress, nil
@@ -106,6 +107,12 @@ func NewAddress(address string) (Address, error) {
 
 	// Check DOGE address formats with mocknet
 	_, err = dogutil.DecodeAddress(address, &dogchaincfg.RegressionNetParams)
+	if err == nil {
+		return Address(address), nil
+	}
+
+	// Check if it's a valid Stellar address
+	_, err = strkey.Decode(strkey.VersionByteAccountID, address)
 	if err == nil {
 		return Address(address), nil
 	}
