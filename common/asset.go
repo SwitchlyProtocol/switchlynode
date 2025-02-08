@@ -32,6 +32,8 @@ var (
 	RuneNative = Asset{Chain: THORChain, Symbol: "RUNE", Ticker: "RUNE", Synth: false}
 	TOR        = Asset{Chain: THORChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
 	THORBTC    = Asset{Chain: THORChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
+	// XLMAsset XLM
+	XLMAsset = Asset{Chain: STELLARChain, Symbol: "XLM", Ticker: "XLM", Synth: false}
 )
 
 // NewAsset parse the given input into Asset object

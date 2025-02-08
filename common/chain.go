@@ -14,17 +14,17 @@ import (
 )
 
 const (
-	EmptyChain = Chain("")
-	BSCChain   = Chain("BSC")
-	ETHChain   = Chain("ETH")
-	BTCChain   = Chain("BTC")
-	LTCChain   = Chain("LTC")
-	BCHChain   = Chain("BCH")
-	DOGEChain  = Chain("DOGE")
-	THORChain  = Chain("THOR")
-	GAIAChain  = Chain("GAIA")
-	AVAXChain  = Chain("AVAX")
-
+	EmptyChain           = Chain("")
+	BSCChain             = Chain("BSC")
+	ETHChain             = Chain("ETH")
+	BTCChain             = Chain("BTC")
+	LTCChain             = Chain("LTC")
+	BCHChain             = Chain("BCH")
+	DOGEChain            = Chain("DOGE")
+	THORChain            = Chain("THOR")
+	GAIAChain            = Chain("GAIA")
+	AVAXChain            = Chain("AVAX")
+	STELLARChain         = Chain("XLM")
 	SigningAlgoSecp256k1 = SigningAlgo("secp256k1")
 	SigningAlgoEd25519   = SigningAlgo("ed25519")
 )
@@ -39,6 +39,7 @@ var AllChains = [...]Chain{
 	THORChain,
 	GAIAChain,
 	AVAXChain,
+	STELLARChain,
 }
 
 type SigningAlgo string
@@ -161,6 +162,8 @@ func (c Chain) GetGasAsset() Asset {
 		return AVAXAsset
 	case GAIAChain:
 		return ATOMAsset
+	case STELLARChain:
+		return XLMAsset
 	default:
 		return EmptyAsset
 	}
@@ -183,6 +186,8 @@ func (c Chain) GetGasUnits() string {
 		return "uatom"
 	case LTCChain:
 		return "satsperbyte"
+	case STELLARChain:
+		return "stroop"
 	default:
 		return ""
 	}
@@ -195,6 +200,8 @@ func (c Chain) GetGasAssetDecimal() int64 {
 	switch c {
 	case GAIAChain:
 		return 6
+	case STELLARChain:
+		return 7
 	default:
 		return cosmos.DefaultCoinDecimals
 	}
@@ -313,6 +320,8 @@ func (c Chain) ApproximateBlockMilliseconds() int64 {
 	case GAIAChain:
 		return 6_000
 	case THORChain:
+		return 6_000
+	case STELLARChain:
 		return 6_000
 	default:
 		return 0
