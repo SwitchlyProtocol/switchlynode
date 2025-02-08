@@ -1,6 +1,7 @@
 package common
 
 import (
+	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -24,6 +25,8 @@ import (
 	"github.com/tendermint/tendermint/crypto"
 
 	"gitlab.com/thorchain/thornode/common/cosmos"
+
+	"github.com/stellar/go/strkey"
 )
 
 // PubKey used in thorchain, it should be bech32 encoded string
@@ -194,6 +197,21 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 			return NoAddress, fmt.Errorf("fail to encode the address, err: %w", err)
 		}
 		addressString = addr.String()
+	
+	case STELLARChain:
+		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
+		if err != nil {
+			return NoAddress, err
+		}
+		// Convert the public key to Stellar's ed25519 format
+		stellarPubKey := ed25519.PublicKey(pk.Bytes())
+		// Encode the public key into a Stellar address using strkey format
+		addr, err := strkey.Encode(strkey.VersionByteAccountID, stellarPubKey)
+		if err != nil {
+			return NoAddress, fmt.Errorf("failed to encode Stellar address: %w", err)
+		}
+		addressString = addr
+		
 	default:
 		// Only EVM chains remain.
 		if !chain.IsEVM() {
