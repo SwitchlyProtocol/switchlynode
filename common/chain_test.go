@@ -36,6 +36,7 @@ func (s ChainSuite) TestChain(c *C) {
 	c.Assert(BCHChain.GetGasAsset(), Equals, BCHAsset)
 	c.Assert(DOGEChain.GetGasAsset(), Equals, DOGEAsset)
 	c.Assert(EmptyChain.GetGasAsset(), Equals, EmptyAsset)
+	c.Assert(STELLARChain.GetGasAsset(), Equals, XLMAsset)
 
 	c.Assert(BTCChain.AddressPrefix(MockNet), Equals, chaincfg.RegressionNetParams.Bech32HRPSegwit)
 	c.Assert(BTCChain.AddressPrefix(MainNet), Equals, chaincfg.MainNetParams.Bech32HRPSegwit)
@@ -48,4 +49,5 @@ func (s ChainSuite) TestChain(c *C) {
 	c.Assert(DOGEChain.AddressPrefix(MockNet), Equals, dogchaincfg.RegressionNetParams.Bech32HRPSegwit)
 	c.Assert(DOGEChain.AddressPrefix(MainNet), Equals, dogchaincfg.MainNetParams.Bech32HRPSegwit)
 	c.Assert(DOGEChain.AddressPrefix(StageNet), Equals, dogchaincfg.MainNetParams.Bech32HRPSegwit)
+
 }
