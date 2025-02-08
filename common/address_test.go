@@ -356,4 +356,17 @@ func (s *AddressSuite) TestAddress(c *C) {
 	c.Check(addr.IsChain(THORChain), Equals, false)
 	c.Check(addr.IsChain(DOGEChain), Equals, true)
 	c.Check(addr.GetNetwork(DOGEChain), Equals, MockNet)
+
+	// xlm tests
+	addr, err = NewAddress("GA5WBWB6YXA7676ZC4QJE9NQCHUDDHYHYQSY66KX656Q")
+	c.Check(err, IsNil)
+	c.Check(addr.IsChain(STELLARChain), Equals, true)
+	c.Check(addr.IsChain(BTCChain), Equals, false)
+	c.Check(addr.IsChain(ETHChain), Equals, false)
+	c.Check(addr.IsChain(LTCChain), Equals, false)
+	c.Check(addr.IsChain(BCHChain), Equals, false)
+	c.Check(addr.IsChain(DOGEChain), Equals, false)
+	c.Check(addr.IsChain(THORChain), Equals, false)
+	c.Check(addr.GetNetwork(STELLARChain), Equals, MainNet)
+
 }
