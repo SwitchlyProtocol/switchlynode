@@ -204,6 +204,58 @@ func (c *Client) IsBlockScannerHealthy() bool {
 	return c.blockScanner.IsHealthy()
 }
 
+// validateTx validates a transaction
+func (c *Client) validateTx(tx types.TxOutItem) error {
+	if tx.Chain != common.STELLARChain {
+		return fmt.Errorf("chain %s not supported", tx.Chain)
+	}
+	if len(tx.Memo) == 0 || len(tx.Memo) > maxMemoLength {
+		return fmt.Errorf("invalid memo length: %d", len(tx.Memo))
+	}
+	if len(tx.Coins) != 1 {
+		return fmt.Errorf("stellar transactions must have exactly one coin")
+	}
+
+	// Check if it's a USDC transaction
+	if tx.Coins[0].Asset.Equals(stellarUSDC) {
+		// For USDC, we need to check if the destination has a trustline
+		account, err := c.client.AccountDetail(horizonclient.AccountRequest{
+			AccountID: tx.ToAddress.String(),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get destination account: %w", err)
+		}
+
+		// Check if the account has a trustline for USDC
+		hasTrustline := false
+		for _, balance := range account.Balances {
+			if balance.Asset.Type == "credit_alphanum4" &&
+				balance.Asset.Code == "USDC" &&
+				balance.Asset.Issuer == stellarUSDCIssuer {
+				hasTrustline = true
+				break
+			}
+		}
+		if !hasTrustline {
+			return fmt.Errorf("destination account does not have a USDC trustline")
+		}
+
+		// Check minimum USDC amount (can be different from XLM)
+		if tx.Coins[0].Amount.IsZero() {
+			return fmt.Errorf("amount cannot be zero")
+		}
+	} else if tx.Coins[0].Asset != common.XLMAsset {
+		return fmt.Errorf("invalid asset: %s", tx.Coins[0].Asset)
+	} else {
+		// Check minimum balance requirements for XLM (0.5 XLM + fees)
+		minBalance := uint64(minTxValue + (maxGasAmount * txnbuild.MinBaseFee))
+		if tx.Coins[0].Amount.IsZero() || tx.Coins[0].Amount.Uint64() < minBalance {
+			return fmt.Errorf("amount %d below minimum required %d", tx.Coins[0].Amount.Uint64(), minBalance)
+		}
+	}
+	return nil
+}
+
 // SignTx signs a Stellar transaction
 func (c *Client) SignTx(tx types.TxOutItem, thorchainHeight int64) (signedTx, checkpoint []byte, _ *types.TxInItem, err error) {
 	defer func() {
@@ -259,11 +311,26 @@ func (c *Client) SignTx(tx types.TxOutItem, thorchainHeight int64) (signedTx, ch
 	}
 
 	amount := strconv.FormatFloat(float64(tx.Coins[0].Amount.Uint64())/float64(common.One), 'f', 7, 64)
-	payment := &txnbuild.Payment{
-		SourceAccount: sourceAccount.GetAccountID(),
-		Destination:   tx.ToAddress.String(),
-		Amount:        amount,
-		Asset:         txnbuild.NativeAsset{},
+
+	// Create the appropriate payment operation based on the asset
+	var payment txnbuild.Operation
+	if tx.Coins[0].Asset.Equals(stellarUSDC) {
+		payment = &txnbuild.Payment{
+			SourceAccount: sourceAccount.GetAccountID(),
+			Destination:   tx.ToAddress.String(),
+			Amount:        amount,
+			Asset: txnbuild.CreditAsset{
+				Code:   "USDC",
+				Issuer: stellarUSDCIssuer,
+			},
+		}
+	} else {
+		payment = &txnbuild.Payment{
+			SourceAccount: sourceAccount.GetAccountID(),
+			Destination:   tx.ToAddress.String(),
+			Amount:        amount,
+			Asset:         txnbuild.NativeAsset{},
+		}
 	}
 
 	params := txnbuild.TransactionParams{
@@ -315,27 +382,6 @@ func (c *Client) SignTx(tx types.TxOutItem, thorchainHeight int64) (signedTx, ch
 	c.sequenceMutex.Unlock()
 
 	return []byte(txeBase64), nil, nil, nil
-}
-
-func (c *Client) validateTx(tx types.TxOutItem) error {
-	if tx.Chain != common.STELLARChain {
-		return fmt.Errorf("chain %s not supported", tx.Chain)
-	}
-	if len(tx.Memo) == 0 || len(tx.Memo) > maxMemoLength {
-		return fmt.Errorf("invalid memo length: %d", len(tx.Memo))
-	}
-	if len(tx.Coins) != 1 {
-		return fmt.Errorf("stellar transactions must have exactly one coin")
-	}
-	if tx.Coins[0].Asset != common.XLMAsset {
-		return fmt.Errorf("invalid asset: %s", tx.Coins[0].Asset)
-	}
-	// Check minimum balance requirements (0.5 XLM + fees)
-	minBalance := uint64(minTxValue + (maxGasAmount * txnbuild.MinBaseFee))
-	if tx.Coins[0].Amount.IsZero() || tx.Coins[0].Amount.Uint64() < minBalance {
-		return fmt.Errorf("amount %d below minimum required %d", tx.Coins[0].Amount.Uint64(), minBalance)
-	}
-	return nil
 }
 
 // BroadcastTx broadcasts a signed transaction
