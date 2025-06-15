@@ -24,7 +24,7 @@ services:
     profiles:
       - _
     restart: unless-stopped
-    image: registry.gitlab.com/thorchain/thornode:mocknet
+    # image: registry.gitlab.com/thorchain/thornode:mocknet
     build:
       context: ../..
       dockerfile: ./build/docker/Dockerfile
@@ -96,7 +96,8 @@ services:
       - mocknet-cluster
     depends_on:
       - ethereum
-      - avalanche
+      - stellar
+      # - avalanche
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment: &thornode-environment
@@ -146,12 +147,13 @@ services:
       - bifrost
       - validator
     depends_on:
-      - bitcoin
-      - bitcoin-cash
-      - dogecoin
-      - gaia
-      - litecoin
+      # - bitcoin
+      # - bitcoin-cash
+      # - dogecoin
+      # - gaia
+      # - litecoin
       - thornode
+      - stellar
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment: &bifrost-environment
