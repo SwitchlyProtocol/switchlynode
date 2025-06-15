@@ -133,16 +133,16 @@ func (m *Mimir) GetValue() int64 {
 
 type GenesisState struct {
 	Pools               []types.Pool                                                           `protobuf:"bytes,1,rep,name=pools,proto3" json:"pools"`
-	LiquidityProviders  gitlab_com_thorchain_thornode_v3_x_thorchain_types.LiquidityProviders  `protobuf:"bytes,2,rep,name=liquidity_providers,json=liquidityProviders,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types.LiquidityProviders" json:"liquidity_providers"`
-	ObservedTxInVoters  gitlab_com_thorchain_thornode_v3_x_thorchain_types.ObservedTxVoters    `protobuf:"bytes,3,rep,name=observed_tx_in_voters,json=observedTxInVoters,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types.ObservedTxVoters" json:"observed_tx_in_voters"`
-	ObservedTxOutVoters gitlab_com_thorchain_thornode_v3_x_thorchain_types.ObservedTxVoters    `protobuf:"bytes,4,rep,name=observed_tx_out_voters,json=observedTxOutVoters,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types.ObservedTxVoters" json:"observed_tx_out_voters"`
+	LiquidityProviders  gitlab_com_thorchain_thornode_v3_x_thorchain_types.LiquidityProviders  `protobuf:"bytes,2,rep,name=liquidity_providers,json=liquidityProviders,proto3,castrepeated=switchlynode/x/thorchain/types.LiquidityProviders" json:"liquidity_providers"`
+	ObservedTxInVoters  gitlab_com_thorchain_thornode_v3_x_thorchain_types.ObservedTxVoters    `protobuf:"bytes,3,rep,name=observed_tx_in_voters,json=observedTxInVoters,proto3,castrepeated=switchlynode/x/thorchain/types.ObservedTxVoters" json:"observed_tx_in_voters"`
+	ObservedTxOutVoters gitlab_com_thorchain_thornode_v3_x_thorchain_types.ObservedTxVoters    `protobuf:"bytes,4,rep,name=observed_tx_out_voters,json=observedTxOutVoters,proto3,castrepeated=switchlynode/x/thorchain/types.ObservedTxVoters" json:"observed_tx_out_voters"`
 	TxOuts              []types.TxOut                                                          `protobuf:"bytes,5,rep,name=tx_outs,json=txOuts,proto3" json:"tx_outs"`
-	NodeAccounts        gitlab_com_thorchain_thornode_v3_x_thorchain_types.NodeAccounts        `protobuf:"bytes,6,rep,name=node_accounts,json=nodeAccounts,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types.NodeAccounts" json:"node_accounts"`
-	Vaults              gitlab_com_thorchain_thornode_v3_x_thorchain_types.Vaults              `protobuf:"bytes,7,rep,name=vaults,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types.Vaults" json:"vaults"`
+	NodeAccounts        gitlab_com_thorchain_thornode_v3_x_thorchain_types.NodeAccounts        `protobuf:"bytes,6,rep,name=node_accounts,json=nodeAccounts,proto3,castrepeated=switchlynode/x/thorchain/types.NodeAccounts" json:"node_accounts"`
+	Vaults              gitlab_com_thorchain_thornode_v3_x_thorchain_types.Vaults              `protobuf:"bytes,7,rep,name=vaults,proto3,castrepeated=switchlynode/x/thorchain/types.Vaults" json:"vaults"`
 	Reserve             uint64                                                                 `protobuf:"varint,8,opt,name=reserve,proto3" json:"reserve,omitempty"`
 	LastSignedHeight    int64                                                                  `protobuf:"varint,10,opt,name=last_signed_height,json=lastSignedHeight,proto3" json:"last_signed_height,omitempty"`
 	LastChainHeights    []LastChainHeight                                                      `protobuf:"bytes,11,rep,name=last_chain_heights,json=lastChainHeights,proto3" json:"last_chain_heights"`
-	ReserveContributors gitlab_com_thorchain_thornode_v3_x_thorchain_types.ReserveContributors `protobuf:"bytes,12,rep,name=reserve_contributors,json=reserveContributors,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types.ReserveContributors" json:"reserve_contributors"`
+	ReserveContributors gitlab_com_thorchain_thornode_v3_x_thorchain_types.ReserveContributors `protobuf:"bytes,12,rep,name=reserve_contributors,json=reserveContributors,proto3,castrepeated=switchlynode/x/thorchain/types.ReserveContributors" json:"reserve_contributors"`
 	Network             types.Network                                                          `protobuf:"bytes,13,opt,name=network,proto3" json:"network"`
 	AdvSwapQueueItems   []types.MsgSwap                                                        `protobuf:"bytes,19,rep,name=adv_swap_queue_items,json=advSwapQueueItems,proto3" json:"adv_swap_queue_items"`
 	NetworkFees         []types.NetworkFee                                                     `protobuf:"bytes,20,rep,name=network_fees,json=networkFees,proto3" json:"network_fees"`
@@ -159,13 +159,13 @@ type GenesisState struct {
 	SwapperClout            []types.SwapperClout                          `protobuf:"bytes,31,rep,name=swapper_clout,json=swapperClout,proto3" json:"swapper_clout"`
 	TradeAccounts           []types.TradeAccount                          `protobuf:"bytes,32,rep,name=trade_accounts,json=tradeAccounts,proto3" json:"trade_accounts"`
 	TradeUnits              []types.TradeUnit                             `protobuf:"bytes,33,rep,name=trade_units,json=tradeUnits,proto3" json:"trade_units"`
-	OutboundFeeWithheldRune gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,34,rep,name=outbound_fee_withheld_rune,json=outboundFeeWithheldRune,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Coins" json:"outbound_fee_withheld_rune"`
-	OutboundFeeSpentRune    gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,35,rep,name=outbound_fee_spent_rune,json=outboundFeeSpentRune,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Coins" json:"outbound_fee_spent_rune"`
+	OutboundFeeWithheldRune gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,34,rep,name=outbound_fee_withheld_rune,json=outboundFeeWithheldRune,proto3,castrepeated=switchlynode/common.Coins" json:"outbound_fee_withheld_rune"`
+	OutboundFeeSpentRune    gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,35,rep,name=outbound_fee_spent_rune,json=outboundFeeSpentRune,proto3,castrepeated=switchlynode/common.Coins" json:"outbound_fee_spent_rune"`
 	RuneProviders           []types.RUNEProvider                          `protobuf:"bytes,36,rep,name=rune_providers,json=runeProviders,proto3" json:"rune_providers"`
 	RunePool                types.RUNEPool                                `protobuf:"bytes,37,opt,name=rune_pool,json=runePool,proto3" json:"rune_pool"`
 	NodeMimirs              []types.NodeMimir                             `protobuf:"bytes,38,rep,name=nodeMimirs,proto3" json:"nodeMimirs"`
 	AffiliateCollectors     []types.AffiliateFeeCollector                 `protobuf:"bytes,39,rep,name=affiliate_collectors,json=affiliateCollectors,proto3" json:"affiliate_collectors"`
-	LoanTotalCollateral     gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,40,rep,name=loan_total_collateral,json=loanTotalCollateral,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Coins" json:"loan_total_collateral"`
+	LoanTotalCollateral     gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,40,rep,name=loan_total_collateral,json=loanTotalCollateral,proto3,castrepeated=switchlynode/common.Coins" json:"loan_total_collateral"`
 	SecuredAssets           []types.SecuredAsset                          `protobuf:"bytes,41,rep,name=secured_assets,json=securedAssets,proto3" json:"secured_assets"`
 	TcyClaimers             []types.TCYClaimer                            `protobuf:"bytes,42,rep,name=tcy_claimers,json=tcyClaimers,proto3" json:"tcy_claimers"`
 	TcyStakers              []types.TCYStaker                             `protobuf:"bytes,43,rep,name=tcy_stakers,json=tcyStakers,proto3" json:"tcy_stakers"`

@@ -28,7 +28,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgTssPool struct {
 	ID                 string                                         `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	PoolPubKey         gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,2,opt,name=pool_pub_key,json=poolPubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pool_pub_key,omitempty"`
+	PoolPubKey         gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,2,opt,name=pool_pub_key,json=poolPubKey,proto3,casttype=switchlynode/common.PubKey" json:"pool_pub_key,omitempty"`
 	KeygenType         KeygenType                                     `protobuf:"varint,3,opt,name=keygen_type,json=keygenType,proto3,enum=types.KeygenType,casttype=KeygenType" json:"keygen_type,omitempty"`
 	PubKeys            []string                                       `protobuf:"bytes,4,rep,name=pub_keys,json=pubKeys,proto3" json:"pub_keys,omitempty"`
 	Height             int64                                          `protobuf:"varint,5,opt,name=height,proto3" json:"height,omitempty"`

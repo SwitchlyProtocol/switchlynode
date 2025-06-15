@@ -166,7 +166,7 @@ type QueryTxOutItem struct {
 	Chain                 string                                      `protobuf:"bytes,1,opt,name=chain,proto3" json:"chain"`
 	ToAddress             string                                      `protobuf:"bytes,2,opt,name=to_address,json=toAddress,proto3" json:"to_address"`
 	Coin                  *common.Coin                                `protobuf:"bytes,4,opt,name=coin,proto3" json:"coin"`
-	MaxGas                gitlab_com_thorchain_thornode_v3_common.Gas `protobuf:"bytes,6,rep,name=max_gas,json=maxGas,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Gas" json:"max_gas"`
+	MaxGas                gitlab_com_thorchain_thornode_v3_common.Gas `protobuf:"bytes,6,rep,name=max_gas,json=maxGas,proto3,castrepeated=switchlynode/common.Gas" json:"max_gas"`
 	GasRate               int64                                       `protobuf:"varint,7,opt,name=gas_rate,json=gasRate,proto3" json:"gas_rate,omitempty"`
 	Memo                  string                                      `protobuf:"bytes,5,opt,name=memo,proto3" json:"memo,omitempty"`
 	Aggregator            string                                      `protobuf:"bytes,12,opt,name=aggregator,proto3" json:"aggregator,omitempty"`

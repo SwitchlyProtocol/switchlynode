@@ -28,8 +28,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgErrataTx struct {
-	TxID   gitlab_com_thorchain_thornode_v3_common.TxID  `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
-	Chain  gitlab_com_thorchain_thornode_v3_common.Chain `protobuf:"bytes,2,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
+	TxID   gitlab_com_thorchain_thornode_v3_common.TxID  `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=switchlynode/common.TxID" json:"tx_id,omitempty"`
+	Chain  gitlab_com_thorchain_thornode_v3_common.Chain `protobuf:"bytes,2,opt,name=chain,proto3,casttype=switchlynode/common.Chain" json:"chain,omitempty"`
 	Signer github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,3,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }
 

@@ -28,8 +28,8 @@ BUILDTAG?=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 # compiler flags
 VERSION:=$(shell cat version)
 TAG?=mocknet
-ldflags = -X gitlab.com/thorchain/thornode/v3/constants.Version=$(VERSION) \
-      -X gitlab.com/thorchain/thornode/v3/constants.GitCommit=$(COMMIT) \
+ldflags = -X github.com/switchlyprotocol/switchlynode/v1/constants.Version=$(VERSION) \
+      -X github.com/switchlyprotocol/switchlynode/v1/constants.GitCommit=$(COMMIT) \
       -X github.com/cosmos/cosmos-sdk/version.Name=THORChain \
       -X github.com/cosmos/cosmos-sdk/version.AppName=thornode \
       -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
@@ -50,7 +50,7 @@ ifndef CI
 DOCKER_TTY_ARGS=-it
 endif
 
-HTTPS_GIT := gitlab.com/thorchain/thornode.git
+HTTPS_GIT := github.com/switchlyprotocol/switchlynode.git
 
 ########################################################################################
 # Targets
@@ -201,9 +201,9 @@ test-regression-coverage:
 # internal target used in docker build - version pinned for consistent app hashes
 _build-test-regression:
 	@go install -ldflags '$(ldflags)' -tags=mocknet,regtest ./cmd/thornode
-	@go build -ldflags '$(ldflags) -X gitlab.com/thorchain/thornode/v3/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X github.com/switchlyprotocol/switchlynode/v1/constants.Version=9.999.0' \
 		-cover -tags=mocknet,regtest -o /regtest/cover-thornode ./cmd/thornode
-	@go build -ldflags '$(ldflags) -X gitlab.com/thorchain/thornode/v3/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X github.com/switchlyprotocol/switchlynode/v1/constants.Version=9.999.0' \
 		-tags mocknet -o /regtest/regtest ./test/regression/cmd
 
 # internal target used in test run

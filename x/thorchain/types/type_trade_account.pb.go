@@ -28,7 +28,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type TradeAccount struct {
-	Asset              gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	Asset              gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=switchlynode/common.Asset" json:"asset"`
 	Units              cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=units,proto3,customtype=cosmossdk.io/math.Uint" json:"units"`
 	Owner              github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,3,opt,name=owner,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"owner,omitempty"`
 	LastAddHeight      int64                                         `protobuf:"varint,4,opt,name=last_add_height,json=lastAddHeight,proto3" json:"last_add_height,omitempty"`
@@ -90,7 +90,7 @@ func (m *TradeAccount) GetLastWithdrawHeight() int64 {
 }
 
 type TradeUnit struct {
-	Asset gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	Asset gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=switchlynode/common.Asset" json:"asset"`
 	Units cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=units,proto3,customtype=cosmossdk.io/math.Uint" json:"units"`
 	Depth cosmossdk_io_math.Uint                        `protobuf:"bytes,3,opt,name=depth,proto3,customtype=cosmossdk.io/math.Uint" json:"depth"`
 }

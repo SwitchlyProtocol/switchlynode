@@ -28,11 +28,11 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgManageTHORName struct {
 	Name              string                                          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Chain             gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,2,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
-	Address           gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"address,omitempty"`
+	Chain             gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,2,opt,name=chain,proto3,casttype=switchlynode/common.Chain" json:"chain,omitempty"`
+	Address           gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=address,proto3,casttype=switchlynode/common.Address" json:"address,omitempty"`
 	Coin              common.Coin                                     `protobuf:"bytes,4,opt,name=coin,proto3" json:"coin"`
 	ExpireBlockHeight int64                                           `protobuf:"varint,5,opt,name=expire_block_height,json=expireBlockHeight,proto3" json:"expire_block_height,omitempty"`
-	PreferredAsset    gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,6,opt,name=preferred_asset,json=preferredAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"preferred_asset"`
+	PreferredAsset    gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,6,opt,name=preferred_asset,json=preferredAsset,proto3,customtype=switchlynode/common.Asset" json:"preferred_asset"`
 	Owner             github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,7,opt,name=owner,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"owner,omitempty"`
 	Signer            github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,8,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }

@@ -28,7 +28,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgOutboundTx struct {
 	Tx     common.ObservedTx                             `protobuf:"bytes,1,opt,name=tx,proto3" json:"tx"`
-	InTxID gitlab_com_thorchain_thornode_v3_common.TxID  `protobuf:"bytes,2,opt,name=in_tx_id,json=inTxId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"in_tx_id,omitempty"`
+	InTxID gitlab_com_thorchain_thornode_v3_common.TxID  `protobuf:"bytes,2,opt,name=in_tx_id,json=inTxId,proto3,casttype=switchlynode/common.TxID" json:"in_tx_id,omitempty"`
 	Signer github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,3,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }
 

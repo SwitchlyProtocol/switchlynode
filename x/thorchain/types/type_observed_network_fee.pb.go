@@ -27,7 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type ObservedNetworkFeeVoter struct {
 	BlockHeight       int64                                         `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	ReportBlockHeight int64                                         `protobuf:"varint,2,opt,name=report_block_height,json=reportBlockHeight,proto3" json:"report_block_height,omitempty"`
-	Chain             gitlab_com_thorchain_thornode_v3_common.Chain `protobuf:"bytes,3,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
+	Chain             gitlab_com_thorchain_thornode_v3_common.Chain `protobuf:"bytes,3,opt,name=chain,proto3,casttype=switchlynode/common.Chain" json:"chain,omitempty"`
 	Signers           []string                                      `protobuf:"bytes,4,rep,name=signers,proto3" json:"signers,omitempty"`
 	FeeRate           int64                                         `protobuf:"varint,5,opt,name=fee_rate,json=feeRate,proto3" json:"fee_rate,omitempty"`
 	TransactionSize   int64                                         `protobuf:"varint,6,opt,name=transaction_size,json=transactionSize,proto3" json:"transaction_size,omitempty"`
