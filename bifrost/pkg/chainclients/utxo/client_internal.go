@@ -10,19 +10,19 @@ import (
 
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcutil"
-	bchtxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/bchd-txscript"
-	dogetxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/dogd-txscript"
-	ltctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/ltcd-txscript"
-	btctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/txscript"
+	bchtxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/bchd-txscript"
+	dogetxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/dogd-txscript"
+	ltctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/ltcd-txscript"
+	btctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/txscript"
 
-	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/utxo"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
+	btypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/utxo"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

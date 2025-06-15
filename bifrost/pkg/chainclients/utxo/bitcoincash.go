@@ -6,10 +6,10 @@ import (
 	bchec "github.com/gcash/bchd/bchec"
 	bchchaincfg "github.com/gcash/bchd/chaincfg"
 	bchwire "github.com/gcash/bchd/wire"
-	bchtxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/bchd-txscript"
+	bchtxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/bchd-txscript"
 
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 func (c *Client) getChainCfgBCH() *bchchaincfg.Params {

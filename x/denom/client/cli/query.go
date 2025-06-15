@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 
-	"gitlab.com/thorchain/thornode/v3/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module

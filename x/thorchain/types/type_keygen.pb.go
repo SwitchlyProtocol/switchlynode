@@ -7,7 +7,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -50,7 +50,7 @@ func (KeygenType) EnumDescriptor() ([]byte, []int) {
 }
 
 type Keygen struct {
-	ID      gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=id,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"id,omitempty"`
+	ID      gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=id,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"id,omitempty"`
 	Type    KeygenType                                   `protobuf:"varint,2,opt,name=type,proto3,enum=types.KeygenType" json:"type,omitempty"`
 	Members []string                                     `protobuf:"bytes,3,rep,name=members,proto3" json:"members,omitempty"`
 }

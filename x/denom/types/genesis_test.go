@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"gitlab.com/thorchain/thornode/v3/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

@@ -3,7 +3,7 @@ package thorchain
 import (
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // RefundHandler a handle to process tx that had refund memo

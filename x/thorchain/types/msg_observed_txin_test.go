@@ -6,8 +6,8 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 type MsgObservedTxInSuite struct{}

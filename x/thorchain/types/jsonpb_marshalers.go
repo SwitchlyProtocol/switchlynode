@@ -8,8 +8,8 @@ import (
 
 	"github.com/cosmos/gogoproto/jsonpb"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
 )
 
 // Implementation of JSONPBMarshaler for all query types that require it

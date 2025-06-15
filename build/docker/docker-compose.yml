@@ -404,89 +404,89 @@ services:
 
   # ------------------------------ gaia ------------------------------
 
-  gaia:
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: registry.gitlab.com/thorchain/devops/node-launcher:gaia-daemon-23.2.0
-    volumes:
-      - "./mocknet:/mocknet"
-    environment:
-      BLOCK_TIME: ${BLOCK_TIME:-1s}
-    ports:
-      - "23357:26657"
-      - "9091:9090"
-      - "21317:1317"
-    command: /mocknet/init-gaia.sh
+  # gaia:
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: registry.gitlab.com/thorchain/devops/node-launcher:gaia-daemon-23.2.0
+  #   volumes:
+  #     - "./mocknet:/mocknet"
+  #   environment:
+  #     BLOCK_TIME: ${BLOCK_TIME:-1s}
+  #   ports:
+  #     - "23357:26657"
+  #     - "9091:9090"
+  #     - "21317:1317"
+  #   command: /mocknet/init-gaia.sh
 
-  # ------------------------------ bitcoin ------------------------------
+  # # ------------------------------ bitcoin ------------------------------
 
-  bitcoin:
-    user: root
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: registry.gitlab.com/thorchain/devops/node-launcher:bitcoin-daemon-26.2
-    restart: unless-stopped
-    environment:
-      BTC_MASTER_ADDR: ${BTC_MASTER_ADDR:-bcrt1qf4l5dlqhaujgkxxqmug4stfvmvt58vx2h44c39}
-      BLOCK_TIME: ${BLOCK_TIME:-1}
-    ports:
-      - 18443:18443
-      - 18444:18444
-    entrypoint: "/scripts/entrypoint-mock.sh"
+  # bitcoin:
+  #   user: root
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: registry.gitlab.com/thorchain/devops/node-launcher:bitcoin-daemon-26.2
+  #   restart: unless-stopped
+  #   environment:
+  #     BTC_MASTER_ADDR: ${BTC_MASTER_ADDR:-bcrt1qf4l5dlqhaujgkxxqmug4stfvmvt58vx2h44c39}
+  #     BLOCK_TIME: ${BLOCK_TIME:-1}
+  #   ports:
+  #     - 18443:18443
+  #     - 18444:18444
+  #   entrypoint: "/scripts/entrypoint-mock.sh"
 
-  # ------------------------------ bitcoin cash ------------------------------
+  # # ------------------------------ bitcoin cash ------------------------------
 
-  bitcoin-cash:
-    user: root
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: registry.gitlab.com/thorchain/devops/node-launcher:bitcoin-cash-daemon-28.0.1
-    restart: unless-stopped
-    environment:
-      RPC_PORT: "28443"
-      BTC_MASTER_ADDR: ${BCH_MASTER_ADDR:-qpxh73huzlhjfzcccr03zkpd9nd3wsasegmrreet72}
-      BLOCK_TIME: ${BLOCK_TIME:-1}
-    ports:
-      - 28443:28443
-    entrypoint: "/scripts/entrypoint-mock.sh"
+  # bitcoin-cash:
+  #   user: root
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: registry.gitlab.com/thorchain/devops/node-launcher:bitcoin-cash-daemon-28.0.1
+  #   restart: unless-stopped
+  #   environment:
+  #     RPC_PORT: "28443"
+  #     BTC_MASTER_ADDR: ${BCH_MASTER_ADDR:-qpxh73huzlhjfzcccr03zkpd9nd3wsasegmrreet72}
+  #     BLOCK_TIME: ${BLOCK_TIME:-1}
+  #   ports:
+  #     - 28443:28443
+  #   entrypoint: "/scripts/entrypoint-mock.sh"
 
-  # ------------------------------ dogecoin ------------------------------
+  # # ------------------------------ dogecoin ------------------------------
 
-  dogecoin:
-    user: root
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: registry.gitlab.com/thorchain/devops/node-launcher:dogecoin-daemon-1.14.9
-    restart: unless-stopped
-    environment:
-      BLOCK_TIME: ${BLOCK_TIME:-1}
-      DOGE_MASTER_ADDR: ${DOGE_MASTER_ADDR:-mnaioCtEGdw6bd6rWJ13Mbre1kN5rPa2Mo}
-    ports:
-      - 18332:18332
-    entrypoint: "/scripts/entrypoint-mock.sh"
+  # dogecoin:
+  #   user: root
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: registry.gitlab.com/thorchain/devops/node-launcher:dogecoin-daemon-1.14.9
+  #   restart: unless-stopped
+  #   environment:
+  #     BLOCK_TIME: ${BLOCK_TIME:-1}
+  #     DOGE_MASTER_ADDR: ${DOGE_MASTER_ADDR:-mnaioCtEGdw6bd6rWJ13Mbre1kN5rPa2Mo}
+  #   ports:
+  #     - 18332:18332
+  #   entrypoint: "/scripts/entrypoint-mock.sh"
 
-  # ------------------------------ litecoin ------------------------------
+  # # ------------------------------ litecoin ------------------------------
 
-  litecoin:
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: registry.gitlab.com/thorchain/devops/node-launcher:litecoin-daemon-0.21.4
-    restart: unless-stopped
-    environment:
-      BTC_MASTER_ADDR: ${LTC_MASTER_ADDR:-rltc1qf4l5dlqhaujgkxxqmug4stfvmvt58vx2fc03xm}
-      RPC_PORT: "38443"
-    ports:
-      - 38443:38443
-    volumes:
-      - "./mocknet:/mocknet"
-    entrypoint: "/mocknet/litecoin-entrypoint.sh"
+  # litecoin:
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: registry.gitlab.com/thorchain/devops/node-launcher:litecoin-daemon-0.21.4
+  #   restart: unless-stopped
+  #   environment:
+  #     BTC_MASTER_ADDR: ${LTC_MASTER_ADDR:-rltc1qf4l5dlqhaujgkxxqmug4stfvmvt58vx2fc03xm}
+  #     RPC_PORT: "38443"
+  #   ports:
+  #     - 38443:38443
+  #   volumes:
+  #     - "./mocknet:/mocknet"
+  #   entrypoint: "/mocknet/litecoin-entrypoint.sh"
 
-  ------------------------------ ethereum ------------------------------
+  # ------------------------------ ethereum ------------------------------
 
   ethereum:
     profiles:
@@ -506,74 +506,74 @@ services:
 
   # ------------------------------ base ------------------------------
 
-  base:
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.4
-    restart: unless-stopped
-    environment:
-      BLOCK_TIME: ${BLOCK_TIME:-5}
-      OP_NODE_L1_ETH_RPC: ${ETH_HOST:-http://ethereum:8545}
-    ports:
-      - 8547:8545
-    volumes:
-      - "../scripts:/docker/scripts"
-    entrypoint: /docker/scripts/mock/start-eth.sh
+  # base:
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth:v1.101503.4
+  #   restart: unless-stopped
+  #   environment:
+  #     BLOCK_TIME: ${BLOCK_TIME:-5}
+  #     OP_NODE_L1_ETH_RPC: ${ETH_HOST:-http://ethereum:8545}
+  #   ports:
+  #     - 8547:8545
+  #   volumes:
+  #     - "../scripts:/docker/scripts"
+  #   entrypoint: /docker/scripts/mock/start-eth.sh
 
-  # ------------------------------ xrp ------------------------------
+  # # ------------------------------ xrp ------------------------------
 
-  xrp:
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: xrpllabsofficial/xrpld:2.4.0
-    restart: unless-stopped
-    environment:
-      BLOCK_TIME: ${BLOCK_TIME:-5}
-    ports:
-      - 5005:5005
-    volumes:
-      - "../scripts:/docker/scripts"
-    entrypoint: /docker/scripts/xrp/start-xrp.sh
+  # xrp:
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: xrpllabsofficial/xrpld:2.4.0
+  #   restart: unless-stopped
+  #   environment:
+  #     BLOCK_TIME: ${BLOCK_TIME:-5}
+  #   ports:
+  #     - 5005:5005
+  #   volumes:
+  #     - "../scripts:/docker/scripts"
+  #   entrypoint: /docker/scripts/xrp/start-xrp.sh
 
-  # ------------------------------ binance-smart ------------------------------
+  # # ------------------------------ binance-smart ------------------------------
 
-  binance-smart:
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    image: registry.gitlab.com/thorchain/devops/node-launcher:binance-smart-daemon-1.4.18
-    restart: unless-stopped
-    environment:
-      BLOCK_TIME: ${BLOCK_TIME:-5}
-    ports:
-      - 8546:8545
-    volumes:
-      - "../scripts:/docker/scripts"
-    entrypoint: /docker/scripts/mock/start-eth.sh
+  # binance-smart:
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   image: registry.gitlab.com/thorchain/devops/node-launcher:binance-smart-daemon-1.4.18
+  #   restart: unless-stopped
+  #   environment:
+  #     BLOCK_TIME: ${BLOCK_TIME:-5}
+  #   ports:
+  #     - 8546:8545
+  #   volumes:
+  #     - "../scripts:/docker/scripts"
+  #   entrypoint: /docker/scripts/mock/start-eth.sh
 
-  # ------------------------------ avalanche ------------------------------
+  # # ------------------------------ avalanche ------------------------------
 
-  avalanche:
-    profiles:
-      - mocknet
-      - mocknet-cluster
-    restart: unless-stopped
-    image: registry.gitlab.com/thorchain/devops/node-launcher:avalanche-daemon-1.13.0-1
-    volumes:
-      - "./mocknet/avax:/mocknet"
-    command:
-      - ./avalanchego
-      - --sybil-protection-enabled=false
-      - --network-id=local
-      - --http-host=0.0.0.0
-      - --chain-config-dir=/mocknet/configs
-      - --http-allowed-hosts=*
-    ports:
-      - 9650:9650
-    environment:
-      RPC_PORT: "9650"
+  # avalanche:
+  #   profiles:
+  #     - mocknet
+  #     - mocknet-cluster
+  #   restart: unless-stopped
+  #   image: registry.gitlab.com/thorchain/devops/node-launcher:avalanche-daemon-1.13.0-1
+  #   volumes:
+  #     - "./mocknet/avax:/mocknet"
+  #   command:
+  #     - ./avalanchego
+  #     - --sybil-protection-enabled=false
+  #     - --network-id=local
+  #     - --http-host=0.0.0.0
+  #     - --chain-config-dir=/mocknet/configs
+  #     - --http-allowed-hosts=*
+  #   ports:
+  #     - 9650:9650
+  #   environment:
+  #     RPC_PORT: "9650"
 
   # ------------------------------ stellar ------------------------------
 

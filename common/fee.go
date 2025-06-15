@@ -3,7 +3,7 @@ package common
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // NewFee return a new instance of Fee

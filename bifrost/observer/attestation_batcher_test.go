@@ -16,8 +16,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 // TestAttestationBatcher tests the attestation batcher functionality

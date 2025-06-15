@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/thorchain/thornode/v3/api/types"
-	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/thornode"
-	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v1/api/types"
+	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/thornode"
+	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

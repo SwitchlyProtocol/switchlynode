@@ -8,7 +8,7 @@ import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	apitypes "gitlab.com/thorchain/thornode/v3/api/types"
+	apitypes "github.com/switchlyprotocol/switchlynode/v1/api/types"
 )
 
 var wasmAcceptedQueries = wasmkeeper.AcceptedQueries{

@@ -3,7 +3,7 @@ package dag
 import (
 	"testing"
 
-	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
+	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
 	. "gopkg.in/check.v1"
 )
 

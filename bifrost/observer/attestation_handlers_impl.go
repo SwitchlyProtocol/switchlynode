@@ -3,8 +3,8 @@ package observer
 import (
 	"context"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // handleObservedTxAttestation processes attestations for observed transactions

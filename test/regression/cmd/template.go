@@ -5,7 +5,7 @@ import (
 	"sync"
 	"text/template"
 
-	"gitlab.com/thorchain/thornode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

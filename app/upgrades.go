@@ -5,8 +5,8 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"gitlab.com/thorchain/thornode/v3/app/upgrades"
-	"gitlab.com/thorchain/thornode/v3/app/upgrades/standard"
+	"github.com/switchlyprotocol/switchlynode/v1/app/upgrades"
+	"github.com/switchlyprotocol/switchlynode/v1/app/upgrades/standard"
 )
 
 // Upgrades list of chain upgrades

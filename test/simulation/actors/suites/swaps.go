@@ -3,10 +3,10 @@ package suites
 import (
 	"math/rand"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/test/simulation/actors/core"
-	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/evm"
-	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/actors/core"
+	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/evm"
+	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

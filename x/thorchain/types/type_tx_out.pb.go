@@ -8,8 +8,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -29,15 +29,15 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type TxOutItem struct {
-	Chain                 gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,1,opt,name=chain,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Chain" json:"chain"`
-	ToAddress             gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=to_address,json=toAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"to_address"`
-	VaultPubKey           gitlab_com_thorchain_thornode_v3_common.PubKey  `protobuf:"bytes,3,opt,name=vault_pub_key,json=vaultPubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"vault_pub_key,omitempty"`
+	Chain                 gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,1,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain"`
+	ToAddress             gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=to_address,json=toAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"to_address"`
+	VaultPubKey           gitlab_com_thorchain_thornode_v3_common.PubKey  `protobuf:"bytes,3,opt,name=vault_pub_key,json=vaultPubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"vault_pub_key,omitempty"`
 	Coin                  common.Coin                                     `protobuf:"bytes,4,opt,name=coin,proto3" json:"coin"`
 	Memo                  string                                          `protobuf:"bytes,5,opt,name=memo,proto3" json:"memo,omitempty"`
-	MaxGas                gitlab_com_thorchain_thornode_v3_common.Gas     `protobuf:"bytes,6,rep,name=max_gas,json=maxGas,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.Gas" json:"max_gas"`
+	MaxGas                gitlab_com_thorchain_thornode_v3_common.Gas     `protobuf:"bytes,6,rep,name=max_gas,json=maxGas,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Gas" json:"max_gas"`
 	GasRate               int64                                           `protobuf:"varint,7,opt,name=gas_rate,json=gasRate,proto3" json:"gas_rate,omitempty"`
-	InHash                gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,8,opt,name=in_hash,json=inHash,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"in_hash,omitempty"`
-	OutHash               gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,9,opt,name=out_hash,json=outHash,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"out_hash,omitempty"`
+	InHash                gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,8,opt,name=in_hash,json=inHash,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"in_hash,omitempty"`
+	OutHash               gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,9,opt,name=out_hash,json=outHash,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"out_hash,omitempty"`
 	ModuleName            string                                          `protobuf:"bytes,10,opt,name=module_name,json=-,proto3" json:"-"`
 	Aggregator            string                                          `protobuf:"bytes,11,opt,name=aggregator,proto3" json:"aggregator,omitempty"`
 	AggregatorTargetAsset string                                          `protobuf:"bytes,12,opt,name=aggregator_target_asset,json=aggregatorTargetAsset,proto3" json:"aggregator_target_asset,omitempty"`

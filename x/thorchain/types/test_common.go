@@ -13,10 +13,10 @@ import (
 	"github.com/cometbft/cometbft/crypto"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"gitlab.com/thorchain/thornode/v3/cmd"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/cmd"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
 )
 
 // GetRandomValidatorNode creates a random validator node account, used for testing

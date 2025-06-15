@@ -3,10 +3,10 @@ package thorchain
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	tcyclaimlist "gitlab.com/thorchain/thornode/v3/common/tcyclaimlist"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	tcyclaimlist "github.com/switchlyprotocol/switchlynode/v1/common/tcyclaimlist"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // unsafeAddRefundOutbound - schedules a REFUND outbound to destAddr with coin amount

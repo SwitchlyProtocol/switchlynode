@@ -6,8 +6,8 @@ import (
 	"github.com/blang/semver"
 	"github.com/hashicorp/go-multierror"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
 )
 
 // SecuredAssetWithdrawHandler is handler to process MsgSecuredAssetWithdraw

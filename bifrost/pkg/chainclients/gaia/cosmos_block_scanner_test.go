@@ -15,12 +15,12 @@ import (
 	protov2 "google.golang.org/protobuf/proto"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 
-	"gitlab.com/thorchain/thornode/v3/cmd"
+	"github.com/switchlyprotocol/switchlynode/v1/cmd"
 	. "gopkg.in/check.v1"
 )
 

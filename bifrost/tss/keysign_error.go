@@ -3,9 +3,9 @@ package tss
 import (
 	"fmt"
 
-	tssMessages "gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	tssMessages "github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
 
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // KeysignError is a custom error create to include which party to blame

@@ -6,7 +6,7 @@ import (
 	"github.com/blang/semver"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 type MemoMaintSuite struct{}

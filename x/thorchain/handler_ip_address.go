@@ -5,8 +5,8 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
 )
 
 // IPAddressHandler is to handle ip address message

@@ -7,9 +7,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"gitlab.com/thorchain/thornode/v3/common/relay"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common/relay"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 type ver struct {

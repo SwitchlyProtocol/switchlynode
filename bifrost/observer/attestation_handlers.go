@@ -9,8 +9,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/rs/zerolog"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 // AttestObservedTx creates and broadcasts an attestation for an observed transaction

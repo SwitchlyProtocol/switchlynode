@@ -8,12 +8,12 @@ import (
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	"github.com/hashicorp/go-metrics"
-	tssMessages "gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	tssMessages "github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
 )
 
 // TssKeysignHandler is design to process MsgTssKeysignFail

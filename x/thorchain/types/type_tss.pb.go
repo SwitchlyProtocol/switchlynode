@@ -7,7 +7,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -26,7 +26,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type TssVoter struct {
 	ID                           string                                         `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	PoolPubKey                   gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,2,opt,name=pool_pub_key,json=poolPubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"pool_pub_key,omitempty"`
+	PoolPubKey                   gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,2,opt,name=pool_pub_key,json=poolPubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pool_pub_key,omitempty"`
 	PubKeys                      []string                                       `protobuf:"bytes,3,rep,name=pub_keys,json=pubKeys,proto3" json:"pub_keys,omitempty"`
 	BlockHeight                  int64                                          `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	Chains                       []string                                       `protobuf:"bytes,5,rep,name=chains,proto3" json:"chains,omitempty"`

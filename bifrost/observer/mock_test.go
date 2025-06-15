@@ -17,9 +17,9 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
 )
 
 // Mock implementations of external dependencies

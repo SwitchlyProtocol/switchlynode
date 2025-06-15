@@ -7,7 +7,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/storage"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/v3/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
 )
 
 type BitcoinTemporalStorageTestSuite struct{}

@@ -7,7 +7,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -27,7 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // NetworkFee represents the fee rate and typical outbound transaction size. Some chains
 // may have simplifid usage to report the fee as the "fee_rate" and set size to 1.
 type NetworkFee struct {
-	Chain              gitlab_com_thorchain_thornode_v3_common.Chain `protobuf:"bytes,1,opt,name=chain,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Chain" json:"chain,omitempty"`
+	Chain              gitlab_com_thorchain_thornode_v3_common.Chain `protobuf:"bytes,1,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
 	TransactionSize    uint64                                        `protobuf:"varint,2,opt,name=transaction_size,json=transactionSize,proto3" json:"transaction_size,omitempty"`
 	TransactionFeeRate uint64                                        `protobuf:"varint,3,opt,name=transaction_fee_rate,json=transactionFeeRate,proto3" json:"transaction_fee_rate,omitempty"`
 }

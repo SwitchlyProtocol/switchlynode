@@ -16,12 +16,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"gitlab.com/thorchain/thornode/v3/app"
-	"gitlab.com/thorchain/thornode/v3/app/params"
-	"gitlab.com/thorchain/thornode/v3/cmd"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	keeperv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
+	"github.com/switchlyprotocol/switchlynode/v1/app"
+	"github.com/switchlyprotocol/switchlynode/v1/app/params"
+	"github.com/switchlyprotocol/switchlynode/v1/cmd"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	keeperv1 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/v1"
 
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	eddsaKey "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"

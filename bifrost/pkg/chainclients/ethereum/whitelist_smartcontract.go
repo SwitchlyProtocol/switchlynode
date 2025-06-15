@@ -1,7 +1,7 @@
 package ethereum
 
 import (
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 var useWhitelistSmartContract = false

@@ -2,8 +2,8 @@ package thorchain
 
 import (
 	"cosmossdk.io/math"
-	"gitlab.com/thorchain/thornode/v3/common"
-	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 
 	. "gopkg.in/check.v1"
 )

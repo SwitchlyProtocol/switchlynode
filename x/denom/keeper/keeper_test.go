@@ -17,8 +17,8 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/suite"
-	"gitlab.com/thorchain/thornode/v3/x/denom/keeper"
-	"gitlab.com/thorchain/thornode/v3/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/keeper"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
 )
 
 var (

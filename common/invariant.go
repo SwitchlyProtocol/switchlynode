@@ -1,7 +1,7 @@
 package common
 
 import (
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // borrowed and modified from cosmos types

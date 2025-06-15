@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	sdk "gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/config"
-	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	sdk "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

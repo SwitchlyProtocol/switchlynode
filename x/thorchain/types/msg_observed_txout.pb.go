@@ -9,8 +9,8 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -28,7 +28,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgObservedTxOut struct {
-	Txs    gitlab_com_thorchain_thornode_v3_common.ObservedTxs `protobuf:"bytes,1,rep,name=txs,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.ObservedTxs" json:"txs"`
+	Txs    gitlab_com_thorchain_thornode_v3_common.ObservedTxs `protobuf:"bytes,1,rep,name=txs,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.ObservedTxs" json:"txs"`
 	Signer github_com_cosmos_cosmos_sdk_types.AccAddress       `protobuf:"bytes,2,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }
 

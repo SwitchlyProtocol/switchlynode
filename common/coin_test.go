@@ -3,7 +3,7 @@ package common
 import (
 	. "gopkg.in/check.v1"
 
-	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 type CoinSuite struct{}

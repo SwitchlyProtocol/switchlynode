@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.com/thorchain/thornode/v3/common/wasmpermissions"
+	"github.com/switchlyprotocol/switchlynode/v1/common/wasmpermissions"
 
 	sdkmath "cosmossdk.io/math"
 	"github.com/blang/semver"
@@ -22,15 +22,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/config"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
-	keeperv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	keeperv1 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/v1"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 var (

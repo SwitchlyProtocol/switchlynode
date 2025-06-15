@@ -14,8 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
 	cmttypes "github.com/cometbft/cometbft/types"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 	"google.golang.org/grpc"
 )
 

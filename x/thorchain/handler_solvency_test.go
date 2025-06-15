@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	se "github.com/cosmos/cosmos-sdk/types/errors"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
 	. "gopkg.in/check.v1"
 )
 

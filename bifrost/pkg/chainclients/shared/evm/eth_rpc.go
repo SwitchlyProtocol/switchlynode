@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
+	btypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner/types"
 )
 
 // EthRPC is a struct that interacts with an ETH RPC compatible blockchain

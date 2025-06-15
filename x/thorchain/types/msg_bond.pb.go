@@ -9,8 +9,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -31,7 +31,7 @@ type MsgBond struct {
 	TxIn                common.Tx                                       `protobuf:"bytes,1,opt,name=tx_in,json=txIn,proto3" json:"tx_in"`
 	NodeAddress         github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,2,opt,name=node_address,json=nodeAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"node_address,omitempty"`
 	Bond                cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=bond,proto3,customtype=cosmossdk.io/math.Uint" json:"bond"`
-	BondAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=bond_address,json=bondAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"bond_address,omitempty"`
+	BondAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=bond_address,json=bondAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"bond_address,omitempty"`
 	Signer              github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,5,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 	BondProviderAddress github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,6,opt,name=bond_provider_address,json=bondProviderAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"bond_provider_address,omitempty"`
 	OperatorFee         int64                                           `protobuf:"varint,7,opt,name=operator_fee,json=operatorFee,proto3" json:"operator_fee,omitempty"`

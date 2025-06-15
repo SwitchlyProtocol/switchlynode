@@ -8,7 +8,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/storage"
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 func NewLevelDB(path string, opts config.LevelDBOptions) (*leveldb.DB, error) {

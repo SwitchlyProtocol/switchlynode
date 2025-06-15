@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/v3/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
 )
 
 func (k Keeper) CreateDenom(ctx sdk.Context, denomId, adminAddr string) (newTokenDenom string, err error) {

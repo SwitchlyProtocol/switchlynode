@@ -9,8 +9,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -101,7 +101,7 @@ type NodeAccount struct {
 	ValidatorConsPubKey string                                          `protobuf:"bytes,4,opt,name=validator_cons_pub_key,json=validatorConsPubKey,proto3" json:"validator_cons_pub_key,omitempty"`
 	Bond                cosmossdk_io_math.Uint                          `protobuf:"bytes,5,opt,name=bond,proto3,customtype=cosmossdk.io/math.Uint" json:"bond"`
 	ActiveBlockHeight   int64                                           `protobuf:"varint,6,opt,name=active_block_height,json=activeBlockHeight,proto3" json:"active_block_height,omitempty"`
-	BondAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,7,opt,name=bond_address,json=bondAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"bond_address,omitempty"`
+	BondAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,7,opt,name=bond_address,json=bondAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"bond_address,omitempty"`
 	StatusSince         int64                                           `protobuf:"varint,8,opt,name=status_since,json=statusSince,proto3" json:"status_since,omitempty"`
 	SignerMembership    []string                                        `protobuf:"bytes,9,rep,name=signer_membership,json=signerMembership,proto3" json:"signer_membership,omitempty"`
 	RequestedToLeave    bool                                            `protobuf:"varint,10,opt,name=requested_to_leave,json=requestedToLeave,proto3" json:"requested_to_leave,omitempty"`

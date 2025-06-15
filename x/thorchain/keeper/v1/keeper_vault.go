@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"sort"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	kvTypes "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	kvTypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/types"
 )
 
 type VaultSecurity struct {

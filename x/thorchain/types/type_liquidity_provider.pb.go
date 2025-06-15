@@ -8,8 +8,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	_ "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	_ "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -27,15 +27,15 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type LiquidityProvider struct {
-	Asset              gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
-	RuneAddress        gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
-	AssetAddress       gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
+	Asset              gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	RuneAddress        gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
+	AssetAddress       gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
 	LastAddHeight      int64                                           `protobuf:"varint,4,opt,name=last_add_height,json=lastAddHeight,proto3" json:"last_add_height,omitempty"`
 	LastWithdrawHeight int64                                           `protobuf:"varint,5,opt,name=last_withdraw_height,json=lastWithdrawHeight,proto3" json:"last_withdraw_height,omitempty"`
 	Units              cosmossdk_io_math.Uint                          `protobuf:"bytes,6,opt,name=units,proto3,customtype=cosmossdk.io/math.Uint" json:"units"`
 	PendingRune        cosmossdk_io_math.Uint                          `protobuf:"bytes,7,opt,name=pending_rune,json=pendingRune,proto3,customtype=cosmossdk.io/math.Uint" json:"pending_rune"`
 	PendingAsset       cosmossdk_io_math.Uint                          `protobuf:"bytes,8,opt,name=pending_asset,json=pendingAsset,proto3,customtype=cosmossdk.io/math.Uint" json:"pending_asset"`
-	PendingTxID        gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,9,opt,name=pending_tx_Id,json=pendingTxId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"pending_tx_Id,omitempty"`
+	PendingTxID        gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,9,opt,name=pending_tx_Id,json=pendingTxId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"pending_tx_Id,omitempty"`
 	RuneDepositValue   cosmossdk_io_math.Uint                          `protobuf:"bytes,10,opt,name=rune_deposit_value,json=runeDepositValue,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_deposit_value"`
 	AssetDepositValue  cosmossdk_io_math.Uint                          `protobuf:"bytes,11,opt,name=asset_deposit_value,json=assetDepositValue,proto3,customtype=cosmossdk.io/math.Uint" json:"asset_deposit_value"`
 }

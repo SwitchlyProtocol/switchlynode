@@ -6,10 +6,10 @@ import (
 	dogeec "github.com/eager7/dogd/btcec"
 	dogechaincfg "github.com/eager7/dogd/chaincfg"
 	dogewire "github.com/eager7/dogd/wire"
-	dogetxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/dogd-txscript"
+	dogetxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/dogd-txscript"
 
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 func (c *Client) getChainCfgDOGE() *dogechaincfg.Params {

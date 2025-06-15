@@ -7,8 +7,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	_ "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	_ "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -27,7 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type RagnarokWithdrawPosition struct {
 	Number int64                                         `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
-	Pool   gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,2,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool   gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,2,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 }
 
 func (m *RagnarokWithdrawPosition) Reset()         { *m = RagnarokWithdrawPosition{} }

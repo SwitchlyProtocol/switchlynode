@@ -9,8 +9,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -28,19 +28,19 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgLoanOpen struct {
-	Owner                   gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=owner,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"owner,omitempty"`
-	CollateralAsset         gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"collateral_asset"`
+	Owner                   gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=owner,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"owner,omitempty"`
+	CollateralAsset         gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"collateral_asset"`
 	CollateralAmount        cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=collateral_amount,json=collateralAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"collateral_amount"`
-	TargetAddress           gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=target_address,json=targetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"target_address,omitempty"`
-	TargetAsset             gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,5,opt,name=target_asset,json=targetAsset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"target_asset"`
+	TargetAddress           gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=target_address,json=targetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"target_address,omitempty"`
+	TargetAsset             gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,5,opt,name=target_asset,json=targetAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"target_asset"`
 	MinOut                  cosmossdk_io_math.Uint                          `protobuf:"bytes,6,opt,name=min_out,json=minOut,proto3,customtype=cosmossdk.io/math.Uint" json:"min_out"`
-	AffiliateAddress        gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,7,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"affiliate_address,omitempty"`
+	AffiliateAddress        gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,7,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"affiliate_address,omitempty"`
 	AffiliateBasisPoints    cosmossdk_io_math.Uint                          `protobuf:"bytes,8,opt,name=affiliate_basis_points,json=affiliateBasisPoints,proto3,customtype=cosmossdk.io/math.Uint" json:"affiliate_basis_points"`
 	Aggregator              string                                          `protobuf:"bytes,9,opt,name=aggregator,proto3" json:"aggregator,omitempty"`
 	AggregatorTargetAddress string                                          `protobuf:"bytes,10,opt,name=aggregator_target_address,json=aggregatorTargetAddress,proto3" json:"aggregator_target_address,omitempty"`
 	AggregatorTargetLimit   cosmossdk_io_math.Uint                          `protobuf:"bytes,11,opt,name=aggregator_target_limit,json=aggregatorTargetLimit,proto3,customtype=cosmossdk.io/math.Uint" json:"aggregator_target_limit"`
 	Signer                  github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,12,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
-	TxID                    gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,13,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID                    gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,13,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *MsgLoanOpen) Reset()         { *m = MsgLoanOpen{} }
@@ -126,13 +126,13 @@ func (m *MsgLoanOpen) GetTxID() gitlab_com_thorchain_thornode_v3_common.TxID {
 }
 
 type MsgLoanRepayment struct {
-	Owner           gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=owner,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"owner,omitempty"`
-	CollateralAsset gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"collateral_asset"`
+	Owner           gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=owner,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"owner,omitempty"`
+	CollateralAsset gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"collateral_asset"`
 	Coin            common.Coin                                     `protobuf:"bytes,3,opt,name=coin,proto3" json:"coin"`
 	MinOut          cosmossdk_io_math.Uint                          `protobuf:"bytes,4,opt,name=min_out,json=minOut,proto3,customtype=cosmossdk.io/math.Uint" json:"min_out"`
 	Signer          github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,5,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
-	From            gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,6,opt,name=from,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"from,omitempty"`
-	TxID            gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	From            gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,6,opt,name=from,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"from,omitempty"`
+	TxID            gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *MsgLoanRepayment) Reset()         { *m = MsgLoanRepayment{} }

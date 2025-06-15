@@ -11,22 +11,22 @@ import (
 	"github.com/btcsuite/btcd/wire"
 
 	"github.com/eager7/dogutil"
-	dogetxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/dogd-txscript"
+	dogetxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/dogd-txscript"
 
 	"github.com/gcash/bchutil"
-	bchtxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/bchd-txscript"
+	bchtxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/bchd-txscript"
 
 	"github.com/ltcsuite/ltcutil"
-	ltctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/ltcd-txscript"
+	ltctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/ltcd-txscript"
 
 	"github.com/btcsuite/btcutil"
-	btctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/txscript"
+	btctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/txscript"
 
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

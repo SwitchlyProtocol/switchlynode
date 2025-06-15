@@ -17,11 +17,11 @@ import (
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"gitlab.com/thorchain/thornode/v3/app"
-	"gitlab.com/thorchain/thornode/v3/app/params"
-	appparams "gitlab.com/thorchain/thornode/v3/app/params"
-	prefix "gitlab.com/thorchain/thornode/v3/cmd"
-	thorconfig "gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/app"
+	"github.com/switchlyprotocol/switchlynode/v1/app/params"
+	appparams "github.com/switchlyprotocol/switchlynode/v1/app/params"
+	prefix "github.com/switchlyprotocol/switchlynode/v1/cmd"
+	thorconfig "github.com/switchlyprotocol/switchlynode/v1/config"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"

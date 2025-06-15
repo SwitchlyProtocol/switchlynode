@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 const (

@@ -12,14 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/semaphore"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
-	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
+	btypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 
 	xrplcommon "github.com/Peersyst/xrpl-go/xrpl/queries/common"
 	"github.com/Peersyst/xrpl-go/xrpl/queries/ledger"

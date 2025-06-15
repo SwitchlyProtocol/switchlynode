@@ -9,8 +9,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -83,7 +83,7 @@ type MsgRunePoolWithdraw struct {
 	Signer               github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,1,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 	Tx                   common.Tx                                       `protobuf:"bytes,2,opt,name=tx,proto3" json:"tx"`
 	BasisPoints          cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=basis_points,json=basisPoints,proto3,customtype=cosmossdk.io/math.Uint" json:"basis_points"`
-	AffiliateAddress     gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"affiliate_address,omitempty"`
+	AffiliateAddress     gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"affiliate_address,omitempty"`
 	AffiliateBasisPoints cosmossdk_io_math.Uint                          `protobuf:"bytes,5,opt,name=affiliate_basis_points,json=affiliateBasisPoints,proto3,customtype=cosmossdk.io/math.Uint" json:"affiliate_basis_points"`
 }
 
