@@ -26,7 +26,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type StreamingSwap struct {
-	TxID              gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
+	TxID              gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=switchlynode/common.TxID" json:"tx_id,omitempty"`
 	Interval          uint64                                       `protobuf:"varint,2,opt,name=interval,proto3" json:"interval,omitempty"`
 	Quantity          uint64                                       `protobuf:"varint,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Count             uint64                                       `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`

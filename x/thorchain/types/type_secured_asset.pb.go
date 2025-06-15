@@ -27,7 +27,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type SecuredAsset struct {
-	Asset gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	Asset gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=switchlynode/common.Asset" json:"asset"`
 	Depth cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=depth,proto3,customtype=cosmossdk.io/math.Uint" json:"depth"`
 }
 

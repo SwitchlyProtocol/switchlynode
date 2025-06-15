@@ -29,12 +29,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgAddLiquidity struct {
 	Tx                   common.Tx                                       `protobuf:"bytes,1,opt,name=tx,proto3" json:"tx"`
-	Asset                gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	Asset                gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=switchlynode/common.Asset" json:"asset"`
 	AssetAmount          cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=asset_amount,json=assetAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"asset_amount"`
 	RuneAmount           cosmossdk_io_math.Uint                          `protobuf:"bytes,4,opt,name=rune_amount,json=runeAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amount"`
-	RuneAddress          gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
-	AssetAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,6,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
-	AffiliateAddress     gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,7,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"affiliate_address,omitempty"`
+	RuneAddress          gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=rune_address,json=runeAddress,proto3,casttype=switchlynode/common.Address" json:"rune_address,omitempty"`
+	AssetAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,6,opt,name=asset_address,json=assetAddress,proto3,casttype=switchlynode/common.Address" json:"asset_address,omitempty"`
+	AffiliateAddress     gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,7,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=switchlynode/common.Address" json:"affiliate_address,omitempty"`
 	AffiliateBasisPoints cosmossdk_io_math.Uint                          `protobuf:"bytes,8,opt,name=affiliate_basis_points,json=affiliateBasisPoints,proto3,customtype=cosmossdk.io/math.Uint" json:"affiliate_basis_points"`
 	Signer               github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,9,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }

@@ -30,7 +30,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type MsgUnBond struct {
 	TxIn                common.Tx                                       `protobuf:"bytes,1,opt,name=tx_in,json=txIn,proto3" json:"tx_in"`
 	NodeAddress         github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,2,opt,name=node_address,json=nodeAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"node_address,omitempty"`
-	BondAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=bond_address,json=bondAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"bond_address,omitempty"`
+	BondAddress         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=bond_address,json=bondAddress,proto3,casttype=switchlynode/common.Address" json:"bond_address,omitempty"`
 	Amount              cosmossdk_io_math.Uint                          `protobuf:"bytes,6,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 	Signer              github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,7,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 	BondProviderAddress github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,8,opt,name=bond_provider_address,json=bondProviderAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"bond_provider_address,omitempty"`

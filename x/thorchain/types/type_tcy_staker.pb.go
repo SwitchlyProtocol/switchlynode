@@ -27,7 +27,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type TCYStaker struct {
-	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"address,omitempty"`
+	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=switchlynode/common.Address" json:"address,omitempty"`
 	Amount  cosmossdk_io_math.Uint                          `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 

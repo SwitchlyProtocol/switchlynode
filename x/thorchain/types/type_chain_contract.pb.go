@@ -25,8 +25,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type ChainContract struct {
-	Chain  gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,1,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
-	Router gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=router,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"router,omitempty"`
+	Chain  gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,1,opt,name=chain,proto3,casttype=switchlynode/common.Chain" json:"chain,omitempty"`
+	Router gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=router,proto3,casttype=switchlynode/common.Address" json:"router,omitempty"`
 }
 
 func (m *ChainContract) Reset()      { *m = ChainContract{} }

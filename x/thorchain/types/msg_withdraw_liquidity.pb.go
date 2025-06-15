@@ -29,10 +29,10 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgWithdrawLiquidity struct {
 	Tx              common.Tx                                       `protobuf:"bytes,1,opt,name=tx,proto3" json:"tx"`
-	WithdrawAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=withdraw_address,json=withdrawAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"withdraw_address,omitempty"`
+	WithdrawAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=withdraw_address,json=withdrawAddress,proto3,casttype=switchlynode/common.Address" json:"withdraw_address,omitempty"`
 	BasisPoints     cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=basis_points,json=basisPoints,proto3,customtype=cosmossdk.io/math.Uint" json:"basis_points"`
-	Asset           gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,4,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
-	WithdrawalAsset gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,5,opt,name=withdrawal_asset,json=withdrawalAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"withdrawal_asset"`
+	Asset           gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,4,opt,name=asset,proto3,customtype=switchlynode/common.Asset" json:"asset"`
+	WithdrawalAsset gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,5,opt,name=withdrawal_asset,json=withdrawalAsset,proto3,customtype=switchlynode/common.Asset" json:"withdrawal_asset"`
 	Signer          github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,6,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }
 

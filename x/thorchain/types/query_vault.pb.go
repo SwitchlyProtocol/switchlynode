@@ -80,7 +80,7 @@ func (m *QueryVaultRequest) GetHeight() string {
 type QueryVaultResponse struct {
 	BlockHeight int64                                         `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	PubKey      string                                        `protobuf:"bytes,2,opt,name=pub_key,json=pubKey,proto3" json:"pub_key,omitempty"`
-	Coins       gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,3,rep,name=coins,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Coins" json:"coins"`
+	Coins       gitlab_com_thorchain_thornode_v3_common.Coins `protobuf:"bytes,3,rep,name=coins,proto3,castrepeated=switchlynode/common.Coins" json:"coins"`
 	Type        string                                        `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
 	Status      string                                        `protobuf:"bytes,5,opt,name=status,proto3" json:"status"`
 	StatusSince int64                                         `protobuf:"varint,6,opt,name=status_since,json=statusSince,proto3" json:"status_since,omitempty"`

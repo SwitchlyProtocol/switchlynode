@@ -50,7 +50,7 @@ func (KeygenType) EnumDescriptor() ([]byte, []int) {
 }
 
 type Keygen struct {
-	ID      gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=id,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"id,omitempty"`
+	ID      gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=id,proto3,casttype=switchlynode/common.TxID" json:"id,omitempty"`
 	Type    KeygenType                                   `protobuf:"varint,2,opt,name=type,proto3,enum=types.KeygenType" json:"type,omitempty"`
 	Members []string                                     `protobuf:"bytes,3,rep,name=members,proto3" json:"members,omitempty"`
 }

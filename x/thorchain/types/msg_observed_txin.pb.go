@@ -28,7 +28,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgObservedTxIn struct {
-	Txs    gitlab_com_thorchain_thornode_v3_common.ObservedTxs `protobuf:"bytes,1,rep,name=txs,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.ObservedTxs" json:"txs"`
+	Txs    gitlab_com_thorchain_thornode_v3_common.ObservedTxs `protobuf:"bytes,1,rep,name=txs,proto3,castrepeated=switchlynode/common.ObservedTxs" json:"txs"`
 	Signer github_com_cosmos_cosmos_sdk_types.AccAddress       `protobuf:"bytes,2,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }
 
