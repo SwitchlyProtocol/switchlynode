@@ -1,23 +1,26 @@
 package types
 
 import (
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+)
+
+var (
+	_ sdk.Msg              = &MsgRagnarok{}
+	_ sdk.HasValidateBasic = &MsgRagnarok{}
+	_ sdk.LegacyMsg        = &MsgRagnarok{}
 )
 
 // NewMsgRagnarok is a constructor function for MsgRagnarok
-func NewMsgRagnarok(tx ObservedTx, blockHeight int64, signer cosmos.AccAddress) *MsgRagnarok {
+func NewMsgRagnarok(tx common.ObservedTx, blockHeight int64, signer cosmos.AccAddress) *MsgRagnarok {
 	return &MsgRagnarok{
 		Tx:          tx,
 		BlockHeight: blockHeight,
 		Signer:      signer,
 	}
 }
-
-// Route should return the name of the module
-func (m *MsgRagnarok) Route() string { return RouterKey }
-
-// Type should return the action
-func (m MsgRagnarok) Type() string { return "ragnarok" }
 
 // ValidateBasic runs stateless checks on the message
 func (m *MsgRagnarok) ValidateBasic() error {
@@ -31,11 +34,6 @@ func (m *MsgRagnarok) ValidateBasic() error {
 		return cosmos.ErrUnknownRequest(err.Error())
 	}
 	return nil
-}
-
-// GetSignBytes encodes the message for signing
-func (m *MsgRagnarok) GetSignBytes() []byte {
-	return cosmos.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }
 
 // GetSigners defines whose signature is required

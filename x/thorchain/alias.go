@@ -1,11 +1,12 @@
 package thorchain
 
 import (
-	"github.com/cosmos/cosmos-sdk/codec"
+	proto "github.com/cosmos/gogoproto/proto"
 
-	"gitlab.com/thorchain/thornode/x/thorchain/aggregators"
-	mem "gitlab.com/thorchain/thornode/x/thorchain/memo"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/aggregators"
+	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 const (
@@ -17,6 +18,8 @@ const (
 	AffiliateCollectorName = types.AffiliateCollectorName
 	TreasuryName           = types.TreasuryName
 	RUNEPoolName           = types.RUNEPoolName
+	TCYClaimingName        = types.TCYClaimingName
+	TCYStakeName           = types.TCYStakeName
 	RouterKey              = types.RouterKey
 	StoreKey               = types.StoreKey
 	DefaultCodespace       = types.DefaultCodespace
@@ -61,9 +64,9 @@ const (
 	AddPendingLiquidity      = types.PendingLiquidityType_add
 	WithdrawPendingLiquidity = types.PendingLiquidityType_withdraw
 
-	// Order Type
-	MarketOrder = types.OrderType_market
-	LimitOrder  = types.OrderType_limit
+	// Swap Type
+	MarketSwap = types.SwapType_market
+	LimitSwap  = types.SwapType_limit
 
 	// Mint/Burn type
 	MintSupplyType = types.MintBurnSupplyType_mint
@@ -71,7 +74,7 @@ const (
 
 	// Memos
 	TxSwap          = mem.TxSwap
-	TxLimitOrder    = mem.TxLimitOrder
+	TxLimitSwap     = mem.TxLimitSwap
 	TxAdd           = mem.TxAdd
 	TxBond          = mem.TxBond
 	TxMigrate       = mem.TxMigrate
@@ -81,10 +84,14 @@ const (
 	TxRefund        = mem.TxRefund
 	TxUnBond        = mem.TxUnbond
 	TxLeave         = mem.TxLeave
+	TxMaint         = mem.TxMaint
 	TxWithdraw      = mem.TxWithdraw
 	TxTHORName      = mem.TxTHORName
 	TxLoanOpen      = mem.TxLoanOpen
 	TxLoanRepayment = mem.TxLoanRepayment
+	TxTCYClaim      = mem.TxTCYClaim
+	TxTCYStake      = mem.TxTCYStake
+	TxTCYUnstake    = mem.TxTCYUnstake
 )
 
 var (
@@ -92,7 +99,7 @@ var (
 	NewNetwork                     = types.NewNetwork
 	NewProtocolOwnedLiquidity      = types.NewProtocolOwnedLiquidity
 	NewRUNEPool                    = types.NewRUNEPool
-	NewObservedTx                  = types.NewObservedTx
+	NewObservedTx                  = common.NewObservedTx
 	NewTssVoter                    = types.NewTssVoter
 	NewBanVoter                    = types.NewBanVoter
 	NewErrataTxVoter               = types.NewErrataTxVoter
@@ -101,6 +108,8 @@ var (
 	NewMsgRunePoolWithdraw         = types.NewMsgRunePoolWithdraw
 	NewMsgTradeAccountDeposit      = types.NewMsgTradeAccountDeposit
 	NewMsgTradeAccountWithdrawal   = types.NewMsgTradeAccountWithdrawal
+	NewMsgSecuredAssetDeposit      = types.NewMsgSecuredAssetDeposit
+	NewMsgSecuredAssetWithdraw     = types.NewMsgSecuredAssetWithdraw
 	NewMsgLoanOpen                 = types.NewMsgLoanOpen
 	NewMsgLoanRepayment            = types.NewMsgLoanRepayment
 	NewMsgMimir                    = types.NewMsgMimir
@@ -120,13 +129,15 @@ var (
 	NewKeygenBlock                 = types.NewKeygenBlock
 	NewMsgSetNodeKeys              = types.NewMsgSetNodeKeys
 	NewMsgManageTHORName           = types.NewMsgManageTHORName
+	NewMsgSwitch                   = types.NewMsgSwitch
 	NewTxOut                       = types.NewTxOut
 	NewEventRewards                = types.NewEventRewards
 	NewEventPool                   = types.NewEventPool
 	NewEventDonate                 = types.NewEventDonate
 	NewEventSwap                   = types.NewEventSwap
+	NewEventAffiliateFee           = types.NewEventAffiliateFee
 	NewEventStreamingSwap          = types.NewEventStreamingSwap
-	NewEventLimitOrder             = types.NewEventLimitOrder
+	NewEventLimitSwap              = types.NewEventLimitSwap
 	NewEventAddLiquidity           = types.NewEventAddLiquidity
 	NewEventWithdraw               = types.NewEventWithdraw
 	NewEventRefund                 = types.NewEventRefund
@@ -153,17 +164,20 @@ var (
 	NewEventVersion                = types.NewEventVersion
 	NewEventTradeAccountDeposit    = types.NewEventTradeAccountDeposit
 	NewEventTradeAccountWithdraw   = types.NewEventTradeAccountWithdraw
+	NewEventSecuredAssetDeposit    = types.NewEventSecuredAssetDeposit
+	NewEventSecuredAssetWithdraw   = types.NewEventSecuredAssetWithdraw
 	NewEventRUNEPoolDeposit        = types.NewEventRUNEPoolDeposit
 	NewEventRUNEPoolWithdraw       = types.NewEventRUNEPoolWithdraw
 	NewEventLoanOpen               = types.NewEventLoanOpen
 	NewEventLoanRepayment          = types.NewEventLoanRepayment
+	NewEventSwitch                 = types.NewEventSwitch
 	NewPoolMod                     = types.NewPoolMod
 	NewMsgRefundTx                 = types.NewMsgRefundTx
 	NewMsgOutboundTx               = types.NewMsgOutboundTx
 	NewMsgMigrate                  = types.NewMsgMigrate
 	NewMsgRagnarok                 = types.NewMsgRagnarok
 	ModuleCdc                      = types.ModuleCdc
-	RegisterCodec                  = types.RegisterCodec
+	RegisterLegacyAminoCodec       = types.RegisterLegacyAminoCodec
 	RegisterInterfaces             = types.RegisterInterfaces
 	NewBondProviders               = types.NewBondProviders
 	NewBondProvider                = types.NewBondProvider
@@ -182,6 +196,7 @@ var (
 	NewMsgRejectUpgrade            = types.NewMsgRejectUpgrade
 	NewMsgSetIPAddress             = types.NewMsgSetIPAddress
 	NewMsgNetworkFee               = types.NewMsgNetworkFee
+	NewMsgWasmExec                 = types.NewMsgWasmExec
 	NewNetworkFee                  = types.NewNetworkFee
 	NewTHORName                    = types.NewTHORName
 	NewLoan                        = types.NewLoan
@@ -215,6 +230,9 @@ var (
 	NewSolvencyVoter               = types.NewSolvencyVoter
 	NewMsgSolvency                 = types.NewMsgSolvency
 	NewSwapperClout                = types.NewSwapperClout
+	NewMsgTCYClaim                 = types.NewMsgTCYClaim
+	NewMsgTCYStake                 = types.NewMsgTCYStake
+	NewMsgTCYUnstake               = types.NewMsgTCYUnstake
 
 	// Memo
 	ParseMemo              = mem.ParseMemo
@@ -238,6 +256,8 @@ type (
 	MsgNoOp                   = types.MsgNoOp
 	MsgTradeAccountDeposit    = types.MsgTradeAccountDeposit
 	MsgTradeAccountWithdrawal = types.MsgTradeAccountWithdrawal
+	MsgSecuredAssetDeposit    = types.MsgSecuredAssetDeposit
+	MsgSecuredAssetWithdraw   = types.MsgSecuredAssetWithdraw
 	MsgConsolidate            = types.MsgConsolidate
 	MsgDonate                 = types.MsgDonate
 	MsgWithdrawLiquidity      = types.MsgWithdrawLiquidity
@@ -258,6 +278,7 @@ type (
 	MsgSetIPAddress           = types.MsgSetIPAddress
 	MsgSetNodeKeys            = types.MsgSetNodeKeys
 	MsgLeave                  = types.MsgLeave
+	MsgMaint                  = types.MsgMaint
 	MsgReserveContributor     = types.MsgReserveContributor
 	MsgObservedTxIn           = types.MsgObservedTxIn
 	MsgObservedTxOut          = types.MsgObservedTxOut
@@ -270,6 +291,11 @@ type (
 	MsgLoanRepayment          = types.MsgLoanRepayment
 	MsgRunePoolDeposit        = types.MsgRunePoolDeposit
 	MsgRunePoolWithdraw       = types.MsgRunePoolWithdraw
+	MsgWasmExec               = types.MsgWasmExec
+	MsgSwitch                 = types.MsgSwitch
+	MsgTCYClaim               = types.MsgTCYClaim
+	MsgTCYStake               = types.MsgTCYStake
+	MsgTCYUnstake             = types.MsgTCYUnstake
 
 	// Keeper structs
 	PoolStatus               = types.PoolStatus
@@ -281,8 +307,8 @@ type (
 	Loans                    = types.Loans
 	StreamingSwap            = types.StreamingSwap
 	StreamingSwaps           = types.StreamingSwaps
-	ObservedTxs              = types.ObservedTxs
-	ObservedTx               = types.ObservedTx
+	ObservedTxs              = common.ObservedTxs
+	ObservedTx               = common.ObservedTx
 	ObservedTxVoter          = types.ObservedTxVoter
 	ObservedTxVoters         = types.ObservedTxVoters
 	BanVoter                 = types.BanVoter
@@ -294,6 +320,7 @@ type (
 	Keygen                   = types.Keygen
 	KeygenBlock              = types.KeygenBlock
 	EventSwap                = types.EventSwap
+	EventAffiliateFee        = types.EventAffiliateFee
 	EventAddLiquidity        = types.EventAddLiquidity
 	EventWithdraw            = types.EventWithdraw
 	EventDonate              = types.EventDonate
@@ -340,8 +367,11 @@ type (
 	SwapperClout             = types.SwapperClout
 	TradeAccount             = types.TradeAccount
 	TradeUnit                = types.TradeUnit
+	SecuredAsset             = types.SecuredAsset
 	RUNEProvider             = types.RUNEProvider
 	RUNEPool                 = types.RUNEPool
+	TCYClaimer               = types.TCYClaimer
+	TCYStaker                = types.TCYStaker
 
 	// Memo
 	SwapMemo                   = mem.SwapMemo
@@ -355,20 +385,28 @@ type (
 	UnbondMemo                 = mem.UnbondMemo
 	OutboundMemo               = mem.OutboundMemo
 	LeaveMemo                  = mem.LeaveMemo
+	MaintMemo                  = mem.MaintMemo
 	ReserveMemo                = mem.ReserveMemo
 	NoOpMemo                   = mem.NoOpMemo
 	ConsolidateMemo            = mem.ConsolidateMemo
 	ManageTHORNameMemo         = mem.ManageTHORNameMemo
 	TradeAccountDepositMemo    = mem.TradeAccountDepositMemo
 	TradeAccountWithdrawalMemo = mem.TradeAccountWithdrawalMemo
+	SecuredAssetDepositMemo    = mem.SecuredAssetDepositMemo
+	SecuredAssetWithdrawMemo   = mem.SecuredAssetWithdrawMemo
 	LoanOpenMemo               = mem.LoanOpenMemo
 	LoanRepaymentMemo          = mem.LoanRepaymentMemo
 	RunePoolDepositMemo        = mem.RunePoolDepositMemo
 	RunePoolWithdrawMemo       = mem.RunePoolWithdrawMemo
+	ExecMemo                   = mem.ExecMemo
+	SwitchMemo                 = mem.SwitchMemo
+	TCYClaimMemo               = mem.TCYClaimMemo
+	TCYStakeMemo               = mem.TCYStakeMemo
+	TCYUnstakeMemo             = mem.TCYUnstakeMemo
 
 	// Proto
 	ProtoStrings = types.ProtoStrings
 	ProtoInt64   = types.ProtoInt64
 )
 
-var _ codec.ProtoMarshaler = &types.LiquidityProvider{}
+var _ proto.Message = &types.LiquidityProvider{}

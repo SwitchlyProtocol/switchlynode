@@ -7,16 +7,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/armon/go-metrics"
+	"cosmossdk.io/core/comet"
+	"github.com/cometbft/cometbft/crypto"
 	"github.com/cosmos/cosmos-sdk/telemetry"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // SlasherVCUR is VCUR implementation of slasher
@@ -31,14 +31,15 @@ func newSlasherVCUR(keeper keeper.Keeper, eventMgr EventManager) *SlasherVCUR {
 }
 
 // BeginBlock called when a new block get proposed to detect whether there are duplicate vote
-func (s *SlasherVCUR) BeginBlock(ctx cosmos.Context, req abci.RequestBeginBlock, constAccessor constants.ConstantValues) {
-	var doubleSignEvidence []abci.Evidence
+func (s *SlasherVCUR) BeginBlock(ctx cosmos.Context, constAccessor constants.ConstantValues) {
+	var doubleSignEvidence []comet.Evidence
 	// Iterate through any newly discovered evidence of infraction
 	// Slash any validators (and since-unbonded liquidity within the unbonding period)
 	// who contributed to valid infractions
-	for _, evidence := range req.ByzantineValidators {
-		switch evidence.Type {
-		case abci.EvidenceType_DUPLICATE_VOTE:
+	for i := range ctx.CometInfo().GetEvidence().Len() {
+		evidence := ctx.CometInfo().GetEvidence().Get(i)
+		switch evidence.Type() {
+		case comet.DuplicateVote:
 			doubleSignEvidence = append(doubleSignEvidence, evidence)
 		default:
 			ctx.Logger().Error("ignored unknown evidence type", "type", evidence.Type)
@@ -47,11 +48,14 @@ func (s *SlasherVCUR) BeginBlock(ctx cosmos.Context, req abci.RequestBeginBlock,
 
 	// Identify validators which didn't sign the previous block
 	var missingSignAddresses []crypto.Address
-	for _, voteInfo := range req.LastCommitInfo.Votes {
-		if voteInfo.SignedLastBlock {
-			continue
+	var successfulSignAddresses []crypto.Address
+	for i := range ctx.CometInfo().GetLastCommit().Votes().Len() {
+		voteInfo := ctx.CometInfo().GetLastCommit().Votes().Get(i)
+		if voteInfo.GetBlockIDFlag() != comet.BlockIDFlagAbsent {
+			successfulSignAddresses = append(successfulSignAddresses, voteInfo.Validator().Address())
+		} else {
+			missingSignAddresses = append(missingSignAddresses, voteInfo.Validator().Address())
 		}
-		missingSignAddresses = append(missingSignAddresses, voteInfo.Validator.Address)
 	}
 
 	// Do not continue if there is no action to take.
@@ -80,7 +84,7 @@ func (s *SlasherVCUR) BeginBlock(ctx cosmos.Context, req abci.RequestBeginBlock,
 
 	// Act on double signs.
 	for _, evidence := range doubleSignEvidence {
-		if err := s.HandleDoubleSign(ctx, evidence.Validator.Address, evidence.Height, constAccessor, validatorAddresses); err != nil {
+		if err := s.HandleDoubleSign(ctx, evidence.Validator().Address(), evidence.Height(), constAccessor, validatorAddresses); err != nil {
 			ctx.Logger().Error("fail to slash for double signing a block", "error", err)
 		}
 	}
@@ -89,6 +93,13 @@ func (s *SlasherVCUR) BeginBlock(ctx cosmos.Context, req abci.RequestBeginBlock,
 	for _, missingSignAddress := range missingSignAddresses {
 		if err := s.HandleMissingSign(ctx, missingSignAddress, constAccessor, validatorAddresses); err != nil {
 			ctx.Logger().Error("fail to slash for missing signing a block", "error", err)
+		}
+	}
+
+	// Act on successful signs.
+	for _, successfulSignAddress := range successfulSignAddresses {
+		if err := s.HandleSuccessfulSign(ctx, successfulSignAddress, constAccessor, validatorAddresses); err != nil {
+			ctx.Logger().Error("fail to mark for successfully signing a block", "error", err)
 		}
 	}
 }
@@ -129,9 +140,35 @@ func (s *SlasherVCUR) HandleDoubleSign(ctx cosmos.Context, addr crypto.Address, 
 	return fmt.Errorf("could not find active node account with validator address: %s", addr)
 }
 
+// HandleSuccessfulSign - decrement missing blocks from a validator for signing a block
+func (s *SlasherVCUR) HandleSuccessfulSign(ctx cosmos.Context, addr crypto.Address, constAccessor constants.ConstantValues, validatorAddresses []nodeAddressValidatorAddressPair) error {
+	for _, pair := range validatorAddresses {
+		if addr.String() != pair.validatorAddress.String() {
+			continue
+		}
+
+		na, err := s.keeper.GetNodeAccount(ctx, pair.nodeAddress)
+		if err != nil {
+			return err
+		}
+
+		if na.MissingBlocks == 0 {
+			return nil
+		}
+
+		// decrement the number of blocks that weren't signed
+		na.MissingBlocks -= 1
+
+		return s.keeper.SetNodeAccount(ctx, na)
+	}
+
+	return fmt.Errorf("could not find active node account with validator address: %s", addr)
+}
+
 // HandleMissingSign - slashes a validator for not signing a block
 func (s *SlasherVCUR) HandleMissingSign(ctx cosmos.Context, addr crypto.Address, constAccessor constants.ConstantValues, validatorAddresses []nodeAddressValidatorAddressPair) error {
 	missBlockSignSlashPoints := s.keeper.GetConfigInt64(ctx, constants.MissBlockSignSlashPoints)
+	maxTrack := s.keeper.GetConfigInt64(ctx, constants.MaxTrackMissingBlock)
 
 	for _, pair := range validatorAddresses {
 		if addr.String() != pair.validatorAddress.String() {
@@ -149,6 +186,12 @@ func (s *SlasherVCUR) HandleMissingSign(ctx cosmos.Context, addr crypto.Address,
 		}))
 		if err := s.keeper.IncNodeAccountSlashPoints(slashCtx, na.NodeAddress, missBlockSignSlashPoints); err != nil {
 			ctx.Logger().Error("fail to increase node account slash points", "error", err, "address", na.NodeAddress.String())
+		}
+
+		// increment the number of blocks that weren't signed
+		na.MissingBlocks += 1
+		if na.MissingBlocks > uint64(maxTrack) {
+			na.MissingBlocks = uint64(maxTrack)
 		}
 
 		return s.keeper.SetNodeAccount(ctx, na)
@@ -268,6 +311,16 @@ func (s *SlasherVCUR) LackSigning(ctx cosmos.Context, mgr Manager) error {
 				pendingOutbounds := mgr.Keeper().GetPendingOutbounds(ctx, toi.Coin.Asset)
 				for i := range active {
 					active[i].DeductVaultPendingOutbounds(pendingOutbounds)
+
+					// If the currently-assigned vault is an ActiveVault and the only one with enough funds for the outbound,
+					// the item should be reassigned to the same vault rather than assigned to another vault without enough funds;
+					// this is especially important for GAIA outbounds, for which insufficient-funds failures
+					// have THORChain-unobserved gas costs (causing churn-migration-jamming vault insolvency).
+					// As such, re-add the (now free) funds of the outbound being replaced.
+					if active[i].PubKey.Equals(toi.VaultPubKey) {
+						active[i].Coins = active[i].Coins.Add(toi.Coin)
+						active[i].Coins = active[i].Coins.Add(toi.MaxGas...)
+					}
 				}
 
 				available := active
@@ -521,10 +574,7 @@ func (s SlasherVCUR) slashAndUpdateNodeAccount(ctx cosmos.Context, na types.Node
 	ctx.Logger().Info("slash node account", "node address", na.NodeAddress.String(), "amount", slashAmountRune.String(), "total slash amount", totalSlashAmountInRune)
 	na.Bond = common.SafeSub(na.Bond, slashAmountRune)
 
-	tx := common.Tx{}
-	tx.ID = common.BlankTxID
-	tx.FromAddress = na.BondAddress
-	bondEvent := NewEventBond(slashAmountRune, BondCost, tx)
+	bondEvent := NewEventBond(slashAmountRune, BondCost, common.Tx{}, &na, nil)
 	if err := s.eventMgr.EmitEvent(ctx, bondEvent); err != nil {
 		ctx.Logger().Error("fail to emit bond event", "error", err)
 	}

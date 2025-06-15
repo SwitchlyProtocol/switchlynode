@@ -3,8 +3,8 @@ package types
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type MsgAddLiquiditySuite struct{}
@@ -30,7 +30,6 @@ func (MsgAddLiquiditySuite) TestMsgAddLiquidity(c *C) {
 	)
 	m := NewMsgAddLiquidity(tx, common.ETHAsset, cosmos.NewUint(100000000), cosmos.NewUint(100000000), runeAddress, assetAddress, common.NoAddress, cosmos.ZeroUint(), addr)
 	EnsureMsgBasicCorrect(m, c)
-	c.Check(m.Type(), Equals, "add_liquidity")
 
 	inputs := []struct {
 		asset     common.Asset

@@ -8,9 +8,9 @@ import (
 
 	. "gopkg.in/check.v1"
 
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/codec"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 func (s *PubKeyTestSuite) TestPubKeyGetAddress(c *C) {
@@ -51,5 +51,9 @@ func (s *PubKeyTestSuite) TestPubKeyGetAddress(c *C) {
 		addrDOGE, err := pk.GetAddress(DOGEChain)
 		c.Assert(err, IsNil)
 		c.Assert(addrDOGE.String(), Equals, d.addrDOGE.mocknet)
+
+		addrXLM, err := pk.GetAddress(StellarChain)
+		c.Assert(err, IsNil)
+		c.Assert(addrXLM.String(), Equals, d.addrXLM.mocknet)
 	}
 }

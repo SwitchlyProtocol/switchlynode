@@ -12,19 +12,20 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/term"
 
-	prefix "gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/test/simulation/actors/core"
-	"gitlab.com/thorchain/thornode/test/simulation/actors/features"
-	"gitlab.com/thorchain/thornode/test/simulation/actors/suites"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/cli"
-	pkgcosmos "gitlab.com/thorchain/thornode/test/simulation/pkg/cosmos"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/dag"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/evm"
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/utxo"
-	"gitlab.com/thorchain/thornode/test/simulation/watchers"
+	prefix "gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/actors/core"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/actors/features"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/actors/suites"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/cli"
+	pkgcosmos "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/cosmos"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/dag"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/evm"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/utxo"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/xrp"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/watchers"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -41,9 +42,10 @@ var liteClientConstructors = map[common.Chain]LiteChainClientConstructor{
 	common.BCHChain:  utxo.NewConstructor(chainRPCs[common.BCHChain]),
 	common.DOGEChain: utxo.NewConstructor(chainRPCs[common.DOGEChain]),
 	common.ETHChain:  evm.NewConstructor(chainRPCs[common.ETHChain]),
-	common.BSCChain:  evm.NewConstructor(chainRPCs[common.BSCChain]),
 	common.AVAXChain: evm.NewConstructor(chainRPCs[common.AVAXChain]),
 	common.GAIAChain: pkgcosmos.NewConstructor(chainRPCs[common.GAIAChain]),
+	common.BASEChain: evm.NewConstructor(chainRPCs[common.BASEChain]),
+	common.XRPChain:  xrp.NewConstructor(chainRPCs[common.XRPChain]),
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -76,10 +78,11 @@ func main() {
 	stages := []cli.Option{
 		{Name: "seed", Default: true},
 		{Name: "bootstrap", Default: true},
-		{Name: "savers", Default: true},
 		{Name: "arb", Default: true},
 		{Name: "swaps", Default: true},
-		{Name: "feature-saver-eject", Default: true},
+		{Name: "consolidate", Default: true},
+		{Name: "churn", Default: false},
+		{Name: "solvency", Default: true},
 		{Name: "ragnarok", Default: true},
 	}
 	if os.Getenv("STAGES") != "" {
@@ -115,15 +118,16 @@ func main() {
 	root := NewActor("Root")
 
 	appendIfEnabled := func(key string, constructor func() *Actor) {
-		if enabledStages[key] {
+		if enabledStages[key] || enabledStages["all"] {
 			root.Append(constructor())
 		}
 	}
 	appendIfEnabled("bootstrap", suites.Bootstrap)
-	appendIfEnabled("savers", suites.Savers)
 	appendIfEnabled("arb", core.NewArbActor)
 	appendIfEnabled("swaps", suites.Swaps)
-	appendIfEnabled("feature-saver-eject", features.SaverEject)
+	appendIfEnabled("consolidate", features.Consolidate)
+	appendIfEnabled("churn", core.NewChurnActor)
+	appendIfEnabled("solvency", core.NewSolvencyCheckActor)
 	appendIfEnabled("ragnarok", suites.Ragnarok)
 
 	// gather config from the environment
@@ -136,7 +140,7 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to parse PARALLELISM")
 	}
 
-	cfg := InitConfig(parallelismInt, enabledStages["seed"])
+	cfg := InitConfig(parallelismInt, enabledStages["seed"] || enabledStages["all"])
 
 	// start watchers
 	for _, w := range []*Watcher{watchers.NewInvariants()} {

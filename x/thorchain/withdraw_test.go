@@ -6,11 +6,11 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type WithdrawSuite struct{}
@@ -322,9 +322,11 @@ func (s WithdrawSuite) TestCalculateUnsake(c *C) {
 		},
 	}
 
+	ctx, keeper := setupKeeperForTest(c)
 	for _, item := range inputs {
 		c.Logf("name:%s", item.name)
-		withDrawRune, withDrawAsset, unitAfter, err := calculateWithdraw(item.poolUnit, item.poolRune, item.poolAsset, item.lpUnit, item.percentage, common.EmptyAsset)
+		withDrawRune, withDrawAsset, unitAfter, err := calculateWithdraw(ctx, keeper, common.EmptyAsset, item.poolUnit, item.poolRune, item.poolAsset, item.lpUnit, item.percentage, common.EmptyAsset, common.NoAddress)
+		// Empty context, manager, poolAsset, withdrawAddress due to only being needed for (non-POL) asymmetric withdraws (and this being symmetric).
 		if item.expectedErr == nil {
 			c.Assert(err, IsNil)
 		} else {

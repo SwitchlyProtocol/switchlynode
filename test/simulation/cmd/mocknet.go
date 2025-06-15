@@ -8,16 +8,19 @@ import (
 	"sync"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ecommon "github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/evm"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/thornode"
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
-	ttypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/evm"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/thornode"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain"
+	ttypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -30,9 +33,10 @@ var chainRPCs = map[common.Chain]string{
 	common.BCHChain:  "http://localhost:28443",
 	common.DOGEChain: "http://localhost:18332",
 	common.ETHChain:  "http://localhost:8545",
-	common.BSCChain:  "http://localhost:8546",
 	common.AVAXChain: "http://localhost:9650/ext/bc/C/rpc",
 	common.GAIAChain: "localhost:9091",
+	common.BASEChain: "http://localhost:8547",
+	common.XRPChain:  "http://localhost:5005",
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -44,9 +48,9 @@ var (
 
 	mocknetValidatorMnemonics = [...]string{
 		strings.Repeat("dog ", 23) + "fossil",
-		// strings.Repeat("cat ", 23) + "crawl",
-		// strings.Repeat("fox ", 23) + "filter",
-		// strings.Repeat("pig ", 23) + "quick",
+		strings.Repeat("cat ", 23) + "crawl",
+		strings.Repeat("fox ", 23) + "filter",
+		strings.Repeat("pig ", 23) + "quick",
 	}
 
 	mocknetUserMnemonics = [...]string{
@@ -77,7 +81,9 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 			Msg("parallelism limited by available user accounts")
 	}
 
-	c := &OpConfig{}
+	c := &OpConfig{
+		NodeUsers: make([]*User, len(mocknetValidatorMnemonics)),
+	}
 	mu := &sync.Mutex{}
 	wg := &sync.WaitGroup{}
 	sem := make(chan struct{}, 8)
@@ -85,16 +91,17 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 	// since we reuse the bifrost thorclient, load endpoints into config package
 	os.Setenv("BIFROST_THORCHAIN_CHAIN_HOST", "localhost:1317")
 	os.Setenv("BIFROST_THORCHAIN_CHAIN_RPC", "localhost:26657")
+	os.Setenv("BIFROST_THORCHAIN_CHAIN_EBIFROST", "localhost:50051")
 	config.Init()
 
 	// validators
-	for _, mnemonic := range mocknetValidatorMnemonics {
+	for i, mnemonic := range mocknetValidatorMnemonics {
 		wg.Add(1)
 		sem <- struct{}{}
-		go func(mnemonic string) {
+		go func(i int, mnemonic string) {
 			a := NewUser(mnemonic, liteClientConstructors)
 			mu.Lock()
-			c.NodeUsers = append(c.NodeUsers, a)
+			c.NodeUsers[i] = a
 			mu.Unlock()
 
 			defer func() {
@@ -106,16 +113,47 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 			if !seed {
 				return
 			}
-			log.Info().Msg("posting gaia network fee")
-			for {
-				_, err := a.Thorchain.PostNetworkFee(1, common.GAIAChain, 1, 1_000_000)
-				if err == nil {
-					break
-				}
-				log.Error().Err(err).Msg("failed to post network fee")
-				time.Sleep(5 * time.Second)
+
+			// only the first mnemonic is an active node at init
+			if i != 0 {
+				return
 			}
-		}(mnemonic)
+
+			// halt churning
+			accAddr, err := a.PubKey().GetThorAddress()
+			if err != nil {
+				log.Error().Err(err).Msg("failed to get thor address")
+			}
+			mimir := thorchain.NewMsgMimir("HALTCHURNING", 1, accAddr)
+			_, err = a.Thorchain.Broadcast(mimir)
+			if err != nil {
+				log.Error().Err(err).Msg("failed to broadcast mimir")
+			}
+
+			// default network fees on chains needing a window of blocks before bifrost sends
+			defaultFees := []struct {
+				chain common.Chain
+				size  uint64
+				rate  uint64
+			}{
+				{common.GAIAChain, 1, 1_000_000},
+				{common.XRPChain, 1, 1_000},
+				{common.AVAXChain, 80000, 150},
+				{common.BASEChain, 80000, 30},
+				{common.ETHChain, 80000, 30},
+			}
+			for _, fee := range defaultFees {
+				log.Info().Msgf("posting %s network fee", fee.chain)
+				for {
+					_, err := a.Thorchain.PostNetworkFee(1, fee.chain, fee.size, fee.rate)
+					if err == nil {
+						break
+					}
+					log.Error().Err(err).Msg("failed to post network fee")
+					time.Sleep(2 * time.Second)
+				}
+			}
+		}(i, mnemonic)
 	}
 
 	// users
@@ -177,9 +215,6 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 		}
 	}
 
-	// master user is also mimir admin
-	c.AdminUser = master
-
 	// return if not seeding accounts
 	if !seed {
 		return c
@@ -197,26 +232,31 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 	// fund user accounts with one goroutine per chain
 	wg = &sync.WaitGroup{}
 	for _, chain := range common.AllChains {
+		// BSC not compatible with simtests
+		if chain.Equals(common.BSCChain) {
+			continue
+		}
 
 		// determine the amount to seed
-		chainSeedAmount := sdk.ZeroUint()
+		chainSeedAmount := sdkmath.ZeroUint()
 		switch chain {
-		case common.BTCChain, common.ETHChain, common.LTCChain, common.BCHChain:
-			chainSeedAmount = sdk.NewUint(10 * common.One)
-		case common.BSCChain:
-			chainSeedAmount = sdk.NewUint(100 * common.One)
+		case common.BTCChain, common.LTCChain, common.BCHChain:
+			chainSeedAmount = sdkmath.NewUint(10 * common.One)
+		case common.BSCChain, common.BASEChain, common.ETHChain:
+			chainSeedAmount = sdkmath.NewUint(100 * common.One)
 		case common.GAIAChain:
-			chainSeedAmount = sdk.NewUint(1000 * common.One)
-		case common.AVAXChain:
-			chainSeedAmount = sdk.NewUint(10000 * common.One) // more since local gas is high
+			chainSeedAmount = sdkmath.NewUint(1000 * common.One)
+		case common.AVAXChain, // more since local gas is high
+			common.XRPChain: // more since dust threshold is 1 XRP
+			chainSeedAmount = sdkmath.NewUint(10000 * common.One)
 		case common.DOGEChain:
-			chainSeedAmount = sdk.NewUint(100000 * common.One)
+			chainSeedAmount = sdkmath.NewUint(100000 * common.One)
 		default:
 			continue // all other chains currently unsupported
 		}
 
 		wg.Add(1)
-		go func(chain common.Chain, amount sdk.Uint) {
+		go func(chain common.Chain, amount sdkmath.Uint) {
 			defer wg.Done()
 			fundUserChainAccounts(master, funded, chain, chainSeedAmount)
 		}(chain, chainSeedAmount)
@@ -231,13 +271,15 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 // Helpers
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func fundUserChainAccounts(master *User, users []*User, chain common.Chain, amount sdk.Uint) {
+// nolint:typecheck
+func fundUserChainAccounts(master *User, users []*User, chain common.Chain, amount sdkmath.Uint) {
 	for _, user := range users {
 		fundUserChainAccount(master, user, chain, amount)
 	}
 }
 
-func fundUserChainAccount(master, user *User, chain common.Chain, amount sdk.Uint) {
+// nolint:typecheck
+func fundUserChainAccount(master, user *User, chain common.Chain, amount sdkmath.Uint) {
 	// build tx
 	addr, err := user.PubKey().GetAddress(chain)
 	if err != nil {
@@ -281,8 +323,8 @@ func fundUserChainAccount(master, user *User, chain common.Chain, amount sdk.Uin
 	for asset, token := range evm.Tokens(chain) {
 		// convert funding amount to token decimals
 		factor := big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(token.Decimals)), nil)
-		tokenAmount := amount.Mul(sdk.NewUintFromBigInt(factor))
-		tokenAmount = tokenAmount.Quo(sdk.NewUint(common.One))
+		tokenAmount := amount.Mul(sdkmath.NewUintFromBigInt(factor))
+		tokenAmount = tokenAmount.Quo(sdkmath.NewUint(common.One))
 
 		tokenTx := SimContractTx{
 			Chain:    chain,
@@ -337,7 +379,7 @@ func fundUserThorAccount(master, user *User) bool {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to get user thor address")
 	}
-	seedAmount := sdk.NewInt(1000 * common.One)
+	seedAmount := sdkmath.NewInt(1000 * common.One)
 	seedAmountFloat := float64(seedAmount.Uint64()) / float64(common.One)
 	tx := &ttypes.MsgSend{
 		FromAddress: masterThorAddress,

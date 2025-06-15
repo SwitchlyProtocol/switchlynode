@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/tokenlist"
-	"gitlab.com/thorchain/thornode/config"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
+	"gitlab.com/thorchain/thornode/v3/config"
 )
 
 func main() {
@@ -24,11 +24,13 @@ func main() {
 		var tl tokenlist.EVMTokenList
 		switch chain.String() {
 		case common.ETHChain.String():
-			tl = tokenlist.GetETHTokenList(common.LatestVersion)
+			tl = tokenlist.GetETHTokenList()
 		case common.AVAXChain.String():
-			tl = tokenlist.GetAVAXTokenList(common.LatestVersion)
+			tl = tokenlist.GetAVAXTokenList()
 		case common.BSCChain.String():
-			tl = tokenlist.GetBSCTokenList(common.LatestVersion)
+			tl = tokenlist.GetBSCTokenList()
+		case common.BASEChain.String():
+			tl = tokenlist.GetBASETokenList()
 		default:
 			fmt.Printf("unsupported chain %s\n", chain)
 			os.Exit(1)

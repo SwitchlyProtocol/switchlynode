@@ -5,9 +5,9 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // BondHandler a handler to process bond
@@ -49,14 +49,14 @@ func (h BondHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Result, erro
 func (h BondHandler) validate(ctx cosmos.Context, msg MsgBond) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.134.0")):
-		return h.validateV134(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h BondHandler) validateV134(ctx cosmos.Context, msg MsgBond) error {
+func (h BondHandler) validateV3_0_0(ctx cosmos.Context, msg MsgBond) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -127,14 +127,14 @@ func (h BondHandler) validateV134(ctx cosmos.Context, msg MsgBond) error {
 func (h BondHandler) handle(ctx cosmos.Context, msg MsgBond) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.105.0")):
-		return h.handleV105(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h BondHandler) handleV105(ctx cosmos.Context, msg MsgBond) error {
+func (h BondHandler) handleV3_0_0(ctx cosmos.Context, msg MsgBond) (err error) {
 	nodeAccount, err := h.mgr.Keeper().GetNodeAccount(ctx, msg.NodeAddress)
 	if err != nil {
 		return ErrInternal(err, fmt.Sprintf("fail to get node account(%s)", msg.NodeAddress))
@@ -174,19 +174,14 @@ func (h BondHandler) handleV105(ctx cosmos.Context, msg MsgBond) error {
 	// so as the node address will be created on THORChain otherwise node account won't be able to send tx
 	if acct == nil && nodeAccount.Bond.GTE(cosmos.NewUint(common.One)) {
 		coin := common.NewCoin(common.RuneNative, cosmos.NewUint(common.One))
-		// trunk-ignore(golangci-lint/govet): shadow
-		if err := h.mgr.Keeper().SendFromModuleToAccount(ctx, BondName, msg.NodeAddress, common.NewCoins(coin)); err != nil {
+		if err = h.mgr.Keeper().SendFromModuleToAccount(ctx, BondName, msg.NodeAddress, common.NewCoins(coin)); err != nil {
 			ctx.Logger().Error("fail to send one RUNE to node address", "error", err)
 			nodeAccount.Status = NodeUnknown
 		}
 		nodeAccount.Bond = common.SafeSub(nodeAccount.Bond, cosmos.NewUint(common.One))
 		msg.Bond = common.SafeSub(msg.Bond, cosmos.NewUint(common.One))
-		tx := common.Tx{}
-		tx.ID = common.BlankTxID
-		tx.ToAddress = common.Address(nodeAccount.String())
-		bondEvent := NewEventBond(cosmos.NewUint(common.One), BondCost, tx)
-		// trunk-ignore(golangci-lint/govet): shadow
-		if err := h.mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
+		bondEvent := NewEventBond(cosmos.NewUint(common.One), BondCost, common.Tx{ID: msg.TxIn.ID}, &nodeAccount, nil)
+		if err = h.mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
 			ctx.Logger().Error("fail to emit bond event", "error", err)
 		}
 	}
@@ -219,16 +214,16 @@ func (h BondHandler) handleV105(ctx cosmos.Context, msg MsgBond) error {
 		bp.NodeOperatorFee = cosmos.NewUint(uint64(msg.OperatorFee))
 	}
 
-	if err := h.mgr.Keeper().SetNodeAccount(ctx, nodeAccount); err != nil {
+	if err = h.mgr.Keeper().SetNodeAccount(ctx, nodeAccount); err != nil {
 		return ErrInternal(err, fmt.Sprintf("fail to save node account(%s)", nodeAccount.String()))
 	}
 
-	if err := h.mgr.Keeper().SetBondProviders(ctx, bp); err != nil {
+	if err = h.mgr.Keeper().SetBondProviders(ctx, bp); err != nil {
 		return ErrInternal(err, fmt.Sprintf("fail to save bond providers(%s)", bp.NodeAddress.String()))
 	}
 
-	bondEvent := NewEventBond(msg.Bond, BondPaid, msg.TxIn)
-	if err := h.mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
+	bondEvent := NewEventBond(msg.Bond, BondPaid, msg.TxIn, &nodeAccount, from)
+	if err = h.mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
 		ctx.Logger().Error("fail to emit bond event", "error", err)
 	}
 

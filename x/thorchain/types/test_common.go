@@ -10,17 +10,13 @@ import (
 	"time"
 
 	"github.com/blang/semver"
-	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/cometbft/cometbft/crypto"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/tendermint/tendermint/crypto"
 
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // GetRandomValidatorNode creates a random validator node account, used for testing
@@ -73,8 +69,8 @@ func GetRandomVaultNode(status NodeStatus) NodeAccount {
 	return na
 }
 
-func GetRandomObservedTx() ObservedTx {
-	return NewObservedTx(GetRandomTx(), 33, GetRandomPubKey(), 33)
+func GetRandomObservedTx() common.ObservedTx {
+	return common.NewObservedTx(GetRandomTx(), 33, GetRandomPubKey(), 33)
 }
 
 func GetRandomTxOutItem() TxOutItem {
@@ -95,7 +91,7 @@ func GetRandomObservedTxVoter() ObservedTxVoter {
 		TxID:    GetRandomTxHash(),
 		Tx:      observedTx,
 		Height:  10,
-		Txs:     ObservedTxs{observedTx},
+		Txs:     common.ObservedTxs{observedTx},
 		Actions: []TxOutItem{GetRandomTxOutItem()},
 	}
 }
@@ -210,20 +206,6 @@ func SetupConfigForTest() {
 	config.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
 	config.SetCoinType(cmd.THORChainCoinType)
 	config.SetPurpose(cmd.THORChainCoinPurpose)
-	types.SetCoinDenomRegex(func() string {
-		return cmd.DenomRegex
-	})
-}
-
-// create a codec used only for testing
-func MakeTestCodec() *codec.LegacyAmino {
-	cdc := codec.NewLegacyAmino()
-	banktypes.RegisterLegacyAminoCodec(cdc)
-	authtypes.RegisterLegacyAminoCodec(cdc)
-	RegisterCodec(cdc)
-	cosmos.RegisterCodec(cdc)
-	// codec.RegisterCrypto(cdc)
-	return cdc
 }
 
 // GetCurrentVersion - intended for unit tests, fetches the current version of

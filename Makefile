@@ -28,8 +28,8 @@ BUILDTAG?=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 # compiler flags
 VERSION:=$(shell cat version)
 TAG?=mocknet
-ldflags = -X gitlab.com/thorchain/thornode/constants.Version=$(VERSION) \
-      -X gitlab.com/thorchain/thornode/constants.GitCommit=$(COMMIT) \
+ldflags = -X gitlab.com/thorchain/thornode/v3/constants.Version=$(VERSION) \
+      -X gitlab.com/thorchain/thornode/v3/constants.GitCommit=$(COMMIT) \
       -X github.com/cosmos/cosmos-sdk/version.Name=THORChain \
       -X github.com/cosmos/cosmos-sdk/version.AppName=thornode \
       -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
@@ -42,13 +42,15 @@ TEST_PATHS=$(shell go list ./... | grep -v bifrost/tss/go-tss) # Skip compute-in
 TEST_DIR?=${TEST_PATHS}
 BUILD_FLAGS := -ldflags '$(ldflags)' -tags ${TAG} -trimpath
 TEST_BUILD_FLAGS := -parallel=1 -tags=mocknet
-GOBIN?=${GOPATH}/bin
-BINARIES=./cmd/thornode ./cmd/bifrost ./tools/recover-keyshare-backup
+BINARIES?=./cmd/thornode ./cmd/bifrost ./tools/recover-keyshare-backup
+GOVERSION=$(shell awk '($$1 == "go") { print $$2 }' go.mod)
 
 # docker tty args are disabled in CI
 ifndef CI
 DOCKER_TTY_ARGS=-it
 endif
+
+HTTPS_GIT := gitlab.com/thorchain/thornode.git
 
 ########################################################################################
 # Targets
@@ -56,20 +58,13 @@ endif
 
 # ------------------------------ Generate ------------------------------
 
-generate: go-generate openapi protob-docker
+generate: go-generate openapi proto-gen
 	@./scripts/generate.py
 	@cd test/simulation && go mod tidy
 
 go-generate:
-	@go install golang.org/x/tools/cmd/stringer@v0.15.0
+	@go install golang.org/x/tools/cmd/stringer@v0.28.0
 	@go generate ./...
-
-protob:
-	@./scripts/protocgen.sh
-
-protob-docker:
-	@docker run --rm -v $(shell pwd):/app -w /app golang:1.22.2 \
-		make protob
 
 openapi:
 	@docker run --rm \
@@ -81,15 +76,33 @@ openapi:
 	@find ./openapi/gen -type f | xargs sed -i '/^[- ]*API version.*$(shell cat version)/d;/APIClient.*$(shell cat version)/d'
 	@find ./openapi/gen -type f | grep model | xargs sed -i 's/MarshalJSON(/MarshalJSON_deprecated(/'
 
+protoVer=0.13.2
+protoImageName=ghcr.io/cosmos/proto-builder:$(protoVer)
+protoImage=docker run --rm -v $(CURDIR):/workspace --workdir /workspace $(protoImageName)
+
+proto-all: proto-format proto-lint proto-gen format
+
+proto-gen:
+	@echo "Generating Protobuf files"
+	@$(protoImage) sh ./scripts/protocgen.sh
+
+proto-format:
+	@echo "Formatting Protobuf files"
+	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
+
+proto-lint:
+	@$(protoImage) buf lint --error-format=json
+
+proto-check-breaking:
+	@$(protoImage) buf breaking --against $(HTTPS_GIT)#branch=develop
+
 # ------------------------------ Docs ------------------------------
 
 docs-init:
-	@cargo install mdbook --version 0.4.37
-	@cargo install mdbook-admonish --version 1.14.0
-	@cargo install mdbook-catppuccin --version 2.1.0
-	@cargo install mdbook-katex --version 0.5.10
+	@cargo install mdbook --version 0.4.44
+	@cargo install mdbook-admonish --version 1.18.0
+	@cargo install mdbook-katex --version 0.9.2
 	@cargo install mdbook-embed --version 0.2.0
-	@cd docs && mdbook-catppuccin install
 	@cd docs && mdbook-admonish install --css-dir theme
 
 docs-generate: docs-init
@@ -119,7 +132,8 @@ gitlab-trigger-ci:
 # ------------------------------ Housekeeping ------------------------------
 
 format:
-	@git ls-files '*.go' | grep -v -e '^docs/' | xargs gofumpt -w
+	@git ls-files '*.go' | grep -v -e '^docs/' -e '^api/' -e '^openapi/gen/' -e '.pb.go$$' -e '.pb.gw.go$$' -e '_gen.go$$' -e 'wire_gen.go$$' |\
+		xargs gofumpt -w
 
 lint:
 	@./scripts/lint.sh
@@ -146,18 +160,18 @@ test-coverage-sum: test-network-specific
 	@go tool cover -html=coverage.txt -o coverage.html
 
 test: test-network-specific
-	@CGO_ENABLED=0 go test ${TEST_BUILD_FLAGS} ${TEST_DIR}
+	@go test ${TEST_BUILD_FLAGS} ${TEST_DIR}
 
 test-all: test-network-specific
-	@CGO_ENABLED=0 go test ${TEST_BUILD_FLAGS} "./..."
+	@go test ${TEST_BUILD_FLAGS} "./..."
 
 test-go-tss:
 	@go test ${TEST_BUILD_FLAGS} --race "./bifrost/tss/go-tss/..."
 
 test-network-specific:
-	@CGO_ENABLED=0 go test -tags stagenet ./common
-	@CGO_ENABLED=0 go test -tags mainnet ./common ./bifrost/pkg/chainclients/utxo/...
-	@CGO_ENABLED=0 go test -tags mocknet ./common ./bifrost/pkg/chainclients/utxo/...
+	@go test -tags stagenet ./common
+	@go test -tags mainnet ./common ./bifrost/pkg/chainclients/utxo/...
+	@go test -tags mocknet ./common ./bifrost/pkg/chainclients/utxo/...
 
 test-race:
 	@go test -race ${TEST_BUILD_FLAGS} ${TEST_DIR}
@@ -167,6 +181,7 @@ test-race:
 test-regression: build-test-regression
 	@docker run --rm ${DOCKER_TTY_ARGS} \
 		-e DEBUG -e RUN -e EXPORT -e TIME_FACTOR -e PARALLELISM -e FAIL_FAST \
+		-e AUTO_UPDATE -e IGNORE_FAILURES -e CI \
 		-e UID=$(shell id -u) -e GID=$(shell id -g) \
 		-p 1317:1317 -p 26657:26657 \
 		-v $(shell pwd)/test/regression/mnt:/mnt \
@@ -186,9 +201,9 @@ test-regression-coverage:
 # internal target used in docker build - version pinned for consistent app hashes
 _build-test-regression:
 	@go install -ldflags '$(ldflags)' -tags=mocknet,regtest ./cmd/thornode
-	@go build -ldflags '$(ldflags) -X gitlab.com/thorchain/thornode/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X gitlab.com/thorchain/thornode/v3/constants.Version=9.999.0' \
 		-cover -tags=mocknet,regtest -o /regtest/cover-thornode ./cmd/thornode
-	@go build -ldflags '$(ldflags) -X gitlab.com/thorchain/thornode/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X gitlab.com/thorchain/thornode/v3/constants.Version=9.999.0' \
 		-tags mocknet -o /regtest/regtest ./test/regression/cmd
 
 # internal target used in test run
@@ -204,6 +219,11 @@ _test-regression:
 # ------------------------------ Simulation Tests ------------------------------
 
 test-simulation: build-mocknet reset-mocknet test-simulation-no-reset
+
+test-simulation-cluster: build-test-simulation build-mocknet-cluster reset-mocknet-cluster
+	@STAGES=all docker run --rm ${DOCKER_TTY_ARGS} \
+		-e PARALLELISM -e STAGES --network host -w /app \
+		thornode-simtest sh -c 'make _test-simulation'
 
 test-simulation-no-reset: build-test-simulation
 	@docker run --rm ${DOCKER_TTY_ARGS} \
@@ -291,12 +311,7 @@ reset-mocknet-cluster: stop-mocknet-cluster build-mocknet-cluster run-mocknet-cl
 # ------------------------------ Test Sync ------------------------------
 
 test-sync-mainnet:
-	@BUILDTAG=mainnet BRANCH=mainnet $(MAKE) docker-gitlab-build
-	@docker run --rm -e CHAIN_ID=thorchain-1 -e NET=mainnet registry.gitlab.com/thorchain/thornode:mainnet
-
-test-sync-stagenet:
-	@BUILDTAG=stagenet BRANCH=stagenet $(MAKE) docker-gitlab-build
-	@docker run --rm -e CHAIN_ID=thorchain-stagenet-2 -e NET=stagenet registry.gitlab.com/thorchain/thornode:stagenet
+	@./scripts/test-sync.sh
 
 # ------------------------------ Docker Build ------------------------------
 
@@ -322,20 +337,16 @@ docker-gitlab-build:
 
 thorscan-build:
 	@docker build tools/thorscan -f tools/thorscan/Dockerfile \
-		-t registry.gitlab.com/thorchain/thornode:thorscan-${GITREF} \
-		-t registry.gitlab.com/thorchain/thornode:thorscan
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/thorchain/thornode thorscan-${BRANCH} $(shell cat version))
 
-thorscan-gitlab-push:
-	@docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
-	@docker push registry.gitlab.com/thorchain/thornode:thorscan-${GITREF}
-	@docker push registry.gitlab.com/thorchain/thornode:thorscan
+thorscan-gitlab-push: docker-gitlab-login
+	@./build/docker/semver_tags.sh registry.gitlab.com/thorchain/thornode thorscan-${BRANCH} $(shell cat version) \
+		| xargs -n1 | grep registry | xargs -n1 docker push
 
 events-build:
 	@docker build . -f tools/events/Dockerfile \
-		-t registry.gitlab.com/thorchain/thornode:events-${GITREF} \
-		-t registry.gitlab.com/thorchain/thornode:events
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/thorchain/thornode events-${BRANCH} $(shell cat version))
 
-events-gitlab-push:
-	@docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
-	@docker push registry.gitlab.com/thorchain/thornode:events-${GITREF}
-	@docker push registry.gitlab.com/thorchain/thornode:events
+events-gitlab-push: docker-gitlab-login
+	@./build/docker/semver_tags.sh registry.gitlab.com/thorchain/thornode events-${BRANCH} $(shell cat version) \
+		| xargs -n1 | grep registry | xargs -n1 docker push

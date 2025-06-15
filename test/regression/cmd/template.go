@@ -5,7 +5,7 @@ import (
 	"sync"
 	"text/template"
 
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -32,9 +32,6 @@ var funcMap = template.FuncMap{
 	},
 	"version": func() string {
 		return constants.Version
-	},
-	"store_version": func() uint64 {
-		return constants.SWVersion.Minor
 	},
 	"addr_module_thorchain": func() string {
 		return ModuleAddrThorchain
@@ -65,6 +62,12 @@ var funcMap = template.FuncMap{
 	},
 	"addr_module_rune_pool": func() string {
 		return ModuleAddrRUNEPool
+	},
+	"addr_module_tcy_claim": func() string {
+		return ModuleAddrClaiming
+	},
+	"addr_module_tcy_stake": func() string {
+		return ModuleAddrTCYStake
 	},
 }
 

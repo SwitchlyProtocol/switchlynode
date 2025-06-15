@@ -6,6 +6,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **BondRewardRune** | **string** | total amount of RUNE awarded to node operators | 
 **TotalBondUnits** | **string** | total bonded RUNE | 
+**AvailablePoolsRune** | **string** | RUNE in Available pools (equal in value to the Assets in those pools) | 
+**VaultsLiquidityRune** | **string** | RUNE value of Layer 1 Assets in vaults | 
 **EffectiveSecurityBond** | **string** | effective security bond used to determine maximum pooled RUNE | 
 **TotalReserve** | **string** | total reserve RUNE | 
 **VaultsMigrating** | **bool** | Returns true if there exist RetiringVaults which have not finished migrating funds to new ActiveVaults | 
@@ -18,12 +20,13 @@ Name | Type | Description | Notes
 **TnsFeePerBlockRune** | **string** | the thorname fee per block in rune, converted from the TNSFeePerBlockUSD mimir (after USD fees are enabled) | 
 **RunePriceInTor** | **string** | the rune price in tor | 
 **TorPriceInRune** | **string** | the tor price in rune | 
+**TorPriceHalted** | **bool** | indicates if all anchor chains are halted (true), or at least one anchor chain is available (false) | 
 
 ## Methods
 
 ### NewNetworkResponse
 
-`func NewNetworkResponse(bondRewardRune string, totalBondUnits string, effectiveSecurityBond string, totalReserve string, vaultsMigrating bool, gasSpentRune string, gasWithheldRune string, nativeOutboundFeeRune string, nativeTxFeeRune string, tnsRegisterFeeRune string, tnsFeePerBlockRune string, runePriceInTor string, torPriceInRune string, ) *NetworkResponse`
+`func NewNetworkResponse(bondRewardRune string, totalBondUnits string, availablePoolsRune string, vaultsLiquidityRune string, effectiveSecurityBond string, totalReserve string, vaultsMigrating bool, gasSpentRune string, gasWithheldRune string, nativeOutboundFeeRune string, nativeTxFeeRune string, tnsRegisterFeeRune string, tnsFeePerBlockRune string, runePriceInTor string, torPriceInRune string, torPriceHalted bool, ) *NetworkResponse`
 
 NewNetworkResponse instantiates a new NetworkResponse object
 This constructor will assign default values to properties that have it defined,
@@ -76,6 +79,46 @@ and a boolean to check if the value has been set.
 `func (o *NetworkResponse) SetTotalBondUnits(v string)`
 
 SetTotalBondUnits sets TotalBondUnits field to given value.
+
+
+### GetAvailablePoolsRune
+
+`func (o *NetworkResponse) GetAvailablePoolsRune() string`
+
+GetAvailablePoolsRune returns the AvailablePoolsRune field if non-nil, zero value otherwise.
+
+### GetAvailablePoolsRuneOk
+
+`func (o *NetworkResponse) GetAvailablePoolsRuneOk() (*string, bool)`
+
+GetAvailablePoolsRuneOk returns a tuple with the AvailablePoolsRune field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAvailablePoolsRune
+
+`func (o *NetworkResponse) SetAvailablePoolsRune(v string)`
+
+SetAvailablePoolsRune sets AvailablePoolsRune field to given value.
+
+
+### GetVaultsLiquidityRune
+
+`func (o *NetworkResponse) GetVaultsLiquidityRune() string`
+
+GetVaultsLiquidityRune returns the VaultsLiquidityRune field if non-nil, zero value otherwise.
+
+### GetVaultsLiquidityRuneOk
+
+`func (o *NetworkResponse) GetVaultsLiquidityRuneOk() (*string, bool)`
+
+GetVaultsLiquidityRuneOk returns a tuple with the VaultsLiquidityRune field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetVaultsLiquidityRune
+
+`func (o *NetworkResponse) SetVaultsLiquidityRune(v string)`
+
+SetVaultsLiquidityRune sets VaultsLiquidityRune field to given value.
 
 
 ### GetEffectiveSecurityBond
@@ -321,6 +364,26 @@ and a boolean to check if the value has been set.
 `func (o *NetworkResponse) SetTorPriceInRune(v string)`
 
 SetTorPriceInRune sets TorPriceInRune field to given value.
+
+
+### GetTorPriceHalted
+
+`func (o *NetworkResponse) GetTorPriceHalted() bool`
+
+GetTorPriceHalted returns the TorPriceHalted field if non-nil, zero value otherwise.
+
+### GetTorPriceHaltedOk
+
+`func (o *NetworkResponse) GetTorPriceHaltedOk() (*bool, bool)`
+
+GetTorPriceHaltedOk returns a tuple with the TorPriceHalted field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetTorPriceHalted
+
+`func (o *NetworkResponse) SetTorPriceHalted(v bool)`
+
+SetTorPriceHalted sets TorPriceHalted field to given value.
 
 
 

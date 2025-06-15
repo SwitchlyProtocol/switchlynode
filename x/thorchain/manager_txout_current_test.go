@@ -4,10 +4,9 @@ import (
 	"gopkg.in/check.v1"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 type TxOutStoreVCURSuite struct{}
@@ -78,10 +77,10 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem(c *C) {
 
 	// Create voter
 	inTxID := GetRandomTxHash()
-	voter := NewObservedTxVoter(inTxID, ObservedTxs{
-		ObservedTx{
+	voter := NewObservedTxVoter(inTxID, common.ObservedTxs{
+		common.ObservedTx{
 			Tx:             GetRandomTx(),
-			Status:         types.Status_incomplete,
+			Status:         common.Status_incomplete,
 			BlockHeight:    1,
 			Signers:        []string{w.activeNodeAccount.NodeAddress.String(), acc1.NodeAddress.String(), acc2.NodeAddress.String()},
 			KeysignMs:      0,
@@ -179,7 +178,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem(c *C) {
 	c.Assert(msgs[0].ToAddress.String(), Equals, "qzg5mkh7rkw3y8kw47l3rrnvhmenvctmd5yg6hxe64")
 
 	// outbound originating from a pool should pay fee from asgard to reserve
-	FundModule(c, w.ctx, w.keeper, AsgardName, 1000_00000000)
+	FundModule(c, w.ctx, w.keeper, AsgardName, 1000*common.One)
 	testAndCheckModuleBalances(c, w.ctx, w.keeper,
 		func() {
 			item = TxOutItem{
@@ -203,7 +202,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem(c *C) {
 	)
 
 	// outbound originating from bond should pay fee from bond to reserve
-	FundModule(c, w.ctx, w.keeper, BondName, 1000_00000000)
+	FundModule(c, w.ctx, w.keeper, BondName, 1000*common.One)
 	testAndCheckModuleBalances(c, w.ctx, w.keeper,
 		func() {
 			item = TxOutItem{
@@ -255,10 +254,10 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_OutboundHeightDoesNotGetOverride(c
 	w.keeper.SetMimir(w.ctx, constants.MaxTxOutOffset.String(), 720)
 	// Create voter
 	inTxID := GetRandomTxHash()
-	voter := NewObservedTxVoter(inTxID, ObservedTxs{
-		ObservedTx{
+	voter := NewObservedTxVoter(inTxID, common.ObservedTxs{
+		common.ObservedTx{
 			Tx:             GetRandomTx(),
-			Status:         types.Status_incomplete,
+			Status:         common.Status_incomplete,
 			BlockHeight:    1,
 			Signers:        []string{w.activeNodeAccount.NodeAddress.String(), acc1.NodeAddress.String(), acc2.NodeAddress.String()},
 			KeysignMs:      0,
@@ -326,10 +325,10 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemNotEnoughForFee(c *C) {
 
 	// Create voter
 	inTxID := GetRandomTxHash()
-	voter := NewObservedTxVoter(inTxID, ObservedTxs{
-		ObservedTx{
+	voter := NewObservedTxVoter(inTxID, common.ObservedTxs{
+		common.ObservedTx{
 			Tx:             GetRandomTx(),
-			Status:         types.Status_incomplete,
+			Status:         common.Status_incomplete,
 			BlockHeight:    1,
 			Signers:        []string{w.activeNodeAccount.NodeAddress.String(), acc1.NodeAddress.String(), acc2.NodeAddress.String()},
 			KeysignMs:      0,
@@ -467,7 +466,7 @@ func (s TxOutStoreVCURSuite) TestCalcTxOutHeight(c *C) {
 	// the outbound is scheduled for one block later, 739.
 }
 
-func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillBeScheduledAtTheSameBlockHeight(c *C) {
+func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillNotBeScheduledAtTheSameBlockHeight(c *C) {
 	SetupConfigForTest()
 	w := getHandlerTestWrapper(c, 1, true, true)
 	vault := GetRandomVault()
@@ -489,10 +488,10 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillBeScheduledAtT
 	w.keeper.SetMimir(w.ctx, constants.MaxTxOutOffset.String(), 720)
 	// Create voter
 	inTxID := GetRandomTxHash()
-	voter := NewObservedTxVoter(inTxID, ObservedTxs{
-		ObservedTx{
+	voter := NewObservedTxVoter(inTxID, common.ObservedTxs{
+		common.ObservedTx{
 			Tx:             GetRandomTx(),
-			Status:         types.Status_incomplete,
+			Status:         common.Status_incomplete,
 			BlockHeight:    1,
 			Signers:        []string{w.activeNodeAccount.NodeAddress.String(), acc1.NodeAddress.String(), acc2.NodeAddress.String()},
 			KeysignMs:      0,
@@ -513,6 +512,11 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillBeScheduledAtT
 	c.Assert(err, IsNil)
 	c.Assert(ok, Equals, true)
 
+	msgs, err := txOutStore.GetOutboundItems(w.ctx)
+	c.Assert(err, IsNil)
+	c.Assert(msgs, HasLen, 0)
+	//  the outbound has been delayed
+
 	item1 := TxOutItem{
 		Chain:     common.DOGEChain,
 		ToAddress: GetRandomDOGEAddress(),
@@ -524,18 +528,21 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillBeScheduledAtT
 	c.Assert(err, IsNil)
 	c.Assert(ok, Equals, true)
 
-	msgs, err := txOutStore.GetOutboundItems(w.ctx)
+	msgs, err = txOutStore.GetOutboundItems(w.ctx)
 	c.Assert(err, IsNil)
-	c.Assert(msgs, HasLen, 0)
-	//  the outbound has been delayed
+	c.Assert(msgs, HasLen, 1)
+	//  the smaller outbound hasn't been delayed
+	c.Assert(msgs[0].VaultPubKey.String(), Equals, vault.PubKey.String())
+	c.Assert(msgs[0].Coin.Amount.Equal(cosmos.NewUint(9_99925000)), Equals, true, Commentf("%d", msgs[0].Coin.Amount.Uint64()))
+
 	newCtx := w.ctx.WithBlockHeight(4)
 	msgs, err = txOutStore.GetOutboundItems(newCtx)
 	c.Assert(err, IsNil)
-	c.Assert(msgs, HasLen, 2)
+	c.Assert(msgs, HasLen, 1) // the delayed outbound's height has been reached
 	c.Assert(msgs[0].VaultPubKey.String(), Equals, vault.PubKey.String())
-	c.Assert(msgs[0].Coin.Amount.Equal(cosmos.NewUint(7999925000)), Equals, true, Commentf("%d", msgs[0].Coin.Amount.Uint64()))
+	c.Assert(msgs[0].Coin.Amount.Equal(cosmos.NewUint(79_99925000)), Equals, true, Commentf("%d", msgs[0].Coin.Amount.Uint64()))
 
-	// make sure outbound_height has been set correctly
+	// make sure outbound_height has been set correctly (to the furthest-future outbound height)
 	afterVoter, err := w.keeper.GetObservedTxInVoter(w.ctx, inTxID)
 	c.Assert(err, IsNil)
 	c.Assert(afterVoter.OutboundHeight, Equals, int64(4))
@@ -547,7 +554,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillBeScheduledAtT
 	c.Assert(err, IsNil)
 	c.Assert(ok, Equals, true)
 
-	// make sure outbound_height has not been overwritten
+	// make sure outbound_height has not been lowered
 	afterVoter1, err := w.keeper.GetObservedTxInVoter(w.ctx, inTxID)
 	c.Assert(err, IsNil)
 	c.Assert(afterVoter1.OutboundHeight, Equals, int64(4))
@@ -640,10 +647,10 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemSendingFromRetiredVault(c *C) {
 	w.keeper.SetMimir(w.ctx, constants.MaxTxOutOffset.String(), 720)
 	// Create voter
 	inTxID := GetRandomTxHash()
-	voter := NewObservedTxVoter(inTxID, ObservedTxs{
-		ObservedTx{
+	voter := NewObservedTxVoter(inTxID, common.ObservedTxs{
+		common.ObservedTx{
 			Tx:             GetRandomTx(),
-			Status:         types.Status_incomplete,
+			Status:         common.Status_incomplete,
 			BlockHeight:    1,
 			Signers:        []string{w.activeNodeAccount.NodeAddress.String(), acc1.NodeAddress.String(), acc2.NodeAddress.String()},
 			KeysignMs:      0,
@@ -797,10 +804,10 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_SecurityVersusOutboundNumber(c *C)
 	w.keeper.SetMimir(w.ctx, constants.MaxTxOutOffset.String(), maxTxOutOffset)
 	// Create voter
 	inTxID := GetRandomTxHash()
-	voter := NewObservedTxVoter(inTxID, ObservedTxs{
-		ObservedTx{
+	voter := NewObservedTxVoter(inTxID, common.ObservedTxs{
+		common.ObservedTx{
 			Tx:             GetRandomTx(),
-			Status:         types.Status_incomplete,
+			Status:         common.Status_incomplete,
 			BlockHeight:    1,
 			Signers:        []string{w.activeNodeAccount.NodeAddress.String(), acc1.NodeAddress.String(), acc2.NodeAddress.String()},
 			KeysignMs:      0,
@@ -921,10 +928,10 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_VaultStatusVersusOutboundNumber(c 
 	w.keeper.SetMimir(w.ctx, constants.MaxTxOutOffset.String(), maxTxOutOffset)
 	// Create voter
 	inTxID := GetRandomTxHash()
-	voter := NewObservedTxVoter(inTxID, ObservedTxs{
-		ObservedTx{
+	voter := NewObservedTxVoter(inTxID, common.ObservedTxs{
+		common.ObservedTx{
 			Tx:             GetRandomTx(),
-			Status:         types.Status_incomplete,
+			Status:         common.Status_incomplete,
 			BlockHeight:    1,
 			Signers:        []string{w.activeNodeAccount.NodeAddress.String(), acc1.NodeAddress.String(), acc2.NodeAddress.String()},
 			KeysignMs:      0,

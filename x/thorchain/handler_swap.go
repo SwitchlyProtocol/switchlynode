@@ -7,9 +7,9 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // SwapHandler is the handler to process swap request
@@ -45,16 +45,14 @@ func (h SwapHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Result, erro
 func (h SwapHandler) validate(ctx cosmos.Context, msg MsgSwap) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("2.136.0")):
-		return h.validateV136(ctx, msg)
-	case version.GTE(semver.MustParse("1.129.0")):
-		return h.validateV129(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errInvalidVersion
 	}
 }
 
-func (h SwapHandler) validateV136(ctx cosmos.Context, msg MsgSwap) error {
+func (h SwapHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSwap) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -102,7 +100,7 @@ func (h SwapHandler) validateV136(ctx cosmos.Context, msg MsgSwap) error {
 			return fmt.Errorf("target asset (%s) is not gas asset , can't use dex feature", msg.TargetAsset)
 		}
 		// validate that a referenced dex aggregator is legit
-		addr, err := FetchDexAggregator(h.mgr.GetVersion(), target.Chain, msg.Aggregator)
+		addr, err := FetchDexAggregator(target.Chain, msg.Aggregator)
 		if err != nil {
 			return err
 		}
@@ -120,6 +118,10 @@ func (h SwapHandler) validateV136(ctx cosmos.Context, msg MsgSwap) error {
 
 	if target.IsTradeAsset() && target.GetLayer1Asset().IsNative() {
 		return errors.New("swapping to a trade asset of a native coin is not allowed")
+	}
+
+	if target.IsSecuredAsset() && target.GetLayer1Asset().IsNative() {
+		return errors.New("swapping to a secured asset of a native coin is not allowed")
 	}
 
 	var sourceCoin common.Coin
@@ -253,14 +255,14 @@ func (h SwapHandler) handle(ctx cosmos.Context, msg MsgSwap) (*cosmos.Result, er
 	ctx.Logger().Info("receive MsgSwap", "request tx hash", msg.Tx.ID, "source asset", msg.Tx.Coins[0].Asset, "target asset", msg.TargetAsset, "signer", msg.Signer.String())
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.133.0")):
-		return h.handleV133(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return nil, errBadVersion
 	}
 }
 
-func (h SwapHandler) handleV133(ctx cosmos.Context, msg MsgSwap) (*cosmos.Result, error) {
+func (h SwapHandler) handleV3_0_0(ctx cosmos.Context, msg MsgSwap) (*cosmos.Result, error) {
 	// test that the network we are running matches the destination network
 	// Don't change msg.Destination here; this line was introduced to avoid people from swapping mainnet asset,
 	// but using mocknet address.
@@ -276,7 +278,7 @@ func (h SwapHandler) handleV133(ctx cosmos.Context, msg MsgSwap) (*cosmos.Result
 	dexAgg := ""
 	dexAggTargetAsset := ""
 	if len(msg.Aggregator) > 0 {
-		dexAgg, err = FetchDexAggregator(h.mgr.GetVersion(), msg.TargetAsset.Chain, msg.Aggregator)
+		dexAgg, err = FetchDexAggregator(msg.TargetAsset.Chain, msg.Aggregator)
 		if err != nil {
 			return nil, err
 		}
@@ -398,21 +400,16 @@ func (h SwapHandler) handleV133(ctx cosmos.Context, msg MsgSwap) (*cosmos.Result
 		emit = swp.Out
 	}
 
-	// This is a preferred asset swap, so subtract the affiliate's RUNE from the
-	// AffiliateCollector module, and send RUNE from the module to Asgard. Then return
-	// early since there is no need to call any downstream handlers.
-	if strings.HasPrefix(msg.Tx.Memo, "THOR-PREFERRED-ASSET") && msg.Tx.FromAddress.Equals(affColAddress) {
-		err = h.processPreferredAssetSwap(ctx, msg)
-		// Failed to update the AffiliateCollector / return err to revert preferred asset swap
-		if err != nil {
-			ctx.Logger().Error("failed to update affiliate collector", "error", err)
-			return &cosmos.Result{}, err
-		}
+	// this is a preferred asset swap, so return early since there is no need to call any
+	// downstream handlers
+	memo := msg.Tx.Memo
+	fromAdd := msg.Tx.FromAddress
+	if strings.HasPrefix(memo, PreferredAssetSwapMemoPrefix) && fromAdd.Equals(affColAddress) {
 		return &cosmos.Result{}, nil
 	}
 
 	if parseMemoErr != nil {
-		ctx.Logger().Error("swap handler failed to parse memo", "memo", msg.Tx.Memo, "error", err)
+		ctx.Logger().Error("swap handler failed to parse memo", "memo", msg.Tx.Memo, "error", parseMemoErr)
 		return nil, err
 	}
 	switch mem.GetType() {
@@ -481,38 +478,6 @@ func (h SwapHandler) handleV133(ctx cosmos.Context, msg MsgSwap) (*cosmos.Result
 	return &cosmos.Result{}, nil
 }
 
-// processPreferredAssetSwap - after a preferred asset swap, deduct the input RUNE
-// amount from AffiliateCollector module accounting and send appropriate amount of RUNE
-// from AffiliateCollector module to Asgard
-func (h SwapHandler) processPreferredAssetSwap(ctx cosmos.Context, msg MsgSwap) error {
-	if msg.Tx.Coins.IsEmpty() || !msg.Tx.Coins[0].IsRune() {
-		return fmt.Errorf("native RUNE not in coins: %s", msg.Tx.Coins)
-	}
-	// For preferred asset swaps, the signer of the Msg is the THORName owner
-	affCol, err := h.mgr.Keeper().GetAffiliateCollector(ctx, msg.Signer)
-	if err != nil {
-		return err
-	}
-
-	runeCoin := msg.Tx.Coins[0]
-	runeAmt := runeCoin.Amount
-
-	if affCol.RuneAmount.LT(runeAmt) {
-		return fmt.Errorf("not enough affiliate collector balance for preferred asset swap, balance: %s, needed: %s", affCol.RuneAmount.String(), runeAmt.String())
-	}
-
-	// 1. Send RUNE from the AffiliateCollector Module to Asgard for the swap
-	err = h.mgr.Keeper().SendFromModuleToModule(ctx, AffiliateCollectorName, AsgardName, common.NewCoins(runeCoin))
-	if err != nil {
-		return err
-	}
-	// 2. Subtract input RUNE amt from AffiliateCollector accounting
-	affCol.RuneAmount = affCol.RuneAmount.Sub(runeAmt)
-	h.mgr.Keeper().SetAffiliateCollector(ctx, affCol)
-
-	return nil
-}
-
 // getTotalLiquidityRUNE we have in all pools
 func (h SwapHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.Uint, error) {
 	pools, err := h.mgr.Keeper().GetPools(ctx)
@@ -525,7 +490,7 @@ func (h SwapHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.Uint, err
 		if p.Status == PoolSuspended {
 			continue
 		}
-		if p.Asset.IsVaultAsset() {
+		if p.Asset.IsSyntheticAsset() {
 			continue
 		}
 		if p.Asset.IsDerivedAsset() {

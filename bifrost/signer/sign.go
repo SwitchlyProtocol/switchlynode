@@ -4,37 +4,42 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
 
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/cenkalti/backoff"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	tssp "gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
+	tssp "gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
 
-	"gitlab.com/thorchain/thornode/app"
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/observer"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	ttypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/app"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/observer"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/utxo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	ttypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // Signer will pull the tx out from thorchain and then forward it to chain
 type Signer struct {
 	logger                zerolog.Logger
-	cfg                   config.BifrostSignerConfiguration
+	cfg                   config.Bifrost
 	wg                    *sync.WaitGroup
 	thorchainBridge       thorclient.ThorchainBridge
 	stopChan              chan struct{}
@@ -45,6 +50,7 @@ type Signer struct {
 	m                     *metrics.Metrics
 	errCounter            *prometheus.CounterVec
 	tssKeygen             *tss.KeyGen
+	tssServer             *tssp.TssServer
 	pubkeyMgr             pubkeymanager.PubKeyValidator
 	constantsProvider     *ConstantsProvider
 	localPubKey           common.PubKey
@@ -54,7 +60,7 @@ type Signer struct {
 }
 
 // NewSigner create a new instance of signer
-func NewSigner(cfg config.BifrostSignerConfiguration,
+func NewSigner(cfg config.Bifrost,
 	thorchainBridge thorclient.ThorchainBridge,
 	thorKeys *thorclient.Keys,
 	pubkeyMgr pubkeymanager.PubKeyValidator,
@@ -64,7 +70,7 @@ func NewSigner(cfg config.BifrostSignerConfiguration,
 	tssKeysignMetricMgr *metrics.TssKeysignMetricMgr,
 	obs *observer.Observer,
 ) (*Signer, error) {
-	storage, err := NewSignerStore(cfg.SignerDbPath, cfg.LevelDB, thorchainBridge.GetConfig().SignerPasswd)
+	storage, err := NewSignerStore(cfg.Signer.SignerDbPath, cfg.Signer.LevelDB, thorchainBridge.GetConfig().SignerPasswd)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create thorchain scan storage: %w", err)
 	}
@@ -73,7 +79,12 @@ func NewSigner(cfg config.BifrostSignerConfiguration,
 	}
 	var na *ttypes.NodeAccount
 	for i := 0; i < 300; i++ { // wait for 5 min before timing out
-		na, err = thorchainBridge.GetNodeAccount(thorKeys.GetSignerInfo().GetAddress().String())
+		var signerAddr sdktypes.AccAddress
+		signerAddr, err = thorKeys.GetSignerInfo().GetAddress()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get address from thorKeys signer: %w", err)
+		}
+		na, err = thorchainBridge.GetNodeAccount(signerAddr.String())
 		if err != nil {
 			return nil, fmt.Errorf("fail to get node account from thorchain,err:%w", err)
 		}
@@ -84,23 +95,21 @@ func NewSigner(cfg config.BifrostSignerConfiguration,
 		time.Sleep(constants.ThorchainBlockTime)
 		log.Info().Msg("Waiting for node account to be registered...")
 	}
-	for _, item := range na.GetSignerMembership() {
-		pubkeyMgr.AddPubKey(item, true)
-	}
+
 	if na.PubKeySet.Secp256k1.IsEmpty() {
 		return nil, fmt.Errorf("unable to find pubkey for this node account. exiting... ")
 	}
 	pubkeyMgr.AddNodePubKey(na.PubKeySet.Secp256k1)
 
-	cfg.BlockScanner.ChainID = common.THORChain // hard code to thorchain
+	cfg.Signer.BlockScanner.ChainID = common.THORChain // hard code to thorchain
 
 	// Create pubkey manager and add our private key
-	thorchainBlockScanner, err := NewThorchainBlockScan(cfg.BlockScanner, storage, thorchainBridge, m, pubkeyMgr)
+	thorchainBlockScanner, err := NewThorchainBlockScan(cfg.Signer.BlockScanner, storage, thorchainBridge, m, pubkeyMgr)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create thorchain block scan: %w", err)
 	}
 
-	blockScanner, err := blockscanner.NewBlockScanner(cfg.BlockScanner, storage, m, thorchainBridge, thorchainBlockScanner)
+	blockScanner, err := blockscanner.NewBlockScanner(cfg.Signer.BlockScanner, storage, m, thorchainBridge, thorchainBlockScanner)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create block scanner: %w", err)
 	}
@@ -124,6 +133,7 @@ func NewSigner(cfg config.BifrostSignerConfiguration,
 		pubkeyMgr:             pubkeyMgr,
 		thorchainBridge:       thorchainBridge,
 		tssKeygen:             kg,
+		tssServer:             tssServer,
 		constantsProvider:     constantProvider,
 		localPubKey:           na.PubKeySet.Secp256k1,
 		tssKeysignMetricMgr:   tssKeysignMetricMgr,
@@ -151,7 +161,7 @@ func (s *Signer) Start() error {
 	s.wg.Add(1)
 	go s.signTransactions()
 
-	s.blockScanner.Start(nil)
+	s.blockScanner.Start(nil, nil)
 	return nil
 }
 
@@ -297,10 +307,10 @@ func (s *Signer) scheduleKeygenRetry(keygenBlock ttypes.KeygenBlock) bool {
 
 	// sanity check the retry interval is at least 1.5x the timeout
 	retryIntervalDuration := time.Duration(keygenRetryInterval) * constants.ThorchainBlockTime
-	if retryIntervalDuration <= s.cfg.KeygenTimeout*3/2 {
+	if retryIntervalDuration <= s.cfg.Signer.KeygenTimeout*3/2 {
 		s.logger.Error().
 			Stringer("retryInterval", retryIntervalDuration).
-			Stringer("keygenTimeout", s.cfg.KeygenTimeout).
+			Stringer("keygenTimeout", s.cfg.Signer.KeygenTimeout).
 			Msg("retry interval too short")
 		return false
 	}
@@ -375,7 +385,10 @@ func (s *Signer) processKeygenBlock(keygenBlock ttypes.KeygenBlock) {
 			s.logger.Error().Interface("keygenBlock", keygenBlock).Msg("done with keygen retries")
 		}
 
-		if err = s.sendKeygenToThorchain(keygenBlock.Height, pubKey.Secp256k1, blame, keygenReq.GetMembers(), keygenReq.Type, keygenTime); err != nil {
+		// generate a verification signature to ensure we can sign with the new key
+		secp256k1Sig := s.secp256k1VerificationSignature(pubKey.Secp256k1)
+
+		if err = s.sendKeygenToThorchain(keygenBlock.Height, pubKey.Secp256k1, secp256k1Sig, blame, keygenReq.GetMembers(), keygenReq.Type, keygenTime); err != nil {
 			s.errCounter.WithLabelValues("fail_to_broadcast_keygen", "").Inc()
 			s.logger.Error().Err(err).Msg("fail to broadcast keygen")
 		}
@@ -390,23 +403,70 @@ func (s *Signer) processKeygenBlock(keygenBlock ttypes.KeygenBlock) {
 	}
 }
 
-func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, blame ttypes.Blame, input common.PubKeys, keygenType ttypes.KeygenType, keygenTime int64) error {
+// secp256k1VerificationSignature will make a best effort to sign the public key with
+// its own private key as a sanity check to ensure parties are able to sign. The
+// signature will be included in the TssPool message if successful, and verified by
+// THORNode before the keygen is accepted.
+func (s *Signer) secp256k1VerificationSignature(pk common.PubKey) []byte {
+	// create keysign instance
+	ks, err := tss.NewKeySign(s.tssServer, s.thorchainBridge)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("fail to create keysign for secp256k1 check signing")
+		return nil
+	}
+	ks.Start()
+	defer ks.Stop()
+
+	// sign the public key with its own private key
+	data := []byte(pk.String())
+	sigBytes, _, err := ks.RemoteSign(data, pk.String())
+	if err != nil {
+		// this is expected in some cases if we were not in the signing party
+		s.logger.Info().Err(err).Msg("fail secp256k1 check signing")
+		return nil
+
+	} else if sigBytes == nil {
+		// This is expected in other cases when not in the signing party,
+		// when RemoteSign's len(resp.R) and len(resp.S) are both nil.
+		return nil
+	}
+
+	// build the signature
+	r := new(big.Int).SetBytes(sigBytes[:32])
+	ss := new(big.Int).SetBytes(sigBytes[32:])
+	signature := &btcec.Signature{R: r, S: ss}
+
+	// verify the signature (thornode will also verify and reject if invalid)
+	spk, err := pk.Secp256K1()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("fail to get secp256k1 pubkey")
+	}
+	if !signature.Verify(data, spk) {
+		s.logger.Error().Msg("secp256k1 check signature verification failed")
+	} else {
+		s.logger.Info().Msg("secp256k1 check signature verified")
+	}
+
+	return sigBytes
+}
+
+func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, secp256k1Signature []byte, blame ttypes.Blame, input common.PubKeys, keygenType ttypes.KeygenType, keygenTime int64) error {
 	// collect supported chains in the configuration
 	chains := common.Chains{
 		common.THORChain,
 	}
-	for name, chain := range s.chains {
-		if !chain.GetConfig().OptToRetire {
-			chains = append(chains, name)
+	for chain, chainCfg := range s.cfg.GetChains() {
+		if !chainCfg.OptToRetire && !chainCfg.Disabled {
+			chains = append(chains, chain)
 		}
 	}
 
 	// make a best effort to add encrypted keyshares to the message
 	var keyshares []byte
 	var err error
-	if s.cfg.BackupKeyshares && !poolPk.IsEmpty() {
+	if s.cfg.Signer.BackupKeyshares && !poolPk.IsEmpty() {
 		keyshares, err = tss.EncryptKeyshares(
-			filepath.Join(app.DefaultNodeHome(), fmt.Sprintf("localstate-%s.json", poolPk)),
+			filepath.Join(app.DefaultNodeHome, fmt.Sprintf("localstate-%s.json", poolPk)),
 			os.Getenv("SIGNER_SEED_PHRASE"),
 		)
 		if err != nil {
@@ -414,7 +474,7 @@ func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, blame
 		}
 	}
 
-	keygenMsg, err := s.thorchainBridge.GetKeygenStdTx(poolPk, keyshares, blame, input, keygenType, chains, height, keygenTime)
+	keygenMsg, err := s.thorchainBridge.GetKeygenStdTx(poolPk, secp256k1Signature, keyshares, blame, input, keygenType, chains, height, keygenTime)
 	if err != nil {
 		return fmt.Errorf("fail to get keygen id: %w", err)
 	}
@@ -423,7 +483,6 @@ func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, blame
 	bf := backoff.NewExponentialBackOff()
 	bf.MaxElapsedTime = constants.ThorchainBlockTime
 	return backoff.Retry(func() error {
-		// trunk-ignore(golangci-lint/govet): shadow
 		txID, err := s.thorchainBridge.Broadcast(keygenMsg)
 		if err != nil {
 			s.logger.Warn().Err(err).Msg("fail to send keygen tx to thorchain")
@@ -496,7 +555,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 	// if not in round 7 retry or the round 7 retry is on an inactive vault, discard
 	// outbound if within configured blocks of reschedule
 	if !item.Round7Retry || inactiveVaultRound7Retry {
-		if blockHeight-signingTransactionPeriod > height-s.cfg.RescheduleBufferBlocks {
+		if blockHeight-signingTransactionPeriod > height-s.cfg.Signer.RescheduleBufferBlocks {
 			s.logger.Error().Msgf("tx was created at block height(%d), now it is (%d), it is older than (%d) blocks, skip it", height, blockHeight, signingTransactionPeriod)
 			return nil, nil, nil
 		}
@@ -573,6 +632,14 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		}
 	}
 
+	// If this is a UTXO chain, lock the vault around sign and broadcast to avoid
+	// consolidate transactions from using the same UTXOs.
+	if utxoClient, ok := chain.(*utxo.Client); ok {
+		lock := utxoClient.GetVaultLock(tx.VaultPubKey.String())
+		lock.Lock()
+		defer lock.Unlock()
+	}
+
 	// If SignedTx is set, we already signed and should only retry broadcast.
 	var signedTx, checkpoint []byte
 	var elapse time.Duration
@@ -580,6 +647,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 	if len(item.SignedTx) > 0 {
 		s.logger.Info().Str("memo", tx.Memo).Msg("retrying broadcast of already signed tx")
 		signedTx = item.SignedTx
+		observation = item.Observation
 	} else {
 		startKeySign := time.Now()
 		signedTx, checkpoint, observation, err = chain.SignTx(tx, height)
@@ -603,6 +671,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 
 		// store the signed tx for the next retry
 		item.SignedTx = signedTx
+		item.Observation = observation
 		if storeErr := s.storage.Set(item); storeErr != nil {
 			s.logger.Error().Err(storeErr).Msg("fail to update tx out store item with signed tx")
 		}
@@ -676,10 +745,7 @@ func (s *Signer) processTransaction(item TxOutStoreItem) {
 			}
 		}
 
-		if errors.Is(err, context.DeadlineExceeded) {
-			panic(fmt.Errorf("tx out item: %+v , keysign timeout : %w", item.TxOutItem, err))
-		}
-		s.logger.Error().Err(err).Msg("fail to sign and broadcast tx out store item")
+		s.logger.Error().Interface("tx", item.TxOutItem).Err(err).Msg("fail to sign and broadcast tx out store item")
 		cancel()
 		return
 		// The 'item' for loop should not be items[0],
@@ -692,17 +758,17 @@ func (s *Signer) processTransaction(item TxOutStoreItem) {
 	cancel()
 
 	// if enabled and the observation is non-nil, instant observe the outbound
-	if s.cfg.AutoObserve && obs != nil {
+	if s.cfg.Signer.AutoObserve && obs != nil {
 		s.observer.ObserveSigned(types.TxIn{
-			Count:                "1",
 			Chain:                item.TxOutItem.Chain,
-			TxArray:              []types.TxInItem{*obs},
+			TxArray:              []*types.TxInItem{obs},
 			MemPool:              true,
 			Filtered:             true,
-			SentUnFinalised:      false,
-			Finalised:            false,
 			ConfirmationRequired: 0,
-		}, item.TxOutItem.Chain.IsEVM()) // Instant EVM observations have wrong gas and need future correct observations
+
+			// Instant EVM observations have wrong gas and need future correct observations
+			AllowFutureObservation: item.TxOutItem.Chain.IsEVM(),
+		})
 	}
 
 	// We have a successful broadcast! Remove the item from our store

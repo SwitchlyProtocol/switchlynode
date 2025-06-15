@@ -5,8 +5,8 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 // IPAddressHandler is to handle ip address message
@@ -43,17 +43,19 @@ func (h IPAddressHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Result,
 func (h IPAddressHandler) validate(ctx cosmos.Context, msg MsgSetIPAddress) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.114.0")):
-		return h.validateV114(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h IPAddressHandler) validateV114(ctx cosmos.Context, msg MsgSetIPAddress) error {
+func (h IPAddressHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSetIPAddress) error {
+	// ValidateBasic is also executed in message service router's handler and isn't versioned there
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
+
 	if err := validateIPAddressAuth(ctx, h.mgr.Keeper(), msg.Signer); err != nil {
 		return err
 	}
@@ -64,14 +66,14 @@ func (h IPAddressHandler) handle(ctx cosmos.Context, msg MsgSetIPAddress) error 
 	ctx.Logger().Info("handleMsgSetIPAddress request", "ip address", msg.IPAddress)
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.115.0")):
-		return h.handleV115(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h IPAddressHandler) handleV115(ctx cosmos.Context, msg MsgSetIPAddress) error {
+func (h IPAddressHandler) handleV3_0_0(ctx cosmos.Context, msg MsgSetIPAddress) error {
 	nodeAccount, err := h.mgr.Keeper().GetNodeAccount(ctx, msg.Signer)
 	if err != nil {
 		ctx.Logger().Error("fail to get node account", "error", err, "address", msg.Signer.String())
@@ -79,7 +81,7 @@ func (h IPAddressHandler) handleV115(ctx cosmos.Context, msg MsgSetIPAddress) er
 	}
 
 	nodeAccount.IPAddress = msg.IPAddress
-	if err := h.mgr.Keeper().SetNodeAccount(ctx, nodeAccount); err != nil {
+	if err = h.mgr.Keeper().SetNodeAccount(ctx, nodeAccount); err != nil {
 		return fmt.Errorf("fail to save node account: %w", err)
 	}
 
@@ -112,10 +114,10 @@ func validateIPAddressAuth(ctx cosmos.Context, k keeper.Keeper, signer cosmos.Ac
 // IPAddressAnteHandler called by the ante handler to gate mempool entry
 // and also during deliver. Store changes will persist if this function
 // succeeds, regardless of the success of the transaction.
-func IPAddressAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgSetIPAddress) error {
+func IPAddressAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgSetIPAddress) (cosmos.Context, error) {
 	if err := validateIPAddressAuth(ctx, k, msg.Signer); err != nil {
-		return err
+		return ctx, err
 	}
 
-	return k.DeductNativeTxFeeFromBond(ctx, msg.Signer)
+	return ctx, k.DeductNativeTxFeeFromBond(ctx, msg.Signer)
 }

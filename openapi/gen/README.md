@@ -77,10 +77,14 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AuthApi* | [**Account**](docs/AuthApi.md#account) | **Get** /auth/accounts/{address} | 
+*BankApi* | [**Balances**](docs/BankApi.md#balances) | **Get** /bank/balances/{address} | 
 *BlockApi* | [**Block**](docs/BlockApi.md#block) | **Get** /thorchain/block | 
 *BorrowersApi* | [**Borrower**](docs/BorrowersApi.md#borrower) | **Get** /thorchain/pool/{asset}/borrower/{address} | 
 *BorrowersApi* | [**Borrowers**](docs/BorrowersApi.md#borrowers) | **Get** /thorchain/pool/{asset}/borrowers | 
 *CloutApi* | [**SwapperClout**](docs/CloutApi.md#swapperclout) | **Get** /thorchain/clout/swap/{address} | 
+*CodesApi* | [**Codes**](docs/CodesApi.md#codes) | **Get** /thorchain/codes | 
+*ExportApi* | [**Export**](docs/ExportApi.md#export) | **Get** /thorchain/export | 
 *HealthApi* | [**Ping**](docs/HealthApi.md#ping) | **Get** /thorchain/ping | 
 *InvariantsApi* | [**Invariant**](docs/InvariantsApi.md#invariant) | **Get** /thorchain/invariant/{invariant} | 
 *InvariantsApi* | [**Invariants**](docs/InvariantsApi.md#invariants) | **Get** /thorchain/invariants | 
@@ -126,8 +130,14 @@ Class | Method | HTTP request | Description
 *RUNEPoolApi* | [**RuneProviders**](docs/RUNEPoolApi.md#runeproviders) | **Get** /thorchain/rune_providers | 
 *SaversApi* | [**Saver**](docs/SaversApi.md#saver) | **Get** /thorchain/pool/{asset}/saver/{address} | 
 *SaversApi* | [**Savers**](docs/SaversApi.md#savers) | **Get** /thorchain/pool/{asset}/savers | 
+*SecuredAssetApi* | [**SecuredAsset**](docs/SecuredAssetApi.md#securedasset) | **Get** /thorchain/securedasset/{asset} | 
+*SecuredAssetsApi* | [**SecuredAssets**](docs/SecuredAssetsApi.md#securedassets) | **Get** /thorchain/securedassets | 
 *StreamingSwapApi* | [**StreamSwap**](docs/StreamingSwapApi.md#streamswap) | **Get** /thorchain/swap/streaming/{hash} | 
 *StreamingSwapApi* | [**StreamSwaps**](docs/StreamingSwapApi.md#streamswaps) | **Get** /thorchain/swaps/streaming | 
+*TCYClaimersApi* | [**TcyClaimer**](docs/TCYClaimersApi.md#tcyclaimer) | **Get** /thorchain/tcy_claimer/{address} | 
+*TCYClaimersApi* | [**TcyClaimers**](docs/TCYClaimersApi.md#tcyclaimers) | **Get** /thorchain/tcy_claimers | 
+*TCYStakersApi* | [**TcyStaker**](docs/TCYStakersApi.md#tcystaker) | **Get** /thorchain/tcy_staker/{address} | 
+*TCYStakersApi* | [**TcyStakers**](docs/TCYStakersApi.md#tcystakers) | **Get** /thorchain/tcy_stakers | 
 *TSSApi* | [**KeygenPubkey**](docs/TSSApi.md#keygenpubkey) | **Get** /thorchain/keygen/{height}/{pubkey} | 
 *TSSApi* | [**Keysign**](docs/TSSApi.md#keysign) | **Get** /thorchain/keysign/{height} | 
 *TSSApi* | [**KeysignPubkey**](docs/TSSApi.md#keysignpubkey) | **Get** /thorchain/keysign/{height}/{pubkey} | 
@@ -151,6 +161,11 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [Account](docs/Account.md)
+ - [AccountResponse](docs/AccountResponse.md)
+ - [AccountResponseResult](docs/AccountResponseResult.md)
+ - [Amount](docs/Amount.md)
+ - [BalancesResponse](docs/BalancesResponse.md)
  - [BanResponse](docs/BanResponse.md)
  - [BaseQuoteResponse](docs/BaseQuoteResponse.md)
  - [BlockResponse](docs/BlockResponse.md)
@@ -162,6 +177,8 @@ Class | Method | HTTP request | Description
  - [BlockTxResult](docs/BlockTxResult.md)
  - [Borrower](docs/Borrower.md)
  - [ChainHeight](docs/ChainHeight.md)
+ - [Code](docs/Code.md)
+ - [CodesResponse](docs/CodesResponse.md)
  - [Coin](docs/Coin.md)
  - [ConstantsResponse](docs/ConstantsResponse.md)
  - [DerivedPool](docs/DerivedPool.md)
@@ -214,11 +231,16 @@ Class | Method | HTTP request | Description
  - [RUNEPoolResponseReserve](docs/RUNEPoolResponseReserve.md)
  - [RUNEProvider](docs/RUNEProvider.md)
  - [Saver](docs/Saver.md)
+ - [SecuredAssetResponse](docs/SecuredAssetResponse.md)
  - [StreamingStatus](docs/StreamingStatus.md)
  - [StreamingSwap](docs/StreamingSwap.md)
  - [SwapFinalisedStage](docs/SwapFinalisedStage.md)
  - [SwapStatus](docs/SwapStatus.md)
  - [SwapperCloutResponse](docs/SwapperCloutResponse.md)
+ - [TCYClaimer](docs/TCYClaimer.md)
+ - [TCYClaimerSummary](docs/TCYClaimerSummary.md)
+ - [TCYStaker](docs/TCYStaker.md)
+ - [TCYStakerSummary](docs/TCYStakerSummary.md)
  - [Thorname](docs/Thorname.md)
  - [ThornameAlias](docs/ThornameAlias.md)
  - [TradeAccountResponse](docs/TradeAccountResponse.md)

@@ -3,10 +3,8 @@ package tokenlist
 import (
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/blang/semver"
-	"gitlab.com/thorchain/thornode/common"
+	"gitlab.com/thorchain/thornode/v3/common"
 )
 
 // ERC20Token is a struct to represent the token
@@ -27,11 +25,8 @@ func (t ERC20Token) Asset(chain common.Chain) common.Asset {
 }
 
 type EVMTokenList struct {
-	Name      string       `json:"name"`
-	LogoURI   string       `json:"logoURI"`
-	Tokens    []ERC20Token `json:"tokens"`
-	Keywords  []string     `json:"keywords"`
-	Timestamp time.Time    `json:"timestamp"`
+	Name   string       `json:"name"`
+	Tokens []ERC20Token `json:"tokens"`
 }
 
 // GetEVMTokenList returns all available tokens for external asset matching for a
@@ -39,14 +34,16 @@ type EVMTokenList struct {
 //
 // NOTE: These tokens are NOT necessarily the same tokens that are whitelisted for each
 // chain - whitelisting happens in each chain's bifrost chain client.
-func GetEVMTokenList(chain common.Chain, version semver.Version) EVMTokenList {
+func GetEVMTokenList(chain common.Chain) EVMTokenList {
 	switch chain {
 	case common.ETHChain:
-		return GetETHTokenList(version)
+		return GetETHTokenList()
 	case common.AVAXChain:
-		return GetAVAXTokenList(version)
+		return GetAVAXTokenList()
 	case common.BSCChain:
-		return GetBSCTokenList(version)
+		return GetBSCTokenList()
+	case common.BASEChain:
+		return GetBASETokenList()
 	default:
 		return EVMTokenList{}
 	}

@@ -108,7 +108,7 @@ global-labels = [
 enable = {{ .API.Enable }}
 
 # Swagger defines if swagger documentation should automatically be registered.
-swagger = false
+swagger = {{ .API.EnabledSwagger }}
 
 # Address defines the API server to listen on.
 address = "{{ .API.Address }}"
@@ -179,6 +179,18 @@ address = "0.0.0.0:9091"
 
 # EnableUnsafeCORS defines if CORS should be enabled (unsafe - use it at your own risk).
 enable-unsafe-cors = false
+
+###############################################################################
+###                           eBifrost Configuration                            ###
+###############################################################################
+
+[ebifrost]
+
+# Enable defines if the gRPC server should be enabled.
+enable = {{ .EBifrost.Enable }}
+
+# Address defines the gRPC server address to bind to.
+address = "{{ .EBifrost.Address }}"
 
 ###############################################################################
 ###                        State Sync Configuration                         ###

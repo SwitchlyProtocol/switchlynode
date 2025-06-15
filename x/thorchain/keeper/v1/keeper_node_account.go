@@ -6,14 +6,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/armon/go-metrics"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/types"
 )
 
 func (k KVStore) setNodeAccount(ctx cosmos.Context, key string, record NodeAccount) {
@@ -86,6 +87,7 @@ func (k KVStore) ListActiveValidators(ctx cosmos.Context) (NodeAccounts, error) 
 }
 
 func (k KVStore) RemoveLowBondValidatorAccounts(ctx cosmos.Context) error {
+	var events cosmos.Events
 	lowBondValidators := make([][]byte, 0)
 	naIterator := k.GetNodeAccountIterator(ctx)
 	defer naIterator.Close()
@@ -116,6 +118,13 @@ func (k KVStore) RemoveLowBondValidatorAccounts(ctx cosmos.Context) error {
 				coin := common.NewCoin(common.RuneAsset(), na.Bond)
 				if err = k.SendFromModuleToAccount(ctx, BondName, to, common.NewCoins(coin)); err != nil {
 					ctx.Logger().Error("failed to return bond pool coins", "error", err)
+					continue
+				}
+				bondEvent := NewEventBond(na.Bond, BondReturned, common.Tx{}, &na, to)
+				if events, err = bondEvent.Events(); err != nil {
+					ctx.Logger().Error("fail to emit bond event", "error", err)
+				} else {
+					ctx.EventManager().EmitEvents(events)
 				}
 				continue
 			}
@@ -130,6 +139,12 @@ func (k KVStore) RemoveLowBondValidatorAccounts(ctx cosmos.Context) error {
 				if err = k.SendFromModuleToAccount(ctx, BondName, provider.BondAddress, common.NewCoins(coin)); err != nil {
 					ctx.Logger().Error("failed to return bond pool coins", "error", err)
 					continue
+				}
+				bondEvent := NewEventBond(provider.Bond, BondReturned, common.Tx{}, &na, provider.BondAddress)
+				if events, err = bondEvent.Events(); err != nil {
+					ctx.Logger().Error("fail to emit bond event", "error", err)
+				} else {
+					ctx.EventManager().EmitEvents(events)
 				}
 				totalSent = totalSent.Add(provider.Bond)
 			}
@@ -357,6 +372,10 @@ func (k KVStore) IncNodeAccountSlashPoints(ctx cosmos.Context, addr cosmos.AccAd
 		),
 	)
 
+	if config.GetThornode().Telemetry.SlashPoints {
+		slashTelemetry(ctx, pts, addr, "IncSlashPoints")
+	}
+
 	return nil
 }
 
@@ -383,6 +402,10 @@ func (k KVStore) DecNodeAccountSlashPoints(ctx cosmos.Context, addr cosmos.AccAd
 			telemetry.NewLabel("address", addr.String()),
 		),
 	)
+
+	if config.GetThornode().Telemetry.SlashPoints {
+		slashTelemetry(ctx, -pts, addr, "DecSlashPoints")
+	}
 
 	return nil
 }
@@ -508,10 +531,7 @@ func (k KVStore) DeductNativeTxFeeFromBond(ctx cosmos.Context, nodeAddr cosmos.A
 	}
 
 	// emit bond cost event
-	tx := common.Tx{}
-	tx.ID = common.BlankTxID
-	tx.FromAddress = na.BondAddress
-	bondEvent := NewEventBond(fee, BondCost, tx)
+	bondEvent := NewEventBond(fee, BondCost, common.Tx{}, &na, nil)
 	events, err := bondEvent.Events()
 	if err != nil {
 		return fmt.Errorf("fail to get events: %w", err)

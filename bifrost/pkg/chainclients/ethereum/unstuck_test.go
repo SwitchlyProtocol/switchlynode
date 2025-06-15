@@ -10,22 +10,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	ctypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm/types"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	ttypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	types2 "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	ttypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	types2 "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 	. "gopkg.in/check.v1"
 )
 
@@ -50,7 +52,10 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 		SignerPasswd: "password",
 	}
 
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
@@ -58,7 +63,7 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 	// get public key
 	priv, err := s.thorKeys.GetPrivateKey()
 	c.Assert(err, IsNil)
-	temp, err := codec.ToTmPubKeyInterface(priv.PubKey())
+	temp, err := cryptocodec.ToCmtPubKeyInterface(priv.PubKey())
 	c.Assert(err, IsNil)
 	pubkey, err := common.NewPubKeyFromCrypto(temp)
 	c.Assert(err, IsNil)
@@ -131,6 +136,7 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 							"cumulativeGasUsed": "0x1",
 							"from": "` + vaultAddr.String() + `",
 							"gasUsed": "0x1",
+							"effectiveGasPrice":"0x2540be400",
 							"logs": [],
 							"logsBloom": "0x` + strings.Repeat("00", 256) + `",
 							"status": "0x1",
@@ -282,6 +288,7 @@ func (s *UnstuckTestSuite) TestUnstuckProcess(c *C) {
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err, IsNil)
 	c.Assert(e, NotNil)
+	e.ethScanner.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(pubkeyMgr.Start(), IsNil)
 	defer func() { c.Assert(pubkeyMgr.Stop(), IsNil) }()
 	pubkey := e.kw.GetPubKey().String()

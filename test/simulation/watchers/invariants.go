@@ -3,16 +3,26 @@ package watchers
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
 
-	keeperv1 "gitlab.com/thorchain/thornode/x/thorchain/keeper/v1"
+	keeperv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
 
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
 )
+
+var httpClient = &http.Client{
+	Transport: &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).Dial,
+	},
+	Timeout: 5 * time.Second,
+}
 
 func NewInvariants() *Watcher {
 	cl := log.With().Str("watcher", "invariants").Logger()
@@ -31,7 +41,7 @@ func NewInvariants() *Watcher {
 			for _, invariant := range invariants {
 				endpoint := fmt.Sprintf("%s/thorchain/invariant/%s", thornodeURL, invariant)
 
-				resp, err := http.Get(endpoint)
+				resp, err := httpClient.Get(endpoint)
 				if err != nil {
 					cl.Error().Err(err).Str("invariant", invariant).Msg("failed to get invariant")
 					continue

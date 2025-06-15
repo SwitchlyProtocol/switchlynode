@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/types"
 )
 
 // NOTE: Always end a dbPrefix with a slash ("/"). This is to ensure that there
@@ -25,7 +25,6 @@ import (
 // Also, use underscores between words and use lowercase characters only
 
 const (
-	prefixStoreVersion            types.DbPrefix = "_ver/"
 	prefixObservedTxIn            types.DbPrefix = "observed_tx_in/"
 	prefixObservedTxOut           types.DbPrefix = "observed_tx_out/"
 	prefixObservedLink            types.DbPrefix = "ob_link/"
@@ -50,6 +49,7 @@ const (
 	prefixPOL                     types.DbPrefix = "pol/"
 	prefixLoan                    types.DbPrefix = "loan/"
 	prefixTradeAccount            types.DbPrefix = "tr_acct/"
+	prefixSecuredAsset            types.DbPrefix = "sa/"
 	prefixRUNEProvider            types.DbPrefix = "rune_provider/"
 	prefixRUNEPool                types.DbPrefix = "rune_pool/"
 	prefixTradeUnit               types.DbPrefix = "tr_unit/"
@@ -69,10 +69,10 @@ const (
 	prefixNodeSlashPoints         types.DbPrefix = "slash/"
 	prefixNodeJail                types.DbPrefix = "jail/"
 	prefixSwapQueueItem           types.DbPrefix = "swapitem/"
-	prefixOrderBookItem           types.DbPrefix = "o/"
-	prefixOrderBookLimitIndex     types.DbPrefix = "olim/"
-	prefixOrderBookMarketIndex    types.DbPrefix = "omark/"
-	prefixOrderBookProcessor      types.DbPrefix = "oproc/"
+	prefixAdvSwapQueueItem        types.DbPrefix = "aq/"
+	prefixAdvSwapQueueLimitIndex  types.DbPrefix = "aqlim/"
+	prefixAdvSwapQueueMarketIndex types.DbPrefix = "aqmark/"
+	prefixAdvSwapQueueProcessor   types.DbPrefix = "aqproc/"
 	prefixOutboundFeeWithheldRune types.DbPrefix = "outbound_fee_withheld_rune/"
 	prefixOutboundFeeSpentRune    types.DbPrefix = "outbound_fee_spent_rune/"
 	prefixMimir                   types.DbPrefix = "mimir/"
@@ -92,6 +92,8 @@ const (
 	prefixVersion                 types.DbPrefix = "version/"
 	prefixUpgradeProposals        types.DbPrefix = "upgr_props/"
 	prefixUpgradeVotes            types.DbPrefix = "upgr_votes/"
+	prefixTCYClaimer              types.DbPrefix = "tcy_claimer/"
+	prefixTCYStaker               types.DbPrefix = "tcy_staker/"
 )
 
 func dbError(ctx cosmos.Context, wrapper string, err error) error {
@@ -105,14 +107,14 @@ type KVStore struct {
 	cdc           codec.BinaryCodec
 	coinKeeper    bankkeeper.Keeper
 	accountKeeper authkeeper.AccountKeeper
-	upgradeKeeper upgradekeeper.Keeper
+	upgradeKeeper *upgradekeeper.Keeper
 	storeKey      cosmos.StoreKey // Unexposed key to access store from cosmos.Context
 	version       semver.Version
 	constAccessor constants.ConstantValues
 }
 
 // NewKVStore creates new instances of the thorchain Keeper
-func NewKVStore(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeeper authkeeper.AccountKeeper, upgradeKeeper upgradekeeper.Keeper, storeKey cosmos.StoreKey, version semver.Version) KVStore {
+func NewKVStore(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeeper authkeeper.AccountKeeper, upgradeKeeper *upgradekeeper.Keeper, storeKey cosmos.StoreKey, version semver.Version) KVStore {
 	return KVStore{
 		coinKeeper:    coinKeeper,
 		accountKeeper: accountKeeper,
@@ -125,7 +127,7 @@ func NewKVStore(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeep
 }
 
 // NewKeeper creates new instances of the thorchain Keeper
-func NewKeeper(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeeper authkeeper.AccountKeeper, upgradeKeeper upgradekeeper.Keeper, storeKey cosmos.StoreKey) keeper.Keeper {
+func NewKeeper(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeeper authkeeper.AccountKeeper, upgradeKeeper *upgradekeeper.Keeper, storeKey cosmos.StoreKey) keeper.Keeper {
 	version := semver.MustParse("0.0.0")
 	return NewKVStore(cdc, coinKeeper, accountKeeper, upgradeKeeper, storeKey, version)
 }
@@ -147,28 +149,6 @@ func (k *KVStore) SetVersion(ver semver.Version) {
 // GetKey return a key that can be used to store into key value store
 func (k KVStore) GetKey(prefix types.DbPrefix, key string) string {
 	return fmt.Sprintf("%s/%s", prefix, strings.ToUpper(key))
-}
-
-// SetStoreVersion save the store version
-func (k KVStore) SetStoreVersion(ctx cosmos.Context, value int64) {
-	key := k.GetKey(prefixStoreVersion, "")
-	store := ctx.KVStore(k.storeKey)
-	ver := ProtoInt64{Value: value}
-	store.Set([]byte(key), k.cdc.MustMarshal(&ver))
-}
-
-// GetStoreVersion get the current key value store version
-func (k KVStore) GetStoreVersion(ctx cosmos.Context) int64 {
-	key := k.GetKey(prefixStoreVersion, "")
-	store := ctx.KVStore(k.storeKey)
-	if !store.Has([]byte(key)) {
-		// thornode start at version 0.38.0, thus when there is no store version , it return 38
-		return 38
-	}
-	var ver ProtoInt64
-	buf := store.Get([]byte(key))
-	k.cdc.MustUnmarshal(buf, &ver)
-	return ver.Value
 }
 
 // getIterator - get an iterator for given prefix
@@ -378,10 +358,6 @@ func (k KVStore) SendCoins(ctx cosmos.Context, from, to cosmos.AccAddress, coins
 	return k.coinKeeper.SendCoins(ctx, from, to, coins)
 }
 
-func (k KVStore) AddCoins(ctx cosmos.Context, addr cosmos.AccAddress, coins cosmos.Coins) error {
-	return k.coinKeeper.SendCoinsFromModuleToAccount(ctx, ModuleName, addr, coins)
-}
-
 // SendFromAccountToModule transfer fund from one account to a module
 func (k KVStore) SendFromAccountToModule(ctx cosmos.Context, from cosmos.AccAddress, to string, coins common.Coins) error {
 	cosmosCoins := make(cosmos.Coins, len(coins))
@@ -487,6 +463,10 @@ func (k KVStore) GetModuleAccAddress(module string) cosmos.AccAddress {
 
 func (k KVStore) GetBalance(ctx cosmos.Context, addr cosmos.AccAddress) cosmos.Coins {
 	return k.coinKeeper.GetAllBalances(ctx, addr)
+}
+
+func (k KVStore) GetBalanceOf(ctx cosmos.Context, addr cosmos.AccAddress, asset common.Asset) cosmos.Coin {
+	return k.coinKeeper.GetBalance(ctx, addr, asset.Native())
 }
 
 func (k KVStore) HasCoins(ctx cosmos.Context, addr cosmos.AccAddress, coins cosmos.Coins) bool {

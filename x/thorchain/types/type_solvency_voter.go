@@ -1,21 +1,18 @@
 package types
 
 import (
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // NewSolvencyVoter create a new solvency voter
-func NewSolvencyVoter(id common.TxID, chain common.Chain, pubKey common.PubKey, coins common.Coins, height int64, signer cosmos.AccAddress) SolvencyVoter {
+func NewSolvencyVoter(id common.TxID, chain common.Chain, pubKey common.PubKey, coins common.Coins, height int64) SolvencyVoter {
 	return SolvencyVoter{
 		Id:     id,
 		Chain:  chain,
 		PubKey: pubKey,
 		Coins:  coins,
 		Height: height,
-		Signers: []string{
-			signer.String(),
-		},
 	}
 }
 

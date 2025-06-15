@@ -1,8 +1,8 @@
 package keeperv1
 
 import (
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 const (
@@ -12,6 +12,8 @@ const (
 	AffiliateCollectorName = types.AffiliateCollectorName
 	TreasuryName           = types.TreasuryName
 	RUNEPoolName           = types.RUNEPoolName
+	TCYClaimingName        = types.TCYClaimingName
+	TCYStakeName           = types.TCYStakeName
 	BondName               = types.BondName
 	LendingName            = types.LendingName
 	StoreKey               = types.StoreKey
@@ -40,6 +42,7 @@ const (
 	// Bond type
 	AsgardKeygen = types.KeygenType_AsgardKeygen
 	BondCost     = types.BondType_bond_cost
+	BondReturned = types.BondType_bond_returned
 )
 
 var (
@@ -50,7 +53,7 @@ var (
 	NewNetwork                 = types.NewNetwork
 	NewProtocolOwnedLiquidity  = types.NewProtocolOwnedLiquidity
 	NewRUNEPool                = types.NewRUNEPool
-	NewObservedTx              = types.NewObservedTx
+	NewObservedTx              = common.NewObservedTx
 	NewTssVoter                = types.NewTssVoter
 	NewBanVoter                = types.NewBanVoter
 	NewErrataTxVoter           = types.NewErrataTxVoter
@@ -59,9 +62,10 @@ var (
 	NewKeygenBlock             = types.NewKeygenBlock
 	NewTxOut                   = types.NewTxOut
 	HasSuperMajority           = types.HasSuperMajority
-	RegisterCodec              = types.RegisterCodec
+	RegisterLegacyAminoCodec   = types.RegisterLegacyAminoCodec
 	NewTradeAccount            = types.NewTradeAccount
 	NewTradeUnit               = types.NewTradeUnit
+	NewSecuredAsset            = types.NewSecuredAsset
 	NewRUNEProvider            = types.NewRUNEProvider
 	NewNodeAccount             = types.NewNodeAccount
 	NewBondProviders           = types.NewBondProviders
@@ -90,6 +94,8 @@ var (
 	SetupConfigForTest         = types.SetupConfigForTest
 	NewChainContract           = types.NewChainContract
 	NewSwapperClout            = types.NewSwapperClout
+	NewTCYClaimer              = types.NewTCYClaimer
+	NewTCYStaker               = types.NewTCYStaker
 )
 
 type (
@@ -101,7 +107,7 @@ type (
 	LiquidityProvider        = types.LiquidityProvider
 	Loan                     = types.Loan
 	StreamingSwap            = types.StreamingSwap
-	ObservedTxs              = types.ObservedTxs
+	ObservedTxs              = common.ObservedTxs
 	ObservedTxVoter          = types.ObservedTxVoter
 	BanVoter                 = types.BanVoter
 	ErrataTxVoter            = types.ErrataTxVoter
@@ -139,11 +145,18 @@ type (
 	SwapperClout             = types.SwapperClout
 	TradeAccount             = types.TradeAccount
 	TradeUnit                = types.TradeUnit
+	SecuredAsset             = types.SecuredAsset
 	RUNEProvider             = types.RUNEProvider
 	RUNEPool                 = types.RUNEPool
+	MsgTCYClaim              = types.MsgTCYClaim
+	MsgTCYStake              = types.MsgTCYStake
+	MsgTCYUnstake            = types.MsgTCYUnstake
+	TCYClaimer               = types.TCYClaimer
+	TCYStaker                = types.TCYStaker
 
 	ProtoInt64        = types.ProtoInt64
 	ProtoUint64       = types.ProtoUint64
+	ProtoAccAddress   = types.ProtoAccAddress
 	ProtoAccAddresses = types.ProtoAccAddresses
 	ProtoStrings      = types.ProtoStrings
 	ProtoUint         = common.ProtoUint

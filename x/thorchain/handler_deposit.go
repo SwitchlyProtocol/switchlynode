@@ -1,17 +1,16 @@
 package thorchain
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/blang/semver"
+	tmtypes "github.com/cometbft/cometbft/types"
 	se "github.com/cosmos/cosmos-sdk/types/errors"
-	tmtypes "github.com/tendermint/tendermint/types"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 // DepositHandler is to process native messages on THORChain
@@ -47,56 +46,41 @@ func (h DepositHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Result, e
 func (h DepositHandler) validate(ctx cosmos.Context, msg MsgDeposit) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.134.0")):
-		return h.validateV134(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errInvalidVersion
 	}
 }
 
-func (h DepositHandler) validateV134(ctx cosmos.Context, msg MsgDeposit) error {
-	err := msg.ValidateBasic()
-	if err != nil {
+func (h DepositHandler) validateV3_0_0(ctx cosmos.Context, msg MsgDeposit) error {
+	// ValidateBasic is also executed in message service router's handler and isn't versioned there
+	if err := msg.ValidateBasic(); err != nil {
 		return err
-	}
-
-	// TODO on hard fork move to ValidateBasic
-	// deposit only allowed with one coin
-	if len(msg.Coins) != 1 {
-		return errors.New("only one coin is allowed")
-	}
-
-	// TODO on hard fork move to Coin.Valid() and call that from ValidateBasic
-	// trunk-ignore(golangci-lint/govet): shadow
-	if err := msg.Coins[0].Asset.Valid(); err != nil {
-		return fmt.Errorf("invalid coin: %w", err)
 	}
 
 	return nil
 }
 
 func (h DepositHandler) handle(ctx cosmos.Context, msg MsgDeposit) (*cosmos.Result, error) {
-	ctx.Logger().Info("receive MsgDeposit", "from", msg.GetSigners()[0], "coins", msg.Coins, "memo", msg.Memo)
-	version := h.mgr.GetVersion()
-	switch {
-	case version.GTE(semver.MustParse("1.131.0")):
-		return h.handleV131(ctx, msg)
-	default:
-		return nil, errInvalidVersion
-	}
-}
-
-func (h DepositHandler) handleV131(ctx cosmos.Context, msg MsgDeposit) (*cosmos.Result, error) {
 	if h.mgr.Keeper().IsChainHalted(ctx, common.THORChain) {
 		return nil, fmt.Errorf("unable to use MsgDeposit while THORChain is halted")
 	}
 
-	if msg.Coins[0].Asset.IsTradeAsset() {
-		balance := h.mgr.TradeAccountManager().BalanceOf(ctx, msg.Coins[0].Asset, msg.Signer)
+	asset := msg.Coins[0].Asset
+
+	switch {
+	case asset.IsTradeAsset():
+		balance := h.mgr.TradeAccountManager().BalanceOf(ctx, asset, msg.Signer)
 		if msg.Coins[0].Amount.GT(balance) {
 			return nil, se.ErrInsufficientFunds
 		}
-	} else {
+	case asset.IsSecuredAsset():
+		balance := h.mgr.SecuredAssetManager().BalanceOf(ctx, asset, msg.Signer)
+		if msg.Coins[0].Amount.GT(balance) {
+			return nil, se.ErrInsufficientFunds
+		}
+	default:
 		coins, err := msg.Coins.Native()
 		if err != nil {
 			return nil, ErrInternal(err, "coins are native to THORChain")
@@ -139,15 +123,26 @@ func (h DepositHandler) handleV131(ctx cosmos.Context, msg MsgDeposit) (*cosmos.
 	switch memo.GetType() {
 	case TxBond, TxUnBond, TxLeave:
 		targetModule = BondName
-	case TxReserve, TxTHORName:
+	// For TxTCYClaim, send to Reserve so retrievable if done accidentally
+	case TxReserve, TxTHORName, TxTCYClaim, TxMaint:
 		targetModule = ReserveName
+	case TxTCYStake, TxTCYUnstake:
+		targetModule = TCYStakeName
 	default:
 		targetModule = AsgardName
 	}
+
+	// Only permit coin types other than RUNE to be sent to network modules when explicitly allowed.
+	// (When the Amount is zero, the Asset type is irrelevant.)
+	// Coins having exactly one Coin is ensured by the validate function,
+	// but IsEmpty covers a hypothetical no-Coin scenario too.
+	if !msg.Coins.IsEmpty() && (!msg.Coins[0].Asset.IsRune() && !msg.Coins[0].Asset.IsTCY() && !msg.Coins[0].Asset.IsRUJI()) && targetModule != AsgardName {
+		return nil, fmt.Errorf("(%s) memos are for the (%s) module, for which messages must only contain RUNE or TCY", memo.GetType().String(), targetModule)
+	}
+
 	coinsInMsg := msg.Coins
-	if !coinsInMsg.IsEmpty() && !coinsInMsg[0].Asset.IsTradeAsset() {
+	if !coinsInMsg.IsEmpty() && !coinsInMsg[0].Asset.IsTradeAsset() && !coinsInMsg[0].Asset.IsSecuredAsset() {
 		// send funds to target module
-		// trunk-ignore(golangci-lint/govet): shadow
 		err := h.mgr.Keeper().SendFromAccountToModule(ctx, msg.GetSigners()[0], targetModule, msg.Coins)
 		if err != nil {
 			return nil, err
@@ -164,7 +159,7 @@ func (h DepositHandler) handleV131(ctx cosmos.Context, msg MsgDeposit) (*cosmos.
 
 	// construct msg from memo
 	txIn := ObservedTx{Tx: tx}
-	txInVoter := NewObservedTxVoter(txIn.Tx.ID, []ObservedTx{txIn})
+	txInVoter := NewObservedTxVoter(txIn.Tx.ID, []common.ObservedTx{txIn})
 	txInVoter.Height = ctx.BlockHeight() // While FinalisedHeight may be overwritten, Height records the consensus height
 	txInVoter.FinalisedHeight = ctx.BlockHeight()
 	txInVoter.Tx = txIn
@@ -211,7 +206,6 @@ func (h DepositHandler) handleV131(ctx cosmos.Context, msg MsgDeposit) (*cosmos.
 	// if an outbound is not expected, mark the voter as done
 	if !memo.GetType().HasOutbound() {
 		// retrieve the voter from store in case the handler caused a change
-		// trunk-ignore(golangci-lint/govet): shadow
 		voter, err := h.mgr.Keeper().GetObservedTxInVoter(ctx, txID)
 		if err != nil {
 			return nil, fmt.Errorf("fail to get voter")
@@ -223,14 +217,14 @@ func (h DepositHandler) handleV131(ctx cosmos.Context, msg MsgDeposit) (*cosmos.
 }
 
 func (h DepositHandler) addSwap(ctx cosmos.Context, msg MsgSwap) {
-	if h.mgr.Keeper().OrderBooksEnabled(ctx) {
+	if h.mgr.Keeper().AdvSwapQueueEnabled(ctx) {
 		source := msg.Tx.Coins[0]
 		target := common.NewCoin(msg.TargetAsset, msg.TradeTarget)
-		evt := NewEventLimitOrder(source, target, msg.Tx.ID)
+		evt := NewEventLimitSwap(source, target, msg.Tx.ID)
 		if err := h.mgr.EventMgr().EmitEvent(ctx, evt); err != nil {
-			ctx.Logger().Error("fail to emit limit order event", "error", err)
+			ctx.Logger().Error("fail to emit limit swap event", "error", err)
 		}
-		if err := h.mgr.Keeper().SetOrderBookItem(ctx, msg); err != nil {
+		if err := h.mgr.AdvSwapQueueMgr().AddSwapQueueItem(ctx, msg); err != nil {
 			ctx.Logger().Error("fail to add swap to queue", "error", err)
 		}
 	} else {
@@ -238,98 +232,32 @@ func (h DepositHandler) addSwap(ctx cosmos.Context, msg MsgSwap) {
 	}
 }
 
-// addSwapDirect adds the swap directly to the swap queue (no order book) - segmented
-// out into its own function to allow easier maintenance of original behavior vs order
-// book behavior.
+// addSwapDirect adds the swap directly to the swap queue - segmented out into
+// its own function to allow easier maintenance of original behavior vs advanced
+// behavior.
 func (h DepositHandler) addSwapDirect(ctx cosmos.Context, msg MsgSwap) {
-	if msg.Tx.Coins.IsEmpty() {
-		return
-	}
-	amt := cosmos.ZeroUint()
-	swapSourceAsset := msg.Tx.Coins[0].Asset
-
-	// Check if affiliate fee should be paid out
-	if !msg.AffiliateBasisPoints.IsZero() && msg.AffiliateAddress.IsChain(common.THORChain) {
-		amt = common.GetSafeShare(
-			msg.AffiliateBasisPoints,
-			cosmos.NewUint(10000),
-			msg.Tx.Coins[0].Amount,
-		)
-		msg.Tx.Coins[0].Amount = common.SafeSub(msg.Tx.Coins[0].Amount, amt)
-	}
-
-	// Queue the main swap
-	if err := h.mgr.Keeper().SetSwapQueueItem(ctx, msg, 0); err != nil {
-		ctx.Logger().Error("fail to add swap to queue", "error", err)
-	}
-
-	// Affiliate fee flow
-	if !amt.IsZero() {
-		toAddress, err := msg.AffiliateAddress.AccAddress()
-		if err != nil {
-			ctx.Logger().Error("fail to convert address into AccAddress", "msg", msg.AffiliateAddress, "error", err)
-			return
-		}
-
-		memo, err := ParseMemoWithTHORNames(ctx, h.mgr.Keeper(), msg.Tx.Memo)
-		if err != nil {
-			ctx.Logger().Error("fail to parse swap memo", "memo", msg.Tx.Memo, "error", err)
-			return
-		}
-		// since native transaction fee has been charged to inbound from address, thus for affiliated fee , the network doesn't need to charge it again
-		coin := common.NewCoin(swapSourceAsset, amt)
-		affThorname := memo.GetAffiliateTHORName()
-
-		// PreferredAsset set, update the AffiliateCollector module
-		if affThorname != nil && !affThorname.PreferredAsset.IsEmpty() && swapSourceAsset.IsRune() {
-			h.updateAffiliateCollector(ctx, coin, msg, affThorname)
-			return
-		}
-
-		// No PreferredAsset set, normal behavior
-		sdkErr := h.mgr.Keeper().SendFromModuleToAccount(ctx, AsgardName, toAddress, common.NewCoins(coin))
-		if sdkErr != nil {
-			ctx.Logger().Error("fail to send native asset to affiliate", "msg", msg.AffiliateAddress, "error", err, "asset", swapSourceAsset)
-		}
+	version := h.mgr.GetVersion()
+	switch {
+	case version.GTE(semver.MustParse("3.0.0")):
+		h.addSwapDirectV3_0_0(ctx, msg)
+	default:
+		ctx.Logger().Error(errInvalidVersion.Error())
 	}
 }
 
-// updateAffiliateCollector - accrue RUNE in the AffiliateCollector module and check if
-// a PreferredAsset swap should be triggered
-func (h DepositHandler) updateAffiliateCollector(ctx cosmos.Context, coin common.Coin, msg MsgSwap, thorname *THORName) {
-	affcol, err := h.mgr.Keeper().GetAffiliateCollector(ctx, thorname.Owner)
-	if err != nil {
-		ctx.Logger().Error("failed to get affiliate collector", "msg", msg.AffiliateAddress, "error", err)
-	} else {
-		// trunk-ignore(golangci-lint/govet): shadow
-		if err := h.mgr.Keeper().SendFromModuleToModule(ctx, AsgardName, AffiliateCollectorName, common.NewCoins(coin)); err != nil {
-			ctx.Logger().Error("failed to send funds to affiliate collector", "error", err)
-		} else {
-			affcol.RuneAmount = affcol.RuneAmount.Add(coin.Amount)
-			h.mgr.Keeper().SetAffiliateCollector(ctx, affcol)
-		}
-	}
-
-	// Check if accrued RUNE is 100x current outbound fee of preferred asset chain, if so
-	// trigger the preferred asset swap
-	ofRune, err := h.mgr.GasMgr().GetAssetOutboundFee(ctx, thorname.PreferredAsset, true)
-	if err != nil {
-		ctx.Logger().Error("failed to get outbound fee for preferred asset, skipping preferred asset swap", "name", thorname.Name, "asset", thorname.PreferredAsset, "error", err)
+func (h DepositHandler) addSwapDirectV3_0_0(ctx cosmos.Context, msg MsgSwap) {
+	if msg.Tx.Coins.IsEmpty() {
 		return
 	}
-
-	multiplier := h.mgr.Keeper().GetConfigInt64(ctx, constants.PreferredAssetOutboundFeeMultiplier)
-	threshold := ofRune.Mul(cosmos.NewUint(uint64(multiplier)))
-	if affcol.RuneAmount.GT(threshold) {
-		if err = triggerPreferredAssetSwap(ctx, h.mgr, msg.AffiliateAddress, msg.Tx.ID, *thorname, affcol, 1); err != nil {
-			ctx.Logger().Error("fail to swap to preferred asset", "thorname", thorname.Name, "err", err)
-		}
+	// Queue the main swap
+	if err := h.mgr.Keeper().SetSwapQueueItem(ctx, msg, 0); err != nil {
+		ctx.Logger().Error("fail to add swap to queue", "error", err)
 	}
 }
 
 // DepositAnteHandler called by the ante handler to gate mempool entry
 // and also during deliver. Store changes will persist if this function
 // succeeds, regardless of the success of the transaction.
-func DepositAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgDeposit) error {
-	return k.DeductNativeTxFeeFromAccount(ctx, msg.GetSigners()[0])
+func DepositAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgDeposit) (cosmos.Context, error) {
+	return ctx, k.DeductNativeTxFeeFromAccount(ctx, msg.GetSigners()[0])
 }

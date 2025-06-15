@@ -6,11 +6,11 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type HelperSuite struct{}
@@ -279,7 +279,7 @@ func (s *HelperSuite) TestAddGasFees(c *C) {
 						},
 						Memo: "",
 					},
-					Status:         types.Status_done,
+					Status:         common.Status_done,
 					OutHashes:      nil,
 					BlockHeight:    helper.ctx.BlockHeight(),
 					Signers:        []string{helper.na.NodeAddress.String()},
@@ -314,7 +314,7 @@ func (s *HelperSuite) TestAddGasFees(c *C) {
 						},
 						Memo: "",
 					},
-					Status:         types.Status_done,
+					Status:         common.Status_done,
 					OutHashes:      nil,
 					BlockHeight:    helper.ctx.BlockHeight(),
 					Signers:        []string{helper.na.NodeAddress.String()},
@@ -736,22 +736,22 @@ func (HandlerSuite) TestWillSwapSucceed(c *C) {
 	// swap from BTC to ETH
 
 	// no limit, should succeed
-	msg := NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg := NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, true)
 
 	// no limit, but small swap, should fail
 	tx.Coins = common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(1))}
-	msg = NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, false)
 
 	// limit too high, should fail
 	tx.Coins = common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(common.One))}
-	msg = NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.NewUint(100*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.NewUint(100*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, false)
 
 	// limit not too high, should succeed
 	tx.Coins = common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(common.One))}
-	msg = NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.NewUint(1*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(tx, common.ETHAsset, GetRandomBTCAddress(), cosmos.NewUint(1*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, true)
 
 	runeTx := common.NewTx(
@@ -768,42 +768,42 @@ func (HandlerSuite) TestWillSwapSucceed(c *C) {
 	// swaps from RUNE
 
 	// swap from RUNE no limit, should succeed
-	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, true)
 
 	// swap from RUNE, no limit, but small swap, should fail
 	runeTx.Coins = common.Coins{common.NewCoin(common.RuneNative, cosmos.NewUint(1))}
-	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, false)
 
 	// swap from RUNE, limit too high, should fail
 	runeTx.Coins = common.Coins{common.NewCoin(common.RuneNative, cosmos.NewUint(common.One*50))}
-	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.NewUint(100*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.NewUint(100*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, false)
 
 	// swap from RUNE, limit not too high, should succeed
-	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.NewUint(0.01*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(runeTx, common.BTCAsset, GetRandomBTCAddress(), cosmos.NewUint(0.01*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, true)
 
 	// swaps to RUNE
 
 	// swap to RUNE, no limit, should succeed
-	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, true)
 
 	// swap to RUNE, no limit, but small swap, should fail
 	tx.Coins = common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(1))}
-	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, false)
 
 	// swap to RUNE, limit too high, should fail
 	tx.Coins = common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(common.One))}
-	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.NewUint(100_000*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.NewUint(100_000*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, false)
 
 	// swap to RUNE, limit not too high, should succeed
 	tx.Coins = common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(common.One))}
-	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.NewUint(1*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msg = NewMsgSwap(tx, common.RuneNative, GetRandomTHORAddress(), cosmos.NewUint(1*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	c.Assert(willSwapOutputExceedLimitAndFees(ctx, mgr, *msg), Equals, true)
 }
 
@@ -819,4 +819,29 @@ func (HandlerSuite) TestNewSwapMemo(c *C) {
 	addr = GetRandomTHORAddress()
 	memo = NewSwapMemo(ctx, mgr, common.RuneNative, addr, cosmos.NewUint(0), "", cosmos.NewUint(0))
 	c.Assert(memo, Equals, fmt.Sprintf("=:THOR.RUNE:%s:0::0", addr.String()))
+}
+
+func (HandlerSuite) TestIsPeriodLastBlock(c *C) {
+	ctx, _ := setupManagerForTest(c)
+	var blockVar int64
+
+	blockVar = 10
+	ctx = ctx.WithBlockHeight(10)
+	result := IsPeriodLastBlock(ctx, blockVar)
+	c.Assert(result, Equals, true)
+
+	blockVar = 100
+	ctx = ctx.WithBlockHeight(100)
+	result = IsPeriodLastBlock(ctx, blockVar)
+	c.Assert(result, Equals, true)
+
+	blockVar = 90
+	ctx = ctx.WithBlockHeight(89)
+	result = IsPeriodLastBlock(ctx, blockVar)
+	c.Assert(result, Equals, false)
+
+	blockVar = 100
+	ctx = ctx.WithBlockHeight(101)
+	result = IsPeriodLastBlock(ctx, blockVar)
+	c.Assert(result, Equals, false)
 }

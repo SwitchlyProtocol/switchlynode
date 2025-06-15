@@ -3,13 +3,13 @@ package thorchain
 import (
 	"fmt"
 
-	"github.com/armon/go-metrics"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // RunePoolWithdrawHandler a handler to process withdrawals from RunePool
@@ -55,20 +55,24 @@ func (h RunePoolWithdrawHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.
 func (h RunePoolWithdrawHandler) validate(ctx cosmos.Context, msg MsgRunePoolWithdraw) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.134.0")):
-		return h.validateV134(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h RunePoolWithdrawHandler) validateV134(ctx cosmos.Context, msg MsgRunePoolWithdraw) error {
+func (h RunePoolWithdrawHandler) validateV3_0_0(ctx cosmos.Context, msg MsgRunePoolWithdraw) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
 	runePoolEnabled := h.mgr.Keeper().GetConfigInt64(ctx, constants.RUNEPoolEnabled)
 	if runePoolEnabled <= 0 {
 		return fmt.Errorf("RUNEPool disabled")
+	}
+	runePoolWithdrawPaused := h.mgr.Keeper().GetConfigInt64(ctx, constants.RUNEPoolHaltWithdraw)
+	if runePoolWithdrawPaused > 0 && ctx.BlockHeight() >= runePoolWithdrawPaused {
+		return fmt.Errorf("RUNEPool withdraw paused")
 	}
 	maxAffBasisPts := h.mgr.Keeper().GetConfigInt64(ctx, constants.MaxAffiliateFeeBasisPoints)
 	if !msg.AffiliateBasisPoints.IsZero() && msg.AffiliateBasisPoints.GT(cosmos.NewUint(uint64(maxAffBasisPts))) {
@@ -80,14 +84,14 @@ func (h RunePoolWithdrawHandler) validateV134(ctx cosmos.Context, msg MsgRunePoo
 func (h RunePoolWithdrawHandler) handle(ctx cosmos.Context, msg MsgRunePoolWithdraw) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.134.0")):
-		return h.handleV134(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h RunePoolWithdrawHandler) handleV134(ctx cosmos.Context, msg MsgRunePoolWithdraw) error {
+func (h RunePoolWithdrawHandler) handleV3_0_0(ctx cosmos.Context, msg MsgRunePoolWithdraw) error {
 	accAddr, err := cosmos.AccAddressFromBech32(msg.Signer.String())
 	if err != nil {
 		return fmt.Errorf("unable to AccAddressFromBech32: %s", err)

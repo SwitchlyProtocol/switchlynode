@@ -18,6 +18,13 @@ func (s ChainSuite) TestChain(c *C) {
 	c.Check(ethChain.IsEmpty(), Equals, false)
 	c.Check(ethChain.String(), Equals, "ETH")
 
+	// Test StellarChain
+	stellarChain, err := NewChain("xlm")
+	c.Assert(err, IsNil)
+	c.Check(stellarChain.Equals(StellarChain), Equals, true)
+	c.Check(stellarChain.IsEmpty(), Equals, false)
+	c.Check(stellarChain.String(), Equals, "XLM")
+
 	_, err = NewChain("B") // too short
 	c.Assert(err, NotNil)
 
@@ -35,8 +42,15 @@ func (s ChainSuite) TestChain(c *C) {
 	c.Assert(LTCChain.GetGasAsset(), Equals, LTCAsset)
 	c.Assert(BCHChain.GetGasAsset(), Equals, BCHAsset)
 	c.Assert(DOGEChain.GetGasAsset(), Equals, DOGEAsset)
+	c.Assert(StellarChain.GetGasAsset(), Equals, XLMAsset)
 	c.Assert(EmptyChain.GetGasAsset(), Equals, EmptyAsset)
-	c.Assert(STELLARChain.GetGasAsset(), Equals, XLMAsset)
+
+	// Test Stellar chain properties
+	c.Assert(StellarChain.GetGasUnits(), Equals, "stroop")
+	c.Assert(StellarChain.GetGasAssetDecimal(), Equals, int64(7))
+	c.Assert(StellarChain.DustThreshold().String(), Equals, "100000000") // 1 XLM in stroops
+	c.Assert(StellarChain.ApproximateBlockMilliseconds(), Equals, int64(5000))
+	c.Assert(StellarChain.InboundNotes(), Equals, "Transfer the inbound_address the asset with the memo. Use MemoText for the memo field. Do not use multi-in, multi-out transactions.")
 
 	c.Assert(BTCChain.AddressPrefix(MockNet), Equals, chaincfg.RegressionNetParams.Bech32HRPSegwit)
 	c.Assert(BTCChain.AddressPrefix(MainNet), Equals, chaincfg.MainNetParams.Bech32HRPSegwit)
@@ -49,5 +63,4 @@ func (s ChainSuite) TestChain(c *C) {
 	c.Assert(DOGEChain.AddressPrefix(MockNet), Equals, dogchaincfg.RegressionNetParams.Bech32HRPSegwit)
 	c.Assert(DOGEChain.AddressPrefix(MainNet), Equals, dogchaincfg.MainNetParams.Bech32HRPSegwit)
 	c.Assert(DOGEChain.AddressPrefix(StageNet), Equals, dogchaincfg.MainNetParams.Bech32HRPSegwit)
-
 }

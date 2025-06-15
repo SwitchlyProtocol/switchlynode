@@ -3,8 +3,9 @@ package keeperv1
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 func (k KVStore) IsTradingHalt(ctx cosmos.Context, msg cosmos.Msg) bool {
@@ -30,12 +31,23 @@ func (k KVStore) IsTradingHalt(ctx cosmos.Context, msg cosmos.Msg) bool {
 	switch m := msg.(type) {
 	case *MsgSwap:
 		source := common.EmptyChain
+		sourceAsset := m.Tx.Coins[0].Asset
 		if len(m.Tx.Coins) > 0 {
 			source = m.Tx.Coins[0].Asset.GetLayer1Asset().Chain
 		}
 		target := m.TargetAsset.GetLayer1Asset().Chain
+
+		if sourceAsset.IsTCY() {
+			return k.IsTCYTradingHalted(ctx) || k.IsChainTradingHalted(ctx, target)
+		} else if m.TargetAsset.IsTCY() {
+			return k.IsTCYTradingHalted(ctx) || k.IsChainTradingHalted(ctx, source)
+		}
+
 		return k.IsChainTradingHalted(ctx, source) || k.IsChainTradingHalted(ctx, target) || k.IsGlobalTradingHalted(ctx)
 	case *MsgAddLiquidity:
+		if m.Asset.IsTCY() {
+			return k.IsTCYTradingHalted(ctx)
+		}
 		return k.IsChainTradingHalted(ctx, m.Asset.Chain) || k.IsGlobalTradingHalted(ctx)
 	default:
 		return k.IsGlobalTradingHalted(ctx)
@@ -103,4 +115,23 @@ func (k KVStore) IsLPPaused(ctx cosmos.Context, chain common.Chain) bool {
 		return true
 	}
 	return false
+}
+
+func (k KVStore) IsPoolDepositPaused(ctx cosmos.Context, asset common.Asset) bool {
+	// check if deposits into pool are paused
+	v, err := k.GetMimirWithRef(ctx, constants.MimirTemplatePauseLPDeposit, asset.MimirString())
+	if err == nil && v > 0 {
+		return true
+	}
+	return false
+}
+
+func (k KVStore) IsTCYTradingHalted(ctx cosmos.Context) bool {
+	haltTCYTrading, err := k.GetMimir(ctx, "HaltTCYTrading")
+	if err == nil && (haltTCYTrading > 0 && haltTCYTrading < ctx.BlockHeight()) {
+		ctx.Logger().Debug("TCY trading is halt")
+		return true
+	}
+
+	return k.IsGlobalTradingHalted(ctx) || k.IsChainHalted(ctx, common.THORChain)
 }

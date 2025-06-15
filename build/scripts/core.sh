@@ -1,9 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 set -o pipefail
 
 # default ulimit is set too low for thornode in some environments
-# trunk-ignore(shellcheck/SC3045): alpine sh ulimit supports -n
 ulimit -n 65535
 
 PORT_P2P=26656
@@ -179,5 +178,10 @@ set_avax_contract() {
 
 set_bsc_contract() {
   jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts += [{"chain": "BSC", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+}
+
+set_base_contract() {
+  jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.thornode/config/genesis.json
 }

@@ -3,14 +3,14 @@ package blame
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/messages"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
 )
 
 type RoundMgrSuite struct{}
 
 var _ = Suite(&RoundMgrSuite{})
 
-func (ShareMgrSuite) TestTssRoundMgr(c *C) {
+func (RoundMgrSuite) TestTssRoundMgr(c *C) {
 	mgr := NewTssRoundMgr()
 	w1 := messages.WireMessage{
 		Routing:   nil,

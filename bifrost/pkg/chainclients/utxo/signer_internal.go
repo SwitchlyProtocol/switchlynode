@@ -6,28 +6,27 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/blang/semver"
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/wire"
 
 	"github.com/eager7/dogutil"
-	dogetxscript "gitlab.com/thorchain/thornode/bifrost/txscript/dogd-txscript"
+	dogetxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/dogd-txscript"
 
 	"github.com/gcash/bchutil"
-	bchtxscript "gitlab.com/thorchain/thornode/bifrost/txscript/bchd-txscript"
+	bchtxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/bchd-txscript"
 
 	"github.com/ltcsuite/ltcutil"
-	ltctxscript "gitlab.com/thorchain/thornode/bifrost/txscript/ltcd-txscript"
+	ltctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/ltcd-txscript"
 
 	"github.com/btcsuite/btcutil"
-	btctxscript "gitlab.com/thorchain/thornode/bifrost/txscript/txscript"
+	btctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/txscript"
 
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	mem "gitlab.com/thorchain/thornode/x/thorchain/memo"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -365,14 +364,8 @@ func (c *Client) buildTx(tx stypes.TxOutItem, sourceScript []byte) (*wire.MsgTx,
 		gasAmtSats = c.minRelayFeeSats
 	}
 
-	// TODO: remove version check after v132
-	version, err := c.bridge.GetThorchainVersion()
-	if err != nil {
-		c.log.Err(err).Msg("fail to get thorchain version")
-	}
-	// TODO: after v132 remove 'var memo mem.Memo' and change 'memo, err =' to 'memo, err :='
 	var memo mem.Memo
-	if err == nil && version.GTE(semver.MustParse("1.132.0")) {
+	if err == nil {
 		// Parse the memo to be able to identify Migrate or Consolidate outbounds.
 		memo, err = mem.ParseMemo(common.LatestVersion, tx.Memo)
 		if err != nil {
@@ -546,17 +539,25 @@ func (c *Client) consolidateUTXOs() {
 			continue
 		}
 		var rawTx []byte
-		rawTx, _, _, err = c.SignTx(txOutItem, height)
-		if err != nil {
-			c.log.Err(err).Msg("fail to sign consolidate txout item")
-			continue
+
+		signAndBroadcast := func() {
+			lock := c.GetVaultLock(vault.PubKey.String())
+			lock.Lock()
+			defer lock.Unlock()
+
+			rawTx, _, _, err = c.SignTx(txOutItem, height)
+			if err != nil {
+				c.log.Err(err).Msg("fail to sign consolidate txout item")
+			}
+			var txID string
+			txID, err = c.BroadcastTx(txOutItem, rawTx)
+			if err != nil {
+				c.log.Err(err).Str("signed", string(rawTx)).Msg("fail to broadcast consolidate tx")
+			} else {
+				c.log.Info().Msgf("broadcast consolidate tx successfully, hash:%s", txID)
+			}
 		}
-		var txID string
-		txID, err = c.BroadcastTx(txOutItem, rawTx)
-		if err != nil {
-			c.log.Err(err).Str("signed", string(rawTx)).Msg("fail to broadcast consolidate tx")
-			continue
-		}
-		c.log.Info().Msgf("broadcast consolidate tx successfully, hash:%s", txID)
+
+		signAndBroadcast()
 	}
 }

@@ -1,16 +1,17 @@
 package thorchain
 
 import (
+	"encoding/base64"
 	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
 
 	"github.com/blang/semver"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type parser struct {
@@ -75,7 +76,7 @@ func (p *parser) parse() (mem Memo, err error) {
 		return p.ParseRunePoolDepositMemo()
 	case TxRunePoolWithdraw:
 		return p.ParseRunePoolWithdrawMemo()
-	case TxSwap, TxLimitOrder:
+	case TxSwap, TxLimitSwap:
 		return p.ParseSwapMemo()
 	case TxOutbound:
 		return p.ParseOutboundMemo()
@@ -105,6 +106,23 @@ func (p *parser) parse() (mem Memo, err error) {
 		return p.ParseTradeAccountDeposit()
 	case TxTradeAccountWithdrawal:
 		return p.ParseTradeAccountWithdrawal()
+	case TxSecuredAssetDeposit:
+		return p.ParseSecuredAssetDeposit()
+	case TxSecuredAssetWithdraw:
+		return p.ParseSecuredAssetWithdraw()
+	case TxExec:
+		return p.ParseExecMemo()
+	case TxSwitch:
+		return p.ParseSwitch()
+	case TxTCYClaim:
+		return p.ParseTCYClaimMemo()
+	case TxTCYStake:
+		return p.ParseTCYStakeMemo()
+	case TxTCYUnstake:
+		return p.ParseTCYUnstakeMemo()
+	case TxMaint:
+		return p.ParseMaintMemo()
+
 	default:
 		return EmptyMemo, fmt.Errorf("TxType not supported: %s", p.getType().String())
 	}
@@ -141,6 +159,19 @@ func (p *parser) get(idx int) string {
 		return ""
 	}
 	return p.parts[idx]
+}
+
+// Safe accessor for split memo parts - always returns empty string for indices that are
+// out of bounds. Returns the sub-index of a split part (with separator "/").
+func (p *parser) getSubIndex(idx, subIdx int) string {
+	if idx < 0 || len(p.parts) <= idx {
+		return ""
+	}
+	subParts := strings.Split(p.parts[idx], "/")
+	if subIdx < 0 || len(subParts) <= subIdx {
+		return ""
+	}
+	return subParts[subIdx]
 }
 
 func (p *parser) getInt64(idx int, required bool, def int64) int64 {
@@ -217,10 +248,27 @@ func (p *parser) getAddress(idx int, required bool, def common.Address) common.A
 	return value
 }
 
+func (p *parser) getThorAddress(idx int, required bool, def common.Address) common.Address {
+	p.incRequired(required)
+	value, err := common.NewAddress(p.get(idx))
+	if err != nil {
+		if required || p.get(idx) != "" {
+			p.addErr(fmt.Errorf("cannot parse '%s' as an Address: %w", p.get(idx), err))
+		}
+		return def
+	}
+
+	if !value.IsChain(common.THORChain) && required {
+		p.addErr(fmt.Errorf("cannot parse '%s' as a THOR Address: %w", p.get(idx), err))
+		return def
+	}
+	return value
+}
+
 func (p *parser) getAddressWithKeeper(idx int, required bool, def common.Address, chain common.Chain) common.Address {
 	p.incRequired(required)
 	if p.keeper == nil {
-		return p.getAddress(2, required, common.NoAddress)
+		return p.getAddress(idx, required, common.NoAddress)
 	}
 	addr, err := FetchAddress(p.ctx, p.keeper, p.get(idx), chain)
 	if err != nil {
@@ -229,6 +277,36 @@ func (p *parser) getAddressWithKeeper(idx int, required bool, def common.Address
 		}
 	}
 	return addr
+}
+
+func (p *parser) getStringArrayBySeparator(idx int, required bool, separator string) []string {
+	p.incRequired(required)
+	value := p.get(idx)
+	if value == "" {
+		return []string{}
+	}
+	return strings.Split(value, separator)
+}
+
+func (p *parser) getUintArrayBySeparator(idx int, required bool, separator string) []cosmos.Uint {
+	p.incRequired(required)
+	value := p.get(idx)
+	if value == "" {
+		return []cosmos.Uint{}
+	}
+	strArray := strings.Split(value, separator)
+	result := make([]cosmos.Uint, 0, len(strArray))
+	for _, str := range strArray {
+		u, err := cosmos.ParseUint(str)
+		if err != nil {
+			if required || str != "" {
+				p.addErr(fmt.Errorf("cannot parse '%s' as an uint: %w", str, err))
+			}
+			return []cosmos.Uint{}
+		}
+		result = append(result, u)
+	}
+	return result
 }
 
 func (p *parser) getAddressAndRefundAddressWithKeeper(idx int, required bool, def common.Address, chain common.Chain) (common.Address, common.Address) {
@@ -310,9 +388,12 @@ func (p *parser) getTxID(idx int, required bool, def common.TxID) common.TxID {
 	return value
 }
 
-func (p *parser) getTHORName(idx int, required bool, def types.THORName) types.THORName {
+func (p *parser) getTHORName(idx int, required bool, def types.THORName, subIndex int) types.THORName {
 	p.incRequired(required)
 	name := p.get(idx)
+	if subIndex >= 0 {
+		name = p.getSubIndex(idx, subIndex)
+	}
 	if p.keeper == nil {
 		return def
 	}
@@ -326,4 +407,16 @@ func (p *parser) getTHORName(idx int, required bool, def types.THORName) types.T
 		return tn
 	}
 	return def
+}
+
+func (p *parser) getBase64Bytes(idx int, required bool, def []byte) []byte {
+	p.incRequired(required)
+	value, err := base64.StdEncoding.DecodeString(p.get(idx))
+	if err != nil {
+		if required || p.get(idx) != "" {
+			p.addErr(fmt.Errorf("cannot parse '%s' as a base64 string: %w", p.get(idx), err))
+		}
+		return def
+	}
+	return value
 }

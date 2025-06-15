@@ -5,8 +5,8 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // TradeAccountDepositHandler is handler to process MsgTradeAccountDeposit
@@ -42,16 +42,17 @@ func (h TradeAccountDepositHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosm
 func (h TradeAccountDepositHandler) validate(ctx cosmos.Context, msg MsgTradeAccountDeposit) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.134.0")):
-		return h.validateV134(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h TradeAccountDepositHandler) validateV134(ctx cosmos.Context, msg MsgTradeAccountDeposit) error {
+func (h TradeAccountDepositHandler) validateV3_0_0(ctx cosmos.Context, msg MsgTradeAccountDeposit) error {
 	tradeAccountsEnabled := h.mgr.Keeper().GetConfigInt64(ctx, constants.TradeAccountsEnabled)
-	if tradeAccountsEnabled <= 0 {
+	tradeAccountsDespositEnabled := h.mgr.Keeper().GetConfigInt64(ctx, constants.TradeAccountsDepositEnabled)
+	if tradeAccountsEnabled <= 0 || tradeAccountsDespositEnabled <= 0 {
 		return fmt.Errorf("trade accounts are disabled")
 	}
 	return msg.ValidateBasic()
@@ -60,15 +61,15 @@ func (h TradeAccountDepositHandler) validateV134(ctx cosmos.Context, msg MsgTrad
 func (h TradeAccountDepositHandler) handle(ctx cosmos.Context, msg MsgTradeAccountDeposit) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("0.1.0")):
-		return h.handleV1(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
 // handle process MsgTradeAccountDeposit
-func (h TradeAccountDepositHandler) handleV1(ctx cosmos.Context, msg MsgTradeAccountDeposit) error {
+func (h TradeAccountDepositHandler) handleV3_0_0(ctx cosmos.Context, msg MsgTradeAccountDeposit) error {
 	_, err := h.mgr.TradeAccountManager().Deposit(ctx, msg.Asset, msg.Amount, msg.Address, msg.Tx.FromAddress, msg.Tx.ID)
 	if err != nil {
 		ctx.Logger().Error("fail to handle Deposit", "error", err)

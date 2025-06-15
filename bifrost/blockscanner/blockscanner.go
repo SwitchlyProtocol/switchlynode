@@ -11,13 +11,13 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	btypes "gitlab.com/thorchain/thornode/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
+	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // BlockScannerFetcher define the methods a block scanner need to implement
@@ -28,6 +28,8 @@ type BlockScannerFetcher interface {
 	FetchTxs(fetchHeight, chainHeight int64) (types.TxIn, error)
 	// GetHeight return current block height
 	GetHeight() (int64, error)
+	// GetNetworkFee returns current network fee details
+	GetNetworkFee() (transactionSize, transactionFeeRate uint64)
 }
 
 type Block struct {
@@ -37,19 +39,21 @@ type Block struct {
 
 // BlockScanner is used to discover block height
 type BlockScanner struct {
-	cfg             config.BifrostBlockScannerConfiguration
-	logger          zerolog.Logger
-	wg              *sync.WaitGroup
-	scanChan        chan int64
-	stopChan        chan struct{}
-	scannerStorage  ScannerStorage
-	metrics         *metrics.Metrics
-	previousBlock   int64
-	globalTxsQueue  chan types.TxIn
-	errorCounter    *prometheus.CounterVec
-	thorchainBridge thorclient.ThorchainBridge
-	chainScanner    BlockScannerFetcher
-	healthy         *atomic.Bool
+	cfg                   config.BifrostBlockScannerConfiguration
+	logger                zerolog.Logger
+	wg                    *sync.WaitGroup
+	scanChan              chan int64
+	stopChan              chan struct{}
+	rollbackChan          chan int64
+	scannerStorage        ScannerStorage
+	metrics               *metrics.Metrics
+	previousBlock         int64
+	globalTxsQueue        chan types.TxIn
+	globalNetworkFeeQueue chan common.NetworkFee
+	errorCounter          *prometheus.CounterVec
+	thorchainBridge       thorclient.ThorchainBridge
+	chainScanner          BlockScannerFetcher
+	healthy               *atomic.Bool
 }
 
 // NewBlockScanner create a new instance of BlockScanner
@@ -72,6 +76,7 @@ func NewBlockScanner(cfg config.BifrostBlockScannerConfiguration, scannerStorage
 		wg:              &sync.WaitGroup{},
 		stopChan:        make(chan struct{}),
 		scanChan:        make(chan int64),
+		rollbackChan:    make(chan int64),
 		scannerStorage:  scannerStorage,
 		metrics:         m,
 		errorCounter:    m.GetCounterVec(metrics.CommonBlockScannerError),
@@ -94,14 +99,72 @@ func (b *BlockScanner) PreviousHeight() int64 {
 	return atomic.LoadInt64(&b.previousBlock)
 }
 
+// RollbackToLastObserved rollback the block scanner to last observed height minus flex period
+func (b *BlockScanner) RollbackToLastObserved() error {
+	lastObservedHeight, err := b.thorchainBridge.GetLastObservedInHeight(b.cfg.ChainID)
+	if err != nil {
+		return fmt.Errorf("fail to get last observed height: %w", err)
+	}
+	if lastObservedHeight <= 0 {
+		// no last observed height, no need to rollback
+		return nil
+	}
+
+	maxConfirmations, err := b.thorchainBridge.GetMimirWithRef(constants.MimirTemplateMaxConfirmations, b.cfg.ChainID.String())
+	if err != nil || maxConfirmations < 0 {
+		maxConfirmations = 0
+	}
+
+	c, err := b.thorchainBridge.GetConstants()
+	if err != nil {
+		return fmt.Errorf("fail to get constants: %w", err)
+	}
+
+	obsDelayFlexConst := constants.ObservationDelayFlexibility.String()
+	observerFlexWindowBlocksThor := c[obsDelayFlexConst]
+	observerFlexWindowBlocksThorMimir, err := b.thorchainBridge.GetMimir(obsDelayFlexConst)
+	if err == nil && observerFlexWindowBlocksThorMimir > 0 {
+		observerFlexWindowBlocksThor = observerFlexWindowBlocksThorMimir
+	}
+
+	thorBlockTimeMs := c[constants.ThorchainBlockTime.String()] / int64(time.Millisecond)
+	observerFlexWindowBlocksChain := observerFlexWindowBlocksThor * thorBlockTimeMs / b.cfg.ChainID.ApproximateBlockMilliseconds()
+	if observerFlexWindowBlocksChain < 1 {
+		observerFlexWindowBlocksChain = 1
+	}
+
+	rollbackHeight := lastObservedHeight - max(observerFlexWindowBlocksChain, maxConfirmations)
+
+	if rollbackHeight < 0 {
+		rollbackHeight = 0
+	}
+
+	b.rollbackChan <- rollbackHeight
+	return nil
+}
+
+func (b *BlockScanner) rollback(height int64) error {
+	if b.PreviousHeight() <= height {
+		// height is already below rollback amount, proceed as normal
+		return nil
+	}
+	if err := b.scannerStorage.SetScanPos(height); err != nil {
+		return fmt.Errorf("fail to set scan pos: %w", err)
+	}
+	// set the previous block to height
+	atomic.StoreInt64(&b.previousBlock, height)
+	return nil
+}
+
 // GetMessages return the channel
 func (b *BlockScanner) GetMessages() <-chan int64 {
 	return b.scanChan
 }
 
 // Start block scanner
-func (b *BlockScanner) Start(globalTxsQueue chan types.TxIn) {
+func (b *BlockScanner) Start(globalTxsQueue chan types.TxIn, globalNetworkFeeQueue chan common.NetworkFee) {
 	b.globalTxsQueue = globalTxsQueue
+	b.globalNetworkFeeQueue = globalNetworkFeeQueue
 	currentPos, err := b.scannerStorage.GetScanPos()
 	if err != nil {
 		b.logger.Error().Err(err).Msgf("fail to get current block scan pos, %s will start from %d", b.cfg.ChainID, b.previousBlock)
@@ -204,6 +267,13 @@ func (b *BlockScanner) scanBlocks() {
 		select {
 		case <-b.stopChan:
 			return
+		case amount := <-b.rollbackChan:
+			if err := b.rollback(amount); err != nil {
+				b.logger.Error().Err(err).Msg("fail to rollback block scanner")
+				b.errorCounter.WithLabelValues(b.cfg.ChainID.String()).Inc()
+				time.Sleep(b.cfg.BlockHeightDiscoverBackoff)
+				continue
+			}
 		default:
 			preBlockHeight := atomic.LoadInt64(&b.previousBlock)
 			currentBlock := preBlockHeight + 1
@@ -241,10 +311,18 @@ func (b *BlockScanner) scanBlocks() {
 				continue
 			}
 
+			ms := b.cfg.ChainID.ApproximateBlockMilliseconds()
+
+			// determine how often we compare THORNode network fee to Bifrost network fee.
+			// General goal is about once per day.
+			mod := ((24 * 60 * 60 * 1000) + ms - 1) / ms
+			if currentBlock%mod == 0 {
+				b.updateStaleNetworkFee(currentBlock)
+			}
+
 			// determine how often we print a info log line for scanner
 			// progress. General goal is about once per minute
-			ms := b.cfg.ChainID.ApproximateBlockMilliseconds()
-			mod := (60_000 + ms - 1) / ms
+			mod = (60_000 + ms - 1) / ms
 			// enable this one , so we could see how far it is behind
 			if currentBlock%mod == 0 || !b.healthy.Load() {
 				b.logger.Info().
@@ -280,6 +358,41 @@ func (b *BlockScanner) scanBlocks() {
 			}
 		}
 	}
+}
+
+// updateStaleNetworkFee broadcasts a network fee observation if the local scanner fee
+// does not match the fee published to THORNode. This can be called periodically to
+// ensure fee changes find consensus despite raciness on the observation height.
+func (b *BlockScanner) updateStaleNetworkFee(currentBlock int64) {
+	// Only broadcast MsgNetworkFee if the chain isn't THORChain
+	// and the scanner is healthy.
+	if b.cfg.ChainID.Equals(common.THORChain) || !b.healthy.Load() {
+		return
+	}
+
+	transactionSize, transactionFeeRate := b.chainScanner.GetNetworkFee()
+	thorTransactionSize, thorTransactionFeeRate, err := b.thorchainBridge.GetNetworkFee(b.cfg.ChainID)
+	if err != nil {
+		b.logger.Error().Err(err).Msg("fail to get thornode network fee")
+		return
+	}
+	// Do not broadcast a regularly-timed network fee if the THORNode network fee is already consistent with the scanner's.
+	if thorTransactionSize == transactionSize && thorTransactionFeeRate == transactionFeeRate {
+		return
+	}
+
+	b.globalNetworkFeeQueue <- common.NetworkFee{
+		Chain:           b.cfg.ChainID,
+		Height:          currentBlock,
+		TransactionSize: transactionSize,
+		TransactionRate: transactionFeeRate,
+	}
+
+	b.logger.Info().
+		Int64("height", currentBlock).
+		Uint64("size", transactionSize).
+		Uint64("rate", transactionFeeRate).
+		Msg("sent timed network fee to THORChain")
 }
 
 // FetchLastHeight determines the height to start scanning:

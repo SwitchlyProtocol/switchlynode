@@ -7,10 +7,10 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type HandlerOutboundTxSuite struct{}
@@ -229,8 +229,9 @@ func newOutboundTxHandlerTestHelper(c *C) outboundTxHandlerTestHelper {
 	c.Assert(keeperHelper.SetPool(ctx, pool), IsNil)
 	voter := NewObservedTxVoter(tx.Tx.ID, make(ObservedTxs, 0))
 	voter.Add(tx, nodeAccount.NodeAddress)
+	voter.Height = ctx.BlockHeight()
 	voter.FinalisedHeight = ctx.BlockHeight()
-	voter.Tx = voter.GetTx(NodeAccounts{nodeAccount})
+	voter.Tx = *voter.GetTx(NodeAccounts{nodeAccount})
 	keeperHelper.SetObservedTxOutVoter(ctx, voter)
 
 	constAccessor := constants.GetConstantValues(version)
@@ -395,7 +396,7 @@ func (s *HandlerOutboundTxSuite) TestOuboundTxHandlerSendExtraFundShouldBeSlashe
 		},
 	}, helper.ctx.BlockHeight(), helper.nodeAccount.PubKeySet.Secp256k1, helper.ctx.BlockHeight())
 	expectedBond := cosmos.NewUint(9999985039)
-	expectedVaultTotalReserve := cosmos.NewUint(7766279631465077623)
+	expectedVaultTotalReserve := cosmos.NewUint(10000000012835703)
 	// valid outbound message, with event, with txout
 	outMsg := NewMsgOutboundTx(tx, helper.inboundTx.Tx.ID, helper.nodeAccount.NodeAddress)
 	_, err = handler.Run(helper.ctx, outMsg)
@@ -459,7 +460,7 @@ func (s *HandlerOutboundTxSuite) TestOutboundTxHandlerInvalidObservedTxVoterShou
 	expectedBond := cosmos.NewUint(9850369713)
 
 	// expected 0.5 slashed RUNE be added to reserve
-	expectedVaultTotalReserve := cosmos.NewUint(7766279631514949398)
+	expectedVaultTotalReserve := cosmos.NewUint(10000000062707478)
 	pool, err := helper.keeper.GetPool(helper.ctx, common.BTCAsset)
 	c.Assert(err, IsNil)
 	poolBTC := common.SafeSub(pool.BalanceAsset, cosmos.NewUint(common.One).AddUint64(10000))

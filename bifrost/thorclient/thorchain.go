@@ -13,38 +13,37 @@ import (
 	"time"
 
 	"github.com/blang/semver"
+	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/std"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	rpchttp "github.com/tendermint/tendermint/rpc/client/http"
 
-	"gitlab.com/thorchain/thornode/app"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	stypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/app"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	stypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // Endpoint urls
 const (
-	AuthAccountEndpoint      = "/auth/accounts"
+	AuthAccountEndpoint      = "/cosmos/auth/v1beta1/accounts"
 	BroadcastTxsEndpoint     = "/"
 	KeygenEndpoint           = "/thorchain/keygen"
 	KeysignEndpoint          = "/thorchain/keysign"
 	LastBlockEndpoint        = "/thorchain/lastblock"
 	NodeAccountEndpoint      = "/thorchain/node"
+	NodeAccountsEndpoint     = "/thorchain/nodes"
 	SignerMembershipEndpoint = "/thorchain/vaults/%s/signers"
 	StatusEndpoint           = "/status"
 	VaultEndpoint            = "/thorchain/vault/%s"
@@ -77,6 +76,7 @@ type ThorchainBridge interface {
 	EnsureNodeWhitelisted() error
 	EnsureNodeWhitelistedWithTimeout() error
 	FetchNodeStatus() (stypes.NodeStatus, error)
+	FetchActiveNodes() ([]common.PubKey, error)
 	GetAsgards() (stypes.Vaults, error)
 	GetVault(pubkey string) (stypes.Vault, error)
 	GetConfig() config.BifrostClientConfiguration
@@ -84,19 +84,20 @@ type ThorchainBridge interface {
 	GetContext() client.Context
 	GetContractAddress() ([]PubKeyContractAddressPair, error)
 	GetErrataMsg(txID common.TxID, chain common.Chain) sdk.Msg
-	GetKeygenStdTx(poolPubKey common.PubKey, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error)
+	GetKeygenStdTx(poolPubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error)
 	GetKeysignParty(vaultPubKey common.PubKey) (common.PubKeys, error)
 	GetMimir(key string) (int64, error)
 	GetMimirWithRef(template, ref string) (int64, error)
-	GetObservationsStdTx(txIns stypes.ObservedTxs) ([]cosmos.Msg, error)
+	GetInboundOutbound(txIns common.ObservedTxs) (common.ObservedTxs, common.ObservedTxs, error)
 	GetPools() (stypes.Pools, error)
 	GetPubKeys() ([]PubKeyContractAddressPair, error)
 	GetAsgardPubKeys() ([]PubKeyContractAddressPair, error)
-	GetSolvencyMsg(height int64, chain common.Chain, pubKey common.PubKey, coins common.Coins) sdk.Msg
+	GetSolvencyMsg(height int64, chain common.Chain, pubKey common.PubKey, coins common.Coins) *stypes.MsgSolvency
 	GetTHORName(name string) (stypes.THORName, error)
 	GetThorchainVersion() (semver.Version, error)
 	IsCatchingUp() (bool, error)
 	HasNetworkFee(chain common.Chain) (bool, error)
+	GetNetworkFee(chain common.Chain) (transactionSize, transactionFeeRate uint64, err error)
 	PostKeysignFailure(blame stypes.Blame, height int64, memo string, coins common.Coins, pubkey common.PubKey) (common.TxID, error)
 	PostNetworkFee(height int64, chain common.Chain, transactionSize, transactionRate uint64) (common.TxID, error)
 	RagnarokInProgress() (bool, error)
@@ -107,6 +108,7 @@ type ThorchainBridge interface {
 	Broadcast(msgs ...sdk.Msg) (common.TxID, error)
 	GetKeysign(blockHeight int64, pk string) (types.TxOut, error)
 	GetNodeAccount(string) (*stypes.NodeAccount, error)
+	GetNodeAccounts() ([]*stypes.NodeAccount, error)
 	GetKeygenBlock(int64, string) (stypes.KeygenBlock, error)
 }
 
@@ -155,28 +157,22 @@ func MakeCodec() codec.ProtoCodecMarshaler {
 	return codec.NewProtoCodec(interfaceRegistry)
 }
 
-// MakeLegacyCodec creates codec
-func MakeLegacyCodec() *codec.LegacyAmino {
-	cdc := codec.NewLegacyAmino()
-	banktypes.RegisterLegacyAminoCodec(cdc)
-	authtypes.RegisterLegacyAminoCodec(cdc)
-	cosmos.RegisterCodec(cdc)
-	stypes.RegisterCodec(cdc)
-	return cdc
-}
-
 // GetContext return a valid context with all relevant values set
 func (b *thorchainBridge) GetContext() client.Context {
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		panic(err)
+	}
 	ctx := client.Context{}
 	ctx = ctx.WithKeyring(b.keys.GetKeybase())
 	ctx = ctx.WithChainID(string(b.cfg.ChainID))
 	ctx = ctx.WithHomeDir(b.cfg.ChainHomeFolder)
 	ctx = ctx.WithFromName(b.cfg.SignerName)
-	ctx = ctx.WithFromAddress(b.keys.GetSignerInfo().GetAddress())
+	ctx = ctx.WithFromAddress(signerAddr)
 	ctx = ctx.WithBroadcastMode("sync")
 
 	encodingConfig := app.MakeEncodingConfig()
-	ctx = ctx.WithCodec(encodingConfig.Marshaler)
+	ctx = ctx.WithCodec(encodingConfig.Codec)
 	ctx = ctx.WithInterfaceRegistry(encodingConfig.InterfaceRegistry)
 	ctx = ctx.WithTxConfig(encodingConfig.TxConfig)
 	ctx = ctx.WithLegacyAmino(encodingConfig.Amino)
@@ -227,7 +223,6 @@ func (b *thorchainBridge) get(url string) ([]byte, int, error) {
 		return nil, http.StatusNotFound, fmt.Errorf("failed to GET from thorchain: %w", err)
 	}
 	defer func() {
-		// trunk-ignore(golangci-lint/govet): shadow
 		if err := resp.Body.Close(); err != nil {
 			b.logger.Error().Err(err).Msg("failed to close response body")
 		}
@@ -265,7 +260,11 @@ func (b *thorchainBridge) getThorChainURL(path string) string {
 
 // getAccountNumberAndSequenceNumber returns account and Sequence number required to post into thorchain
 func (b *thorchainBridge) getAccountNumberAndSequenceNumber() (uint64, uint64, error) {
-	path := fmt.Sprintf("%s/%s", AuthAccountEndpoint, b.keys.GetSignerInfo().GetAddress())
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to get signer address: %w", err)
+	}
+	path := fmt.Sprintf("%s/%s", AuthAccountEndpoint, signerAddr)
 
 	body, _, err := b.getWithPath(path)
 	if err != nil {
@@ -276,7 +275,7 @@ func (b *thorchainBridge) getAccountNumberAndSequenceNumber() (uint64, uint64, e
 	if err = json.Unmarshal(body, &resp); err != nil {
 		return 0, 0, fmt.Errorf("failed to unmarshal account resp: %w", err)
 	}
-	acc := resp.Result.Value
+	acc := resp.Account
 
 	return acc.AccountNumber, acc.Sequence, nil
 }
@@ -297,7 +296,11 @@ func (b *thorchainBridge) PostKeysignFailure(blame stypes.Blame, height int64, m
 		// MsgTssKeysignFail will fail validation if having no FailReason.
 		blame.FailReason = "no fail reason available"
 	}
-	msg, err := stypes.NewMsgTssKeysignFail(height, blame, memo, coins, b.keys.GetSignerInfo().GetAddress(), pubkey)
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		return common.BlankTxID, fmt.Errorf("failed to get signer address: %w", err)
+	}
+	msg, err := stypes.NewMsgTssKeysignFail(height, blame, memo, coins, signerAddr, pubkey)
 	if err != nil {
 		return common.BlankTxID, fmt.Errorf("fail to create keysign fail message: %w", err)
 	}
@@ -306,15 +309,23 @@ func (b *thorchainBridge) PostKeysignFailure(blame stypes.Blame, height int64, m
 
 // GetErrataMsg get errata tx from params
 func (b *thorchainBridge) GetErrataMsg(txID common.TxID, chain common.Chain) sdk.Msg {
-	return stypes.NewMsgErrataTx(txID, chain, b.keys.GetSignerInfo().GetAddress())
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		panic(err)
+	}
+	return stypes.NewMsgErrataTx(txID, chain, signerAddr)
 }
 
 // GetSolvencyMsg create MsgSolvency from the given parameters
-func (b *thorchainBridge) GetSolvencyMsg(height int64, chain common.Chain, pubKey common.PubKey, coins common.Coins) sdk.Msg {
+func (b *thorchainBridge) GetSolvencyMsg(height int64, chain common.Chain, pubKey common.PubKey, coins common.Coins) *stypes.MsgSolvency {
 	// To prevent different MsgSolvency ID incompatibility between nodes with different coin-observation histories,
 	// only report coins for which the amounts are not currently 0.
 	coins = coins.NoneEmpty()
-	msg, err := stypes.NewMsgSolvency(chain, pubKey, coins, height, b.keys.GetSignerInfo().GetAddress())
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		panic(err)
+	}
+	msg, err := stypes.NewMsgSolvency(chain, pubKey, coins, height, signerAddr)
 	if err != nil {
 		b.logger.Err(err).Msg("fail to create MsgSolvency")
 		return nil
@@ -323,17 +334,21 @@ func (b *thorchainBridge) GetSolvencyMsg(height int64, chain common.Chain, pubKe
 }
 
 // GetKeygenStdTx get keygen tx from params
-func (b *thorchainBridge) GetKeygenStdTx(poolPubKey common.PubKey, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
-	return stypes.NewMsgTssPool(inputPks.Strings(), poolPubKey, keysharesBackup, keygenType, height, blame, chains.Strings(), b.keys.GetSignerInfo().GetAddress(), keygenTime)
+func (b *thorchainBridge) GetKeygenStdTx(poolPubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get signer address: %w", err)
+	}
+	return stypes.NewMsgTssPool(inputPks.Strings(), poolPubKey, secp256k1Signature, keysharesBackup, keygenType, height, blame, chains.Strings(), signerAddr, keygenTime)
 }
 
-// GetObservationsStdTx get observations tx from txIns
-func (b *thorchainBridge) GetObservationsStdTx(txIns stypes.ObservedTxs) ([]cosmos.Msg, error) {
+// GetInboundOutbound separate the txs into inbound and outbound
+func (b *thorchainBridge) GetInboundOutbound(txIns common.ObservedTxs) (common.ObservedTxs, common.ObservedTxs, error) {
 	if len(txIns) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
-	inbound := stypes.ObservedTxs{}
-	outbound := stypes.ObservedTxs{}
+	inbound := common.ObservedTxs{}
+	outbound := common.ObservedTxs{}
 
 	// spilt our txs into inbound vs outbound txs
 	for _, tx := range txIns {
@@ -365,8 +380,6 @@ func (b *thorchainBridge) GetObservationsStdTx(txIns stypes.ObservedTxs) ([]cosm
 		case vaultToAddress && !inInboundArray:
 			inbound = append(inbound, tx)
 		case vaultFromAddress && !inOutboundArray:
-			// for outbound transaction , there is no need to do confirmation counting
-			tx.FinaliseHeight = tx.BlockHeight
 			outbound = append(outbound, tx)
 		case inInboundArray && inOutboundArray:
 			// It's already in both arrays, so drop it.
@@ -379,19 +392,11 @@ func (b *thorchainBridge) GetObservationsStdTx(txIns stypes.ObservedTxs) ([]cosm
 			b.logger.Error().Msgf("observed tx out for chain (%s) tx (%s) is already in the outbound array", tx.Tx.Chain, tx.Tx.ID)
 		default:
 			// This should never happen; rather than dropping it, return an error.
-			return nil, fmt.Errorf("could not determine if chain (%s) tx (%s) was inbound or outbound", tx.Tx.Chain, tx.Tx.ID)
+			return nil, nil, fmt.Errorf("could not determine if chain (%s) tx (%s) was inbound or outbound", tx.Tx.Chain, tx.Tx.ID)
 		}
 	}
 
-	var msgs []cosmos.Msg
-	if len(inbound) > 0 {
-		msgs = append(msgs, stypes.NewMsgObservedTxIn(inbound, b.keys.GetSignerInfo().GetAddress()))
-	}
-	if len(outbound) > 0 {
-		msgs = append(msgs, stypes.NewMsgObservedTxOut(outbound, b.keys.GetSignerInfo().GetAddress()))
-	}
-
-	return msgs, nil
+	return inbound, outbound, nil
 }
 
 // EnsureNodeWhitelistedWithTimeout check node is whitelisted with timeout retry
@@ -424,9 +429,27 @@ func (b *thorchainBridge) EnsureNodeWhitelisted() error {
 	return nil
 }
 
+func (b *thorchainBridge) FetchActiveNodes() ([]common.PubKey, error) {
+	na, err := b.GetNodeAccounts()
+	if err != nil {
+		return nil, fmt.Errorf("fail to get node accounts: %w", err)
+	}
+	active := make([]common.PubKey, 0)
+	for _, item := range na {
+		if item.Status == stypes.NodeStatus_Active {
+			active = append(active, item.PubKeySet.Secp256k1)
+		}
+	}
+	return active, nil
+}
+
 // FetchNodeStatus get current node status from thorchain
 func (b *thorchainBridge) FetchNodeStatus() (stypes.NodeStatus, error) {
-	bepAddr := b.keys.GetSignerInfo().GetAddress().String()
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		return stypes.NodeStatus_Unknown, fmt.Errorf("fail to get signer address: %w", err)
+	}
+	bepAddr := signerAddr.String()
 	if len(bepAddr) == 0 {
 		return stypes.NodeStatus_Unknown, errors.New("bep address is empty")
 	}
@@ -507,6 +530,42 @@ func (b *thorchainBridge) HasNetworkFee(chain common.Chain) (bool, error) {
 	}
 
 	return false, fmt.Errorf("no inbound address found for chain: %s", chain)
+}
+
+// GetNetworkFee get chain's network fee from THORNode.
+func (b *thorchainBridge) GetNetworkFee(chain common.Chain) (transactionSize, transactionFeeRate uint64, err error) {
+	buf, s, err := b.getWithPath(InboundAddressesEndpoint)
+	if err != nil {
+		return 0, 0, fmt.Errorf("fail to get inbound addresses: %w", err)
+	}
+	if s != http.StatusOK {
+		return 0, 0, fmt.Errorf("unexpected status code: %d", s)
+	}
+	var resp []openapi.InboundAddress
+	if err = json.Unmarshal(buf, &resp); err != nil {
+		return 0, 0, fmt.Errorf("fail to unmarshal to json: %w", err)
+	}
+
+	for _, addr := range resp {
+		if addr.Chain != nil && *addr.Chain == chain.String() {
+			// Default values if nil or unfound are 0.
+			if addr.OutboundTxSize != nil {
+				transactionSize, err = strconv.ParseUint(*addr.OutboundTxSize, 10, 64)
+				if err != nil {
+					return 0, 0, fmt.Errorf("fail to parse outbound_tx_size: %w", err)
+				}
+			}
+			if addr.ObservedFeeRate != nil {
+				transactionFeeRate, err = strconv.ParseUint(*addr.ObservedFeeRate, 10, 64)
+				if err != nil {
+					return 0, 0, fmt.Errorf("fail to parse observed_fee_rate: %w", err)
+				}
+			}
+			// Having found the chain, do not continue through the remaining chains.
+			break
+		}
+	}
+	return
 }
 
 // WaitToCatchUp wait for thorchain to catch up
@@ -630,7 +689,11 @@ func (b *thorchainBridge) PostNetworkFee(height int64, chain common.Chain, trans
 	defer func() {
 		b.m.GetHistograms(metrics.SignToThorchainDuration).Observe(time.Since(start).Seconds())
 	}()
-	msg := stypes.NewMsgNetworkFee(height, chain, transactionSize, transactionRate, b.keys.GetSignerInfo().GetAddress())
+	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
+	if err != nil {
+		return common.BlankTxID, fmt.Errorf("fail to get signer address: %w", err)
+	}
+	msg := stypes.NewMsgNetworkFee(height, chain, transactionSize, transactionRate, signerAddr)
 	return b.Broadcast(msg)
 }
 

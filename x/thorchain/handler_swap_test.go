@@ -7,14 +7,14 @@ import (
 
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type HandlerSwapSuite struct{}
@@ -45,7 +45,7 @@ func (s *HandlerSwapSuite) TestValidate(c *C) {
 		},
 		"",
 	)
-	msg := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, observerAddr)
+	msg := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, observerAddr)
 	err := handler.validate(ctx, *msg)
 	c.Assert(err, IsNil)
 
@@ -139,8 +139,8 @@ func (k *TestSwapHandleKeeper) GetMimir(ctx cosmos.Context, key string) (int64, 
 	return k.haltChain, nil
 }
 
-func (k *TestSwapHandleKeeper) GetMimirWithRef(ctx cosmos.Context, template, ref string) (int64, error) {
-	key := fmt.Sprintf(template, ref)
+func (k *TestSwapHandleKeeper) GetMimirWithRef(ctx cosmos.Context, template string, ref ...any) (int64, error) {
+	key := fmt.Sprintf(template, ref...)
 	return k.GetMimir(ctx, key)
 }
 
@@ -193,7 +193,7 @@ func (s *HandlerSwapSuite) TestValidation(c *C) {
 		},
 		"",
 	)
-	msg := NewMsgSwap(tx, common.DOGEAsset.GetSyntheticAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, observerAddr)
+	msg := NewMsgSwap(tx, common.DOGEAsset.GetSyntheticAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, observerAddr)
 	err := handler.validate(ctx, *msg)
 	c.Assert(err, IsNil)
 
@@ -247,7 +247,7 @@ func (s *HandlerSwapSuite) TestValidationWithStreamingSwap(c *C) {
 	)
 
 	// happy path
-	msg := NewMsgSwap(tx, common.DOGEAsset.GetSyntheticAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 10, 20, observerAddr)
+	msg := NewMsgSwap(tx, common.DOGEAsset.GetSyntheticAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 10, 20, observerAddr)
 	err := handler.validate(ctx, *msg)
 	c.Assert(err, IsNil)
 
@@ -299,7 +299,7 @@ func (s *HandlerSwapSuite) TestHandle(c *C) {
 		},
 		"",
 	)
-	msg := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, observerAddr)
+	msg := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, observerAddr)
 
 	pool := NewPool()
 	pool.Asset = common.DOGEAsset
@@ -323,7 +323,7 @@ func (s *HandlerSwapSuite) TestHandle(c *C) {
 		},
 		"",
 	)
-	msgSwapPriceProtection := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.NewUint(2*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, observerAddr)
+	msgSwapPriceProtection := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.NewUint(2*common.One), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, observerAddr)
 	result, err = handler.handle(ctx, *msgSwapPriceProtection)
 	c.Assert(err.Error(), Equals, errors.New("emit asset 192233756 less than price limit 200000000").Error())
 	c.Assert(result, IsNil)
@@ -367,7 +367,7 @@ func (s *HandlerSwapSuite) TestHandle(c *C) {
 	result, err = handler.Run(ctx, msgSwapFromTxIn)
 	c.Assert(err, NotNil)
 	c.Assert(result, IsNil)
-	msgSwap := NewMsgSwap(GetRandomTx(), common.EmptyAsset, GetRandomDOGEAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, GetRandomBech32Addr())
+	msgSwap := NewMsgSwap(GetRandomTx(), common.EmptyAsset, GetRandomDOGEAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, 0, GetRandomBech32Addr())
 	result, err = handler.Run(ctx, msgSwap)
 	c.Assert(err, NotNil)
 	c.Assert(result, IsNil)
@@ -411,7 +411,7 @@ func (s *HandlerSwapSuite) TestHandleStreamingSwap(c *C) {
 		},
 		fmt.Sprintf("=:DOGE.DOGE:%s", signerDOGEAddr),
 	)
-	msg := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 3, 5, na.NodeAddress)
+	msg := NewMsgSwap(tx, common.DOGEAsset, signerDOGEAddr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 3, 5, na.NodeAddress)
 	swp := msg.GetStreamingSwap()
 	swp.Deposit = tx.Coins[0].Amount
 	mgr.Keeper().SetStreamingSwap(ctx, swp)
@@ -436,7 +436,7 @@ func (s *HandlerSwapSuite) TestHandleStreamingSwap(c *C) {
 	swp, err = mgr.Keeper().GetStreamingSwap(ctx, txID)
 	c.Assert(err, IsNil)
 	c.Check(swp.In.String(), Equals, "1415600000")
-	c.Check(swp.Out.String(), Equals, "1163002364")
+	c.Check(swp.Out.String(), Equals, "1165237487")
 
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 	_, err = handler.handle(ctx, *msg)
@@ -444,7 +444,7 @@ func (s *HandlerSwapSuite) TestHandleStreamingSwap(c *C) {
 	swp, err = mgr.Keeper().GetStreamingSwap(ctx, txID)
 	c.Assert(err, IsNil)
 	c.Check(swp.In.String(), Equals, "2123400000")
-	c.Check(swp.Out.String(), Equals, "1648810932")
+	c.Check(swp.Out.String(), Equals, "1654583341")
 
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 	_, err = handler.handle(ctx, *msg)
@@ -452,7 +452,7 @@ func (s *HandlerSwapSuite) TestHandleStreamingSwap(c *C) {
 	swp, err = mgr.Keeper().GetStreamingSwap(ctx, txID)
 	c.Assert(err, IsNil)
 	c.Check(swp.In.String(), Equals, "2123400000")
-	c.Check(swp.Out.String(), Equals, "1648810932")
+	c.Check(swp.Out.String(), Equals, "1654583341")
 }
 
 func (s *HandlerSwapSuite) TestSwapSynthERC20(c *C) {
@@ -703,63 +703,4 @@ func (s *HandlerSwapSuite) TestSwapOutDexIntegration(c *C) {
 	c.Assert(items[0].Aggregator, Equals, "0x69800327b38A4CeF30367Dec3f64c2f2386f3848")
 	c.Assert(items[0].AggregatorTargetAsset, Equals, swapM.DexTargetAddress)
 	c.Assert(items[0].AggregatorTargetLimit, IsNil)
-}
-
-func (s *HandlerSwapSuite) TestProcessPreferredAssetSwap(c *C) {
-	ctx, keeper := setupKeeperForTest(c)
-	mgr := NewDummyMgrWithKeeper(keeper)
-	handler := NewSwapHandler(mgr)
-
-	thorAddr := types.GetRandomTHORAddress()
-	thorAccAddr, _ := thorAddr.AccAddress()
-	name := types.NewTHORName("hello", 50, []types.THORNameAlias{{Chain: common.THORChain, Address: thorAddr}})
-	name.Owner = thorAccAddr
-	keeper.SetTHORName(ctx, name)
-
-	txID := GetRandomTxHash()
-	thorAddr2 := types.GetRandomTHORAddress()
-
-	tx := common.NewTx(
-		txID,
-		thorAddr2,
-		thorAddr2,
-		nil,
-		nil,
-		"",
-	)
-
-	// no coins passed in message, should error
-	msg := NewMsgSwap(tx, common.RuneAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, thorAccAddr)
-	err := handler.processPreferredAssetSwap(ctx, *msg)
-	c.Assert(err, NotNil)
-
-	// coins not native rune, should error
-	tx.Coins = common.NewCoins(common.NewCoin(common.ATOMAsset, cosmos.NewUint(100)))
-	msg = NewMsgSwap(tx, common.RuneAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, thorAccAddr)
-	err = handler.processPreferredAssetSwap(ctx, *msg)
-	c.Assert(err, NotNil)
-
-	// no affiliate collector found for the signer
-	tx.Coins = common.NewCoins(common.NewCoin(common.RuneNative, cosmos.NewUint(100)))
-	msg = NewMsgSwap(tx, common.RuneAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, 0, thorAccAddr)
-	err = handler.processPreferredAssetSwap(ctx, *msg)
-	c.Assert(err, NotNil)
-
-	// add affiliate collector
-	affcol, err := keeper.GetAffiliateCollector(ctx, name.Owner)
-	c.Assert(err, IsNil)
-	affcol.RuneAmount = cosmos.NewUint(100)
-	keeper.SetAffiliateCollector(ctx, affcol)
-
-	// FundModule
-	FundModule(c, ctx, keeper, AffiliateCollectorName, 100)
-
-	// processPreferredAssetSwap successfully
-	err = handler.processPreferredAssetSwap(ctx, *msg)
-	c.Assert(err, IsNil)
-
-	// affcol should be empty
-	affcol, err = keeper.GetAffiliateCollector(ctx, name.Owner)
-	c.Assert(err, IsNil)
-	c.Assert(affcol.RuneAmount.IsZero(), Equals, true)
 }

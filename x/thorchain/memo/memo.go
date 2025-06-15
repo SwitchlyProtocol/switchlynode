@@ -5,10 +5,10 @@ import (
 	"math/big"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 
 	"github.com/blang/semver"
 )
@@ -22,7 +22,7 @@ const (
 	TxAdd
 	TxWithdraw
 	TxSwap
-	TxLimitOrder
+	TxLimitSwap
 	TxOutbound
 	TxDonate
 	TxBond
@@ -39,8 +39,16 @@ const (
 	TxLoanRepayment
 	TxTradeAccountDeposit
 	TxTradeAccountWithdrawal
+	TxSecuredAssetDeposit
+	TxSecuredAssetWithdraw
 	TxRunePoolDeposit
 	TxRunePoolWithdraw
+	TxExec
+	TxSwitch
+	TxTCYClaim
+	TxTCYStake
+	TxTCYUnstake
+	TxMaint
 )
 
 var stringToTxTypeMap = map[string]TxType{
@@ -52,8 +60,7 @@ var stringToTxTypeMap = map[string]TxType{
 	"swap":        TxSwap,
 	"s":           TxSwap,
 	"=":           TxSwap,
-	"limito":      TxLimitOrder,
-	"lo":          TxLimitOrder,
+	"=<":          TxLimitSwap,
 	"out":         TxOutbound,
 	"donate":      TxDonate,
 	"d":           TxDonate,
@@ -75,15 +82,24 @@ var stringToTxTypeMap = map[string]TxType{
 	"loan-":       TxLoanRepayment,
 	"trade+":      TxTradeAccountDeposit,
 	"trade-":      TxTradeAccountWithdrawal,
+	"secure+":     TxSecuredAssetDeposit,
+	"secure-":     TxSecuredAssetWithdraw,
 	"pool+":       TxRunePoolDeposit,
 	"pool-":       TxRunePoolWithdraw,
+	"x":           TxExec,
+	"exec":        TxExec,
+	"switch":      TxSwitch,
+	"tcy":         TxTCYClaim,
+	"tcy+":        TxTCYStake,
+	"tcy-":        TxTCYUnstake,
+	"maint":       TxMaint,
 }
 
 var txToStringMap = map[TxType]string{
 	TxAdd:                    "add",
 	TxWithdraw:               "withdraw",
 	TxSwap:                   "swap",
-	TxLimitOrder:             "limito",
+	TxLimitSwap:              "=<",
 	TxOutbound:               "out",
 	TxRefund:                 "refund",
 	TxDonate:                 "donate",
@@ -100,6 +116,14 @@ var txToStringMap = map[TxType]string{
 	TxLoanRepayment:          "$-",
 	TxTradeAccountDeposit:    "trade+",
 	TxTradeAccountWithdrawal: "trade-",
+	TxSecuredAssetDeposit:    "secure+",
+	TxSecuredAssetWithdraw:   "secure-",
+	TxExec:                   "x",
+	TxSwitch:                 "switch",
+	TxTCYClaim:               "tcy",
+	TxTCYStake:               "tcy+",
+	TxTCYUnstake:             "tcy-",
+	TxMaint:                  "maint",
 }
 
 // converts a string into a txType
@@ -115,7 +139,31 @@ func StringToTxType(s string) (TxType, error) {
 
 func (tx TxType) IsInbound() bool {
 	switch tx {
-	case TxAdd, TxWithdraw, TxTradeAccountDeposit, TxRunePoolDeposit, TxRunePoolWithdraw, TxSwap, TxLimitOrder, TxDonate, TxBond, TxUnbond, TxLeave, TxReserve, TxNoOp, TxTHORName, TxLoanOpen, TxLoanRepayment:
+	case TxAdd,
+		TxWithdraw,
+		TxTradeAccountDeposit,
+		TxTradeAccountWithdrawal,
+		TxRunePoolDeposit,
+		TxRunePoolWithdraw,
+		TxSecuredAssetDeposit,
+		TxSecuredAssetWithdraw,
+		TxSwap,
+		TxLimitSwap,
+		TxDonate,
+		TxBond,
+		TxUnbond,
+		TxLeave,
+		TxMaint,
+		TxReserve,
+		TxNoOp,
+		TxTHORName,
+		TxLoanOpen,
+		TxLoanRepayment,
+		TxExec,
+		TxSwitch,
+		TxTCYClaim,
+		TxTCYStake,
+		TxTCYUnstake:
 		return true
 	default:
 		return false
@@ -143,7 +191,16 @@ func (tx TxType) IsInternal() bool {
 // HasOutbound whether the txtype might trigger outbound tx
 func (tx TxType) HasOutbound() bool {
 	switch tx {
-	case TxAdd, TxBond, TxTradeAccountDeposit, TxRunePoolDeposit, TxDonate, TxReserve, TxMigrate, TxRagnarok:
+	case TxAdd,
+		TxBond,
+		TxTradeAccountDeposit,
+		TxSecuredAssetDeposit,
+		TxRunePoolDeposit,
+		TxDonate,
+		TxReserve,
+		TxMigrate,
+		TxMaint,
+		TxRagnarok:
 		return false
 	default:
 		return true
@@ -184,6 +241,9 @@ type Memo interface {
 	GetDexTargetLimit() *cosmos.Uint
 	GetAffiliateTHORName() *types.THORName
 	GetRefundAddress() common.Address
+	GetAffiliates() []string
+	GetAffiliatesBasisPoints() []cosmos.Uint
+	GetAddress() common.Address
 }
 
 type MemoBase struct {
@@ -193,25 +253,28 @@ type MemoBase struct {
 
 var EmptyMemo = MemoBase{TxType: TxUnknown, Asset: common.EmptyAsset}
 
-func (m MemoBase) String() string                        { return "" }
-func (m MemoBase) GetType() TxType                       { return m.TxType }
-func (m MemoBase) IsType(tx TxType) bool                 { return m.TxType.Equals(tx) }
-func (m MemoBase) GetAsset() common.Asset                { return m.Asset }
-func (m MemoBase) GetAmount() cosmos.Uint                { return cosmos.ZeroUint() }
-func (m MemoBase) GetDestination() common.Address        { return "" }
-func (m MemoBase) GetSlipLimit() cosmos.Uint             { return cosmos.ZeroUint() }
-func (m MemoBase) GetTxID() common.TxID                  { return "" }
-func (m MemoBase) GetAccAddress() cosmos.AccAddress      { return cosmos.AccAddress{} }
-func (m MemoBase) GetBlockHeight() int64                 { return 0 }
-func (m MemoBase) IsOutbound() bool                      { return m.TxType.IsOutbound() }
-func (m MemoBase) IsInbound() bool                       { return m.TxType.IsInbound() }
-func (m MemoBase) IsInternal() bool                      { return m.TxType.IsInternal() }
-func (m MemoBase) IsEmpty() bool                         { return m.TxType.IsEmpty() }
-func (m MemoBase) GetDexAggregator() string              { return "" }
-func (m MemoBase) GetDexTargetAddress() string           { return "" }
-func (m MemoBase) GetDexTargetLimit() *cosmos.Uint       { return nil }
-func (m MemoBase) GetAffiliateTHORName() *types.THORName { return nil }
-func (m MemoBase) GetRefundAddress() common.Address      { return common.NoAddress }
+func (m MemoBase) String() string                          { return "" }
+func (m MemoBase) GetType() TxType                         { return m.TxType }
+func (m MemoBase) IsType(tx TxType) bool                   { return m.TxType.Equals(tx) }
+func (m MemoBase) GetAsset() common.Asset                  { return m.Asset }
+func (m MemoBase) GetAmount() cosmos.Uint                  { return cosmos.ZeroUint() }
+func (m MemoBase) GetDestination() common.Address          { return "" }
+func (m MemoBase) GetSlipLimit() cosmos.Uint               { return cosmos.ZeroUint() }
+func (m MemoBase) GetTxID() common.TxID                    { return "" }
+func (m MemoBase) GetAccAddress() cosmos.AccAddress        { return cosmos.AccAddress{} }
+func (m MemoBase) GetBlockHeight() int64                   { return 0 }
+func (m MemoBase) IsOutbound() bool                        { return m.TxType.IsOutbound() }
+func (m MemoBase) IsInbound() bool                         { return m.TxType.IsInbound() }
+func (m MemoBase) IsInternal() bool                        { return m.TxType.IsInternal() }
+func (m MemoBase) IsEmpty() bool                           { return m.TxType.IsEmpty() }
+func (m MemoBase) GetDexAggregator() string                { return "" }
+func (m MemoBase) GetDexTargetAddress() string             { return "" }
+func (m MemoBase) GetDexTargetLimit() *cosmos.Uint         { return nil }
+func (m MemoBase) GetAffiliateTHORName() *types.THORName   { return nil }
+func (m MemoBase) GetRefundAddress() common.Address        { return common.NoAddress }
+func (m MemoBase) GetAffiliates() []string                 { return nil }
+func (m MemoBase) GetAffiliatesBasisPoints() []cosmos.Uint { return nil }
+func (m MemoBase) GetAddress() common.Address              { return common.NoAddress }
 
 func ParseMemo(version semver.Version, memo string) (mem Memo, err error) {
 	defer func() {

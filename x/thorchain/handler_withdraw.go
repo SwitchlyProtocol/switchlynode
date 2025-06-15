@@ -3,14 +3,14 @@ package thorchain
 import (
 	"fmt"
 
-	"github.com/armon/go-metrics"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 	"github.com/hashicorp/go-multierror"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // WithdrawLiquidityHandler to process withdraw requests
@@ -48,16 +48,23 @@ func (h WithdrawLiquidityHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos
 func (h WithdrawLiquidityHandler) validate(ctx cosmos.Context, msg MsgWithdrawLiquidity) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.112.0")):
-		return h.validateV112(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h WithdrawLiquidityHandler) validateV112(ctx cosmos.Context, msg MsgWithdrawLiquidity) error {
+func (h WithdrawLiquidityHandler) validateV3_0_0(ctx cosmos.Context, msg MsgWithdrawLiquidity) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return errWithdrawFailValidation
+	}
+
+	if msg.Asset.IsSyntheticAsset() {
+		if h.mgr.Keeper().GetConfigInt64(ctx, constants.BurnSynths) > 0 {
+			// Burning synths is disabled (purposeful inconsistency of int64 vs. other mimirs)
+			return fmt.Errorf("burning synths is disabled, unable to withdraw to savers")
+		}
 	}
 
 	if msg.Asset.IsDerivedAsset() {
@@ -89,14 +96,14 @@ func (h WithdrawLiquidityHandler) validateV112(ctx cosmos.Context, msg MsgWithdr
 func (h WithdrawLiquidityHandler) handle(ctx cosmos.Context, msg MsgWithdrawLiquidity) (*cosmos.Result, error) {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.129.0")):
-		return h.handleV129(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return nil, errBadVersion
 	}
 }
 
-func (h WithdrawLiquidityHandler) handleV129(ctx cosmos.Context, msg MsgWithdrawLiquidity) (*cosmos.Result, error) {
+func (h WithdrawLiquidityHandler) handleV3_0_0(ctx cosmos.Context, msg MsgWithdrawLiquidity) (*cosmos.Result, error) {
 	lp, err := h.mgr.Keeper().GetLiquidityProvider(ctx, msg.Asset, msg.WithdrawAddress)
 	if err != nil {
 		return nil, multierror.Append(errFailGetLiquidityProvider, err)
@@ -286,7 +293,7 @@ func (h WithdrawLiquidityHandler) swap(ctx cosmos.Context, msg MsgWithdrawLiquid
 	memo := fmt.Sprintf("=:%s:%s", targetAsset, addr)
 	msg.Tx.Memo = memo
 	msg.Tx.Coins = common.NewCoins(coin)
-	swapMsg := NewMsgSwap(msg.Tx, targetAsset, addr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, uint64(ssInterval), msg.Signer)
+	swapMsg := NewMsgSwap(msg.Tx, targetAsset, addr, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, uint64(ssInterval), msg.Signer)
 
 	// sanity check swap msg
 	handler := NewSwapHandler(h.mgr)

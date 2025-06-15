@@ -7,9 +7,9 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 // NodePauseChainHandler is to handle node pause chain messages
@@ -46,14 +46,15 @@ func (h NodePauseChainHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Re
 func (h NodePauseChainHandler) validate(ctx cosmos.Context, msg MsgNodePauseChain) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("0.1.0")):
-		return h.validateV1(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h NodePauseChainHandler) validateV1(ctx cosmos.Context, msg MsgNodePauseChain) error {
+func (h NodePauseChainHandler) validateV3_0_0(ctx cosmos.Context, msg MsgNodePauseChain) error {
+	// ValidateBasic is also executed in message service router's handler and isn't versioned there
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -69,14 +70,14 @@ func (h NodePauseChainHandler) handle(ctx cosmos.Context, msg MsgNodePauseChain)
 	ctx.Logger().Info("handleMsgNodePauseChain request", "node", msg.Signer, "value", msg.Value)
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.87.0")):
-		return h.handleV87(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h NodePauseChainHandler) handleV87(ctx cosmos.Context, msg MsgNodePauseChain) error {
+func (h NodePauseChainHandler) handleV3_0_0(ctx cosmos.Context, msg MsgNodePauseChain) error {
 	// get block height of last churn
 	active, err := h.mgr.Keeper().GetAsgardVaultsByStatus(ctx, ActiveVault)
 	if err != nil {
@@ -124,7 +125,7 @@ func (h NodePauseChainHandler) handleV87(ctx cosmos.Context, msg MsgNodePauseCha
 	key := "NodePauseChainGlobal"
 	h.mgr.Keeper().SetMimir(ctx, key, pauseHeight)
 	mimirEvent := NewEventSetMimir(strings.ToUpper(key), strconv.FormatInt(pauseHeight, 10))
-	if err := h.mgr.EventMgr().EmitEvent(ctx, mimirEvent); err != nil {
+	if err = h.mgr.EventMgr().EmitEvent(ctx, mimirEvent); err != nil {
 		ctx.Logger().Error("fail to emit set_mimir event", "error", err)
 	}
 
@@ -134,9 +135,6 @@ func (h NodePauseChainHandler) handleV87(ctx cosmos.Context, msg MsgNodePauseCha
 // NodePauseChainAnteHandler called by the ante handler to gate mempool entry
 // and also during deliver. Store changes will persist if this function
 // succeeds, regardless of the success of the transaction.
-func NodePauseChainAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgNodePauseChain) error {
-	if !isSignedByActiveNodeAccounts(ctx, k, msg.GetSigners()) {
-		return cosmos.ErrUnauthorized(fmt.Sprintf("%+v are not authorized", msg.GetSigners()))
-	}
-	return nil
+func NodePauseChainAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgNodePauseChain) (cosmos.Context, error) {
+	return activeNodeAccountsSignerPriority(ctx, k, msg.GetSigners())
 }

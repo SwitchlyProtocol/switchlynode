@@ -6,13 +6,13 @@ import (
 	"net"
 	"sort"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 // ValidatorMgrVCUR is to manage a list of validators , and rotate them
@@ -156,6 +156,11 @@ func (vm *ValidatorMgrVCUR) churn(ctx cosmos.Context) error {
 
 	// mark someone to get churned out for age
 	if err := vm.markOldActor(ctx); err != nil {
+		return err
+	}
+
+	// mark someone(s) for not signing blocks
+	if err := vm.markMissingActors(ctx); err != nil {
 		return err
 	}
 
@@ -343,6 +348,7 @@ func (vm *ValidatorMgrVCUR) EndBlock(ctx cosmos.Context, mgr Manager) []abci.Val
 		na.UpdateStatus(NodeActive, height)
 		na.LeaveScore = 0
 		na.RequestedToLeave = false
+		na.MissingBlocks = 0 // zero missing blocks that weren't signed (if any)
 
 		vm.k.ResetNodeAccountSlashPoints(ctx, na.NodeAddress)
 		if err := vm.k.SetNodeAccount(ctx, na); err != nil {
@@ -575,10 +581,7 @@ func (vm *ValidatorMgrVCUR) payNodeAccountBondAward(ctx cosmos.Context, lastChur
 	if err := mgr.Keeper().SetBondProviders(ctx, bp); err != nil {
 		return ErrInternal(err, fmt.Sprintf("fail to save bond providers(%s)", bp.NodeAddress.String()))
 	}
-	tx := common.Tx{}
-	tx.ID = common.BlankTxID
-	tx.ToAddress = na.BondAddress
-	bondRewardEvent := NewEventBond(reward, BondReward, tx)
+	bondRewardEvent := NewEventBond(reward, BondReward, common.Tx{}, &na, nil)
 	if err := mgr.EventMgr().EmitEvent(ctx, bondRewardEvent); err != nil {
 		ctx.Logger().Error("fail to emit bond event", "error", err)
 	}
@@ -591,18 +594,13 @@ func (vm *ValidatorMgrVCUR) payNodeAccountBondAward(ctx cosmos.Context, lastChur
 			return errors.New(sdkErr.Error())
 		}
 
-		// The bond is being returned from the node to the node operator,
-		// so reflect that (and unambiguously identify them) with the FromAddress and ToAddress.
-		fromAddress, err := common.NewAddress(na.NodeAddress.String())
+		// TODO: Remove this NewAddress call entirely in the next version of this manager.
+		_, err := common.NewAddress(na.NodeAddress.String())
 		if err != nil {
 			return fmt.Errorf("fail to parse node address: %w", err)
 		}
 		// emit BondReturned event
-		fakeTx := common.Tx{}
-		fakeTx.ID = common.BlankTxID
-		fakeTx.FromAddress = fromAddress
-		fakeTx.ToAddress = na.BondAddress
-		bondReturnedEvent := NewEventBond(nodeOperatorFees, BondReturned, fakeTx)
+		bondReturnedEvent := NewEventBond(nodeOperatorFees, BondReturned, common.Tx{}, &na, nodeOperatorAccAddr)
 		if err := mgr.EventMgr().EmitEvent(ctx, bondReturnedEvent); err != nil {
 			ctx.Logger().Error("fail to emit bond event", "error", err)
 		}
@@ -764,7 +762,7 @@ func (vm *ValidatorMgrVCUR) ragnarokBond(ctx cosmos.Context, nth int64, mgr Mana
 		return err
 	}
 	// nth * 10 == the amount of the bond we want to send
-	for _, na := range nas {
+	for i, na := range nas {
 		if na.Bond.IsZero() {
 			continue
 		}
@@ -806,10 +804,7 @@ func (vm *ValidatorMgrVCUR) ragnarokBond(ctx cosmos.Context, nth int64, mgr Mana
 			return err
 		}
 
-		tx := common.Tx{}
-		tx.ID = common.BlankTxID
-		tx.FromAddress = na.BondAddress
-		bondEvent := NewEventBond(amt, BondCost, tx)
+		bondEvent := NewEventBond(amt, BondCost, common.Tx{}, &nas[i], nil)
 		if err := mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
 			return fmt.Errorf("fail to emit bond event: %w", err)
 		}
@@ -1008,8 +1003,8 @@ func (vm *ValidatorMgrVCUR) getLastChurnHeight(ctx cosmos.Context) int64 {
 	// calculate last churn block height
 	var lastChurnHeight int64 // the last block height we had a successful churn
 	for _, vault := range vaults {
-		if vault.BlockHeight > lastChurnHeight {
-			lastChurnHeight = vault.BlockHeight
+		if vault.StatusSince > lastChurnHeight {
+			lastChurnHeight = vault.StatusSince
 		}
 	}
 	return lastChurnHeight
@@ -1102,6 +1097,40 @@ func (vm *ValidatorMgrVCUR) findBadActors(ctx cosmos.Context, minSlashPointsForB
 	}
 
 	return badActors, nil
+}
+
+// Iterate over active node accounts, finding the one that hasn't been signing blocks
+func (vm *ValidatorMgrVCUR) markMissingActors(ctx cosmos.Context) error {
+	maxMissingBlocks := vm.k.GetConfigInt64(ctx, constants.MissingBlockChurnOut)
+	maxChurnOut := vm.k.GetConfigInt64(ctx, constants.MaxMissingBlockChurnOut)
+	if maxMissingBlocks == 0 || maxChurnOut == 0 {
+		return nil // skip this mark
+	}
+
+	nas, err := vm.k.ListActiveValidators(ctx)
+	if err != nil {
+		return err
+	}
+
+	counter := int64(0)
+	for _, n := range nas {
+		// Only mark an old actor not already marked for churn-out.
+		if n.LeaveScore > 0 {
+			continue
+		}
+
+		if maxMissingBlocks < int64(n.MissingBlocks) {
+			if err := vm.markActor(ctx, n, "for not signing blocks"); err != nil {
+				return err
+			}
+			counter += 1
+			if counter >= maxChurnOut {
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // Iterate over active node accounts, finding the one that has been active longest
@@ -1311,6 +1340,10 @@ func (vm *ValidatorMgrVCUR) NodeAccountPreflightCheck(ctx cosmos.Context, na Nod
 	// Check if they've requested to leave
 	if na.RequestedToLeave {
 		return NodeStandby, fmt.Errorf("node account has requested to leave")
+	}
+
+	if na.Maintenance {
+		return NodeStandby, fmt.Errorf("node account is in maintenance mode")
 	}
 
 	// Check that the node account has an IP address

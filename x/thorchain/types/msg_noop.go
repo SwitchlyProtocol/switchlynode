@@ -1,23 +1,26 @@
 package types
 
 import (
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+)
+
+var (
+	_ sdk.Msg              = &MsgNoOp{}
+	_ sdk.HasValidateBasic = &MsgNoOp{}
+	_ sdk.LegacyMsg        = &MsgNoOp{}
 )
 
 // NewMsgNoOp is a constructor function for MsgNoOp
-func NewMsgNoOp(observedTx ObservedTx, signer cosmos.AccAddress, action string) *MsgNoOp {
+func NewMsgNoOp(observedTx common.ObservedTx, signer cosmos.AccAddress, action string) *MsgNoOp {
 	return &MsgNoOp{
 		ObservedTx: observedTx,
 		Signer:     signer,
 		Action:     action,
 	}
 }
-
-// Route should return the pooldata of the module
-func (m *MsgNoOp) Route() string { return RouterKey }
-
-// Type should return the action
-func (m MsgNoOp) Type() string { return "set_noop" }
 
 // ValidateBasic runs stateless checks on the message
 func (m *MsgNoOp) ValidateBasic() error {
@@ -28,11 +31,6 @@ func (m *MsgNoOp) ValidateBasic() error {
 		return cosmos.ErrInvalidAddress(m.Signer.String())
 	}
 	return nil
-}
-
-// GetSignBytes encodes the message for signing
-func (m *MsgNoOp) GetSignBytes() []byte {
-	return cosmos.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }
 
 // GetSigners defines whose signature is required

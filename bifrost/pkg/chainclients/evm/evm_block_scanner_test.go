@@ -14,24 +14,27 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/ethereum/go-ethereum/common"
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm"
-	evmtypes "gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm/types"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	thorcommon "gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/x/thorchain"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm"
+	evmtypes "gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	thorcommon "gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 	. "gopkg.in/check.v1"
 )
 
@@ -104,7 +107,10 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 		ChainHomeFolder: "",
 	}
 
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
@@ -114,10 +120,9 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func getConfigForTest(rpcHost string) config.BifrostBlockScannerConfiguration {
+func getConfigForTest() config.BifrostBlockScannerConfiguration {
 	return config.BifrostBlockScannerConfiguration{
 		ChainID:                    thorcommon.AVAXChain,
-		RPCHost:                    rpcHost,
 		StartBlockHeight:           1, // avoids querying thorchain for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
@@ -159,30 +164,30 @@ func (s *BlockScannerTestSuite) TestNewBlockScanner(c *C) {
 	c.Assert(err, IsNil)
 	ethClient, err := ethclient.Dial(server.URL)
 	c.Assert(err, IsNil)
-	rpcClient, err := evm.NewEthRPC(server.URL, time.Second, "AVAX")
+	rpcClient, err := evm.NewEthRPC(ethClient, time.Second, "AVAX")
 	c.Assert(err, IsNil)
 	pubKeyManager, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
 	solvencyReporter := func(height int64) error {
 		return nil
 	}
-	bs, err := NewEVMScanner(getConfigForTest(""), nil, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, pubKeyManager, solvencyReporter, nil)
+	bs, err := NewEVMScanner(getConfigForTest(), nil, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, pubKeyManager, solvencyReporter, nil)
 	c.Assert(err, NotNil)
 	c.Assert(bs, IsNil)
 
-	bs, err = NewEVMScanner(getConfigForTest("http://"+server.Listener.Addr().String()), storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, nil, pubKeyManager, solvencyReporter, nil)
+	bs, err = NewEVMScanner(getConfigForTest(), storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, nil, pubKeyManager, solvencyReporter, nil)
 	c.Assert(err, NotNil)
 	c.Assert(bs, IsNil)
 
-	bs, err = NewEVMScanner(getConfigForTest("http://"+server.Listener.Addr().String()), storage, big.NewInt(int64(Mainnet)), nil, rpcClient, s.bridge, s.m, pubKeyManager, solvencyReporter, nil)
+	bs, err = NewEVMScanner(getConfigForTest(), storage, big.NewInt(int64(Mainnet)), nil, rpcClient, s.bridge, s.m, pubKeyManager, solvencyReporter, nil)
 	c.Assert(err, NotNil)
 	c.Assert(bs, IsNil)
 
-	bs, err = NewEVMScanner(getConfigForTest("http://"+server.Listener.Addr().String()), storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, nil, solvencyReporter, nil)
+	bs, err = NewEVMScanner(getConfigForTest(), storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, nil, solvencyReporter, nil)
 	c.Assert(err, NotNil)
 	c.Assert(bs, IsNil)
 
-	bs, err = NewEVMScanner(getConfigForTest("http://"+server.Listener.Addr().String()), storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, pubKeyManager, solvencyReporter, nil)
+	bs, err = NewEVMScanner(getConfigForTest(), storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, pubKeyManager, solvencyReporter, nil)
 	c.Assert(err, IsNil)
 	c.Assert(bs, NotNil)
 }
@@ -211,7 +216,6 @@ func (s *BlockScannerTestSuite) TestProcessBlock(c *C) {
 			Params []interface{} `json:"params"`
 		}{}
 
-		// trunk-ignore(golangci-lint/govet): shadow
 		err := json.Unmarshal(body, &r)
 		c.Assert(err, IsNil)
 
@@ -230,7 +234,6 @@ func (s *BlockScannerTestSuite) TestProcessBlock(c *C) {
 			ID     int           `json:"id"`
 		}{}
 
-		// trunk-ignore(golangci-lint/govet): shadow
 		err := json.Unmarshal(body, &r)
 		c.Assert(err, IsNil)
 
@@ -265,7 +268,13 @@ func (s *BlockScannerTestSuite) TestProcessBlock(c *C) {
 		case strings.HasPrefix(req.RequestURI, thorclient.AuthAccountEndpoint):
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/auth/accounts/template.json")
 		default:
-			// trunk-ignore(golangci-lint/govet): shadow
+			// return -1 for all unset mimirs
+			if strings.HasPrefix(req.RequestURI, thorclient.MimirEndpoint+"/key") {
+				_, err = rw.Write([]byte(`-1`))
+				c.Assert(err, IsNil)
+				return
+			}
+
 			body, err := io.ReadAll(req.Body)
 			c.Assert(err, IsNil)
 			defer func() {
@@ -281,7 +290,7 @@ func (s *BlockScannerTestSuite) TestProcessBlock(c *C) {
 	ethClient, err := ethclient.Dial(server.URL)
 	c.Assert(err, IsNil)
 	c.Assert(ethClient, NotNil)
-	rpcClient, err := evm.NewEthRPC(server.URL, time.Second, "AVAX")
+	rpcClient, err := evm.NewEthRPC(ethClient, time.Second, "AVAX")
 	c.Assert(err, IsNil)
 	storage, err := blockscanner.NewBlockScannerStorage("", config.LevelDBOptions{})
 	c.Assert(err, IsNil)
@@ -302,7 +311,7 @@ func (s *BlockScannerTestSuite) TestProcessBlock(c *C) {
 		c.Assert(pubKeyMgr.Stop(), IsNil)
 	}()
 
-	config := getConfigForTest(server.URL)
+	config := getConfigForTest()
 	bs, err := NewEVMScanner(config, storage, big.NewInt(43112), ethClient, rpcClient, bridge, s.m, pubKeyMgr, func(height int64) error {
 		return nil
 	}, nil)
@@ -349,6 +358,13 @@ func (s *BlockScannerTestSuite) TestGetTxInItem(c *C) {
 		case strings.HasPrefix(req.RequestURI, thorclient.NodeAccountEndpoint):
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/nodeaccount/template.json")
 		default:
+			// return -1 for all unset mimirs
+			if strings.HasPrefix(req.RequestURI, thorclient.MimirEndpoint+"/key") {
+				_, err := rw.Write([]byte(`-1`))
+				c.Assert(err, IsNil)
+				return
+			}
+
 			body, err := io.ReadAll(req.Body)
 			c.Assert(err, IsNil)
 			type RPCRequest struct {
@@ -417,7 +433,7 @@ func (s *BlockScannerTestSuite) TestGetTxInItem(c *C) {
 	ethClient, err := ethclient.Dial(server.URL)
 	c.Assert(err, IsNil)
 	c.Assert(ethClient, NotNil)
-	rpcClient, err := evm.NewEthRPC(server.URL, time.Second, "AVAX")
+	rpcClient, err := evm.NewEthRPC(ethClient, time.Second, "AVAX")
 	c.Assert(err, IsNil)
 	storage, err := blockscanner.NewBlockScannerStorage("", config.LevelDBOptions{})
 	c.Assert(err, IsNil)
@@ -441,7 +457,7 @@ func (s *BlockScannerTestSuite) TestGetTxInItem(c *C) {
 		c.Assert(pkeyMgr.Stop(), IsNil)
 	}()
 	c.Assert(err, IsNil)
-	config := getConfigForTest(server.URL)
+	config := getConfigForTest()
 	bs, err := NewEVMScanner(config, storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, bridge, s.m, pkeyMgr, func(height int64) error {
 		return nil
 	}, nil)
@@ -620,9 +636,9 @@ func (s *BlockScannerTestSuite) TestProcessReOrg(c *C) {
 	defer func() {
 		c.Assert(pkeyMgr.Stop(), IsNil)
 	}()
-	rpcClient, err := evm.NewEthRPC(server.URL, time.Second, "BSC")
+	rpcClient, err := evm.NewEthRPC(ethClient, time.Second, "BSC")
 	c.Assert(err, IsNil)
-	cfg := getConfigForTest(server.URL)
+	cfg := getConfigForTest()
 	cfg.ChainID = thorcommon.BSCChain // re-org on BSC only
 	bs, err := NewEVMScanner(cfg, storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, pkeyMgr, func(height int64) error {
 		return nil
@@ -635,7 +651,7 @@ func (s *BlockScannerTestSuite) TestProcessReOrg(c *C) {
 	blockNew, err := CreateBlock(1)
 	c.Assert(err, IsNil)
 	c.Assert(blockNew, NotNil)
-	blockMeta := evmtypes.NewBlockMeta(block, stypes.TxIn{TxArray: []stypes.TxInItem{{Tx: "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b"}}})
+	blockMeta := evmtypes.NewBlockMeta(block, stypes.TxIn{TxArray: []*stypes.TxInItem{{Tx: "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b"}}})
 	blockMeta.Transactions = append(blockMeta.Transactions, evmtypes.TransactionMeta{
 		Hash:        "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b",
 		BlockHeight: block.Number.Int64(),
@@ -683,14 +699,14 @@ func (s *BlockScannerTestSuite) TestUpdateGasPrice(c *C) {
 	c.Assert(err, IsNil)
 	ethClient, err := ethclient.Dial(server.URL)
 	c.Assert(err, IsNil)
-	rpcClient, err := evm.NewEthRPC(server.URL, time.Second, "AVAX")
+	rpcClient, err := evm.NewEthRPC(ethClient, time.Second, "AVAX")
 	c.Assert(err, IsNil)
 	pubKeyManager, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
 	solvencyReporter := func(height int64) error {
 		return nil
 	}
-	conf := getConfigForTest("http://" + server.Listener.Addr().String())
+	conf := getConfigForTest()
 	bs, err := NewEVMScanner(conf, storage, big.NewInt(int64(Mainnet)), ethClient, rpcClient, s.bridge, s.m, pubKeyManager, solvencyReporter, nil)
 	c.Assert(err, IsNil)
 	c.Assert(bs, NotNil)

@@ -3,10 +3,12 @@ package evm
 import (
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -16,26 +18,27 @@ import (
 	ecommon "github.com/ethereum/go-ethereum/common"
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/runners"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/signercache"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	tssp "gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/aggregators"
-	mem "gitlab.com/thorchain/thornode/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/runners"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/signercache"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	tssp "gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/aggregators"
+	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +99,7 @@ func NewEVMClient(
 	if err != nil {
 		return nil, fmt.Errorf("failed to get private key: %w", err)
 	}
-	temp, err := codec.ToTmPubKeyInterface(priv.PubKey())
+	temp, err := codec.ToCmtPubKeyInterface(priv.PubKey())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tm pub key: %w", err)
 	}
@@ -109,14 +112,62 @@ func NewEVMClient(
 		return nil, err
 	}
 
-	// create rpc clients
-	rpcClient, err := evm.NewEthRPC(cfg.RPCHost, cfg.BlockScanner.HTTPRequestTimeout, cfg.ChainID.String())
+	clog := log.With().Str("module", "evm").Stringer("chain", cfg.ChainID).Logger()
+
+	// create rpc client based on what authentication config is set
+	var ethClient *ethclient.Client
+	switch {
+	case cfg.AuthorizationBearer != "":
+
+		clog.Info().Msg("initializing evm client with bearer token")
+		authFn := func(h http.Header) error {
+			h.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.AuthorizationBearer))
+			return nil
+		}
+		var rpcClient *rpc.Client
+		rpcClient, err = rpc.DialOptions(
+			context.Background(),
+			cfg.RPCHost,
+			rpc.WithHTTPAuth(authFn),
+		)
+		if err != nil {
+			return nil, err
+		}
+		ethClient = ethclient.NewClient(rpcClient)
+
+	case cfg.UserName != "" && cfg.Password != "":
+		clog.Info().Msg("initializing evm client with http basic auth")
+
+		authFn := func(h http.Header) error {
+			auth := base64.StdEncoding.EncodeToString([]byte(cfg.UserName + ":" + cfg.Password))
+			h.Set("Authorization", fmt.Sprintf("Basic %s", auth))
+			return nil
+		}
+		var rpcClient *rpc.Client
+		rpcClient, err = rpc.DialOptions(
+			context.Background(),
+			cfg.RPCHost,
+			rpc.WithHTTPAuth(authFn),
+		)
+		if err != nil {
+			return nil, err
+		}
+		ethClient = ethclient.NewClient(rpcClient)
+
+	default:
+		ethClient, err = ethclient.Dial(cfg.RPCHost)
+		if err != nil {
+			return nil, fmt.Errorf("fail to dial ETH rpc host(%s): %w", cfg.RPCHost, err)
+		}
+	}
+
+	rpcClient, err := evm.NewEthRPC(
+		ethClient,
+		cfg.BlockScanner.HTTPRequestTimeout,
+		cfg.ChainID.String(),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create ETH rpc host(%s): %w", cfg.RPCHost, err)
-	}
-	ethClient, err := ethclient.Dial(cfg.RPCHost)
-	if err != nil {
-		return nil, fmt.Errorf("fail to dial ETH rpc host(%s): %w", cfg.RPCHost, err)
 	}
 
 	// get chain id
@@ -140,11 +191,8 @@ func NewEVMClient(
 		return nil, fmt.Errorf("fail to get contract abi: %w", err)
 	}
 
-	// TODO: Do we need to call this?
-	pubkeyMgr.GetPubKeys()
-
 	c := &EVMClient{
-		logger:       log.With().Str("module", "evm").Stringer("chain", cfg.ChainID).Logger(),
+		logger:       clog,
 		cfg:          cfg,
 		ethClient:    ethClient,
 		localPubKey:  pk,
@@ -212,11 +260,17 @@ func NewEVMClient(
 }
 
 // Start starts the chain client with the given queues.
-func (c *EVMClient) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan stypes.ErrataBlock, globalSolvencyQueue chan stypes.Solvency) {
+func (c *EVMClient) Start(
+	globalTxsQueue chan stypes.TxIn,
+	globalErrataQueue chan stypes.ErrataBlock,
+	globalSolvencyQueue chan stypes.Solvency,
+	globalNetworkFeeQueue chan common.NetworkFee,
+) {
 	c.evmScanner.globalErrataQueue = globalErrataQueue
+	c.evmScanner.globalNetworkFeeQueue = globalNetworkFeeQueue
 	c.globalSolvencyQueue = globalSolvencyQueue
 	c.tssKeySigner.Start()
-	c.blockScanner.Start(globalTxsQueue)
+	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
 	go c.unstuck()
 	c.wg.Add(1)
@@ -258,6 +312,11 @@ func (c *EVMClient) GetHeight() (int64, error) {
 // GetBlockScannerHeight returns blockscanner height
 func (c *EVMClient) GetBlockScannerHeight() (int64, error) {
 	return c.blockScanner.PreviousHeight(), nil
+}
+
+// RollbackBlockScanner rolls back the block scanner to the last observed block
+func (c *EVMClient) RollbackBlockScanner() error {
+	return c.blockScanner.RollbackToLastObserved()
 }
 
 func (c *EVMClient) GetLatestTxForVault(vault string) (string, string, error) {
@@ -561,7 +620,7 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 	if txOutItem.Aggregator != "" {
 		var gasLimitForAggregator uint64
 		gasLimitForAggregator, err = aggregators.FetchDexAggregatorGasLimit(
-			common.LatestVersion, c.cfg.ChainID, txOutItem.Aggregator,
+			c.cfg.ChainID, txOutItem.Aggregator,
 		)
 		if err != nil {
 			c.logger.Err(err).
@@ -583,9 +642,15 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 		// set limit to aggregator gas limit
 		estimatedGas = gasLimitForAggregator
 
-		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.AggregatorMaxGasMultiplier))
+		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.EVM.AggregatorMaxGasMultiplier))
 	} else if !txOutItem.Coins[0].Asset.IsGasAsset() {
-		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.TokenMaxGasMultiplier))
+		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.EVM.TokenMaxGasMultiplier))
+	}
+
+	// L2 chains require a small amount of gas asset left for the L1 fee
+	if c.cfg.EVM.ExtraL1GasFee > 0 {
+		l1Fee := big.NewInt(c.cfg.EVM.ExtraL1GasFee)
+		scheduledMaxFee = scheduledMaxFee.Sub(scheduledMaxFee, convertThorchainAmountToWei(l1Fee))
 	}
 
 	// determine max gas units based on scheduled max gas (fee) and current rate
@@ -601,6 +666,17 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 			Str("scheduled_max_fee", scheduledMaxFee.String()).
 			Msg("max gas exceeded, aborting to let thornode reschedule")
 		return nil, nil
+	}
+
+	// before signing, confirm the vault has enough gas asset
+	estimatedFee := big.NewInt(int64(estimatedGas))
+	estimatedFee.Mul(estimatedFee, gasRate)
+	gasBalance, err := c.GetBalance(fromAddr.String(), evm.NativeTokenAddr, nil)
+	if err != nil {
+		return nil, fmt.Errorf("fail to get gas asset balance: %w", err)
+	}
+	if gasBalance.Cmp(big.NewInt(0).Add(evmValue, estimatedFee)) < 0 {
+		return nil, fmt.Errorf("insufficient gas asset balance: %s < %s + %s", gasBalance.String(), evmValue.String(), estimatedFee.String())
 	}
 
 	createdTx = etypes.NewTransaction(
@@ -685,7 +761,7 @@ func (c *EVMClient) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *
 
 	outboundTx, err := c.buildOutboundTx(tx, memo, nonce)
 	if err != nil {
-		c.logger.Err(err).Msg("Failed to build outbound tx")
+		c.logger.Err(err).Msg("fail to build outbound tx")
 		return nil, nil, nil, err
 	}
 
@@ -706,7 +782,7 @@ func (c *EVMClient) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *
 	}
 
 	coin := tx.Coins[0]
-	gas := common.MakeEVMGas(c.GetChain(), outboundTx.GasPrice(), outboundTx.Gas())
+	gas := common.MakeEVMGas(c.GetChain(), outboundTx.GasPrice(), outboundTx.Gas(), nil)
 	// This is the maximum gas, using the gas limit for instant-observation
 	// rather than the GasUsed which can only be gotten from the receipt when scanning.
 
@@ -719,7 +795,7 @@ func (c *EVMClient) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *
 
 	if err == nil {
 		txIn = stypes.NewTxInItem(
-			chainHeight+1,
+			chainHeight,
 			signedTx.Hash().Hex()[2:],
 			tx.Memo,
 			fromAddr.String(),
@@ -825,6 +901,8 @@ func (c *EVMClient) GetConfirmationCount(txIn stypes.TxIn) int64 {
 	switch c.cfg.ChainID {
 	case common.AVAXChain: // instant finality
 		return 0
+	case common.BASEChain:
+		return 12 // ~2 Ethereum blocks for parity with the 2 block minimum in eth client
 	case common.BSCChain:
 		return 3 // round up from 2.5 blocks required for finality
 	default:
@@ -846,6 +924,9 @@ func (c *EVMClient) ConfirmationCountReady(txIn stypes.TxIn) bool {
 		confirm := txIn.ConfirmationRequired
 		c.logger.Info().Msgf("confirmation required: %d", confirm)
 		return (c.evmScanner.currentBlockHeight - blockHeight) >= confirm
+	case common.BASEChain:
+		// block is already finalized(settled to l1)
+		return true
 	default:
 		c.logger.Fatal().Msgf("unsupported chain: %s", c.cfg.ChainID)
 		return false

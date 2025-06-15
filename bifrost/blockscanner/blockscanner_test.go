@@ -1,26 +1,31 @@
 package blockscanner
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	ckeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -55,7 +60,10 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 		SignerPasswd:    "password",
 		ChainHomeFolder: ".",
 	}
-	kb := ckeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := ckeys.NewInMemory(cdc)
 	_, _, err = kb.NewMnemonic(cfg.SignerName, ckeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 
@@ -71,19 +79,16 @@ func (s *BlockScannerTestSuite) TearDownSuite(c *C) {
 func (s *BlockScannerTestSuite) TestNewBlockScanner(c *C) {
 	mss := NewMockScannerStorage()
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		RPCHost:          "",
 		StartBlockHeight: 1, // avoids querying thorchain for block height
 	}, mss, nil, nil, DummyFetcher{})
 	c.Check(cbs, IsNil)
 	c.Check(err, NotNil)
 	cbs, err = NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		RPCHost:          "localhost",
 		StartBlockHeight: 1, // avoids querying thorchain for block height
 	}, mss, nil, nil, DummyFetcher{})
 	c.Check(cbs, IsNil)
 	c.Check(err, NotNil)
 	cbs, err = NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		RPCHost:          "localhost",
 		StartBlockHeight: 1, // avoids querying thorchain for block height
 	}, mss, m, s.bridge, DummyFetcher{})
 	c.Check(cbs, NotNil)
@@ -130,7 +135,6 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 	c.Assert(err, IsNil)
 
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		RPCHost:                    server.URL,
 		StartBlockHeight:           1, // avoids querying thorchain for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
@@ -151,7 +155,8 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 		}
 	}()
 	globalChan := make(chan types.TxIn)
-	cbs.Start(globalChan)
+	nfChan := make(chan common.NetworkFee)
+	cbs.Start(globalChan, nfChan)
 	time.Sleep(time.Second * 1)
 	cbs.Stop()
 }
@@ -184,7 +189,6 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 	}, s.m, s.keys)
 	c.Assert(err, IsNil)
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		RPCHost:                    server.URL,
 		StartBlockHeight:           1, // avoids querying thorchain for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
@@ -197,7 +201,7 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 	}, mss, m, bridge, DummyFetcher{})
 	c.Check(cbs, NotNil)
 	c.Check(err, IsNil)
-	cbs.Start(make(chan types.TxIn))
+	cbs.Start(make(chan types.TxIn), make(chan common.NetworkFee))
 	time.Sleep(time.Second * 1)
 	cbs.Stop()
 }
@@ -225,7 +229,6 @@ func (s *BlockScannerTestSuite) TestBadConnection(c *C) {
 	c.Assert(err, IsNil)
 
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		RPCHost:                    "localhost:23450",
 		StartBlockHeight:           1, // avoids querying thorchain for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
@@ -238,7 +241,7 @@ func (s *BlockScannerTestSuite) TestBadConnection(c *C) {
 	}, mss, m, bridge, DummyFetcher{})
 	c.Check(cbs, NotNil)
 	c.Check(err, IsNil)
-	cbs.Start(make(chan types.TxIn))
+	cbs.Start(make(chan types.TxIn), make(chan common.NetworkFee))
 	time.Sleep(time.Second * 1)
 	cbs.Stop()
 }
@@ -287,7 +290,6 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	c.Assert(err, IsNil)
 
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		RPCHost:                    server.URL,
 		StartBlockHeight:           1, // avoids querying thorchain for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
@@ -335,4 +337,117 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	time.Sleep(constants.ThorchainBlockTime)
 	isHalted = cbs.isChainPaused()
 	c.Assert(isHalted, Equals, true)
+}
+
+func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
+	// Define test variables
+	lastObservedHeight := int64(100)
+	startBlockHeight := lastObservedHeight + 20 // We're ahead of the last observed height
+
+	// Mock HTTP responses
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Logf("Test request URI: %s", r.RequestURI)
+		switch {
+		case strings.HasPrefix(r.RequestURI, thorclient.MimirEndpoint):
+			buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
+			c.Assert(err, IsNil)
+			_, err = w.Write(buf)
+			c.Assert(err, IsNil)
+		case strings.HasPrefix(r.RequestURI, "/thorchain/lastblock"):
+			// Return last observed height for ETH chain
+			resp := fmt.Sprintf(`[{"chain": "ETH", "last_observed_in": %d, "last_signed_out": 0, "thorchain": 150}]`, lastObservedHeight)
+			_, err := w.Write([]byte(resp))
+			c.Assert(err, IsNil)
+		case strings.HasPrefix(r.RequestURI, "/thorchain/constants"):
+			// Return constants used in rollback calculation - note integers WITHOUT quotes
+			resp := `{"int_64_values": {"ObservationDelayFlexibility": 10, "ThorchainBlockTime": 6000000000}}`
+			_, err := w.Write([]byte(resp))
+			c.Assert(err, IsNil)
+		}
+	})
+
+	// Setup scanner with mock storage and bridge
+	mss := NewMockScannerStorage()
+	server := httptest.NewServer(h)
+	defer server.Close()
+
+	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
+		ChainID:         "thorchain",
+		ChainHost:       server.Listener.Addr().String(),
+		ChainRPC:        server.Listener.Addr().String(),
+		SignerName:      "bob",
+		SignerPasswd:    "password",
+		ChainHomeFolder: ".",
+	}, s.m, s.keys)
+	c.Assert(err, IsNil)
+
+	// Create block scanner with initial position higher than where we'll rollback to
+	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
+		StartBlockHeight:           startBlockHeight,
+		BlockScanProcessors:        1,
+		HTTPRequestTimeout:         time.Second,
+		HTTPRequestReadTimeout:     time.Second * 30,
+		HTTPRequestWriteTimeout:    time.Second * 30,
+		MaxHTTPRequestRetry:        3,
+		BlockHeightDiscoverBackoff: time.Second,
+		BlockRetryInterval:         time.Second,
+		ChainID:                    common.ETHChain,
+	}, mss, m, bridge, DummyFetcher{})
+	c.Assert(err, IsNil)
+
+	// Set the scanner's current position to be ahead
+	atomic.StoreInt64(&cbs.previousBlock, startBlockHeight)
+	err = mss.SetScanPos(startBlockHeight)
+	c.Assert(err, IsNil)
+
+	// Verify initial position
+	c.Assert(cbs.PreviousHeight(), Equals, startBlockHeight)
+
+	// Start scanner
+	globalChan := make(chan types.TxIn)
+	nfChan := make(chan common.NetworkFee)
+	cbs.Start(globalChan, nfChan)
+	defer cbs.Stop()
+
+	// Allow scanner to initialize
+	time.Sleep(time.Second)
+
+	// Call rollback
+	err = cbs.RollbackToLastObserved()
+	c.Assert(err, IsNil)
+
+	// Allow time for rollback to be processed
+	time.Sleep(time.Second * 2)
+
+	// Verify rollback occurred
+	currentHeight := cbs.PreviousHeight()
+	c.Assert(currentHeight < startBlockHeight, Equals, true, Commentf("Expected height < %d, got %d", startBlockHeight, currentHeight))
+	c.Assert(currentHeight <= lastObservedHeight, Equals, true, Commentf("Expected height <= %d, got %d", lastObservedHeight, currentHeight))
+
+	// Verify storage was updated as well
+	pos, err := mss.GetScanPos()
+	c.Assert(err, IsNil)
+	c.Assert(pos, Equals, currentHeight)
+
+	// Test edge case: current height already below rollback height
+	// Set the scanner to a height below the last observed
+	lowerHeight := lastObservedHeight - 50
+	atomic.StoreInt64(&cbs.previousBlock, lowerHeight)
+	err = mss.SetScanPos(lowerHeight)
+	c.Assert(err, IsNil)
+
+	// Call rollback again
+	err = cbs.RollbackToLastObserved()
+	c.Assert(err, IsNil)
+
+	// Allow time for rollback to process
+	time.Sleep(time.Second * 2)
+
+	// Verify height didn't change (since we were already below the rollback point)
+	c.Assert(cbs.PreviousHeight(), Equals, lowerHeight, Commentf("Height should not change when already below rollback point"))
+
+	// Verify storage wasn't modified
+	pos, err = mss.GetScanPos()
+	c.Assert(err, IsNil)
+	c.Assert(pos, Equals, lowerHeight)
 }

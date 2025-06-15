@@ -4,27 +4,30 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
-	"github.com/cosmos/cosmos-sdk/store"
+	"cosmossdk.io/log"
+	"cosmossdk.io/store"
+	storemetrics "cosmossdk.io/store/metrics"
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/tendermint/tendermint/libs/log"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	kv1 "gitlab.com/thorchain/thornode/x/thorchain/keeper/v1"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	kv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type MemoSuite struct {
@@ -40,42 +43,61 @@ func (s *MemoSuite) SetUpSuite(c *C) {
 	types.SetupConfigForTest()
 	keyAcc := cosmos.NewKVStoreKey(authtypes.StoreKey)
 	keyBank := cosmos.NewKVStoreKey(banktypes.StoreKey)
-	keyParams := cosmos.NewKVStoreKey(paramstypes.StoreKey)
-	tkeyParams := cosmos.NewTransientStoreKey(paramstypes.TStoreKey)
 	keyThorchain := cosmos.NewKVStoreKey(types.StoreKey)
 	keyUpgrade := cosmos.NewKVStoreKey(upgradetypes.StoreKey)
 
 	db := dbm.NewMemDB()
-	ms := store.NewCommitMultiStore(db)
+	ms := store.NewCommitMultiStore(db, log.NewNopLogger(), storemetrics.NewNoOpMetrics())
 	ms.MountStoreWithDB(keyAcc, cosmos.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(keyParams, cosmos.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyThorchain, cosmos.StoreTypeIAVL, db)
 	ms.MountStoreWithDB(keyBank, cosmos.StoreTypeIAVL, db)
-	ms.MountStoreWithDB(tkeyParams, cosmos.StoreTypeTransient, db)
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
 	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "thorchain"}, false, log.NewNopLogger())
 	s.ctx = ctx.WithBlockHeight(18)
 
-	legacyCodec := types.MakeTestCodec()
-	marshaler := simapp.MakeTestEncodingConfig().Marshaler
+	encodingConfig := testutil.MakeTestEncodingConfig(
+		bank.AppModuleBasic{},
+		auth.AppModuleBasic{},
+	)
 
-	pk := paramskeeper.NewKeeper(marshaler, legacyCodec, keyParams, tkeyParams)
-	ak := authkeeper.NewAccountKeeper(marshaler, keyAcc, pk.Subspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, map[string][]string{
-		types.ModuleName:  {authtypes.Minter, authtypes.Burner},
-		types.AsgardName:  {},
-		types.BondName:    {},
-		types.ReserveName: {},
-		types.LendingName: {},
-	})
+	ak := authkeeper.NewAccountKeeper(
+		encodingConfig.Codec,
+		runtime.NewKVStoreService(keyAcc),
+		authtypes.ProtoBaseAccount,
+		map[string][]string{
+			types.ModuleName:  {authtypes.Minter, authtypes.Burner},
+			types.AsgardName:  {},
+			types.BondName:    {},
+			types.ReserveName: {},
+			types.LendingName: {},
+		},
+		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
+		sdk.GetConfig().GetBech32AccountAddrPrefix(),
+		authtypes.NewModuleAddress(types.ModuleName).String(),
+	)
 
-	bk := bankkeeper.NewBaseKeeper(marshaler, keyBank, ak, pk.Subspace(banktypes.ModuleName), nil)
+	bk := bankkeeper.NewBaseKeeper(
+		encodingConfig.Codec,
+		runtime.NewKVStoreService(keyBank),
+		ak,
+		nil,
+		authtypes.NewModuleAddress(types.ModuleName).String(),
+		log.NewNopLogger(),
+	)
 	c.Assert(bk.MintCoins(ctx, types.ModuleName, cosmos.Coins{
 		cosmos.NewCoin(common.RuneAsset().Native(), cosmos.NewInt(200_000_000_00000000)),
 	}), IsNil)
-	uk := upgradekeeper.NewKeeper(nil, keyUpgrade, marshaler, c.MkDir(), nil)
-	s.k = kv1.NewKVStore(marshaler, bk, ak, uk, keyThorchain, types.GetCurrentVersion())
+	uk := upgradekeeper.NewKeeper(
+		nil,
+		runtime.NewKVStoreService(keyUpgrade),
+		encodingConfig.Codec,
+		c.MkDir(),
+		nil,
+		authtypes.NewModuleAddress(types.ModuleName).String(),
+	)
+	s.k = kv1.NewKVStore(encodingConfig.Codec, bk, ak, uk, keyThorchain, types.GetCurrentVersion())
 }
 
 func (s *MemoSuite) TestTxType(c *C) {
@@ -141,6 +163,50 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	// if refund address is present, but destination is not, should return an err
 	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:b:/%s:87e7", refundAddr.String()))
 	c.Assert(err, NotNil)
+
+	// test multiple affiliates
+	ms := "=:e:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::t/t1/t2:10/20/30"
+	memo, err = ParseMemoWithTHORNames(ctx, k, ms)
+	c.Assert(err, IsNil)
+	c.Check(len(memo.GetAffiliates()), Equals, 3)
+	c.Check(len(memo.GetAffiliatesBasisPoints()), Equals, 3)
+	c.Check(memo.GetAffiliates()[0], Equals, "t")
+	c.Check(memo.GetAffiliatesBasisPoints()[0].Uint64(), Equals, uint64(10))
+	c.Check(memo.GetAffiliates()[1], Equals, "t1")
+	c.Check(memo.GetAffiliatesBasisPoints()[1].Uint64(), Equals, uint64(20))
+	c.Check(memo.GetAffiliates()[2], Equals, "t2")
+	c.Check(memo.GetAffiliatesBasisPoints()[2].Uint64(), Equals, uint64(30))
+
+	// thornames + rune addrs
+	affRune := types.GetRandomTHORAddress()
+	ms = fmt.Sprintf("=:e:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::t/%s/t2:10/20/30", affRune.String())
+	memo, err = ParseMemoWithTHORNames(ctx, k, ms)
+	c.Assert(err, IsNil)
+	c.Check(memo.GetAffiliatesBasisPoints()[0].Uint64(), Equals, uint64(10))
+	c.Check(memo.GetAffiliates()[1], Equals, affRune.String())
+	c.Check(memo.GetAffiliatesBasisPoints()[1].Uint64(), Equals, uint64(20))
+	c.Check(memo.GetAffiliates()[2], Equals, "t2")
+	c.Check(memo.GetAffiliatesBasisPoints()[2].Uint64(), Equals, uint64(30))
+
+	// one affiliate bps defined, should apply to all affiliates
+	ms = "=:e:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::t/t1/t2:10"
+	memo, err = ParseMemoWithTHORNames(ctx, k, ms)
+	c.Assert(err, IsNil)
+	c.Check(memo.GetAffiliatesBasisPoints()[0].Uint64(), Equals, uint64(10))
+	c.Check(memo.GetAffiliatesBasisPoints()[1].Uint64(), Equals, uint64(10))
+	c.Check(memo.GetAffiliatesBasisPoints()[2].Uint64(), Equals, uint64(10))
+
+	// affiliates + bps mismatch
+	ms = "=:e:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::t/t1/t2:10/20"
+	_, err = ParseMemoWithTHORNames(ctx, k, ms)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "affiliate thornames and affiliate fee bps count mismatch")
+
+	// total affiliate fee too high
+	ms = "=:e:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::t/t1/t2:10000/10000/10000"
+	_, err = ParseMemoWithTHORNames(ctx, k, ms)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "total affiliate fee basis points can't be more than 10000")
 
 	// test streaming swap
 	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.RuneAsset().String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20")
@@ -348,6 +414,19 @@ func (s *MemoSuite) TestParse(c *C) {
 	_, err = ParseMemoWithTHORNames(ctx, k, "ADD:ETH.ETH:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:tthor176xrckly4p7efq7fshhcuc2kax3dyxu9hguzl7:1000")
 	c.Assert(err, IsNil)
 
+	memo, err = ParseMemoWithTHORNames(ctx, k, "TCY:"+thorAddr.String())
+	c.Assert(err, IsNil)
+	c.Check(memo.IsType(TxTCYClaim), Equals, true, Commentf("MEMO: %+v", memo))
+	c.Check(memo.GetAddress(), Equals, thorAddr)
+
+	memo, err = ParseMemoWithTHORNames(ctx, k, "tcy+")
+	c.Assert(err, IsNil)
+	c.Check(memo.IsType(TxTCYStake), Equals, true, Commentf("MEMO: %+v", memo))
+
+	memo, err = ParseMemoWithTHORNames(ctx, k, "tcy-:10000")
+	c.Assert(err, IsNil)
+	c.Check(memo.IsType(TxTCYUnstake), Equals, true, Commentf("MEMO: %+v", memo))
+
 	// trade account unit tests
 	trAccAddr := types.GetRandomBech32Addr()
 	memo, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("trade+:%s", trAccAddr))
@@ -370,14 +449,16 @@ func (s *MemoSuite) TestParse(c *C) {
 	c.Check(memo.IsType(TxWithdraw), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetAmount().Equal(cosmos.NewUint(25)), Equals, true, Commentf("%d", memo.GetAmount().Uint64()))
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.RuneAsset().String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:870000000:hello:0")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.RuneAsset().String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:870000000:hello:100")
 	c.Assert(err, IsNil)
 	c.Check(memo.GetAsset().String(), Equals, common.RuneAsset().String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Equal(cosmos.NewUint(870000000)), Equals, true)
-	c.Check(memo.GetAffiliateTHORName(), NotNil)
-	c.Check(memo.GetAffiliateTHORName().Owner.Equals(thorAccAddr), Equals, true)
+	c.Check(len(memo.GetAffiliates()), Equals, 1)
+	c.Check(len(memo.GetAffiliatesBasisPoints()), Equals, 1)
+	c.Check(memo.GetAffiliates()[0], Equals, "hello")
+	c.Check(memo.GetAffiliatesBasisPoints()[0].Uint64(), Equals, uint64(100))
 
 	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.RuneAsset().String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Assert(err, IsNil)
@@ -559,5 +640,14 @@ func (s *MemoSuite) TestParse(c *C) {
 	_, err = ParseMemoWithTHORNames(ctx, k, "bond:what") // invalid address
 	c.Assert(err, NotNil)
 	_, err = ParseMemoWithTHORNames(ctx, k, "whatever") // not support
+	c.Assert(err, NotNil)
+
+	memo, err = ParseMemoWithTHORNames(ctx, k, "x:tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f:AA==")
+	c.Assert(err, IsNil)
+	c.Check(memo.IsType(TxExec), Equals, true)
+	c.Check(memo.String(), Equals, "x:tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f:AA==")
+	_, err = ParseMemoWithTHORNames(ctx, k, "tcy:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a") // invalid thor address
+	c.Assert(err, NotNil)
+	_, err = ParseMemoWithTHORNames(ctx, k, "tcy-") // emptu bps
 	c.Assert(err, NotNil)
 }

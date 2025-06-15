@@ -70,7 +70,7 @@ fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox 
 pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick
 ```
 
-The `dog` mnemonic is a special case and will be used as the mnemonic for the default simulation validator, and as the mimir admin.
+The `dog` mnemonic is a special case and will be used as the mnemonic for the default simulation validator.
 
 ### Variables
 
@@ -206,6 +206,18 @@ Setting `PARALLELISM=<parallelism>` will run tests with the provided parallelism
 
 ```bash
 PARALLELISM=4 make test-regression
+```
+
+Setting `AUTO_UPDATE=1` will attempt to update values automatically to account for logic changes. This does not handle all cases, but should avoid some manual legwork.
+
+```bash
+AUTO_UPDATE=1 make test-regression
+```
+
+Setting `IGNORE_FAILURES=1` will avoid exiting on failed asserts. This can be useful when manual updates to assertions are required to avoid waiting for iterative runs.
+
+```bash
+IGNORE_FAILURES=1 make test-regression
 ```
 
 ### Conventions

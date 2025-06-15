@@ -4,7 +4,8 @@ import (
 	"encoding/base64"
 	"os"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // Sign an array of bytes.
@@ -15,7 +16,11 @@ func Sign(buf []byte) ([]byte, []byte, error) {
 		return nil, nil, err
 	}
 
-	sig, pubkey, err := kbs.Keybase.Sign(kbs.SignerName, buf)
+	// TODO: confirm this signing mode which is only for ledger devices.
+	// Not applicable if ledger devices will never be used.
+	// SIGN_MODE_LEGACY_AMINO_JSON will be removed in the future for SIGN_MODE_TEXTUAL
+	signingMode := signing.SignMode_SIGN_MODE_LEGACY_AMINO_JSON
+	sig, pubkey, err := kbs.Keybase.Sign(kbs.SignerName, buf, signingMode)
 	if err != nil {
 		return nil, nil, err
 	}

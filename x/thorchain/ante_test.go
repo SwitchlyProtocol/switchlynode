@@ -1,15 +1,17 @@
 package thorchain
 
 import (
+	math "math"
+
 	"github.com/stretchr/testify/suite"
 
 	. "gopkg.in/check.v1"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type AnteTestSuite struct {
@@ -19,30 +21,66 @@ type AnteTestSuite struct {
 var _ = Suite(&AnteTestSuite{})
 
 func (s *AnteTestSuite) TestRejectMutlipleDepositMsgs(c *C) {
-	ctx, k := setupKeeperForTest(c)
+	_, k := setupKeeperForTest(c)
 
 	ad := AnteDecorator{
 		keeper: k,
 	}
 
-	msgs := []cosmos.Msg{
-		&types.MsgSend{},
-		&types.MsgBan{},
-	}
-
-	// no deposit msgs is ok
-	err := ad.rejectMultipleDepositMsgs(ctx, msgs)
+	// no deposit or send msgs is ok
+	err := ad.rejectMultipleDepositMsgs([]cosmos.Msg{&types.MsgBan{}, &types.MsgBond{}})
 	c.Assert(err, IsNil)
 
-	// one deposit msgs is ok
-	msgs = append(msgs, &types.MsgDeposit{})
-	err = ad.rejectMultipleDepositMsgs(ctx, msgs)
+	// one deposit msg is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&types.MsgBan{}, &types.MsgBond{}, &types.MsgDeposit{}})
+	c.Assert(err, IsNil)
+
+	// one send msg is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&types.MsgBan{}, &types.MsgBond{}, &types.MsgSend{}})
 	c.Assert(err, IsNil)
 
 	// two deposit msgs is not ok
-	msgs = append(msgs, &types.MsgDeposit{})
-	err = ad.rejectMultipleDepositMsgs(ctx, msgs)
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&types.MsgBan{}, &types.MsgBond{}, &types.MsgDeposit{}, &types.MsgDeposit{}})
 	c.Assert(err, NotNil)
+
+	// one deposit and one send is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&types.MsgBan{}, &types.MsgBond{}, &types.MsgDeposit{}, &types.MsgSend{}})
+	c.Assert(err, IsNil)
+
+	// two bank sends is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&banktypes.MsgSend{}, &banktypes.MsgSend{}})
+	c.Assert(err, IsNil)
+
+	bankSendDeposit := banktypes.MsgSend{
+		ToAddress: k.GetModuleAccAddress(ModuleName).String(),
+	}
+	// one bank send to module account is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&bankSendDeposit})
+	c.Assert(err, IsNil)
+
+	// two bank sends to module account is not ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&bankSendDeposit, &bankSendDeposit})
+	c.Assert(err, NotNil)
+
+	// one deposit and one send is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&types.MsgBan{}, &types.MsgBond{}, &types.MsgDeposit{}, &types.MsgSend{}})
+	c.Assert(err, IsNil)
+
+	// two bank sends is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&banktypes.MsgSend{}, &banktypes.MsgSend{}})
+	c.Assert(err, IsNil)
+
+	// one bank send to module account is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&bankSendDeposit})
+	c.Assert(err, IsNil)
+
+	// two bank sends to module account is not ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&bankSendDeposit, &bankSendDeposit})
+	c.Assert(err, NotNil)
+
+	// one normal bank send and one bank send to module account is ok
+	err = ad.rejectMultipleDepositMsgs([]cosmos.Msg{&banktypes.MsgSend{}, &bankSendDeposit})
+	c.Assert(err, IsNil)
 }
 
 func (s *AnteTestSuite) TestAnteHandleMessage(c *C) {
@@ -57,10 +95,7 @@ func (s *AnteTestSuite) TestAnteHandleMessage(c *C) {
 	toAddr := GetRandomBech32Addr()
 
 	// fund an addr so it can pass the fee deduction ante
-	funds, err := common.NewCoin(common.RuneNative, cosmos.NewUint(200*common.One)).Native()
-	c.Assert(err, IsNil)
-	err = k.AddCoins(ctx, fromAddr, cosmos.NewCoins(funds))
-	c.Assert(err, IsNil)
+	FundAccount(c, ctx, k, fromAddr, 200*common.One)
 	coin, err := common.NewCoin(common.RuneNative, cosmos.NewUint(1*common.One)).Native()
 	c.Assert(err, IsNil)
 
@@ -69,11 +104,33 @@ func (s *AnteTestSuite) TestAnteHandleMessage(c *C) {
 		ToAddress:   toAddr,
 		Amount:      cosmos.NewCoins(coin),
 	}
-	err = ad.anteHandleMessage(ctx, version, &goodMsg)
+	newCtx, err := ad.anteHandleMessage(ctx, version, &goodMsg)
+	c.Assert(err, IsNil)
+	c.Assert(newCtx.Priority(), Equals, int64(0))
+
+	// bank sends are allowed
+	bankSendMsg := banktypes.MsgSend{
+		FromAddress: fromAddr.String(),
+		ToAddress:   toAddr.String(),
+	}
+	_, err = ad.anteHandleMessage(ctx, version, &bankSendMsg)
 	c.Assert(err, IsNil)
 
-	// non-thorchain msgs should be rejected
-	badMsg := banktypes.MsgSend{}
-	err = ad.anteHandleMessage(ctx, version, &badMsg)
+	// other non-thorchain msgs should be rejected
+	badMsg := banktypes.MsgMultiSend{}
+	_, err = ad.anteHandleMessage(ctx, version, &badMsg)
 	c.Assert(err, NotNil)
+
+	activeNodeAccount := GetRandomValidatorNode(NodeActive)
+	c.Assert(k.SetNodeAccount(ctx, activeNodeAccount), IsNil)
+
+	// Node-signed msgs should have priority
+	priorityMsg := types.MsgMimir{
+		Key:    "",
+		Value:  0,
+		Signer: activeNodeAccount.NodeAddress,
+	}
+	newCtx, err = ad.anteHandleMessage(ctx, version, &priorityMsg)
+	c.Assert(err, IsNil)
+	c.Assert(newCtx.Priority(), Equals, int64(math.MaxInt64))
 }

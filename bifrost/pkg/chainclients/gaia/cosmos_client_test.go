@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
@@ -20,13 +21,14 @@ import (
 	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	btypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
+
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
 	. "gopkg.in/check.v1"
 )
 
@@ -77,7 +79,10 @@ func (s *CosmosTestSuite) SetUpSuite(c *C) {
 		ChainHomeFolder: s.thordir,
 	}
 
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
@@ -97,10 +102,17 @@ func (s *CosmosTestSuite) TestGetAddress(c *C) {
 	mockBankServiceClient := NewMockBankServiceClient()
 	mockAccountServiceClient := NewMockAccountServiceClient()
 
+	cfg := config.BifrostBlockScannerConfiguration{
+		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
+			{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+		},
+	}
+
 	cc := CosmosClient{
 		cfg:           config.BifrostChainConfiguration{ChainID: common.GAIAChain},
 		bankClient:    mockBankServiceClient,
 		accountClient: mockAccountServiceClient,
+		cosmosScanner: &CosmosBlockScanner{cfg: cfg},
 	}
 
 	addr := "cosmos10tjz4ave7znpctgd2rfu6v2r6zkeup2dlmqtuz"
@@ -143,9 +155,11 @@ func (s *CosmosTestSuite) TestProcessOutboundTx(c *C) {
 		RPCHost:        server.URL,
 		CosmosGRPCHost: fakeGRPCHost,
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			RPCHost:          server.URL,
 			CosmosGRPCHost:   fakeGRPCHost,
 			StartBlockHeight: 1, // avoids querying thorchain for block height
+			WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
+				{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+			},
 		},
 	}, nil, s.bridge, s.m)
 	c.Assert(err, IsNil)
@@ -183,7 +197,7 @@ func (s *CosmosTestSuite) TestSign(c *C) {
 	priv, err := s.thorKeys.GetPrivateKey()
 	c.Assert(err, IsNil)
 
-	temp, err := cryptocodec.ToTmPubKeyInterface(priv.PubKey())
+	temp, err := cryptocodec.ToCmtPubKeyInterface(priv.PubKey())
 	c.Assert(err, IsNil)
 
 	pk, err := common.NewPubKeyFromCrypto(temp)
@@ -241,7 +255,7 @@ func (s *CosmosTestSuite) TestSign(c *C) {
 	c.Check(meta.AccountNumber, Equals, int64(0))
 	c.Check(meta.SeqNumber, Equals, int64(0))
 
-	gas := types.NewCoins(types.NewCoin("uatom", types.NewInt(100)))
+	gas := types.NewCoins(types.NewCoin("uatom", sdkmath.NewInt(100)))
 
 	txb, err := buildUnsigned(
 		txConfig,
@@ -254,7 +268,7 @@ func (s *CosmosTestSuite) TestSign(c *C) {
 	)
 	c.Assert(err, IsNil)
 
-	c.Check(txb.GetTx().GetFee().IsEqual(gas), Equals, true)
+	c.Check(txb.GetTx().GetFee().Equal(gas), Equals, true)
 	c.Check(txb.GetTx().GetMemo(), Equals, "memo")
 	pks, err := txb.GetTx().GetPubKeys()
 	c.Assert(err, IsNil)

@@ -7,16 +7,18 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/blang/semver"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	stypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	stypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -61,7 +63,8 @@ func (s *ThorchainSuite) SetUpTest(c *C) {
 		case strings.HasPrefix(req.RequestURI, RagnarokEndpoint):
 			httpTestHandler(c, rw, "../../test/fixtures/endpoints/ragnarok/ragnarok.json")
 		case strings.HasPrefix(req.RequestURI, ChainVersionEndpoint):
-			httpTestHandler(c, rw, "../../test/fixtures/endpoints/version/version.json")
+			_, err := rw.Write([]byte(`{"current":"` + stypes.GetCurrentVersion().String() + `"}`))
+			c.Assert(err, IsNil)
 		case strings.HasPrefix(req.RequestURI, MimirEndpoint):
 			httpTestHandler(c, rw, "../../test/fixtures/endpoints/mimir/mimir.json")
 		case strings.HasPrefix(req.RequestURI, InboundAddressesEndpoint):
@@ -119,11 +122,11 @@ func (s *ThorchainSuite) TestGet(c *C) {
 	c.Assert(buf, NotNil)
 }
 
-func (s *ThorchainSuite) TestGetObservationStdTx_OutboundShouldHaveNotConfirmationCounting(c *C) {
+func (s *ThorchainSuite) TestGetObservationsStdTx_OutboundShouldHaveConfirmationCounting(c *C) {
 	pk := stypes.GetRandomPubKey()
 	vaultAddr, err := pk.GetAddress(common.ETHChain)
 	c.Assert(err, IsNil)
-	tx := stypes.NewObservedTx(
+	tx := common.NewObservedTx(
 		common.Tx{
 			Coins: common.Coins{
 				common.NewCoin(common.ETHAsset, cosmos.NewUint(123400000)),
@@ -137,19 +140,17 @@ func (s *ThorchainSuite) TestGetObservationStdTx_OutboundShouldHaveNotConfirmati
 		100,
 	)
 
-	signedMsg, err := s.bridge.GetObservationsStdTx(stypes.ObservedTxs{tx})
-	c.Assert(signedMsg, NotNil)
+	_, out, err := s.bridge.GetInboundOutbound(common.ObservedTxs{tx})
+	c.Assert(out, NotNil)
 	c.Assert(err, IsNil)
-	m, ok := signedMsg[0].(*stypes.MsgObservedTxOut)
-	c.Assert(ok, Equals, true)
-	c.Assert(m.Txs[0].FinaliseHeight == m.Txs[0].BlockHeight, Equals, true)
+	c.Assert(out[0].FinaliseHeight > out[0].BlockHeight, Equals, true)
 }
 
 func (s *ThorchainSuite) TestSign(c *C) {
 	pk := stypes.GetRandomPubKey()
 	vaultAddr, err := pk.GetAddress(common.ETHChain)
 	c.Assert(err, IsNil)
-	tx := stypes.NewObservedTx(
+	tx := common.NewObservedTx(
 		common.Tx{
 			Coins: common.Coins{
 				common.NewCoin(common.ETHAsset, cosmos.NewUint(123400000)),
@@ -163,15 +164,17 @@ func (s *ThorchainSuite) TestSign(c *C) {
 		1,
 	)
 
-	signedMsg, err := s.bridge.GetObservationsStdTx(stypes.ObservedTxs{tx})
-	c.Log(err)
-	c.Assert(signedMsg, NotNil)
+	_, out, err := s.bridge.GetInboundOutbound(common.ObservedTxs{tx})
+	c.Assert(out, NotNil)
 	c.Assert(err, IsNil)
 }
 
 func (ThorchainSuite) TestNewThorchainBridge(c *C) {
 	testFunc := func(cfg config.BifrostClientConfiguration, errChecker, sbChecker Checker) {
-		kb := keyring.NewInMemory()
+		registry := codectypes.NewInterfaceRegistry()
+		cryptocodec.RegisterInterfaces(registry)
+		cdc := codec.NewProtoCodec(registry)
+		kb := keyring.NewInMemory(cdc)
 		_, _, err := kb.NewMnemonic(cfg.SignerName, keyring.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 		c.Assert(err, IsNil)
 		sb, err := NewThorchainBridge(cfg, m, NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd))
@@ -292,7 +295,7 @@ func (s *ThorchainSuite) TestGetRagnarok(c *C) {
 func (s *ThorchainSuite) TestGetThorchainVersion(c *C) {
 	result, err := s.bridge.GetThorchainVersion()
 	c.Assert(err, IsNil)
-	c.Assert(result.EQ(semver.MustParse("0.11.0")), Equals, true)
+	c.Assert(result.EQ(stypes.GetCurrentVersion()), Equals, true)
 }
 
 func (s *ThorchainSuite) TestGetMimir(c *C) {

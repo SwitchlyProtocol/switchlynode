@@ -1,14 +1,13 @@
 package common
 
 import (
-	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 	"sync"
 
-	secp256k1 "github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcutil/bech32"
@@ -21,12 +20,13 @@ import (
 	bchchaincfg "github.com/gcash/bchd/chaincfg"
 	"github.com/gcash/bchutil"
 
+	"github.com/cometbft/cometbft/crypto"
 	eth "github.com/ethereum/go-ethereum/crypto"
-	"github.com/tendermint/tendermint/crypto"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	xrpkm "gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/xrp/keymanager"
 
 	"github.com/stellar/go/strkey"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // PubKey used in thorchain, it should be bech32 encoded string
@@ -45,6 +45,10 @@ var (
 	pubkeyToAddressCacheMu = &sync.Mutex{}
 )
 
+////////////////////////////////////////////////////////////////////////////////////////
+// PubKey
+////////////////////////////////////////////////////////////////////////////////////////
+
 // NewPubKey create a new instance of PubKey
 // key is bech32 encoded string
 func NewPubKey(key string) (PubKey, error) {
@@ -60,7 +64,7 @@ func NewPubKey(key string) (PubKey, error) {
 
 // NewPubKeyFromCrypto
 func NewPubKeyFromCrypto(pk crypto.PubKey) (PubKey, error) {
-	tmp, err := codec.FromTmPubKeyInterface(pk)
+	tmp, err := codec.FromCmtPubKeyInterface(pk)
 	if err != nil {
 		return EmptyPubKey, fmt.Errorf("fail to create PubKey from crypto.PubKey,err:%w", err)
 	}
@@ -72,29 +76,31 @@ func NewPubKeyFromCrypto(pk crypto.PubKey) (PubKey, error) {
 }
 
 // Equals check whether two are the same
-func (pubKey PubKey) Equals(pubKey1 PubKey) bool {
-	return pubKey == pubKey1
+func (p PubKey) Equals(pubKey1 PubKey) bool {
+	return p == pubKey1
 }
 
 // IsEmpty to check whether it is empty
-func (pubKey PubKey) IsEmpty() bool {
-	return len(pubKey) == 0
+func (p PubKey) IsEmpty() bool {
+	return len(p) == 0
 }
 
 // String stringer implementation
-func (pubKey PubKey) String() string {
-	return string(pubKey)
+func (p PubKey) String() string {
+	return string(p)
+}
+
+func (p PubKey) Secp256K1() (*btcec.PublicKey, error) {
+	pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
+	if err != nil {
+		return nil, err
+	}
+	return btcec.ParsePubKey(pk.Bytes(), btcec.S256())
 }
 
 // EVMPubkeyToAddress converts a pubkey of an EVM chain to the corresponding address
-func (pubKey PubKey) EVMPubkeyToAddress() (Address, error) {
-	// retrieve compressed pubkey bytes from bechh32 encoded str
-	pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
-	if err != nil {
-		return NoAddress, err
-	}
-	// parse compressed bytes removing 5 first bytes (amino encoding) to get uncompressed
-	pub, err := secp256k1.ParsePubKey(pk.Bytes(), secp256k1.S256())
+func (p PubKey) EVMPubkeyToAddress() (Address, error) {
+	pub, err := p.Secp256K1()
 	if err != nil {
 		return NoAddress, err
 	}
@@ -103,13 +109,13 @@ func (pubKey PubKey) EVMPubkeyToAddress() (Address, error) {
 }
 
 // GetAddress will return an address for the given chain
-func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
-	if pubKey.IsEmpty() {
+func (p PubKey) GetAddress(chain Chain) (Address, error) {
+	if p.IsEmpty() {
 		return NoAddress, nil
 	}
 
 	// cache pubkey to address, since this is expensive with many vaults in pubkey manager
-	key := fmt.Sprintf("%s-%s", chain.String(), pubKey.String())
+	key := fmt.Sprintf("%s-%s", chain.String(), p.String())
 	pubkeyToAddressCacheMu.Lock()
 	defer pubkeyToAddressCacheMu.Unlock()
 	if v, ok := pubkeyToAddressCache[key]; ok {
@@ -119,8 +125,14 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 	chainNetwork := CurrentChainNetwork
 	var addressString string
 	switch chain {
+	case XRPChain:
+		pk, err := p.Secp256K1()
+		if err != nil {
+			return NoAddress, fmt.Errorf("get pub key secp256k1, %w", err)
+		}
+		addressString = xrpkm.MasterPubKeyToAccountID(pk.SerializeCompressed())
 	case GAIAChain, THORChain:
-		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
+		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
 		if err != nil {
 			return NoAddress, err
 		}
@@ -130,7 +142,7 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 		}
 		addressString = str
 	case BTCChain:
-		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
+		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
 		if err != nil {
 			return NoAddress, err
 		}
@@ -147,7 +159,7 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 		}
 		addressString = addr.String()
 	case LTCChain:
-		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
+		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
 		if err != nil {
 			return NoAddress, err
 		}
@@ -164,7 +176,7 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 		}
 		addressString = addr.String()
 	case DOGEChain:
-		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
+		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
 		if err != nil {
 			return NoAddress, err
 		}
@@ -181,7 +193,7 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 		}
 		addressString = addr.String()
 	case BCHChain:
-		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
+		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
 		if err != nil {
 			return NoAddress, err
 		}
@@ -197,27 +209,23 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 			return NoAddress, fmt.Errorf("fail to encode the address, err: %w", err)
 		}
 		addressString = addr.String()
-	
-	case STELLARChain:
-		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(pubKey))
+	case StellarChain:
+		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
 		if err != nil {
 			return NoAddress, err
 		}
-		// Convert the public key to Stellar's ed25519 format
-		stellarPubKey := ed25519.PublicKey(pk.Bytes())
-		// Encode the public key into a Stellar address using strkey format
-		addr, err := strkey.Encode(strkey.VersionByteAccountID, stellarPubKey)
+		// Stellar uses Ed25519 public keys, encode using strkey format
+		addr, err := strkey.Encode(strkey.VersionByteAccountID, pk.Bytes())
 		if err != nil {
-			return NoAddress, fmt.Errorf("failed to encode Stellar address: %w", err)
+			return NoAddress, fmt.Errorf("fail to encode Stellar address: %w", err)
 		}
 		addressString = addr
-		
 	default:
 		// Only EVM chains remain.
 		if !chain.IsEVM() {
 			return NoAddress, nil
 		}
-		addr, err := pubKey.EVMPubkeyToAddress()
+		addr, err := p.EVMPubkeyToAddress()
 		if err != nil {
 			return addr, err
 		}
@@ -226,14 +234,14 @@ func (pubKey PubKey) GetAddress(chain Chain) (Address, error) {
 
 	address, err := NewAddress(addressString)
 	if err != nil {
-		return address, err
+		return address, fmt.Errorf("NewAddress, addressString %s, %w", addressString, err)
 	}
 	pubkeyToAddressCache[key] = address
 	return address, nil
 }
 
-func (pubKey PubKey) GetThorAddress() (cosmos.AccAddress, error) {
-	addr, err := pubKey.GetAddress(THORChain)
+func (p PubKey) GetThorAddress() (cosmos.AccAddress, error) {
+	addr, err := p.GetAddress(THORChain)
 	if err != nil {
 		return nil, err
 	}
@@ -241,12 +249,12 @@ func (pubKey PubKey) GetThorAddress() (cosmos.AccAddress, error) {
 }
 
 // MarshalJSON to Marshals to JSON using Bech32
-func (pubKey PubKey) MarshalJSON() ([]byte, error) {
-	return json.Marshal(pubKey.String())
+func (p PubKey) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.String())
 }
 
 // UnmarshalJSON to Unmarshal from JSON assuming Bech32 encoding
-func (pubKey *PubKey) UnmarshalJSON(data []byte) error {
+func (p *PubKey) UnmarshalJSON(data []byte) error {
 	var s string
 	err := json.Unmarshal(data, &s)
 	if err != nil {
@@ -256,12 +264,16 @@ func (pubKey *PubKey) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	*pubKey = pk
+	*p = pk
 	return nil
 }
 
-func (pks PubKeys) Valid() error {
-	for _, pk := range pks {
+////////////////////////////////////////////////////////////////////////////////////////
+// PubKeys
+////////////////////////////////////////////////////////////////////////////////////////
+
+func (p PubKeys) Valid() error {
+	for _, pk := range p {
 		if _, err := NewPubKey(pk.String()); err != nil {
 			return err
 		}
@@ -269,9 +281,9 @@ func (pks PubKeys) Valid() error {
 	return nil
 }
 
-func (pks PubKeys) Contains(pk PubKey) bool {
-	for _, p := range pks {
-		if p.Equals(pk) {
+func (p PubKeys) Contains(pk PubKey) bool {
+	for _, pp := range p {
+		if pp.Equals(pk) {
 			return true
 		}
 	}
@@ -279,14 +291,14 @@ func (pks PubKeys) Contains(pk PubKey) bool {
 }
 
 // Equals check whether two pub keys are identical
-func (pks PubKeys) Equals(newPks PubKeys) bool {
-	if len(pks) != len(newPks) {
+func (p PubKeys) Equals(newPks PubKeys) bool {
+	if len(p) != len(newPks) {
 		return false
 	}
 
-	source := make(PubKeys, len(pks))
+	source := make(PubKeys, len(p))
 	dest := make(PubKeys, len(newPks))
-	copy(source, pks)
+	copy(source, p)
 	copy(dest, newPks)
 
 	// sort both lists
@@ -305,26 +317,26 @@ func (pks PubKeys) Equals(newPks PubKeys) bool {
 }
 
 // String implement stringer interface
-func (pks PubKeys) String() string {
-	strs := make([]string, len(pks))
-	for i := range pks {
-		strs[i] = pks[i].String()
+func (p PubKeys) String() string {
+	strs := make([]string, len(p))
+	for i := range p {
+		strs[i] = p[i].String()
 	}
 	return strings.Join(strs, ", ")
 }
 
-func (pks PubKeys) Strings() []string {
-	allStrings := make([]string, len(pks))
-	for i, pk := range pks {
+func (p PubKeys) Strings() []string {
+	allStrings := make([]string, len(p))
+	for i, pk := range p {
 		allStrings[i] = pk.String()
 	}
 	return allStrings
 }
 
-func (pks PubKeys) Addresses() ([]cosmos.AccAddress, error) {
+func (p PubKeys) Addresses() ([]cosmos.AccAddress, error) {
 	var err error
-	addrs := make([]cosmos.AccAddress, len(pks))
-	for i, pk := range pks {
+	addrs := make([]cosmos.AccAddress, len(p))
+	for i, pk := range p {
 		addrs[i], err = pk.GetThorAddress()
 		if err != nil {
 			return nil, err
@@ -342,6 +354,10 @@ func ConvertAndEncode(hrp string, data []byte) (string, error) {
 	return bech32.Encode(hrp, converted)
 }
 
+////////////////////////////////////////////////////////////////////////////////////////
+// PubKeySet
+////////////////////////////////////////////////////////////////////////////////////////
+
 // NewPubKeySet create a new instance of PubKeySet , which contains two keys
 func NewPubKeySet(secp256k1, ed25519 PubKey) PubKeySet {
 	return PubKeySet{
@@ -351,34 +367,34 @@ func NewPubKeySet(secp256k1, ed25519 PubKey) PubKeySet {
 }
 
 // IsEmpty will determinate whether PubKeySet is an empty
-func (pks PubKeySet) IsEmpty() bool {
-	return pks.Secp256k1.IsEmpty() || pks.Ed25519.IsEmpty()
+func (p PubKeySet) IsEmpty() bool {
+	return p.Secp256k1.IsEmpty() || p.Ed25519.IsEmpty()
 }
 
 // Equals check whether two PubKeySet are the same
-func (pks PubKeySet) Equals(pks1 PubKeySet) bool {
-	return pks.Ed25519.Equals(pks1.Ed25519) && pks.Secp256k1.Equals(pks1.Secp256k1)
+func (p PubKeySet) Equals(pks1 PubKeySet) bool {
+	return p.Ed25519.Equals(pks1.Ed25519) && p.Secp256k1.Equals(pks1.Secp256k1)
 }
 
-func (pks PubKeySet) Contains(pk PubKey) bool {
-	return pks.Ed25519.Equals(pk) || pks.Secp256k1.Equals(pk)
+func (p PubKeySet) Contains(pk PubKey) bool {
+	return p.Ed25519.Equals(pk) || p.Secp256k1.Equals(pk)
 }
 
-// String implement fmt.Stinger
-func (pks PubKeySet) String() string {
+// String implements fmt.Stringer
+func (p PubKeySet) String() string {
 	return fmt.Sprintf(`
 	secp256k1: %s
 	ed25519: %s
-`, pks.Secp256k1.String(), pks.Ed25519.String())
+`, p.Secp256k1.String(), p.Ed25519.String())
 }
 
 // GetAddress
-func (pks PubKeySet) GetAddress(chain Chain) (Address, error) {
+func (p PubKeySet) GetAddress(chain Chain) (Address, error) {
 	switch chain.GetSigningAlgo() {
 	case SigningAlgoSecp256k1:
-		return pks.Secp256k1.GetAddress(chain)
+		return p.Secp256k1.GetAddress(chain)
 	case SigningAlgoEd25519:
-		return pks.Ed25519.GetAddress(chain)
+		return p.Ed25519.GetAddress(chain)
 	}
 	return NoAddress, fmt.Errorf("unknown signing algorithm")
 }

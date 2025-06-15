@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 const (
@@ -11,7 +11,6 @@ const (
 	TreasuryName = types.TreasuryName
 	RUNEPoolName = types.RUNEPoolName
 	BondName     = types.BondName
-	RouterKey    = types.RouterKey
 	StoreKey     = types.StoreKey
 
 	ActiveVault = types.VaultStatus_ActiveVault
@@ -21,15 +20,15 @@ const (
 )
 
 var (
-	NewPool                = types.NewPool
-	NewJail                = types.NewJail
-	ModuleCdc              = types.ModuleCdc
-	RegisterCodec          = types.RegisterCodec
-	GetRandomVault         = types.GetRandomVault
-	GetRandomValidatorNode = types.GetRandomValidatorNode
-	GetRandomTxHash        = types.GetRandomTxHash
-	GetRandomBech32Addr    = types.GetRandomBech32Addr
-	GetRandomPubKey        = types.GetRandomPubKey
+	NewPool                  = types.NewPool
+	NewJail                  = types.NewJail
+	ModuleCdc                = types.ModuleCdc
+	RegisterLegacyAminoCodec = types.RegisterLegacyAminoCodec
+	GetRandomVault           = types.GetRandomVault
+	GetRandomValidatorNode   = types.GetRandomValidatorNode
+	GetRandomTxHash          = types.GetRandomTxHash
+	GetRandomBech32Addr      = types.GetRandomBech32Addr
+	GetRandomPubKey          = types.GetRandomPubKey
 )
 
 type (
@@ -74,7 +73,10 @@ type (
 	SwapperClout             = types.SwapperClout
 	TradeAccount             = types.TradeAccount
 	TradeUnit                = types.TradeUnit
+	SecuredAsset             = types.SecuredAsset
 	RUNEProvider             = types.RUNEProvider
 	RUNEPool                 = types.RUNEPool
 	Upgrade                  = types.Upgrade
+	TCYClaimer               = types.TCYClaimer
+	TCYStaker                = types.TCYStaker
 )

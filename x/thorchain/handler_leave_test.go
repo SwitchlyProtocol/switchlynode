@@ -2,13 +2,16 @@ package thorchain
 
 import (
 	"errors"
+	"strings"
 
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type HandlerLeaveSuite struct{}
@@ -24,7 +27,7 @@ func (HandlerLeaveSuite) TestLeaveHandler_NotActiveNodeLeave(c *C) {
 	acc2.Bond = cosmos.NewUint(100 * common.One)
 	c.Assert(w.keeper.SetNodeAccount(w.ctx, acc2), IsNil)
 
-	FundModule(c, w.ctx, w.keeper, BondName, 100)
+	FundModule(c, w.ctx, w.keeper, BondName, 100*common.One)
 
 	// The following tx is only to be used by the leave handler,
 	// not the deposit handler which would have sent its Coins to BondName,
@@ -60,7 +63,7 @@ func (HandlerLeaveSuite) TestLeaveHandler_ActiveNodeLeave(c *C) {
 		txID,
 		acc2.BondAddress,
 		GetRandomETHAddress(),
-		common.Coins{common.NewCoin(common.RuneAsset(), cosmos.OneUint())},
+		common.Coins{common.NewCoin(common.RuneAsset(), cosmos.ZeroUint())},
 		common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),
 		},
@@ -72,36 +75,71 @@ func (HandlerLeaveSuite) TestLeaveHandler_ActiveNodeLeave(c *C) {
 
 	acc2, err = w.keeper.GetNodeAccount(w.ctx, acc2.NodeAddress)
 	c.Assert(err, IsNil)
-	c.Check(acc2.Bond.Equal(cosmos.NewUint(10000000001)), Equals, true, Commentf("Bond:%d\n", acc2.Bond.Uint64()))
+	c.Check(acc2.Bond.Equal(cosmos.NewUint(10000000000)), Equals, true, Commentf("Bond:%d\n", acc2.Bond.Uint64()))
 }
 
-func (HandlerLeaveSuite) TestLeaveJail(c *C) {
+func (HandlerLeaveSuite) TestLeaveBondProvider(c *C) {
+	var err error
 	w := getHandlerTestWrapper(c, 1, true, false)
-	vault := GetRandomVault()
-	c.Assert(w.keeper.SetVault(w.ctx, vault), IsNil)
 	leaveHandler := NewLeaveHandler(NewDummyMgrWithKeeper(w.keeper))
-	acc2 := GetRandomValidatorNode(NodeStandby)
-	acc2.Bond = cosmos.NewUint(100 * common.One)
-	c.Assert(w.keeper.SetNodeAccount(w.ctx, acc2), IsNil)
+	acc := GetRandomValidatorNode(NodeActive)
+	acc.Bond = cosmos.NewUint(100 * common.One)
+	minBond := w.keeper.GetConfigInt64(w.ctx, constants.MinimumBondInRune)
 
-	c.Assert(w.keeper.SetNodeAccountJail(w.ctx, acc2.NodeAddress, w.ctx.BlockHeight()+100, "test it"), IsNil)
+	bpBelowMin := GetRandomTHORAddress()
+	bpBelowMinAccAddress, err := bpBelowMin.AccAddress()
+	c.Assert(err, IsNil)
+	bp1 := types.NewBondProvider(bpBelowMinAccAddress)
+	// bpBelowMin bonds 0.000001 RUNE (below min bond)
+	bp1.Bond = cosmos.NewUint(100)
 
-	FundModule(c, w.ctx, w.keeper, BondName, 100)
+	bpAboveMin := GetRandomTHORAddress()
+	bpAboveMinAccAddress, err := bpAboveMin.AccAddress()
+	c.Assert(err, IsNil)
+	bp2 := types.NewBondProvider(bpAboveMinAccAddress)
+	// bpAboveMin bonds exactly min bond
+	bp2.Bond = cosmos.NewUint(uint64(minBond))
 
+	bps := types.BondProviders{
+		NodeAddress:     acc.NodeAddress,
+		NodeOperatorFee: cosmos.NewUint(5),
+		Providers:       []BondProvider{bp1, bp2},
+	}
+
+	c.Assert(w.keeper.SetBondProviders(w.ctx, bps), IsNil)
+	c.Assert(w.keeper.SetNodeAccount(w.ctx, acc), IsNil)
+
+	// try to leave with bond proivder under min bond
 	txID := GetRandomTxHash()
 	tx := common.NewTx(
 		txID,
-		acc2.BondAddress,
-		GetRandomETHAddress(),
-		common.Coins{common.NewCoin(common.RuneAsset(), cosmos.OneUint())},
-		common.Gas{
-			common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),
-		},
-		"LEAVE",
+		bpBelowMin,
+		GetRandomTHORAddress(),
+		common.Coins{common.NewCoin(common.RuneAsset(), cosmos.ZeroUint())},
+		common.Gas{},
+		"",
 	)
-	msgLeave := NewMsgLeave(tx, acc2.NodeAddress, w.activeNodeAccount.NodeAddress)
-	_, err := leaveHandler.Run(w.ctx, msgLeave)
-	c.Assert(err, NotNil)
+	msgLeave := NewMsgLeave(tx, acc.NodeAddress, bpBelowMinAccAddress)
+	_, err = leaveHandler.Run(w.ctx, msgLeave)
+	c.Assert(strings.Contains(err.Error(), "not authorized to manage"), Equals, true)
+
+	// try to leave with bond proivder above min bond
+	txID = GetRandomTxHash()
+	tx = common.NewTx(
+		txID,
+		bpAboveMin,
+		GetRandomTHORAddress(),
+		common.Coins{common.NewCoin(common.RuneAsset(), cosmos.ZeroUint())},
+		common.Gas{},
+		"",
+	)
+	msgLeave = NewMsgLeave(tx, acc.NodeAddress, bpAboveMinAccAddress)
+	_, err = leaveHandler.Run(w.ctx, msgLeave)
+	c.Assert(err, IsNil)
+
+	// acc, err = w.keeper.GetNodeAccount(w.ctx, acc.NodeAddress)
+	// c.Assert(err, IsNil)
+	// c.Check(acc.Bond.Equal(cosmos.NewUint(10000000001)), Equals, true, Commentf("Bond:%d\n", acc.Bond.Uint64()))
 }
 
 func (HandlerLeaveSuite) TestLeaveValidation(c *C) {
@@ -119,7 +157,7 @@ func (HandlerLeaveSuite) TestLeaveValidation(c *C) {
 				FromAddress: "",
 				ToAddress:   GetRandomETHAddress(),
 				Coins: common.Coins{
-					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
+					common.NewCoin(common.ETHAsset, cosmos.ZeroUint()),
 				},
 				Gas: common.Gas{
 					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
@@ -136,7 +174,7 @@ func (HandlerLeaveSuite) TestLeaveValidation(c *C) {
 				FromAddress: GetRandomETHAddress(),
 				ToAddress:   GetRandomETHAddress(),
 				Coins: common.Coins{
-					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
+					common.NewCoin(common.ETHAsset, cosmos.ZeroUint()),
 				},
 				Gas: common.Gas{
 					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
@@ -153,7 +191,7 @@ func (HandlerLeaveSuite) TestLeaveValidation(c *C) {
 				FromAddress: w.activeNodeAccount.BondAddress,
 				ToAddress:   GetRandomETHAddress(),
 				Coins: common.Coins{
-					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
+					common.NewCoin(common.ETHAsset, cosmos.ZeroUint()),
 				},
 				Gas: common.Gas{
 					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
@@ -170,7 +208,7 @@ func (HandlerLeaveSuite) TestLeaveValidation(c *C) {
 				FromAddress: w.activeNodeAccount.BondAddress,
 				ToAddress:   GetRandomETHAddress(),
 				Coins: common.Coins{
-					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
+					common.NewCoin(common.ETHAsset, cosmos.ZeroUint()),
 				},
 				Gas: common.Gas{
 					common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
@@ -267,6 +305,7 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, activeNodeAccount), IsNil)
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, nodeAccount), IsNil)
 				tx := GetRandomTx()
+				tx.Coins[0].Amount = cosmos.ZeroUint()
 				tx.FromAddress = nodeAccount.BondAddress
 				// when there is no asgard vault to refund, refund shouldn't fail
 				return NewMsgLeave(tx, nodeAccount.NodeAddress, GetRandomBech32Addr())
@@ -277,6 +316,24 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 			},
 		},
 		{
+			name: "non-zero message coins should return an error",
+			messageProvider: func(ctx cosmos.Context, helper *LeaveHandlerTestHelper) cosmos.Msg {
+				nodeAccount := GetRandomValidatorNode(NodeStandby)
+				activeNodeAccount := GetRandomValidatorNode(NodeActive)
+				c.Assert(helper.Keeper.SetNodeAccount(ctx, activeNodeAccount), IsNil)
+				c.Assert(helper.Keeper.SetNodeAccount(ctx, nodeAccount), IsNil)
+				tx := GetRandomTx()
+				tx.FromAddress = nodeAccount.BondAddress
+				vault := GetRandomVault()
+				c.Assert(helper.SetVault(ctx, vault), IsNil)
+				return NewMsgLeave(tx, nodeAccount.NodeAddress, GetRandomBech32Addr())
+			},
+			validator: func(c *C, ctx cosmos.Context, result *cosmos.Result, err error, helper *LeaveHandlerTestHelper, name string, msg cosmos.Msg) {
+				c.Check(err, NotNil, Commentf(name))
+				c.Check(result, IsNil, Commentf(name))
+			},
+		},
+		{
 			name: "vault not exist should refund bond",
 			messageProvider: func(ctx cosmos.Context, helper *LeaveHandlerTestHelper) cosmos.Msg {
 				nodeAccount := GetRandomValidatorNode(NodeStandby)
@@ -284,6 +341,7 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, activeNodeAccount), IsNil)
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, nodeAccount), IsNil)
 				tx := GetRandomTx()
+				tx.Coins[0].Amount = cosmos.ZeroUint()
 				tx.FromAddress = nodeAccount.BondAddress
 				vault := GetRandomVault()
 				c.Assert(helper.SetVault(ctx, vault), IsNil)
@@ -302,6 +360,7 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, activeNodeAccount), IsNil)
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, nodeAccount), IsNil)
 				tx := GetRandomTx()
+				tx.Coins[0].Amount = cosmos.ZeroUint()
 				tx.FromAddress = nodeAccount.BondAddress
 				helper.failGetVault = true
 				return NewMsgLeave(tx, nodeAccount.NodeAddress, GetRandomBech32Addr())
@@ -337,6 +396,7 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 				c.Check(activeNodeAccount.Bond.Equal(cosmos.NewUint(1000*common.One)), Equals, true, Commentf(activeNodeAccount.Bond.String()))
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, activeNodeAccount), IsNil)
 				tx := GetRandomTx()
+				tx.Coins[0].Amount = cosmos.ZeroUint()
 				tx.FromAddress = activeNodeAccount.BondAddress
 				return NewMsgLeave(tx, activeNodeAccount.NodeAddress, GetRandomBech32Addr())
 			},
@@ -359,6 +419,7 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, activeNodeAccount), IsNil)
 				c.Assert(helper.Keeper.SetNodeAccount(ctx, nodeAccount), IsNil)
 				tx := GetRandomTx()
+				tx.Coins[0].Amount = cosmos.ZeroUint()
 				tx.FromAddress = nodeAccount.BondAddress
 				asgardVault := NewVault(1024, ActiveVault, AsgardVault, GetRandomPubKey(), common.Chains{common.ETHChain, common.BTCChain}.Strings(), []ChainContract{})
 				c.Assert(helper.Keeper.SetVault(ctx, asgardVault), IsNil)
@@ -377,7 +438,7 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 				na, err := helper.GetNodeAccount(ctx, leaveMsg.NodeAddress)
 				c.Assert(err, IsNil)
 				c.Assert(na.Bond.Equal(cosmos.NewUint(100)), Equals, true)
-				c.Check(err, IsNil, Commentf(name))
+				c.Check(err2, IsNil, Commentf(name))
 				c.Check(result, NotNil, Commentf(name))
 			},
 		},
@@ -385,7 +446,7 @@ func (HandlerLeaveSuite) TestLeaveDifferentValidations(c *C) {
 
 	for _, tc := range testCases {
 		ctx, mgr := setupManagerForTest(c)
-		FundModule(c, ctx, mgr.Keeper(), BondName, 1000)
+		FundModule(c, ctx, mgr.Keeper(), BondName, 1000*common.One)
 		helper := NewLeaveHandlerTestHelper(mgr.Keeper())
 		mgr.K = helper
 		handler := NewLeaveHandler(mgr)

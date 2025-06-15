@@ -7,15 +7,15 @@ import (
 	"math/big"
 	"strings"
 
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // GetUpgradePlan proxies through to the upgrade keeper
-func (k KVStore) GetUpgradePlan(ctx cosmos.Context) (upgradetypes.Plan, bool) {
+func (k KVStore) GetUpgradePlan(ctx cosmos.Context) (upgradetypes.Plan, error) {
 	return k.upgradeKeeper.GetUpgradePlan(ctx)
 }
 
@@ -26,11 +26,13 @@ func (k KVStore) ScheduleUpgrade(ctx cosmos.Context, plan upgradetypes.Plan) err
 
 // ClearUpgradePlan proxies through to the upgrade keeper
 func (k KVStore) ClearUpgradePlan(ctx cosmos.Context) {
-	k.upgradeKeeper.ClearUpgradePlan(ctx)
+	if err := k.upgradeKeeper.ClearUpgradePlan(ctx); err != nil {
+		ctx.Logger().Error("failed to clear upgrade plan", "error", err)
+	}
 }
 
 // ProposeUpgrade proposes an upgrade by name
-func (k KVStore) ProposeUpgrade(ctx cosmos.Context, name string, upgrade types.Upgrade) error {
+func (k KVStore) ProposeUpgrade(ctx cosmos.Context, name string, upgrade types.UpgradeProposal) error {
 	key := fmt.Sprintf("%s%s", prefixUpgradeProposals, name)
 	store := ctx.KVStore(k.storeKey)
 
@@ -45,7 +47,7 @@ func (k KVStore) ProposeUpgrade(ctx cosmos.Context, name string, upgrade types.U
 }
 
 // GetProposedUpgrade retrieves a proposed upgrade
-func (k KVStore) GetProposedUpgrade(ctx cosmos.Context, name string) (*types.Upgrade, error) {
+func (k KVStore) GetProposedUpgrade(ctx cosmos.Context, name string) (*types.UpgradeProposal, error) {
 	key := fmt.Sprintf("%s%s", prefixUpgradeProposals, name)
 	store := ctx.KVStore(k.storeKey)
 
@@ -54,12 +56,24 @@ func (k KVStore) GetProposedUpgrade(ctx cosmos.Context, name string) (*types.Upg
 		return nil, nil
 	}
 
-	var upgrade types.Upgrade
+	var upgrade types.UpgradeProposal
 	if err := k.cdc.Unmarshal(v, &upgrade); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal proposed upgrade: %w", err)
 	}
 
 	return &upgrade, nil
+}
+
+// GetUpgradeVote retrieves a vote from a validator for an upgrade proposal.
+func (k KVStore) GetUpgradeVote(ctx cosmos.Context, addr cosmos.AccAddress, name string) (bool, error) {
+	store := ctx.KVStore(k.storeKey)
+
+	v := store.Get(append([]byte(VotePrefix(name)), addr...))
+	if v == nil {
+		return false, fmt.Errorf("no vote found on proposal %s for %s", name, addr)
+	}
+
+	return bytes.Equal(v, []byte{0x1}), nil
 }
 
 // ApproveUpgrade approves an upgrade as a validator
@@ -196,4 +210,32 @@ func UpgradeApprovedByMajority(ctx cosmos.Context, k keeper.Keeper, name string)
 		TotalActive:     totalActive,
 		NeededForQuorum: int(valsToQuorum),
 	}, nil
+}
+
+// UpdateActiveValidatorVersions updates the active validator versions to the given version
+func UpdateActiveValidatorVersions(
+	ctx cosmos.Context,
+	thorchainKeeper keeper.Keeper,
+	version string,
+) error {
+	activeVals, err := thorchainKeeper.ListActiveValidators(ctx)
+	if err != nil {
+		return fmt.Errorf("fail to get active validators: %w", err)
+	}
+
+	for _, v := range activeVals {
+		v.Version = version
+		if err = thorchainKeeper.SetNodeAccount(ctx, v); err != nil {
+			return fmt.Errorf("fail to save node account: %w", err)
+		}
+		ctx.EventManager().EmitEvent(
+			cosmos.NewEvent("set_version",
+				cosmos.NewAttribute("thor_address", v.NodeAddress.String()),
+				cosmos.NewAttribute("version", version)))
+	}
+
+	// update min join version to the fork version
+	thorchainKeeper.SetMinJoinLast(ctx)
+
+	return nil
 }

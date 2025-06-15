@@ -10,8 +10,9 @@ import (
 
 	_ "embed"
 
+	sdkmath "cosmossdk.io/math"
+
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	ecommon "github.com/ethereum/go-ethereum/common"
@@ -20,12 +21,13 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/tokenlist"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
 
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +64,6 @@ func init() {
 ////////////////////////////////////////////////////////////////////////////////////////
 // ABI
 ////////////////////////////////////////////////////////////////////////////////////////
-//
 
 func RouterABI() abi.ABI {
 	return routerABI
@@ -83,24 +84,12 @@ func Tokens(chain common.Chain) map[common.Asset]tokenlist.ERC20Token {
 	tokenMap := make(map[common.Asset]tokenlist.ERC20Token)
 
 	// gather the available tokens
-	var tokens []tokenlist.ERC20Token
-	switch chain {
-	case common.ETHChain, common.BSCChain:
-		tokens = []tokenlist.ERC20Token{
-			{
-				Address:  "0x52C84043CD9c865236f11d9Fc9F56aa003c1f922",
-				Symbol:   "TKN",
-				Decimals: 18,
-			},
-		}
-	case common.AVAXChain:
-		tokens = []tokenlist.ERC20Token{
-			{
-				Address:  "0x17aB05351fC94a1a67Bf3f56DdbB941aE6c63E25",
-				Symbol:   "TKN",
-				Decimals: 18,
-			},
-		}
+	tokens := []tokenlist.ERC20Token{
+		{
+			Address:  "0x17aB05351fC94a1a67Bf3f56DdbB941aE6c63E25",
+			Symbol:   "TKN",
+			Decimals: 18,
+		},
 	}
 
 	// create mapping of asset to token
@@ -154,7 +143,7 @@ func NewClient(chain common.Chain, host string, keys *thorclient.Keys) (LiteChai
 	}
 
 	// derive the public key
-	pk, err := cryptocodec.ToTmPubKeyInterface(privateKey.PubKey())
+	pk, err := cryptocodec.ToCmtPubKeyInterface(privateKey.PubKey())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tm pub key: %w", err)
 	}
@@ -200,21 +189,30 @@ func NewClient(chain common.Chain, host string, keys *thorclient.Keys) (LiteChai
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func (c *Client) GetAccount(pk *common.PubKey) (*common.Account, error) {
+	address := c.address
+	if pk != nil {
+		var err error
+		address, err = pk.GetAddress(c.chain)
+		if err != nil {
+			return nil, fmt.Errorf("fail to get address from pubkey(%s): %w", pk, err)
+		}
+	}
+
 	// get nonce
-	nonce, err := c.rpc.PendingNonceAt(ctx(), ecommon.HexToAddress(c.address.String()))
+	nonce, err := c.rpc.PendingNonceAt(ctx(), ecommon.HexToAddress(address.String()))
 	if err != nil {
 		return nil, fmt.Errorf("fail to get account nonce: %w", err)
 	}
 
 	// get balance
-	balance, err := c.rpc.BalanceAt(ctx(), ecommon.HexToAddress(c.address.String()), nil)
+	balance, err := c.rpc.BalanceAt(ctx(), ecommon.HexToAddress(address.String()), nil)
 	if err != nil {
 		return nil, fmt.Errorf("fail to get account balance: %w", err)
 	}
 
 	// get amount
-	amount := sdk.NewUintFromBigInt(balance)
-	amount = amount.Quo(sdk.NewUint(1e10)) // 1e18 -> 1e8
+	amount := sdkmath.NewUintFromBigInt(balance)
+	amount = amount.Quo(sdkmath.NewUint(1e10)) // 1e18 -> 1e8
 
 	// add gas asset to coins
 	coins := common.Coins{
@@ -226,7 +224,7 @@ func (c *Client) GetAccount(pk *common.PubKey) (*common.Account, error) {
 		// get balance
 		abi := ERC20ABI()
 		var data []byte
-		data, err = abi.Pack("balanceOf", ecommon.HexToAddress(c.address.String()))
+		data, err = abi.Pack("balanceOf", ecommon.HexToAddress(address.String()))
 		if err != nil {
 			log.Error().Err(err).Msg("error packing balanceOf")
 			continue
@@ -249,7 +247,7 @@ func (c *Client) GetAccount(pk *common.PubKey) (*common.Account, error) {
 		balance.Div(balance, big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(token.Decimals)), nil))
 
 		// add to coins
-		coins = append(coins, common.NewCoin(asset, sdk.NewUintFromBigInt(balance)))
+		coins = append(coins, common.NewCoin(asset, sdkmath.NewUintFromBigInt(balance)))
 	}
 
 	// create account
@@ -268,11 +266,12 @@ func (c *Client) SignTx(tx SimTx) ([]byte, error) {
 	toAddress := ecommon.HexToAddress(tx.ToAddress.String())
 
 	// create a standard transfer tx
+	gasPerByte := uint64(40) // https://eips.ethereum.org/EIPS/eip-7623
 	txData := &etypes.LegacyTx{
 		To:    &toAddress,
 		Data:  []byte(tx.Memo),
-		Gas:   21000 + 3000,                                   // standard transfer + memo
-		Value: tx.Coin.Amount.Mul(sdk.NewUint(1e10)).BigInt(), // 1e8 -> 1e18,
+		Gas:   21000 + uint64(len(tx.Memo))*gasPerByte,            // transfer + memo
+		Value: tx.Coin.Amount.Mul(sdkmath.NewUint(1e10)).BigInt(), // 1e8 -> 1e18,
 	}
 
 	return c.signTx(txData)
@@ -406,4 +405,35 @@ func (c *Client) GetTokenDecimals(address string) (int, error) {
 	decimals := new(big.Int)
 	decimals.SetBytes(result)
 	return int(decimals.Uint64()), nil
+}
+
+func (c *Client) GetVaultAllowance(router, vault common.Address, asset common.Asset) (cosmos.Uint, error) {
+	// build contract read call
+	routerAddr := ecommon.HexToAddress(router.String())
+	vaultAddr := ecommon.HexToAddress(vault.String())
+	token := Tokens(asset.Chain)[asset]
+	tokenAddr := ecommon.HexToAddress(token.Address)
+	abi := RouterABI()
+	data, err := abi.Pack("vaultAllowance", vaultAddr, tokenAddr)
+	if err != nil {
+		return cosmos.ZeroUint(), fmt.Errorf("fail to pack vaultAllowance call: %w", err)
+	}
+
+	// read the contract
+	result, err := c.rpc.CallContract(ctx(), ethereum.CallMsg{
+		To:   &routerAddr,
+		Data: data,
+	}, nil)
+	if err != nil {
+		return cosmos.ZeroUint(), fmt.Errorf("fail to call contract: %w", err)
+	}
+
+	// extract the allowance
+	allowance := new(big.Int)
+	allowance.SetBytes(result)
+
+	// convert balance from decimals to 1e8
+	allowance.Mul(allowance, big.NewInt(common.One))
+	allowance.Div(allowance, big.NewInt(1).Exp(big.NewInt(10), big.NewInt(int64(token.Decimals)), nil))
+	return cosmos.NewUintFromBigInt(allowance), nil
 }

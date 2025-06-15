@@ -6,7 +6,7 @@ The default image will start a fullnode:
 
 ```bash
 docker run \
-  -e CHAIN_ID=thorchain-mainnet-v1 \
+  -e CHAIN_ID=thorchain-1 \
   -e NET=mainnet \
   registry.gitlab.com/thorchain/thornode:mainnet
 ```
@@ -17,12 +17,12 @@ The above command will result in syncing chain state to ephemeral storage within
 mkdir thornode-data
 docker run \
   -v $(pwd)/thornode-data:/root/.thornode \
-  -e CHAIN_ID=thorchain-mainnet-v1 \
+  -e CHAIN_ID=thorchain-1 \
   -e NET=mainnet \
   registry.gitlab.com/thorchain/thornode:mainnet
 ```
 
-Nine Realms provides snapshots taken from a statesync recovery which can be downloaded without need for a high memory (80G at time of writing) machine to recover the statesync snapshot. Ensure `aria2c` is installed (you can `wget` or `curl` instead, but they are slower), then pull the latest statesync snapshot via:
+The above commands only work when the current release can sync from the present fork height - which is not the case since the move the x/upgrade release pattern. Nine Realms provides snapshots taken from a statesync recovery which can be downloaded without need for a high memory machine to recover the statesync snapshot. Ensure `aria2c` is installed (you can `wget` or `curl` instead, but they are slower), then pull the latest statesync snapshot via:
 
 ```bash
 mkdir -p thornode-data/data
@@ -38,7 +38,7 @@ aria2c --split=16 --max-concurrent-downloads=16 --max-connection-per-server=16 \
 tar xvf $LATEST_SNAPSHOT_KEY -C thornode-data
 docker run \
   -v $(pwd)/thornode-data:/root/.thornode \
-  -e CHAIN_ID=thorchain-mainnet-v1 \
+  -e CHAIN_ID=thorchain-1 \
   -e NET=mainnet \
   registry.gitlab.com/thorchain/thornode:mainnet
 ```
@@ -55,7 +55,7 @@ while true; do
 do
 ```
 
-The above commands also apply to `stagenet` by simply using the respective image (in these cases `-e NET=...` is not required):
+The above commands also apply to `stagenet` by simply using the respective image and chain ID (in these cases `-e NET=...` is not required):
 
 ```code
 stagenet => registry.gitlab.com/thorchain/thornode:stagenet
@@ -176,7 +176,7 @@ thornode tx thorchain deposit 10000000000 rune ADD:ETH.TKN-0X52C84043CD9C865236F
 
 ## Local Mainnet Fork of EVM Chain
 
-There are scripts for creation of a mocknet using forked mainnet EVM chains for testing of aggregator contracts. See `[tools/evm/README.md](../../tools/evm/README.md)` for documentation.
+There are scripts for creation of a mocknet using forked mainnet EVM chains for testing of aggregator contracts. See [tools/evm/README.md](../../tools/evm/README.md) for documentation.
 
 ## Bootstrap Mocknet Data
 

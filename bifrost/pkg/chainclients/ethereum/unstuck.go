@@ -13,11 +13,11 @@ import (
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm/types"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 func (c *Client) unstuck() {
@@ -120,6 +120,10 @@ func (c *Client) unstuckTx(clog zerolog.Logger, item types.SignedTxItem) error {
 	if err != nil {
 		if errors.Is(err, ethereum.NotFound) {
 			clog.Err(err).Msg("transaction not found on chain")
+
+			// dropped from mempool or re-orged, remove from signer cache to resign
+			c.signerCacheManager.RemoveSigned(item.Hash)
+
 			return nil
 		}
 		return fmt.Errorf("fail to get transaction by hash: %s, error: %w", item.Hash, err)
@@ -162,7 +166,7 @@ func (c *Client) unstuckTx(clog zerolog.Logger, item types.SignedTxItem) error {
 		to := ecommon.HexToAddress(address.String())
 
 		// tip cap at configured percentage of max fee
-		tipCap := new(big.Int).Mul(currentGasRate, big.NewInt(int64(c.cfg.MaxGasTipPercentage)))
+		tipCap := new(big.Int).Mul(currentGasRate, big.NewInt(int64(c.cfg.EVM.MaxGasTipPercentage)))
 		tipCap.Div(tipCap, big.NewInt(100))
 
 		cancelTx = etypes.NewTx(&etypes.DynamicFeeTx{

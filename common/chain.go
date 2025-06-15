@@ -9,22 +9,25 @@ import (
 	dogchaincfg "github.com/eager7/dogd/chaincfg"
 	"github.com/hashicorp/go-multierror"
 	ltcchaincfg "github.com/ltcsuite/ltcd/chaincfg"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 const (
-	EmptyChain           = Chain("")
-	BSCChain             = Chain("BSC")
-	ETHChain             = Chain("ETH")
-	BTCChain             = Chain("BTC")
-	LTCChain             = Chain("LTC")
-	BCHChain             = Chain("BCH")
-	DOGEChain            = Chain("DOGE")
-	THORChain            = Chain("THOR")
-	GAIAChain            = Chain("GAIA")
-	AVAXChain            = Chain("AVAX")
-	STELLARChain         = Chain("XLM")
+	EmptyChain   = Chain("")
+	BSCChain     = Chain("BSC")
+	ETHChain     = Chain("ETH")
+	BTCChain     = Chain("BTC")
+	LTCChain     = Chain("LTC")
+	BCHChain     = Chain("BCH")
+	DOGEChain    = Chain("DOGE")
+	THORChain    = Chain("THOR")
+	GAIAChain    = Chain("GAIA")
+	AVAXChain    = Chain("AVAX")
+	BASEChain    = Chain("BASE")
+	XRPChain     = Chain("XRP")
+	StellarChain = Chain("XLM")
+
 	SigningAlgoSecp256k1 = SigningAlgo("secp256k1")
 	SigningAlgoEd25519   = SigningAlgo("ed25519")
 )
@@ -39,7 +42,9 @@ var AllChains = [...]Chain{
 	THORChain,
 	GAIAChain,
 	AVAXChain,
-	STELLARChain,
+	BASEChain,
+	XRPChain,
+	StellarChain,
 }
 
 type SigningAlgo string
@@ -92,7 +97,7 @@ func (c Chain) IsBSCChain() bool {
 // - uses 0x as an address prefix
 // - has a "Router" Smart Contract
 func GetEVMChains() []Chain {
-	return []Chain{ETHChain, AVAXChain, BSCChain}
+	return []Chain{ETHChain, AVAXChain, BSCChain, BASEChain}
 }
 
 // GetUTXOChains returns all "UTXO" chains connected to THORChain.
@@ -162,7 +167,11 @@ func (c Chain) GetGasAsset() Asset {
 		return AVAXAsset
 	case GAIAChain:
 		return ATOMAsset
-	case STELLARChain:
+	case BASEChain:
+		return BaseETHAsset
+	case XRPChain:
+		return XRPAsset
+	case StellarChain:
 		return XLMAsset
 	default:
 		return EmptyAsset
@@ -180,13 +189,15 @@ func (c Chain) GetGasUnits() string {
 		return "satsperbyte"
 	case DOGEChain:
 		return "satsperbyte"
-	case ETHChain, BSCChain:
+	case ETHChain, BSCChain, BASEChain:
 		return "gwei"
 	case GAIAChain:
 		return "uatom"
 	case LTCChain:
 		return "satsperbyte"
-	case STELLARChain:
+	case XRPChain:
+		return "drop"
+	case StellarChain:
 		return "stroop"
 	default:
 		return ""
@@ -200,7 +211,9 @@ func (c Chain) GetGasAssetDecimal() int64 {
 	switch c {
 	case GAIAChain:
 		return 6
-	case STELLARChain:
+	case XRPChain:
+		return 6
+	case StellarChain:
 		return 7
 	default:
 		return cosmos.DefaultCoinDecimals
@@ -264,10 +277,26 @@ func (c Chain) DustThreshold() cosmos.Uint {
 		return cosmos.NewUint(10_000)
 	case DOGEChain:
 		return cosmos.NewUint(100_000_000)
-	case ETHChain, AVAXChain, GAIAChain, BSCChain:
-		return cosmos.NewUint(0)
+	case ETHChain, AVAXChain, GAIAChain, BSCChain, BASEChain:
+		return cosmos.OneUint()
+	case XRPChain:
+		// XRP's dust threshold is being set to 1 XRP. This is the base reserve requirement on XRP's ledger.
+		// It is set to this value for two reasons:
+		//    1. to prevent edge cases of outbound XRP to new addresses where this is the minimum that must be transferred
+		//    2. to burn this amount on churns of each XRP vault, effectively leaving it behind as it cannot be transferred, but still transferring all other XRP
+		// On churns, we can optionally delete the account to recover an additional .8 XRP, but would increases code complexity and will remove related ledger entries
+		// Comparing to BTC, this dust threshold should be reasonable.
+		return cosmos.NewUint(One) // 1 XRP
+	case StellarChain:
+		// XLM's dust threshold is being set to 1 XLM. This is the base reserve requirement on Stellar's ledger.
+		// It is set to this value for two reasons:
+		//    1. to prevent edge cases of outbound XLM to new addresses where this is the minimum that must be transferred
+		//    2. to burn this amount on churns of each XLM vault, effectively leaving it behind as it cannot be transferred, but still transferring all other XLM
+		// On churns, we can optionally delete the account to recover an additional 0.5 XLM, but would increases code complexity and will remove related ledger entries
+		// Comparing to BTC, this dust threshold should be reasonable.
+		return cosmos.NewUint(One) // 1 XLM
 	default:
-		return cosmos.NewUint(0)
+		return cosmos.ZeroUint()
 	}
 }
 
@@ -275,7 +304,7 @@ func (c Chain) DustThreshold() cosmos.Uint {
 func (c Chain) MaxMemoLength() int {
 	switch c {
 	case BTCChain, LTCChain, BCHChain, DOGEChain:
-		return 80
+		return constants.MaxOpReturnDataSize
 	default:
 		// Default to the max memo size that we will process, regardless
 		// of any higher memo size capable on other chains.
@@ -289,11 +318,11 @@ func (c Chain) MaxMemoLength() int {
 func (c Chain) DefaultCoinbase() float64 {
 	switch c {
 	case BTCChain:
-		return 6.25
+		return 3.125
 	case LTCChain:
-		return 12.5
-	case BCHChain:
 		return 6.25
+	case BCHChain:
+		return 3.125
 	case DOGEChain:
 		return 10000
 	default:
@@ -316,13 +345,17 @@ func (c Chain) ApproximateBlockMilliseconds() int64 {
 	case AVAXChain:
 		return 3_000
 	case BSCChain:
-		return 3_000
+		return 1_500
 	case GAIAChain:
 		return 6_000
 	case THORChain:
 		return 6_000
-	case STELLARChain:
-		return 6_000
+	case BASEChain:
+		return 2_000
+	case XRPChain:
+		return 4_000 // approx 3-5 seconds
+	case StellarChain:
+		return 5_000 // approx 5 seconds
 	default:
 		return 0
 	}
@@ -331,13 +364,17 @@ func (c Chain) ApproximateBlockMilliseconds() int64 {
 func (c Chain) InboundNotes() string {
 	switch c {
 	case BTCChain, LTCChain, BCHChain, DOGEChain:
-		return "First output should be to inbound_address, second output should be change back to self, third output should be OP_RETURN, limited to 80 bytes. Do not send below the dust threshold. Do not use exotic spend scripts, locks or address formats (P2WSH with Bech32 address format preferred)."
-	case ETHChain, AVAXChain, BSCChain:
-		return "Base Asset: Send the inbound_address the asset with the memo encoded in hex in the data field. Tokens: First approve router to spend tokens from user: asset.approve(router, amount). Then call router.depositWithExpiry(inbound_address, asset, amount, memo, expiry). Asset is the token contract address. Amount should be in native asset decimals (eg 1e18 for most tokens). Do not send to or from contract addresses."
+		return "First output should be to inbound_address, second output should be change back to self, third output should be OP_RETURN, limited to 80 bytes. Do not send below the dust threshold. Do not use exotic spend scripts, locks or address formats."
+	case ETHChain, AVAXChain, BSCChain, BASEChain:
+		return "Base Asset: Send the inbound_address the asset with the memo encoded in hex in the data field. Tokens: First approve router to spend tokens from user: asset.approve(router, amount). Then call router.depositWithExpiry(inbound_address, asset, amount, memo, expiry). Asset is the token contract address. Amount should be in native asset decimals (eg 1e18 for most tokens). Do not swap to smart contract addresses."
 	case GAIAChain:
 		return "Transfer the inbound_address the asset with the memo. Do not use multi-in, multi-out transactions."
 	case THORChain:
 		return "Broadcast a MsgDeposit to the THORChain network with the appropriate memo. Do not use multi-in, multi-out transactions."
+	case XRPChain:
+		return "Transfer the inbound_address the asset with the memo. Only a single memo is supported and only MemoData is used."
+	case StellarChain:
+		return "Transfer the inbound_address the asset with the memo. Use MemoText for the memo field. Do not use multi-in, multi-out transactions."
 	default:
 		return ""
 	}

@@ -3,17 +3,23 @@ package types
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // MaxAffiliateFeeBasisPoints basis points for withdrawals
 const MaxAffiliateFeeBasisPoints = 1_000
 
-var _ cosmos.Msg = &MsgSwap{}
+var (
+	_ sdk.Msg              = &MsgSwap{}
+	_ sdk.HasValidateBasic = &MsgSwap{}
+	_ sdk.LegacyMsg        = &MsgSwap{}
+)
 
 // NewMsgSwap is a constructor function for MsgSwap
-func NewMsgSwap(tx common.Tx, target common.Asset, destination common.Address, tradeTarget cosmos.Uint, affAddr common.Address, affPts cosmos.Uint, agg, aggregatorTargetAddr string, aggregatorTargetLimit *cosmos.Uint, otype OrderType, quan, interval uint64, signer cosmos.AccAddress) *MsgSwap {
+func NewMsgSwap(tx common.Tx, target common.Asset, destination common.Address, tradeTarget cosmos.Uint, affAddr common.Address, affPts cosmos.Uint, agg, aggregatorTargetAddr string, aggregatorTargetLimit *cosmos.Uint, stype SwapType, quan, interval uint64, signer cosmos.AccAddress) *MsgSwap {
 	return &MsgSwap{
 		Tx:                      tx,
 		TargetAsset:             target,
@@ -25,7 +31,7 @@ func NewMsgSwap(tx common.Tx, target common.Asset, destination common.Address, t
 		Aggregator:              agg,
 		AggregatorTargetAddress: aggregatorTargetAddr,
 		AggregatorTargetLimit:   aggregatorTargetLimit,
-		OrderType:               otype,
+		SwapType:                stype,
 		StreamQuantity:          quan,
 		StreamInterval:          interval,
 	}
@@ -44,12 +50,6 @@ func (m *MsgSwap) GetStreamingSwap() StreamingSwap {
 		m.Tx.Coins[0].Amount,
 	)
 }
-
-// Route should return the route key of the module
-func (m *MsgSwap) Route() string { return RouterKey }
-
-// Type should return the action
-func (m MsgSwap) Type() string { return "swap" }
 
 // ValidateBasic runs stateless checks on the message
 func (m *MsgSwap) ValidateBasic() error {
@@ -76,6 +76,7 @@ func (m *MsgSwap) ValidateBasic() error {
 	if m.Destination.IsEmpty() {
 		return cosmos.ErrUnknownRequest("swap Destination cannot be empty")
 	}
+	// TODO: remove this check on hardfork
 	if m.AffiliateAddress.IsEmpty() && !m.AffiliateBasisPoints.IsZero() {
 		return cosmos.ErrUnknownRequest("swap affiliate address is empty while affiliate basis points is non-zero")
 	}
@@ -97,12 +98,15 @@ func (m *MsgSwap) ValidateBasic() error {
 	return nil
 }
 
-// GetSignBytes encodes the message for signing
-func (m *MsgSwap) GetSignBytes() []byte {
-	return cosmos.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
-}
-
 // GetSigners defines whose signature is required
 func (m *MsgSwap) GetSigners() []cosmos.AccAddress {
 	return []cosmos.AccAddress{m.Signer}
+}
+
+func (m *MsgSwap) GetTotalAffiliateFee() cosmos.Uint {
+	return common.GetSafeShare(
+		m.AffiliateBasisPoints,
+		cosmos.NewUint(10000),
+		m.Tx.Coins[0].Amount,
+	)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -14,22 +15,23 @@ import (
 	"github.com/rs/zerolog/log"
 	flag "github.com/spf13/pflag"
 
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/common"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/common"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
 
-	"gitlab.com/thorchain/thornode/app"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/observer"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/signer"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	btss "gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/cmd"
-	tcommon "gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/app"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/observer"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/signer"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	btss "gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	tcommon "gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // THORNode define version / revision here , so THORNode could inject the version from CI pipeline if THORNode want to
@@ -50,6 +52,7 @@ func main() {
 	showVersion := flag.Bool("version", false, "Shows version")
 	logLevel := flag.StringP("log-level", "l", "info", "Log Level")
 	pretty := flag.BoolP("pretty-log", "p", false, "Enables unstructured prettified logging. This is useful for local debugging")
+	deckDump := flag.String("deck-dump", "", "Path to a deck dump file")
 	flag.Parse()
 
 	if *showVersion {
@@ -111,10 +114,6 @@ func main() {
 		log.Fatal().Err(err).Msg("fail to get private key")
 	}
 
-	bootstrapPeers, err := cfg.TSS.GetBootstrapPeers()
-	if err != nil {
-		log.Fatal().Err(err).Msg("fail to get bootstrap peers")
-	}
 	tmPrivateKey := tcommon.CosmosPrivateKeyToTMPrivateKey(priKey)
 
 	consts := constants.NewConstantValue()
@@ -133,12 +132,19 @@ func main() {
 			Msg("keysign timeout must be shorter than jail time")
 	}
 
-	tssIns, err := tss.NewTss(
-		bootstrapPeers,
-		cfg.TSS.P2PPort,
+	comm, stateManager, err := p2p.StartP2P(
+		cfg.TSS,
 		tmPrivateKey,
-		cfg.TSS.Rendezvous,
-		app.DefaultNodeHome(),
+		app.DefaultNodeHome,
+	)
+	if err != nil {
+		log.Fatal().Err(err).Msg("fail to start p2p")
+	}
+
+	tssIns, err := tss.NewTss(
+		comm,
+		stateManager,
+		tmPrivateKey,
 		common.TssConfig{
 			EnableMonitor:   true,
 			KeyGenTimeout:   cfg.Signer.KeygenTimeout,
@@ -147,7 +153,6 @@ func main() {
 			PreParamTimeout: cfg.Signer.PreParamTimeout,
 		},
 		nil,
-		cfg.TSS.ExternalIP,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to create tss instance")
@@ -171,14 +176,6 @@ func main() {
 		if !strings.HasPrefix(chainCfg.RPCHost, "http") {
 			chainCfg.RPCHost = fmt.Sprintf("http://%s", chainCfg.RPCHost)
 		}
-
-		if len(chainCfg.BlockScanner.RPCHost) == 0 {
-			log.Fatal().Err(err).Msg("missing chain RPC host")
-			return
-		}
-		if !strings.HasPrefix(chainCfg.BlockScanner.RPCHost, "http") {
-			chainCfg.BlockScanner.RPCHost = fmt.Sprintf("http://%s", chainCfg.BlockScanner.RPCHost)
-		}
 	}
 	poolMgr := thorclient.NewPoolMgr(thorchainBridge)
 	chains, restart := chainclients.LoadChains(k, cfgChains, tssIns, thorchainBridge, m, pubkeyMgr, poolMgr)
@@ -193,17 +190,27 @@ func main() {
 			log.Error().Err(err).Msg("fail to start health server")
 		}
 	}()
+
+	ctx := context.Background()
+
+	// start observer notifier
+	ag, err := observer.NewAttestationGossip(comm.GetHost(), k, cfg.Thorchain.ChainEBifrost, thorchainBridge, m, cfg.AttestationGossip)
+
 	// start observer
-	obs, err := observer.NewObserver(pubkeyMgr, chains, thorchainBridge, m, cfgChains[tcommon.BTCChain].BlockScanner.DBPath, tssKeysignMetricMgr)
+	obs, err := observer.NewObserver(pubkeyMgr, chains, thorchainBridge, m, cfgChains[tcommon.BTCChain].BlockScanner.DBPath, tssKeysignMetricMgr, ag, *deckDump)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to create observer")
 	}
-	if err = obs.Start(); err != nil {
+	if err = obs.Start(ctx); err != nil {
 		log.Fatal().Err(err).Msg("fail to start observer")
 	}
 
+	// enable observer to react to notifications from thornode
+	// that come through the grpc connection within AttestationGossip.
+	ag.SetObserverHandleObservedTxCommitted(obs)
+
 	// start signer
-	sign, err := signer.NewSigner(cfg.Signer, thorchainBridge, k, pubkeyMgr, tssIns, chains, m, tssKeysignMetricMgr, obs)
+	sign, err := signer.NewSigner(cfg, thorchainBridge, k, pubkeyMgr, tssIns, chains, m, tssKeysignMetricMgr, obs)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to create instance of signer")
 	}

@@ -14,9 +14,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/common"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	"gitlab.com/thorchain/thornode/x/thorchain"
+	"gitlab.com/thorchain/thornode/v3/common"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ func export(out io.Writer, path string, routine int, failExportInvariants bool) 
 
 	// export state
 	localLog.Debug().Msg("Exporting state")
-	cmd := exec.Command("thornode", "export")
+	cmd := exec.Command("thornode", "export", "--log_level=disabled")
 	cmd.Env = append(os.Environ(), "HOME="+home)
 	exportOut, err := cmd.CombinedOutput()
 	if err != nil {
@@ -52,6 +52,7 @@ func export(out io.Writer, path string, routine int, failExportInvariants bool) 
 	}
 
 	// ignore genesis time and version for comparison
+	delete(export, "app_version")
 	delete(export, "genesis_time")
 	appState, _ := export["app_state"].(map[string]any)
 	thorchain, _ := appState["thorchain"].(map[string]any)
@@ -200,7 +201,7 @@ func checkExportInvariants(out io.Writer, genesis map[string]any) error {
 
 	// unmarshal json to genesis state
 	genesisState := &thorchain.GenesisState{}
-	err = encodingConfig.Marshaler.UnmarshalJSON(buf.Bytes(), genesisState)
+	err = encodingConfig.Codec.UnmarshalJSON(buf.Bytes(), genesisState)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to decode genesis state")
 	}
@@ -227,6 +228,11 @@ func checkExportInvariants(out io.Writer, genesis map[string]any) error {
 	}
 	for _, tu := range genesisState.TradeUnits {
 		coin := common.NewCoin(tu.Asset.GetLayer1Asset(), tu.Depth)
+		sumPoolAsset = sumPoolAsset.Add(coin)
+	}
+
+	for _, p := range genesisState.SecuredAssets {
+		coin := common.NewCoin(p.Asset.GetLayer1Asset(), p.Depth)
 		sumPoolAsset = sumPoolAsset.Add(coin)
 	}
 

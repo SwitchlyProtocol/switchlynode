@@ -8,9 +8,9 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type HandlerSetNodeKeysSuite struct{}
@@ -287,10 +287,10 @@ func (s *HandlerSetNodeKeysSuite) TestHandle(c *C) {
 		if common.RuneAsset().Native() != "" && tc.skipForNativeRune {
 			continue
 		}
-		ctx, mgr := setupManagerForTest(c)
-		helper := NewTestSetNodeKeysHandleKeeper(mgr.Keeper())
+		ctx, mgr = setupManagerForTest(c)
+		helper = NewTestSetNodeKeysHandleKeeper(mgr.Keeper())
 		mgr.K = helper
-		handler := NewSetNodeKeysHandler(mgr)
+		handler = NewSetNodeKeysHandler(mgr)
 		msg := tc.messageProvider(c, ctx, helper)
 		result, err := handler.Run(ctx, msg)
 		tc.validator(c, ctx, result, err, helper, tc.name)

@@ -6,8 +6,8 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type MsgTssKeysignFailSuite struct{}
@@ -27,7 +27,6 @@ func (s MsgTssKeysignFailSuite) TestMsgTssKeysignFail(c *C) {
 	}
 	msg, err := NewMsgTssKeysignFail(1, b, "hello", coins, GetRandomBech32Addr(), GetRandomPubKey())
 	c.Assert(err, IsNil)
-	c.Check(msg.Type(), Equals, "set_tss_keysign_fail")
 	EnsureMsgBasicCorrect(msg, c)
 	m, err := NewMsgTssKeysignFail(1, Blame{}, "hello", coins, GetRandomBech32Addr(), GetRandomPubKey())
 	c.Assert(m, NotNil)

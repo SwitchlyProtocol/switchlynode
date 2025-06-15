@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/thornode"
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	atypes "gitlab.com/thorchain/thornode/v3/api/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/thornode"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -46,22 +47,45 @@ func NewRagnarokPoolActor(asset common.Asset) *Actor {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func (a *RagnarokPoolActor) sendMimir(config *OpConfig) OpResult {
-	accAddr, err := config.AdminUser.PubKey().GetThorAddress()
+	nodes, err := thornode.GetNodes()
 	if err != nil {
-		a.Log().Error().Err(err).Msg("failed to get thor address")
+		a.Log().Error().Err(err).Msg("failed to get nodes")
 		return OpResult{
 			Continue: false,
 		}
 	}
-	mimir := types.NewMsgMimir(fmt.Sprintf("RAGNAROK-%s", a.asset.MimirString()), 1, accAddr)
-	txid, err := config.AdminUser.Thorchain.Broadcast(mimir)
-	if err != nil {
-		a.Log().Error().Err(err).Msg("failed to broadcast mimir")
-		return OpResult{
-			Continue: false,
+	activeNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if node.Status == atypes.NodeStatus_Active.String() {
+			activeNodes[node.NodeAddress] = true
 		}
 	}
-	a.Log().Info().Str("txid", txid.String()).Msg("broadcasted mimir")
+
+	// send from all active nodes
+	for _, node := range config.NodeUsers {
+		accAddr, err := node.PubKey().GetThorAddress()
+		if err != nil {
+			a.Log().Error().Err(err).Msg("failed to get thor address")
+			return OpResult{
+				Continue: false,
+			}
+		}
+
+		if !activeNodes[accAddr.String()] {
+			a.Log().Info().Str("node", accAddr.String()).Msg("skipping inactive node mimir")
+			continue
+		}
+
+		mimir := types.NewMsgMimir(fmt.Sprintf("RAGNAROK-%s", a.asset.MimirString()), 1, accAddr)
+		txid, err := node.Thorchain.Broadcast(mimir)
+		if err != nil {
+			a.Log().Error().Err(err).Msg("failed to broadcast mimir")
+			return OpResult{
+				Continue: false,
+			}
+		}
+		a.Log().Info().Str("txid", txid.String()).Msg("broadcasted mimir")
+	}
 	return OpResult{
 		Continue: true,
 	}

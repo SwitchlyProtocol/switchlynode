@@ -3,13 +3,13 @@ package thorchain
 import (
 	"fmt"
 
-	"github.com/armon/go-metrics"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // RunePoolDepositHandler a handler to process deposits to RunePool
@@ -54,14 +54,14 @@ func (h RunePoolDepositHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.R
 func (h RunePoolDepositHandler) validate(ctx cosmos.Context, msg MsgRunePoolDeposit) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.134.0")):
-		return h.validateV134(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h RunePoolDepositHandler) validateV134(ctx cosmos.Context, msg MsgRunePoolDeposit) error {
+func (h RunePoolDepositHandler) validateV3_0_0(ctx cosmos.Context, msg MsgRunePoolDeposit) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -69,20 +69,24 @@ func (h RunePoolDepositHandler) validateV134(ctx cosmos.Context, msg MsgRunePool
 	if runePoolEnabled <= 0 {
 		return fmt.Errorf("RUNEPool disabled")
 	}
+	runePoolDepositPaused := h.mgr.Keeper().GetConfigInt64(ctx, constants.RUNEPoolHaltDeposit)
+	if runePoolDepositPaused > 0 && ctx.BlockHeight() >= runePoolDepositPaused {
+		return fmt.Errorf("RUNEPool deposit paused")
+	}
 	return nil
 }
 
 func (h RunePoolDepositHandler) handle(ctx cosmos.Context, msg MsgRunePoolDeposit) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.134.0")):
-		return h.handleV134(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h RunePoolDepositHandler) handleV134(ctx cosmos.Context, msg MsgRunePoolDeposit) error {
+func (h RunePoolDepositHandler) handleV3_0_0(ctx cosmos.Context, msg MsgRunePoolDeposit) error {
 	// get rune pool value before deposit
 	runePoolValue, err := runePoolValue(ctx, h.mgr)
 	if err != nil {

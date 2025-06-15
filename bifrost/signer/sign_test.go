@@ -15,30 +15,33 @@ import (
 	"time"
 
 	"github.com/blang/semver"
+	"github.com/cometbft/cometbft/crypto"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/rs/zerolog/log"
-	"github.com/tendermint/tendermint/crypto"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/blame"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/keysign"
-	tssMessages "gitlab.com/thorchain/thornode/bifrost/tss/go-tss/messages"
+	tssMessages "gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/blame"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/keysign"
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain"
-	types2 "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain"
+	types2 "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -247,6 +250,11 @@ func (b *MockChainClient) GetBlockScannerHeight() (int64, error) {
 	return 0, nil
 }
 
+// RollbackBlockScanner rolls back the block scanner to the last observed block
+func (c *MockChainClient) RollbackBlockScanner() error {
+	return nil
+}
+
 func (b *MockChainClient) GetLatestTxForVault(vault string) (string, string, error) {
 	return "", "", nil
 }
@@ -282,7 +290,7 @@ func (b *MockChainClient) GetPubKey() crypto.PubKey {
 func (b *MockChainClient) OnObservedTxIn(txIn types.TxInItem, blockHeight int64) {
 }
 
-func (b *MockChainClient) Start(globalTxsQueue chan types.TxIn, globalErrataQueue chan types.ErrataBlock, globalSolvencyQueue chan types.Solvency) {
+func (b *MockChainClient) Start(globalTxsQueue chan types.TxIn, globalErrataQueue chan types.ErrataBlock, globalSolvencyQueue chan types.Solvency, globalNetworkFeeQueue chan common.NetworkFee) {
 }
 
 func (b *MockChainClient) Stop() {}
@@ -366,7 +374,10 @@ func (s *SignSuite) SetUpSuite(c *C) {
 		SignerPasswd: "password",
 	}
 
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
@@ -381,7 +392,6 @@ func (s *SignSuite) TestProcess(c *C) {
 	cfg := config.BifrostSignerConfiguration{
 		SignerDbPath: filepath.Join(os.TempDir(), "/var/data/bifrost/signer"),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			RPCHost:                    "127.0.0.1:" + s.rpcHost,
 			ChainID:                    "ThorChain",
 			StartBlockHeight:           1,
 			EnforceBlockHeight:         true,
@@ -411,7 +421,7 @@ func (s *SignSuite) TestProcess(c *C) {
 
 	sign := &Signer{
 		logger:                log.With().Str("module", "signer").Logger(),
-		cfg:                   cfg,
+		cfg:                   config.Bifrost{Signer: cfg},
 		wg:                    &sync.WaitGroup{},
 		stopChan:              make(chan struct{}),
 		blockScanner:          blockScanner,

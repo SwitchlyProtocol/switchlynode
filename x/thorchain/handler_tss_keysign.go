@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/armon/go-metrics"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
-	tssMessages "gitlab.com/thorchain/thornode/bifrost/tss/go-tss/messages"
+	"github.com/hashicorp/go-metrics"
+	tssMessages "gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 // TssKeysignHandler is design to process MsgTssKeysignFail
@@ -50,17 +50,19 @@ func (h TssKeysignHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Result
 func (h TssKeysignHandler) validate(ctx cosmos.Context, msg MsgTssKeysignFail) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.114.0")):
-		return h.validateV114(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h TssKeysignHandler) validateV114(ctx cosmos.Context, msg MsgTssKeysignFail) error {
+func (h TssKeysignHandler) validateV3_0_0(ctx cosmos.Context, msg MsgTssKeysignFail) error {
+	// ValidateBasic is also executed in message service router's handler and isn't versioned there
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
+
 	m, err := NewMsgTssKeysignFail(msg.Height, msg.Blame, msg.Memo, msg.Coins, msg.Signer, msg.PubKey)
 	if err != nil {
 		ctx.Logger().Error("fail to reconstruct keysign fail msg", "error", err)
@@ -70,7 +72,7 @@ func (h TssKeysignHandler) validateV114(ctx cosmos.Context, msg MsgTssKeysignFai
 		return cosmos.ErrUnknownRequest("invalid keysign fail message")
 	}
 
-	if err := validateKeysignAuth(ctx, h.mgr.Keeper(), msg.GetSigners()); err != nil {
+	if _, err := validateKeysignAuth(ctx, h.mgr.Keeper(), msg.GetSigners()); err != nil {
 		return err
 	}
 
@@ -92,14 +94,14 @@ func (h TssKeysignHandler) handle(ctx cosmos.Context, msg MsgTssKeysignFail) (*c
 	ctx.Logger().Info("handle MsgTssKeysignFail request", "ID", msg.ID, "signer", msg.Signer, "pubkey", msg.PubKey, "blame", msg.Blame.String())
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.110.0")):
-		return h.handleV110(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return nil, errBadVersion
 	}
 }
 
-func (h TssKeysignHandler) handleV110(ctx cosmos.Context, msg MsgTssKeysignFail) (*cosmos.Result, error) {
+func (h TssKeysignHandler) handleV3_0_0(ctx cosmos.Context, msg MsgTssKeysignFail) (*cosmos.Result, error) {
 	voter, err := h.mgr.Keeper().GetTssKeysignFailVoter(ctx, msg.ID)
 	if err != nil {
 		return nil, err
@@ -178,7 +180,6 @@ func (h TssKeysignHandler) handleV110(ctx cosmos.Context, msg MsgTssKeysignFail)
 	// the vault and the number of nodes required to maliciously prevent freeze - we err
 	// on the side of over-freezing.
 	if voter.Round7Count > 1 || (voter.Round7Count > 0 && len(voter.Signers) <= 2) {
-		vault, err := h.mgr.Keeper().GetVault(ctx, msg.PubKey)
 		if err != nil {
 			ctx.Logger().Error("fail to fetch vault", "pubkey", msg.PubKey, "error", err)
 		}
@@ -239,20 +240,20 @@ func (h TssKeysignHandler) handleV110(ctx cosmos.Context, msg MsgTssKeysignFail)
 	return &cosmos.Result{}, nil
 }
 
-func validateKeysignAuth(ctx cosmos.Context, k keeper.Keeper, signers []cosmos.AccAddress) error {
+func validateKeysignAuth(ctx cosmos.Context, k keeper.Keeper, signers []cosmos.AccAddress) (cosmos.Context, error) {
 	if isSignedByActiveNodeAccounts(ctx, k, signers) {
-		return nil
+		return ctx.WithPriority(ActiveNodePriority), nil
 	}
 	shouldAccept := false
 	vaults, err := k.GetAsgardVaultsByStatus(ctx, RetiringVault)
 	if err != nil {
-		return ErrInternal(err, "fail to get retiring vaults")
+		return ctx, ErrInternal(err, "fail to get retiring vaults")
 	}
 	if len(vaults) > 0 {
 		for _, signer := range signers {
 			nodeAccount, err := k.GetNodeAccount(ctx, signer)
 			if err != nil {
-				return ErrInternal(err, "fail to get node account")
+				return ctx, ErrInternal(err, "fail to get node account")
 			}
 			for _, v := range vaults {
 				if v.GetMembership().Contains(nodeAccount.PubKeySet.Secp256k1) {
@@ -266,14 +267,14 @@ func validateKeysignAuth(ctx cosmos.Context, k keeper.Keeper, signers []cosmos.A
 		}
 	}
 	if !shouldAccept {
-		return cosmos.ErrUnauthorized("not authorized")
+		return ctx, cosmos.ErrUnauthorized("not authorized")
 	}
-	return nil
+	return ctx, nil
 }
 
 // TssKeysignAnteHandler called by the ante handler to gate mempool entry
 // and also during deliver. Store changes will persist if this function
 // succeeds, regardless of the success of the transaction.
-func TssKeysignFailAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgTssKeysignFail) error {
+func TssKeysignFailAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgTssKeysignFail) (cosmos.Context, error) {
 	return validateKeysignAuth(ctx, k, msg.GetSigners())
 }

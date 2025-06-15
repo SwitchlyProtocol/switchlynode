@@ -7,18 +7,18 @@ import (
 	"os"
 
 	"github.com/blang/semver"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/tokenlist"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
 )
 
 // -------------------------------------------------------------------------------------
 // Flags
 // -------------------------------------------------------------------------------------
 
-var flagVersion *int
+var flagVersion *string
 
 func init() {
-	flagVersion = flag.Int("version", 0, "current version allowing changes")
+	flagVersion = flag.String("version", "", "current version allowing changes")
 }
 
 // -------------------------------------------------------------------------------------
@@ -30,7 +30,12 @@ func check(chain common.Chain) {
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 
-	version, err := semver.Parse("2.135.0") // TODO: bump on hard fork
+	version, err := semver.Parse("3.0.0") // TODO: bump on hard fork
+	if err != nil {
+		panic(err)
+	}
+
+	currentVersion, err := semver.Parse(*flagVersion)
 	if err != nil {
 		panic(err)
 	}
@@ -39,14 +44,17 @@ func check(chain common.Chain) {
 		fmt.Println("Check:", chain, version)
 
 		// get token list
-		err = enc.Encode(tokenlist.GetEVMTokenList(chain, version))
+		err = enc.Encode(tokenlist.GetEVMTokenList(chain))
 		if err != nil {
 			panic(err)
 		}
 
 		// iterate versions up to current
 		version.Minor++
-		if version.Minor >= uint64(*flagVersion) {
+
+		// TODO bump major at last minor version at hard fork
+
+		if version.GTE(currentVersion) {
 			break
 		}
 	}
@@ -58,7 +66,7 @@ func check(chain common.Chain) {
 
 func main() {
 	flag.Parse()
-	if *flagVersion == 0 {
+	if *flagVersion == "" {
 		panic("version is required")
 	}
 

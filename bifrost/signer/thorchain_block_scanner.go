@@ -9,14 +9,14 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	btypes "gitlab.com/thorchain/thornode/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/config"
-	ttypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/config"
+	ttypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type ThorchainBlockScan struct {
@@ -65,6 +65,13 @@ func (b *ThorchainBlockScan) GetKeygenMessages() <-chan ttypes.KeygenBlock {
 
 func (b *ThorchainBlockScan) GetHeight() (int64, error) {
 	return b.thorchain.GetBlockHeight()
+}
+
+// ThorchainBlockScan's GetNetworkFee only exists to satisfy the BlockScannerFetcher interface
+// and should never be called, since broadcast network fees are for external chains' observed fees.
+func (b *ThorchainBlockScan) GetNetworkFee() (transactionSize, transactionFeeRate uint64) {
+	b.logger.Error().Msg("ThorchainBlockScan GetNetworkFee was called (which should never happen)")
+	return 0, 0
 }
 
 func (c *ThorchainBlockScan) FetchMemPool(height int64) (types.TxIn, error) {

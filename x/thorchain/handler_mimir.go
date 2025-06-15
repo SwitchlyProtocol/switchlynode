@@ -8,15 +8,15 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 var mimirValidKey = regexp.MustCompile(constants.MimirKeyRegex).MatchString
 
-// MimirHandler is to handle admin messages
+// MimirHandler is to handle mimir messages
 type MimirHandler struct {
 	mgr Manager
 }
@@ -49,21 +49,23 @@ func (h MimirHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Result, err
 func (h MimirHandler) validate(ctx cosmos.Context, msg MsgMimir) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.114.0")):
-		return h.validateV114(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
 }
 
-func (h MimirHandler) validateV114(ctx cosmos.Context, msg MsgMimir) error {
+func (h MimirHandler) validateV3_0_0(ctx cosmos.Context, msg MsgMimir) error {
+	// ValidateBasic is also executed in message service router's handler and isn't versioned there
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
-	if !mimirValidKey(msg.Key) || len(msg.Key) > 64 {
+
+	if !mimirValidKey(msg.Key) || len(msg.Key) > constants.MaxMimirLength {
 		return cosmos.ErrUnknownRequest("invalid mimir key")
 	}
-	if err := validateMimirAuth(ctx, h.mgr.Keeper(), msg); err != nil {
+	if _, err := validateMimirAuth(ctx, h.mgr.Keeper(), msg); err != nil {
 		return err
 	}
 	return nil
@@ -73,22 +75,18 @@ func (h MimirHandler) handle(ctx cosmos.Context, msg MsgMimir) error {
 	ctx.Logger().Info("handleMsgMimir request", "node", msg.Signer, "key", msg.Key, "value", msg.Value)
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.133.0")):
-		return h.handleV133(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		ctx.Logger().Error(errInvalidVersion.Error())
 		return errBadVersion
 	}
 }
 
-func (h MimirHandler) handleV133(ctx cosmos.Context, msg MsgMimir) error {
+func (h MimirHandler) handleV3_0_0(ctx cosmos.Context, msg MsgMimir) error {
 	// Get the current Mimir key value if it exists.
 	currentMimirValue, _ := h.mgr.Keeper().GetMimir(ctx, msg.Key)
 	// Here, an error is assumed to mean the Mimir key is currently unset.
-
-	if isAdmin(msg.Signer) {
-		return h.handleAdmin(ctx, msg, currentMimirValue)
-	}
 
 	// Cost and emitting of SetNodeMimir, even if a duplicate
 	// (for instance if needed to confirm a new supermajority after a node number decrease).
@@ -99,32 +97,29 @@ func (h MimirHandler) handleV133(ctx cosmos.Context, msg MsgMimir) error {
 	}
 	cost := h.mgr.Keeper().GetNativeTxFee(ctx)
 	nodeAccount.Bond = common.SafeSub(nodeAccount.Bond, cost)
-	if err := h.mgr.Keeper().SetNodeAccount(ctx, nodeAccount); err != nil {
+	if err = h.mgr.Keeper().SetNodeAccount(ctx, nodeAccount); err != nil {
 		ctx.Logger().Error("fail to save node account", "error", err)
 		return fmt.Errorf("fail to save node account: %w", err)
 	}
 	// move set mimir cost from bond module to reserve
 	coin := common.NewCoin(common.RuneNative, cost)
 	if !cost.IsZero() {
-		if err := h.mgr.Keeper().SendFromModuleToModule(ctx, BondName, ReserveName, common.NewCoins(coin)); err != nil {
+		if err = h.mgr.Keeper().SendFromModuleToModule(ctx, BondName, ReserveName, common.NewCoins(coin)); err != nil {
 			ctx.Logger().Error("fail to transfer funds from bond to reserve", "error", err)
 			return err
 		}
 	}
-	if err := h.mgr.Keeper().SetNodeMimir(ctx, msg.Key, msg.Value, msg.Signer); err != nil {
+	if err = h.mgr.Keeper().SetNodeMimir(ctx, msg.Key, msg.Value, msg.Signer); err != nil {
 		ctx.Logger().Error("fail to save node mimir", "error", err)
 		return err
 	}
 	nodeMimirEvent := NewEventSetNodeMimir(strings.ToUpper(msg.Key), strconv.FormatInt(msg.Value, 10), msg.Signer.String())
-	if err := h.mgr.EventMgr().EmitEvent(ctx, nodeMimirEvent); err != nil {
+	if err = h.mgr.EventMgr().EmitEvent(ctx, nodeMimirEvent); err != nil {
 		ctx.Logger().Error("fail to emit set_node_mimir event", "error", err)
 		return err
 	}
-	tx := common.Tx{}
-	tx.ID = common.BlankTxID
-	tx.ToAddress = common.Address(nodeAccount.String())
-	bondEvent := NewEventBond(cost, BondCost, tx)
-	if err := h.mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
+	bondEvent := NewEventBond(cost, BondCost, common.Tx{}, &nodeAccount, nil)
+	if err = h.mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
 		ctx.Logger().Error("fail to emit bond event", "error", err)
 		return err
 	}
@@ -173,65 +168,20 @@ func (h MimirHandler) handleV133(ctx cosmos.Context, msg MsgMimir) error {
 	// Reaching this point indicates a new mimir value is to be set.
 	h.mgr.Keeper().SetMimir(ctx, msg.Key, effectiveValue)
 	mimirEvent := NewEventSetMimir(strings.ToUpper(msg.Key), strconv.FormatInt(effectiveValue, 10))
-	if err := h.mgr.EventMgr().EmitEvent(ctx, mimirEvent); err != nil {
+	if err = h.mgr.EventMgr().EmitEvent(ctx, mimirEvent); err != nil {
 		ctx.Logger().Error("fail to emit set_mimir event", "error", err)
 	}
 
 	return nil
 }
 
-func validateMimirAuth(ctx cosmos.Context, k keeper.Keeper, msg MsgMimir) error {
-	if isAdmin(msg.Signer) {
-		// If the signer is an admin key, check the admin access controls for this mimir.
-		if !isAdminAllowedForMimir(msg.Key) {
-			return cosmos.ErrUnauthorized(fmt.Sprintf("%s cannot set this mimir key", msg.Signer))
-		}
-	} else if !isSignedByActiveNodeAccounts(ctx, k, msg.GetSigners()) {
-		return cosmos.ErrUnauthorized(fmt.Sprintf("%s is not authorized", msg.Signer))
-	}
-	return nil
+func validateMimirAuth(ctx cosmos.Context, k keeper.Keeper, msg MsgMimir) (cosmos.Context, error) {
+	return activeNodeAccountsSignerPriority(ctx, k, msg.GetSigners())
 }
 
 // MimirAnteHandler called by the ante handler to gate mempool entry
 // and also during deliver. Store changes will persist if this function
 // succeeds, regardless of the success of the transaction.
-func MimirAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgMimir) error {
+func MimirAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgMimir) (cosmos.Context, error) {
 	return validateMimirAuth(ctx, k, msg)
-}
-
-func (h MimirHandler) handleAdmin(ctx cosmos.Context, msg MsgMimir, currentMimirValue int64) error {
-	// If the Mimir key is already the submitted value, don't do anything further.
-	if msg.Value == currentMimirValue {
-		return nil
-	}
-	nodeMimirs, err := h.mgr.Keeper().GetNodeMimirs(ctx, msg.Key)
-	if err != nil {
-		ctx.Logger().Error("fail to get node mimirs", "error", err)
-		return err
-	}
-	activeNodes, err := h.mgr.Keeper().ListActiveValidators(ctx)
-	if err != nil {
-		ctx.Logger().Error("fail to list active validators", "error", err)
-		return err
-	}
-	currentSuperMajorityValue, currentlyHasSuperMajority := nodeMimirs.HasSuperMajority(msg.Key, activeNodes.GetNodeAddresses())
-	if currentlyHasSuperMajority && (msg.Value != currentSuperMajorityValue) {
-		ctx.Logger().With("key", msg.Key).
-			With("consensus_value", currentMimirValue).
-			Info("admin mimir should not be able to override node voted mimir value")
-		return nil
-	}
-	// Deleting or setting Mimir key value, and emitting a SetMimir event.
-	if msg.Value < 0 {
-		_ = h.mgr.Keeper().DeleteMimir(ctx, msg.Key)
-	} else {
-		h.mgr.Keeper().SetMimir(ctx, msg.Key, msg.Value)
-	}
-	mimirEvent := NewEventSetMimir(strings.ToUpper(msg.Key), strconv.FormatInt(msg.Value, 10))
-	if err := h.mgr.EventMgr().EmitEvent(ctx, mimirEvent); err != nil {
-		ctx.Logger().Error("fail to emit set_mimir event", "error", err)
-		return nil
-	}
-
-	return nil
 }

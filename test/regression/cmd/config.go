@@ -8,20 +8,20 @@ import (
 	"strings"
 	"time"
 
+	tmhttp "github.com/cometbft/cometbft/rpc/client/http"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	tmhttp "github.com/tendermint/tendermint/rpc/client/http"
 
-	"gitlab.com/thorchain/thornode/app"
-	"gitlab.com/thorchain/thornode/app/params"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	keeperv1 "gitlab.com/thorchain/thornode/x/thorchain/keeper/v1"
+	"gitlab.com/thorchain/thornode/v3/app"
+	"gitlab.com/thorchain/thornode/v3/app/params"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	keeperv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
 
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	eddsaKey "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -33,7 +33,10 @@ import (
 // Cosmos
 ////////////////////////////////////////////////////////////////////////////////////////
 
-var encodingConfig params.EncodingConfig
+var (
+	encodingConfig params.EncodingConfig
+	keyRing        keyring.Keyring
+)
 
 func init() {
 	// initialize the bech32 prefix for mocknet
@@ -45,6 +48,7 @@ func init() {
 
 	// initialize the codec
 	encodingConfig = app.MakeEncodingConfig()
+	keyRing = keyring.NewInMemory(encodingConfig.Codec)
 
 	// Having set the prefixes, derive the module addresses.
 	ModuleAddrTransfer = authtypes.NewModuleAddress("transfer").String() // "tthor1yl6hdjhmkf37639730gffanpzndzdpmhv07zme"
@@ -59,12 +63,14 @@ func init() {
 	ModuleAddrAffiliateCollector = authtypes.NewModuleAddress("affiliate_collector").String() // "tthor1dl7un46w7l7f3ewrnrm6nq58nerjtp0d82uzjg"
 	ModuleAddrTreasury = authtypes.NewModuleAddress("treasury").String()                      // "tthor1vmafl8f3s6uuzwnxkqz0eza47v6ecn0ttstnny"
 	ModuleAddrRUNEPool = authtypes.NewModuleAddress("rune_pool").String()                     // "tthor1rzqfv62dzu585607s5awqtgnvvwz5rzhfuaw80"
+	ModuleAddrClaiming = authtypes.NewModuleAddress("tcy_claim").String()                     // "tthor1ss8rrf3twa20kf9frdyru05dmu2kg9llwwcgag"
+	ModuleAddrTCYStake = authtypes.NewModuleAddress("tcy_stake").String()                     // "tthor128a8hqnkaxyqv7qwajpggmfyudh64jl3uxmuaf"
 }
 
 func clientContextAndFactory(routine int) (client.Context, tx.Factory) {
 	// create new rpc client
 	node := fmt.Sprintf("http://localhost:%d", 26657+routine)
-	rpcClient, err := tmhttp.New(node, "/websocket")
+	rpcClient, err := tmhttp.NewWithTimeout(node, "/websocket", 5)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to create tendermint client")
 	}
@@ -73,8 +79,7 @@ func clientContextAndFactory(routine int) (client.Context, tx.Factory) {
 	clientCtx := client.Context{
 		Client:            rpcClient,
 		ChainID:           "thorchain",
-		JSONCodec:         encodingConfig.Marshaler,
-		Codec:             encodingConfig.Marshaler,
+		Codec:             encodingConfig.Codec,
 		InterfaceRegistry: encodingConfig.InterfaceRegistry,
 		Keyring:           keyRing,
 		BroadcastMode:     flags.BroadcastSync,
@@ -118,11 +123,11 @@ func init() {
 const (
 	ColorReset  = "\033[0m"
 	ColorRed    = "\033[31m"
+	ColorYellow = "\033[33m"
 	ColorGreen  = "\033[32m"
 	ColorPurple = "\033[35m"
 
 	// save for later
-	// ColorYellow = "\033[33m"
 	// ColorBlue   = "\033[34m"
 	// ColorCyan   = "\033[36m"
 	// ColorGray   = "\033[37m"
@@ -158,6 +163,8 @@ var (
 	ModuleAddrAffiliateCollector string
 	ModuleAddrTreasury           string
 	ModuleAddrRUNEPool           string
+	ModuleAddrClaiming           string
+	ModuleAddrTCYStake           string
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +185,6 @@ func init() {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 var (
-	keyRing            = keyring.NewInMemory()
 	addressToName      = map[string]string{} // thor...->dog, 0x...->dog
 	templateAddress    = map[string]string{} // addr_thor_dog->thor..., addr_eth_dog->0x...
 	templatePubKey     = map[string]string{} // pubkey_dog->thorpub...
@@ -255,7 +261,6 @@ func init() {
 		}
 
 		for _, chain := range common.AllChains {
-
 			// register template address for all chains
 			var addr common.Address
 			addr, err = common.PubKey(ecdsaPubKey).GetAddress(chain)

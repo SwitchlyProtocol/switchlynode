@@ -28,7 +28,7 @@ Native asset names can be shortened to reduce the length of the memo. The exact 
 
 | Shorten Asset | Asset Notation |
 | ------------- | -------------- |
-| r             | THOR.RUNE      |
+| r or rune     | THOR.RUNE      |
 | a             | AVAX.AVAX      |
 | b             | BTC.BTC        |
 | c             | BCH.BCH        |
@@ -38,6 +38,8 @@ Native asset names can be shortened to reduce the length of the memo. The exact 
 | d             | DOGE.DOGE      |
 | e             | ETH.ETH        |
 | l             | LTC.LTC        |
+| f             | BASE.ETH       |
+| x             | XRP.XRP        |
 
 **Example Swaps**:
 
@@ -77,7 +79,7 @@ Memos contain functions such as Swap or Add, which describe the user's intent an
 | Loan Open     | Loan+       | $+          |
 | Loan Close    | Loan-       | $-          |
 | THORName      | name, n     | \~          |
-| Limit Order   | Limitto     | lo          |
+| Limit Swap    | =>          | =>          |
 
 **Example**:
 

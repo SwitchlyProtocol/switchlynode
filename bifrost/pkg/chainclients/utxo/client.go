@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
-	"strconv"
+	"regexp"
 	"sync"
 	"time"
 
@@ -18,29 +18,27 @@ import (
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcutil"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	btypes "gitlab.com/thorchain/thornode/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/runners"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/signercache"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/utxo"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/utxo/rpc"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	gotss "gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	mem "gitlab.com/thorchain/thornode/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/runners"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/signercache"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/utxo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/utxo/rpc"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	gotss "gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Generate
 ////////////////////////////////////////////////////////////////////////////////////////
-
-//go:generate go run generate.go
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Client - Base
@@ -64,7 +62,7 @@ type Client struct {
 	// ---------- sync ----------
 	wg                    *sync.WaitGroup
 	signerLock            *sync.Mutex
-	vaultSignerLocks      map[string]*sync.Mutex
+	vaultLocks            map[string]*sync.Mutex
 	consolidateInProgress *atomic.Bool
 
 	// ---------- scanner ----------
@@ -72,10 +70,11 @@ type Client struct {
 	temporalStorage *utxo.TemporalStorage
 
 	// ---------- control ----------
-	globalErrataQueue   chan<- types.ErrataBlock
-	globalSolvencyQueue chan<- types.Solvency
-	stopchan            chan struct{}
-	currentBlockHeight  *atomic.Int64
+	globalErrataQueue     chan<- types.ErrataBlock
+	globalSolvencyQueue   chan<- types.Solvency
+	globalNetworkFeeQueue chan<- common.NetworkFee
+	stopchan              chan struct{}
+	currentBlockHeight    *atomic.Int64
 
 	// ---------- thornode state ----------
 	bridge          thorclient.ThorchainBridge
@@ -94,6 +93,11 @@ type Client struct {
 
 	// ---------- testing ----------
 	disableVinZeroBatch bool
+
+	// ---------- utility ----------
+	// regexpRemoveTrailingZeros is used to remove trailing zeroes from utxo
+	// fake addresses. Defined here, to compile just once
+	regexpRemoveTrailingZeros *regexp.Regexp
 }
 
 // NewClient generates a new Client
@@ -140,20 +144,21 @@ func NewClient(
 
 	// create base client
 	c := &Client{
-		cfg:                   cfg,
-		log:                   logger,
-		m:                     m,
-		rpc:                   rpcClient,
-		nodePubKey:            nodePubKey,
-		nodePrivKey:           nodePrivKey,
-		tssKeySigner:          tssKeysign,
-		wg:                    &sync.WaitGroup{},
-		signerLock:            &sync.Mutex{},
-		vaultSignerLocks:      make(map[string]*sync.Mutex),
-		consolidateInProgress: atomic.NewBool(false),
-		stopchan:              make(chan struct{}),
-		currentBlockHeight:    atomic.NewInt64(0),
-		bridge:                bridge,
+		cfg:                       cfg,
+		log:                       logger,
+		m:                         m,
+		rpc:                       rpcClient,
+		nodePubKey:                nodePubKey,
+		nodePrivKey:               nodePrivKey,
+		tssKeySigner:              tssKeysign,
+		wg:                        &sync.WaitGroup{},
+		signerLock:                &sync.Mutex{},
+		vaultLocks:                make(map[string]*sync.Mutex),
+		consolidateInProgress:     atomic.NewBool(false),
+		stopchan:                  make(chan struct{}),
+		currentBlockHeight:        atomic.NewInt64(0),
+		bridge:                    bridge,
+		regexpRemoveTrailingZeros: regexp.MustCompile(`(?:00)+$`),
 	}
 
 	// import the node local address in the daemon wallet
@@ -210,9 +215,19 @@ func (c *Client) GetHeight() (int64, error) {
 	return c.rpc.GetBlockCount()
 }
 
+// GetNetworkFee returns current chain network fee according to Bifrost.
+func (c *Client) GetNetworkFee() (transactionSize, transactionFeeRate uint64) {
+	return c.cfg.UTXO.EstimatedAverageTxSize, c.lastFeeRate
+}
+
 // GetBlockScannerHeight returns blockscanner height
 func (c *Client) GetBlockScannerHeight() (int64, error) {
 	return c.blockScanner.PreviousHeight(), nil
+}
+
+// RollbackBlockScanner rolls back the block scanner to the last observed block
+func (c *Client) RollbackBlockScanner() error {
+	return c.blockScanner.RollbackToLastObserved()
 }
 
 func (c *Client) GetLatestTxForVault(vault string) (string, string, error) {
@@ -243,11 +258,13 @@ func (c *Client) Start(
 	globalTxsQueue chan types.TxIn,
 	globalErrataQueue chan types.ErrataBlock,
 	globalSolvencyQueue chan types.Solvency,
+	globalNetworkFeeQueue chan common.NetworkFee,
 ) {
 	c.globalErrataQueue = globalErrataQueue
 	c.globalSolvencyQueue = globalSolvencyQueue
+	c.globalNetworkFeeQueue = globalNetworkFeeQueue
 	c.tssKeySigner.Start()
-	c.blockScanner.Start(globalTxsQueue)
+	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
 	go runners.SolvencyCheckRunner(
 		c.GetChain(), c, c.bridge, c.stopchan, c.wg, constants.ThorchainBlockTime,
@@ -492,7 +509,6 @@ func (c *Client) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
 		go c.consolidateUTXOs()
 	}
 
-	txIn.Count = strconv.Itoa(len(txIn.TxArray))
 	return txIn, nil
 }
 
@@ -590,7 +606,7 @@ func (c *Client) FetchMemPool(height int64) (types.TxIn, error) {
 				continue
 			}
 
-			txIn.TxArray = append(txIn.TxArray, txInItem)
+			txIn.TxArray = append(txIn.TxArray, &txInItem)
 		}
 	}
 
@@ -603,7 +619,6 @@ func (c *Client) FetchMemPool(height int64) (types.TxIn, error) {
 			Msg("retrieved mempool batch")
 	}
 
-	txIn.Count = strconv.Itoa(len(txIn.TxArray))
 	return txIn, returnErr
 }
 

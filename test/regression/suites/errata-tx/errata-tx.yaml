@@ -72,7 +72,6 @@ asserts:
 ########################################################################################
 # observation with non-node account is invalid
 ########################################################################################
----
 type: tx-observed-in
 signer: {{ addr_thor_fox }}
 txs:
@@ -99,7 +98,7 @@ count: 1
 type: check
 endpoint: http://localhost:1317/auth/accounts/{{ addr_thor_fox }}
 asserts:
-  - .result.value.sequence|length == 0
+  - .result.value.sequence == "0"
 ---
 ########################################################################################
 # re-observe errata transaction at new block height does nothing

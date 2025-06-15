@@ -19,8 +19,8 @@ import retry
 
 BLOCK_SECONDS = 6
 
-API_ENDPOINT = os.getenv("API_ENDPOINT", "https://thornode-v1.ninerealms.com")
-RPC_ENDPOINT = os.getenv("RPC_ENDPOINT", "https://rpc-v1.ninerealms.com")
+API_ENDPOINT = os.getenv("API_ENDPOINT", "https://thornode-v2.ninerealms.com")
+RPC_ENDPOINT = os.getenv("RPC_ENDPOINT", "https://rpc-v2.ninerealms.com")
 PARALLELISM = int(os.getenv("PARALLELISM", 4))
 
 logging.basicConfig(
@@ -36,7 +36,7 @@ logging.basicConfig(
 
 
 def _parse_block_time(dt_str):
-    dt = datetime.datetime.strptime(dt_str[:26], "%Y-%m-%dT%H:%M:%S.%f")
+    dt = datetime.datetime.strptime(dt_str[:-4], "%Y-%m-%dT%H:%M:%S.%f")
     timestamp = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
     return timestamp
 
@@ -99,7 +99,11 @@ def events(
     """
 
     def _listen(block):
-        for event in block["begin_block_events"] + block["end_block_events"]:
+        for event in (
+            block["begin_block_events"]
+            + block["end_block_events"]
+            + block["finalize_block_events"]
+        ):
             if types is not None and event["type"] not in types:
                 continue
             for listener in listeners:
@@ -130,7 +134,11 @@ def messages(
 
     def _listen(block):
         for tx in block["txs"]:
-            for msg in tx["tx"]["body"]["messages"]:
+            if "messages" in tx["tx"]:
+                messages = tx["tx"]["messages"]
+            else:
+                messages = tx["tx"]["body"]["messages"]
+            for msg in messages:
                 if types is not None and msg["type"] not in types:
                     continue
                 for listener in listeners:
@@ -149,6 +157,8 @@ last_scan_block_time = 0
 
 def signal_handler(signal, frame):
     global stop_scan
+    if stop_scan:  # double ctrl-c
+        sys.exit(0)
     stop_scan = True
 
 
@@ -166,7 +176,7 @@ def _get(*args, **kwargs) -> requests.Response:
     kwargs["headers"]["x-client-id"] = "thorscan"
 
     # 5 second timeout
-    kwargs["timeout"] = kwargs.get("timeout", 5)
+    kwargs["timeout"] = kwargs.get("timeout", 20)
 
     # get session from pool for request
     session = sessions.get()
@@ -188,7 +198,7 @@ def _fetch_block(height: int) -> Optional[Dict[str, Any]]:
         if stop_scan:
             return None
         res = _get(f"{API_ENDPOINT}/thorchain/block", params={"height": height})
-        if res.status_code == 404:
+        if res.status_code in {404, 429, 500, 503}:
             time.sleep(BLOCK_SECONDS / 2)
             continue  # expected near tip
         res.raise_for_status()
@@ -280,13 +290,20 @@ def scan(
 
         # modify block transaction type field for convenience
         for tx in block["txs"]:
-            for msg in tx["tx"]["body"]["messages"]:
+            if "messages" in tx["tx"]:
+                messages = tx["tx"]["messages"]
+            else:
+                messages = tx["tx"]["body"]["messages"]
+
+            for msg in messages:
                 msg["type"] = msg["@type"].lstrip("/types.")
                 del msg["@type"]
 
         # call all block listeners
         for listener in listeners:
             _print(listener(block))
+
+        sys.stdout.flush()
 
 
 ########################################################################################

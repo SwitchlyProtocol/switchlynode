@@ -13,19 +13,22 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcd/btcjson"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/utxo"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	ttypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/utxo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	ttypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type DogecoinSuite struct {
@@ -41,7 +44,10 @@ var _ = Suite(&DogecoinSuite{})
 
 func (s *DogecoinSuite) SetUpSuite(c *C) {
 	ttypes.SetupConfigForTest()
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.THORChainHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.keys = thorclient.NewKeysWithKeybase(kb, bob, password)
@@ -195,6 +201,7 @@ func (s *DogecoinSuite) SetUpTest(c *C) {
 	s.cfg.RPCHost = s.server.Listener.Addr().String()
 	s.client, err = NewClient(s.keys, s.cfg, nil, s.bridge, s.m)
 	s.client.disableVinZeroBatch = true
+	s.client.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.client, NotNil)
 }
@@ -234,7 +241,6 @@ func (s *DogecoinSuite) TestFetchTxs(c *C) {
 	txs, err := s.client.FetchTxs(0, 0)
 	c.Assert(err, IsNil)
 	c.Assert(txs.Chain, Equals, common.DOGEChain)
-	c.Assert(txs.Count, Equals, "1", Commentf(vaultAddressString))
 	c.Assert(txs.TxArray[0].BlockHeight, Equals, int64(1696761))
 	c.Assert(txs.TxArray[0].Tx, Equals, "54ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528")
 	c.Assert(txs.TxArray[0].Sender, Equals, "nfWiQeddE4zsYsDuYhvpgVC7y4gjr5RyqK")
@@ -309,6 +315,35 @@ func (s *DogecoinSuite) TestGetMemo(c *C) {
 	memo, err = s.client.getMemo(&tx)
 	c.Assert(err, IsNil)
 	c.Assert(memo, Equals, "")
+
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 737761703a6574682e3078633534633135313236393646334541373935366264396144343130383138654563414443466666663a3078633534633135313236393646334541373935366264396144345e",
+					Type: "nulldata",
+					Hex:  "6a4c50737761703a6574682e3078633534633135313236393646334541373935366264396144343130383138654563414443466666663a3078633534633135313236393646334541373935366264396144345e",
+				},
+			},
+			{
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_DUP OP_HASH 3130383138654563414443466666663a31303030 OP_EQUALVERIFY OP_CHECKSIG",
+					Type: "pubkeyhash",
+					Hex:  "76A9143130383138654563414443466666663a3130303088AC",
+				},
+			},
+			{
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_DUP OP_HASH 3030303030303000000000000000000000000000 OP_EQUALVERIFY OP_CHECKSIG",
+					Type: "pubkeyhash",
+					Hex:  "76A914303030303030300000000000000000000000000088AC",
+				},
+			},
+		},
+	}
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "swap:eth.0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:10000000000")
 }
 
 func (s *DogecoinSuite) TestIgnoreTx(c *C) {
@@ -772,9 +807,8 @@ func (s *DogecoinSuite) TestGetHeight(c *C) {
 func (s *DogecoinSuite) TestOnObservedTxIn(c *C) {
 	pkey := ttypes.GetRandomPubKey()
 	txIn := types.TxIn{
-		Count: "1",
 		Chain: common.DOGEChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 1,
 				Tx:          "31f8699ce9028e9cd37f8a6d58a79e614a96e3fdd0f58be5fc36d2d95484716f",
@@ -790,15 +824,14 @@ func (s *DogecoinSuite) TestOnObservedTxIn(c *C) {
 	}
 	blockMeta := utxo.NewBlockMeta("000000001ab8a8484eb89f04b87d90eb88e2cbb2829e84eb36b966dcb28af90b", 1, "00000000ffa57c95f4f226f751114e9b24fdf8dbe2dbc02a860da9320bebd63e")
 	c.Assert(s.client.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta), IsNil)
-	s.client.OnObservedTxIn(txIn.TxArray[0], 1)
+	s.client.OnObservedTxIn(*txIn.TxArray[0], 1)
 	blockMeta, err := s.client.temporalStorage.GetBlockMeta(1)
 	c.Assert(err, IsNil)
 	c.Assert(blockMeta, NotNil)
 
 	txIn = types.TxIn{
-		Count: "1",
 		Chain: common.DOGEChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -814,15 +847,14 @@ func (s *DogecoinSuite) TestOnObservedTxIn(c *C) {
 	}
 	blockMeta = utxo.NewBlockMeta("000000001ab8a8484eb89f04b87d90eb88e2cbb2829e84eb36b966dcb28af90b", 2, "00000000ffa57c95f4f226f751114e9b24fdf8dbe2dbc02a860da9320bebd63e")
 	c.Assert(s.client.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta), IsNil)
-	s.client.OnObservedTxIn(txIn.TxArray[0], 2)
+	s.client.OnObservedTxIn(*txIn.TxArray[0], 2)
 	blockMeta, err = s.client.temporalStorage.GetBlockMeta(2)
 	c.Assert(err, IsNil)
 	c.Assert(blockMeta, NotNil)
 
 	txIn = types.TxIn{
-		Count: "2",
 		Chain: common.DOGEChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 3,
 				Tx:          "44ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -850,7 +882,7 @@ func (s *DogecoinSuite) TestOnObservedTxIn(c *C) {
 	blockMeta = utxo.NewBlockMeta("000000001ab8a8484eb89f04b87d90eb88e2cbb2829e84eb36b966dcb28af90b", 3, "00000000ffa57c95f4f226f751114e9b24fdf8dbe2dbc02a860da9320bebd63e")
 	c.Assert(s.client.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta), IsNil)
 	for _, item := range txIn.TxArray {
-		s.client.OnObservedTxIn(item, 3)
+		s.client.OnObservedTxIn(*item, 3)
 	}
 
 	blockMeta, err = s.client.temporalStorage.GetBlockMeta(3)

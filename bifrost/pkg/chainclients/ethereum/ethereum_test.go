@@ -10,22 +10,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/magiconair/properties/assert"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	types2 "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	types2 "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func TestETHPackage(t *testing.T) { TestingT(t) }
@@ -71,7 +73,7 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 			c.Assert(err, IsNil)
 		case thorclient.PubKeysEndpoint:
 			priKey, _ := s.thorKeys.GetPrivateKey()
-			tm, _ := codec.ToTmPubKeyInterface(priKey.PubKey())
+			tm, _ := cryptocodec.ToCmtPubKeyInterface(priKey.PubKey())
 			pk, err := common.NewPubKeyFromCrypto(tm)
 			c.Assert(err, IsNil)
 			content, err := os.ReadFile("../../../../test/fixtures/endpoints/vaults/pubKeys.json")
@@ -117,7 +119,7 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 			err = json.Unmarshal(body, &rpcRequest)
 			c.Assert(err, IsNil)
 			if rpcRequest.Method == "eth_getBalance" {
-				_, err = rw.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":"0x3b9aca00"}`))
+				_, err = rw.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":"0x8ac7230489e80000"}`))
 				c.Assert(err, IsNil)
 			}
 			if rpcRequest.Method == "eth_getTransactionCount" {
@@ -153,6 +155,7 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 				"cumulativeGasUsed":"0xc350",
 				"contractAddress":"0x2a65aca4d5fc5b5c859090a6c34d164135398226",
 				"gasUsed":"0x4dc",
+				"effectiveGasPrice":"0x2540be400",
 				"logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
 				"logs":[],
 				"status":"0x1"
@@ -207,7 +210,10 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 		ChainHomeFolder: s.thordir,
 	}
 
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
@@ -261,6 +267,7 @@ func (s *EthereumSuite) TestConvertSigningAmount(c *C) {
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err, IsNil)
 	c.Assert(e, NotNil)
+	e.ethScanner.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(e.ethScanner.tokens.SaveTokenMeta("TKN", "0x3b7FA4dd21c6f9BA3ca375217EAD7CAb9D6bF483", 18), IsNil)
 	c.Assert(e.ethScanner.tokens.SaveTokenMeta("TKX", "0x3b7FA4dd21c6f9BA3ca375217EAD7CAb9D6bF482", 8), IsNil)
 	result := e.convertSigningAmount(big.NewInt(100), "0x3b7FA4dd21c6f9BA3ca375217EAD7CAb9D6bF483")
@@ -294,6 +301,7 @@ func (s *EthereumSuite) TestClient(c *C) {
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err2, IsNil)
 	c.Assert(e2, NotNil)
+	e2.ethScanner.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(pubkeyMgr.Start(), IsNil)
 	defer func() { c.Assert(pubkeyMgr.Stop(), IsNil) }()
 	c.Check(e2.GetChain(), Equals, common.ETHChain)
@@ -306,7 +314,7 @@ func (s *EthereumSuite) TestClient(c *C) {
 	acct, err := e2.GetAccount(types2.GetRandomPubKey(), nil)
 	c.Assert(err, IsNil)
 	c.Check(acct.Sequence, Equals, int64(0))
-	c.Check(acct.Coins[0].Amount.Uint64(), Equals, uint64(0))
+	c.Check(acct.Coins[0].Amount.Uint64(), Equals, uint64(10*common.One))
 	pk := types2.GetRandomPubKey()
 	addr := e2.GetAddress(pk)
 	c.Check(len(addr), Equals, 42)
@@ -381,6 +389,7 @@ func (s *EthereumSuite) TestGetAccount(c *C) {
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err, IsNil)
 	c.Assert(e, NotNil)
+	e.ethScanner.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(pubkeyMgr.Start(), IsNil)
 	defer func() { c.Assert(pubkeyMgr.Stop(), IsNil) }()
 	acct, err := e.GetAccountByAddress("0x9f4aab49a9cd8fc54dcb3701846f608a6f2c44da", nil)
@@ -395,18 +404,20 @@ func (s *EthereumSuite) TestSignETHTx(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
 	poolMgr := thorclient.NewPoolMgr(s.bridge)
-	e, err := NewClient(s.thorKeys, config.BifrostChainConfiguration{
+	chainConfig := config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
 			StartBlockHeight:   1, // avoids querying thorchain for block height
 			HTTPRequestTimeout: time.Second,
 			MaxGasLimit:        80000,
 		},
-		AggregatorMaxGasMultiplier: 10,
-		TokenMaxGasMultiplier:      3,
-	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
+	}
+	chainConfig.EVM.AggregatorMaxGasMultiplier = 10
+	chainConfig.EVM.TokenMaxGasMultiplier = 3
+	e, err := NewClient(s.thorKeys, chainConfig, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err, IsNil)
 	c.Assert(e, NotNil)
+	e.ethScanner.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(pubkeyMgr.Start(), IsNil)
 	defer func() { c.Assert(pubkeyMgr.Stop(), IsNil) }()
 	pubkeys := pubkeyMgr.GetPubKeys()
@@ -480,7 +491,7 @@ func (s *EthereumSuite) TestSignETHTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(common.ETHAsset, cosmos.NewUint(1e18)),
+			common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*8)),
@@ -525,7 +536,7 @@ func (s *EthereumSuite) TestSignETHTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(common.ETHAsset, cosmos.NewUint(1e18)),
+			common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*8)),
@@ -546,7 +557,7 @@ func (s *EthereumSuite) TestSignETHTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(asset, cosmos.NewUint(1e18)),
+			common.NewCoin(asset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*8)),
@@ -567,7 +578,7 @@ func (s *EthereumSuite) TestSignETHTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(common.ETHAsset, cosmos.NewUint(1e18)),
+			common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*8)),
@@ -588,7 +599,7 @@ func (s *EthereumSuite) TestSignETHTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(asset, cosmos.NewUint(1e18)),
+			common.NewCoin(asset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*8)),
@@ -617,6 +628,7 @@ func (s *EthereumSuite) TestGetAsgardAddresses(c *C) {
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err, IsNil)
 	c.Assert(e, NotNil)
+	e.ethScanner.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(pubkeyMgr.Start(), IsNil)
 	defer func() { c.Assert(pubkeyMgr.Stop(), IsNil) }()
 	addresses, err := e.getAsgardAddress()
@@ -637,6 +649,7 @@ func (s *EthereumSuite) TestGetConfirmationCount(c *C) {
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err, IsNil)
 	c.Assert(e, NotNil)
+	e.ethScanner.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(pubkeyMgr.Start(), IsNil)
 	defer func() {
 		c.Assert(pubkeyMgr.Stop(), IsNil)
@@ -650,7 +663,7 @@ func (s *EthereumSuite) TestGetConfirmationCount(c *C) {
 	c.Assert(e.GetConfirmationCount(stypes.TxIn{}), Equals, int64(0))
 	c.Assert(e.GetConfirmationCount(stypes.TxIn{
 		Chain: common.ETHChain,
-		TxArray: []stypes.TxInItem{
+		TxArray: []*stypes.TxInItem{
 			{
 				BlockHeight:         1,
 				Tx:                  "4D91ADAFA69765E7805B5FF2F3A0BA1DBE69E37A1CFCD20C48B99C528AA3EE87",
@@ -665,7 +678,7 @@ func (s *EthereumSuite) TestGetConfirmationCount(c *C) {
 
 	c.Assert(e.GetConfirmationCount(stypes.TxIn{
 		Chain: common.ETHChain,
-		TxArray: []stypes.TxInItem{
+		TxArray: []*stypes.TxInItem{
 			{
 				BlockHeight: 1,
 				Tx:          "4D91ADAFA69765E7805B5FF2F3A0BA1DBE69E37A1CFCD20C48B99C528AA3EE87",
@@ -682,7 +695,7 @@ func (s *EthereumSuite) TestGetConfirmationCount(c *C) {
 	}), Equals, int64(2))
 	c.Assert(e.GetConfirmationCount(stypes.TxIn{
 		Chain: common.ETHChain,
-		TxArray: []stypes.TxInItem{
+		TxArray: []*stypes.TxInItem{
 			{
 				BlockHeight: 1,
 				Tx:          "4D91ADAFA69765E7805B5FF2F3A0BA1DBE69E37A1CFCD20C48B99C528AA3EE87",

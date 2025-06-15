@@ -1,7 +1,20 @@
 package types
 
 import (
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"errors"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"google.golang.org/protobuf/proto"
+
+	"gitlab.com/thorchain/thornode/v3/api/types"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+)
+
+var (
+	_ sdk.Msg              = &MsgSend{}
+	_ sdk.HasValidateBasic = &MsgSend{}
+	_ sdk.LegacyMsg        = &MsgSend{}
 )
 
 // NewMsgSend - construct a msg to send coins from one account to another.
@@ -9,13 +22,10 @@ func NewMsgSend(fromAddr, toAddr cosmos.AccAddress, amount cosmos.Coins) *MsgSen
 	return &MsgSend{FromAddress: fromAddr, ToAddress: toAddr, Amount: amount}
 }
 
-// Route Implements Msg.
-func (m *MsgSend) Route() string { return RouterKey }
-
-// Type Implements Msg.
-func (m MsgSend) Type() string { return "send" }
-
-// ValidateBasic Implements Msg.
+// ValidateBasic implements HasValidateBasic
+// ValidateBasic is now ran in the message service router handler for messages that
+// used to be routed using the external handler and only when HasValidateBasic is implemented.
+// No versioning is used there.
 func (m *MsgSend) ValidateBasic() error {
 	if err := cosmos.VerifyAddressFormat(m.FromAddress); err != nil {
 		return cosmos.ErrInvalidAddress(m.FromAddress.String())
@@ -25,23 +35,29 @@ func (m *MsgSend) ValidateBasic() error {
 		return cosmos.ErrInvalidAddress(m.ToAddress.String())
 	}
 
-	if !m.Amount.IsValid() {
-		return cosmos.ErrInvalidCoins("coins must be valid")
-	}
-
-	if !m.Amount.IsAllPositive() {
-		return cosmos.ErrInvalidCoins("coins must be positive")
+	// This is a range to do the (Cosmos-SDK) Coin IsValid rather than the Coins IsValid.
+	// Coin IsValid confirms that no amount is negative,
+	// whereas Coins IsValid confirms that all amounts are positive.
+	// As a MsgSend could be intended for conversion to a MsgDeposit,
+	// the full Coins IsValid is to be done only for those confirmed to not be.
+	for i := range m.Amount {
+		if !m.Amount[i].IsValid() {
+			return cosmos.ErrInvalidCoins("coins must be valid")
+		}
 	}
 
 	return nil
 }
 
-// GetSignBytes Implements Msg.
-func (m *MsgSend) GetSignBytes() []byte {
-	return cosmos.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
-}
-
-// GetSigners Implements Msg.
+// GetSigners Implements LegacyMsg.
 func (m *MsgSend) GetSigners() []cosmos.AccAddress {
 	return []cosmos.AccAddress{m.FromAddress}
+}
+
+func MsgSendCustomGetSigners(m proto.Message) ([][]byte, error) {
+	msgSend, ok := m.(*types.MsgSend)
+	if !ok {
+		return nil, errors.New("can't cast as MsgSend")
+	}
+	return [][]byte{msgSend.FromAddress}, nil
 }

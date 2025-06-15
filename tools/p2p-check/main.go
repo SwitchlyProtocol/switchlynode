@@ -17,9 +17,9 @@ import (
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	ma "github.com/multiformats/go-multiaddr"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func extractIPAddress(s string) (string, error) {
@@ -250,7 +250,7 @@ func fetchPeerId(addr, peerID string) (string, error) {
 		if resp != nil {
 			msg = fmt.Sprintf("%s: %s", resp.Status, err.Error())
 		}
-		return "", fmt.Errorf(msg)
+		return "", fmt.Errorf("%s", msg)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode > 300 {

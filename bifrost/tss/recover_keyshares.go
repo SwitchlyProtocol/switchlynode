@@ -8,16 +8,17 @@ import (
 	"os"
 	"path/filepath"
 
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	ctypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/itchio/lzma"
 	"github.com/rs/zerolog/log"
-	coretypes "github.com/tendermint/tendermint/rpc/core/types"
 
-	"gitlab.com/thorchain/thornode/app"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/app"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/ebifrost"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge) error {
@@ -42,7 +43,7 @@ func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge)
 		return fmt.Errorf("fail to get signer membership")
 	}
 	vault := membership[len(membership)-1]
-	keysharesPath := filepath.Join(app.DefaultNodeHome(), fmt.Sprintf("localstate-%s.json", vault))
+	keysharesPath := filepath.Join(app.DefaultNodeHome, fmt.Sprintf("localstate-%s.json", vault))
 
 	// skip recovery if keyshares for the nodes current vault already exist
 	if _, err = os.Stat(keysharesPath); !os.IsNotExist(err) {
@@ -70,7 +71,8 @@ func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge)
 
 	// walk backward from the churn height until we find the TssPool message we sent
 	var keysharesEncBytes []byte
-	dec := tx.DefaultTxDecoder(thorclient.MakeCodec())
+	cdc := thorclient.MakeCodec()
+	dec := ebifrost.TxDecoder(cdc, tx.DefaultTxDecoder(cdc))
 	for i := lastVaultHeight; i > lastVaultHeight-conf.TSS.MaxKeyshareRecoverScanBlocks; i-- {
 		if i%1000 == 0 {
 			log.Info().Msgf("scanning block %d for TssPool message to recover key shares", i)

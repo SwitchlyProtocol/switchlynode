@@ -39,6 +39,22 @@ asserts:
   - .[2].dynamic_multiplier_basis_points == "20000"
 ---
 ########################################################################################
+# check 1/2 of vault block_height
+########################################################################################
+type: check
+endpoint: http://localhost:1317/thorchain/vaults/asgard
+asserts:
+  - length == 1
+  - .[0].block_height == ${VAULT_BLOCK_HEIGHT=1}
+---
+type: check
+endpoint: http://localhost:1317/thorchain/lastblock
+asserts:
+  - .[0].thorchain == ${VAULT_BLOCK_HEIGHT}
+  # The templates set the vault block_height to 0,
+  # but that's overwritten in the querier by GetVault to the current block height.
+---
+########################################################################################
 # streaming swap to ETH.ETH (100% conversion)
 ########################################################################################
 type: tx-observed-in
@@ -101,7 +117,7 @@ asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
   - .[0]|.coin.asset == "${OUTPUT_ASSET}"
-  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=43741070}"
+  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=43741063}"
 ---
 type: tx-observed-out
 signer: {{ addr_thor_dog }}
@@ -130,6 +146,25 @@ type: check
 endpoint: http://localhost:1317/thorchain/queue/outbound
 asserts:
   - .|length == 0
+---
+########################################################################################
+# check 2/2 of vault block_height
+########################################################################################
+type: check
+endpoint: http://localhost:1317/thorchain/lastblock
+asserts:
+  - .[0].thorchain == ${HEIGHT=12}
+---
+type: check
+endpoint: http://localhost:1317/thorchain/vaults/asgard
+asserts:
+  - length == 1
+  - .[0].block_height == 2
+  - .[0].block_height < ${HEIGHT}
+  - .[0].block_height > ${VAULT_BLOCK_HEIGHT}
+  # The templates set the block_height to 0,
+  # but it was overwritten by GetVault and that overwritten height set by SetVault
+  # (in the network manager EndBlock when the vault's Routers were set).
 ---
 ########################################################################################
 # streaming swap to ETH.ETH with paused trading halfway through (partial conversion)
@@ -205,7 +240,7 @@ asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
   - .[0]|.coin.asset == "${OUTPUT_ASSET}"
-  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=43049961}"
+  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=43049941}"
 ---
 type: tx-observed-out
 signer: {{ addr_thor_dog }}
@@ -276,7 +311,7 @@ asserts:
   - .[0]|.in_hash == "${INBOUND_TXID}"
   - .[0]|.coin.asset == "${OUTPUT_ASSET}"
   - .[0]|.memo == "OUT:${INBOUND_TXID}"
-  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=6501021}"
+  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=6501016}"
   - .[1]|.in_hash == "${INBOUND_TXID}"
   - .[1]|.coin.asset == "${INPUT_ASSET}"
   - .[1]|.coin.amount == "${REFUND_AMOUNT=4786000}"
@@ -338,7 +373,7 @@ txs:
       from_address: {{ addr_btc_fox }}
       to_address: {{ addr_btc_dog }}
       coins:
-        - amount: "${INPUT_AMOUNT=6000000}"
+        - amount: "${INPUT_AMOUNT=5500000}"
           asset: "BTC.BTC"
           decimals: 8
       gas:
@@ -371,7 +406,7 @@ asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
   - .[0]|.coin.asset == "${OUTPUT_ASSET}"
-  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=33863474}"
+  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=31186255}"
   - .[0]|.memo == "OUT:${INBOUND_TXID}"
 ---
 type: create-blocks
@@ -442,7 +477,7 @@ asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
   - .[0]|.coin.asset == "${OUTPUT_ASSET}"
-  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=318733}"
+  - .[0]|.coin.amount == "${OUTPUT_AMOUNT=342184}"
   - .[0]|.memo == "OUT:${INBOUND_TXID}"
 ---
 type: create-blocks
@@ -591,14 +626,14 @@ asserts:
   ###
   - .[1].asset == "BTC.BTC"
   - .[1].outbound_fee == "14000"
-  - .[1].fee_withheld_rune == "11128711"
-  - .[1].fee_spent_rune == "8345580"
-  - .[1].surplus_rune == "2783131"
+  - .[1].fee_withheld_rune == "11128723"
+  - .[1].fee_spent_rune == "8345590"
+  - .[1].surplus_rune == "2783133"
   - .[1].dynamic_multiplier_basis_points == "20000"
   ###
   - .[2].asset == "ETH.ETH"
   - .[2].outbound_fee == "1279936"
-  - .[2].fee_withheld_rune == "790549629"
-  - .[2].fee_spent_rune == "592087792"
-  - .[2].surplus_rune == "198461837"
+  - .[2].fee_withheld_rune == "788461016"
+  - .[2].fee_spent_rune == "590533224"
+  - .[2].surplus_rune == "197927792"
   - .[2].dynamic_multiplier_basis_points == "19999"
