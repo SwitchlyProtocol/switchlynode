@@ -12,9 +12,9 @@ import (
   {{ $chain }}ec "{{ $pkg }}"
   {{- end }}
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 {{- range $chain, $pkg := . }}
