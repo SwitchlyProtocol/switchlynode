@@ -1,15 +1,16 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/codec"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	kvTypes "gitlab.com/thorchain/thornode/x/thorchain/keeper/types"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	kvTypes "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/types"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type Keeper interface {
@@ -21,8 +22,6 @@ type Keeper interface {
 	GetMinJoinLast(ctx cosmos.Context) (semver.Version, int64)
 	SetMinJoinLast(ctx cosmos.Context)
 	GetKey(prefix kvTypes.DbPrefix, key string) string
-	GetStoreVersion(ctx cosmos.Context) int64
-	SetStoreVersion(ctx cosmos.Context, ver int64)
 	GetRuneBalanceOfModule(ctx cosmos.Context, moduleName string) cosmos.Uint
 	GetBalanceOfModule(ctx cosmos.Context, moduleName, denom string) cosmos.Uint
 	SendFromModuleToModule(ctx cosmos.Context, from, to string, coin common.Coins) error
@@ -34,13 +33,13 @@ type Keeper interface {
 	GetModuleAddress(module string) (common.Address, error)
 	GetModuleAccAddress(module string) cosmos.AccAddress
 	GetBalance(ctx cosmos.Context, addr cosmos.AccAddress) cosmos.Coins
+	GetBalanceOf(ctx cosmos.Context, addr cosmos.AccAddress, asset common.Asset) cosmos.Coin
 	HasCoins(ctx cosmos.Context, addr cosmos.AccAddress, coins cosmos.Coins) bool
 	GetAccount(ctx cosmos.Context, addr cosmos.AccAddress) cosmos.Account
 	RagnarokAccount(ctx cosmos.Context, addr cosmos.AccAddress)
 
 	// passthrough funcs
 	SendCoins(ctx cosmos.Context, from, to cosmos.AccAddress, coins cosmos.Coins) error
-	AddCoins(ctx cosmos.Context, addr cosmos.AccAddress, coins cosmos.Coins) error
 
 	InvariantRoutes() []common.InvariantRoute
 
@@ -78,7 +77,7 @@ type Keeper interface {
 	KeeperErrataTx
 	KeeperBanVoter
 	KeeperSwapQueue
-	KeeperOrderBooks
+	KeeperAdvSwapQueues
 	KeeperMimir
 	KeeperNetworkFee
 	KeeperObservedNetworkFeeVoter
@@ -90,7 +89,10 @@ type Keeper interface {
 	KeeperStreamingSwap
 	KeeperSwapperClout
 	KeeperTradeAccount
+	KeeperSecuredAsset
 	KeeperRUNEPool
+	KeeperTCYClaimer
+	KeeperTCYStaker
 }
 
 type KeeperConfig interface {
@@ -180,18 +182,19 @@ type KeeperNodeAccount interface {
 
 type KeeperUpgrade interface {
 	// mutative methods
-	ProposeUpgrade(ctx cosmos.Context, name string, upgrade Upgrade) error
+	ProposeUpgrade(ctx cosmos.Context, name string, upgrade types.UpgradeProposal) error
 	ApproveUpgrade(ctx cosmos.Context, addr cosmos.AccAddress, name string)
 	RejectUpgrade(ctx cosmos.Context, addr cosmos.AccAddress, name string)
 	RemoveExpiredUpgradeProposals(ctx cosmos.Context) error
 
 	// query methods
-	GetProposedUpgrade(ctx cosmos.Context, name string) (*Upgrade, error)
+	GetProposedUpgrade(ctx cosmos.Context, name string) (*types.UpgradeProposal, error)
+	GetUpgradeVote(ctx cosmos.Context, addr cosmos.AccAddress, name string) (bool, error)
 	GetUpgradeProposalIterator(ctx cosmos.Context) cosmos.Iterator
 	GetUpgradeVoteIterator(ctx cosmos.Context, name string) cosmos.Iterator
 
 	// x/upgrade module methods
-	GetUpgradePlan(ctx cosmos.Context) (upgradetypes.Plan, bool)
+	GetUpgradePlan(ctx cosmos.Context) (upgradetypes.Plan, error)
 	ScheduleUpgrade(ctx cosmos.Context, plan upgradetypes.Plan) error
 	ClearUpgradePlan(ctx cosmos.Context)
 }
@@ -265,6 +268,12 @@ type KeeperTradeAccount interface {
 	GetTradeUnit(ctx cosmos.Context, asset common.Asset) (TradeUnit, error)
 	SetTradeUnit(ctx cosmos.Context, unit TradeUnit)
 	GetTradeUnitIterator(ctx cosmos.Context) cosmos.Iterator
+}
+
+type KeeperSecuredAsset interface {
+	GetSecuredAsset(ctx cosmos.Context, asset common.Asset) (SecuredAsset, error)
+	SetSecuredAsset(ctx cosmos.Context, unit SecuredAsset)
+	GetSecuredAssetIterator(ctx cosmos.Context) cosmos.Iterator
 }
 
 type KeeperRUNEPool interface {
@@ -365,25 +374,25 @@ type KeeperSwapQueue interface {
 	RemoveSwapQueueItem(ctx cosmos.Context, txID common.TxID, i int)
 }
 
-type KeeperOrderBooks interface {
-	OrderBooksEnabled(ctx cosmos.Context) bool
-	SetOrderBookItem(ctx cosmos.Context, msg MsgSwap) error
-	GetOrderBookItemIterator(ctx cosmos.Context) cosmos.Iterator
-	GetOrderBookItem(ctx cosmos.Context, txID common.TxID) (MsgSwap, error)
-	HasOrderBookItem(ctx cosmos.Context, txID common.TxID) bool
-	RemoveOrderBookItem(ctx cosmos.Context, txID common.TxID) error
-	GetOrderBookIndexIterator(_ cosmos.Context, _ types.OrderType, _, _ common.Asset) cosmos.Iterator
-	SetOrderBookIndex(_ cosmos.Context, _ MsgSwap) error
-	GetOrderBookIndex(_ cosmos.Context, _ MsgSwap) (common.TxIDs, error)
-	HasOrderBookIndex(_ cosmos.Context, _ MsgSwap) (bool, error)
-	RemoveOrderBookIndex(_ cosmos.Context, _ MsgSwap) error
-	SetOrderBookProcessor(_ cosmos.Context, _ []bool) error
-	GetOrderBookProcessor(_ cosmos.Context) ([]bool, error)
+type KeeperAdvSwapQueues interface {
+	AdvSwapQueueEnabled(ctx cosmos.Context) bool
+	SetAdvSwapQueueItem(ctx cosmos.Context, msg MsgSwap) error
+	GetAdvSwapQueueItemIterator(ctx cosmos.Context) cosmos.Iterator
+	GetAdvSwapQueueItem(ctx cosmos.Context, txID common.TxID) (MsgSwap, error)
+	HasAdvSwapQueueItem(ctx cosmos.Context, txID common.TxID) bool
+	RemoveAdvSwapQueueItem(ctx cosmos.Context, txID common.TxID) error
+	GetAdvSwapQueueIndexIterator(_ cosmos.Context, _ types.SwapType, _, _ common.Asset) cosmos.Iterator
+	SetAdvSwapQueueIndex(_ cosmos.Context, _ MsgSwap) error
+	GetAdvSwapQueueIndex(_ cosmos.Context, _ MsgSwap) (common.TxIDs, error)
+	HasAdvSwapQueueIndex(_ cosmos.Context, _ MsgSwap) (bool, error)
+	RemoveAdvSwapQueueIndex(_ cosmos.Context, _ MsgSwap) error
+	SetAdvSwapQueueProcessor(_ cosmos.Context, _ []bool) error
+	GetAdvSwapQueueProcessor(_ cosmos.Context) ([]bool, error)
 }
 
 type KeeperMimir interface {
 	GetMimir(_ cosmos.Context, key string) (int64, error)
-	GetMimirWithRef(_ cosmos.Context, template, ref string) (int64, error)
+	GetMimirWithRef(_ cosmos.Context, template string, ref ...any) (int64, error)
 	SetMimir(_ cosmos.Context, key string, value int64)
 	GetNodeMimirs(ctx cosmos.Context, key string) (NodeMimirs, error)
 	SetNodeMimir(_ cosmos.Context, key string, value int64, acc cosmos.AccAddress) error
@@ -440,6 +449,7 @@ type KeeperHalt interface {
 	IsChainTradingHalted(ctx cosmos.Context, chain common.Chain) bool
 	IsChainHalted(ctx cosmos.Context, chain common.Chain) bool
 	IsLPPaused(ctx cosmos.Context, chain common.Chain) bool
+	IsPoolDepositPaused(ctx cosmos.Context, asset common.Asset) bool
 }
 
 type KeeperAnchors interface {
@@ -447,4 +457,24 @@ type KeeperAnchors interface {
 	AnchorMedian(ctx cosmos.Context, assets []common.Asset) cosmos.Uint
 	DollarsPerRune(ctx cosmos.Context) cosmos.Uint
 	RunePerDollar(ctx cosmos.Context) cosmos.Uint
+}
+
+type KeeperTCYClaimer interface {
+	SetTCYClaimer(ctx cosmos.Context, record TCYClaimer) error
+	GetTCYClaimer(ctx cosmos.Context, l1Address common.Address, asset common.Asset) (TCYClaimer, error)
+	GetTCYClaimerIteratorFromL1Address(ctx cosmos.Context, l1Address common.Address) cosmos.Iterator
+	DeleteTCYClaimer(ctx cosmos.Context, l1Address common.Address, asset common.Asset)
+	ListTCYClaimersFromL1Address(ctx cosmos.Context, l1Address common.Address) ([]TCYClaimer, error)
+	GetTCYClaimerIterator(ctx cosmos.Context) cosmos.Iterator
+	TCYClaimerExists(ctx cosmos.Context, l1Address common.Address, asset common.Asset) bool
+	UpdateTCYClaimer(ctx cosmos.Context, l1Address common.Address, asset common.Asset, amount math.Uint) error
+}
+
+type KeeperTCYStaker interface {
+	SetTCYStaker(ctx cosmos.Context, record TCYStaker) error
+	GetTCYStaker(ctx cosmos.Context, address common.Address) (TCYStaker, error)
+	DeleteTCYStaker(ctx cosmos.Context, address common.Address)
+	ListTCYStakers(ctx cosmos.Context) ([]TCYStaker, error)
+	TCYStakerExists(ctx cosmos.Context, address common.Address) bool
+	UpdateTCYStaker(ctx cosmos.Context, address common.Address, amount math.Uint) error
 }

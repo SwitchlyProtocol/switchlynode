@@ -11,9 +11,9 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/thorchain/thornode/common"
-	gen "gitlab.com/thorchain/thornode/openapi/gen"
-	types "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	gen "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	types "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 
 	. "gopkg.in/check.v1"
 )
@@ -42,6 +42,9 @@ func (Test) TestJSONSpec(c *C) {
 
 	// txs
 	assertJSONStructTagsMatch(c, types.TxOut{}, gen.KeysignInfo{})
+	// TODO: Check that TxOutItem struct tags match
+	// if or when the THORNode struct includes its (scheduled) Height field.
+	// assertJSONStructTagsMatch(c, types.TxOutItem{}, gen.TxOutItem{})
 
 	// tss
 	assertJSONStructTagsMatch(c, types.NodeTssTime{}, gen.NodeKeygenMetric{})

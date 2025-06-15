@@ -2,19 +2,21 @@ package thorchain
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"math/big"
 	"sort"
 	"strings"
 
-	"github.com/armon/go-metrics"
 	"github.com/blang/semver"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type TssHandler = BaseHandler[*MsgTssPool]
@@ -25,25 +27,58 @@ func NewTssHandler(mgr Manager) BaseHandler[*MsgTssPool] {
 		mgr:    mgr,
 		logger: MsgTssPoolLogger,
 		validators: NewValidators[*MsgTssPool]().
-			Register("1.124.0", MsgTssPoolValidateV124),
+			Register("3.0.0", MsgTssPoolValidateV3_0_0),
 		handlers: NewHandlers[*MsgTssPool]().
-			Register("1.134.0", MsgTssPoolHandleV134),
+			Register("3.0.0", MsgTssPoolHandleV3_0_0),
 	}
 }
 
 func MsgTssPoolLogger(ctx cosmos.Context, msg *MsgTssPool) {
-	ctx.Logger().Info("handleMsgTssPool request", "ID:", msg.ID)
+	ctx.Logger().Info(
+		"handleMsgTssPool request",
+		"ID", msg.ID,
+		"signer", msg.Signer.String(),
+		"pubkey", msg.PoolPubKey,
+		"secp256k1_signature", base64.StdEncoding.EncodeToString(msg.Secp256K1Signature),
+		"keyshares_backup", len(msg.KeysharesBackup) > 0,
+	)
 }
 
-func MsgTssPoolValidateV124(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) error {
+// verifySecp256K1Signature verifies the provided signature of the public key. This is
+// set as a variable so tests can override verification when using random public keys.
+var verifySecp256K1Signature = func(pk common.PubKey, sig []byte) error {
+	// verify signature length
+	if len(sig) != 64 {
+		return fmt.Errorf("invalid secp256k1 signature length")
+	}
+
+	// build the signature
+	r := new(big.Int).SetBytes(sig[:32])
+	s := new(big.Int).SetBytes(sig[32:])
+	signature := &btcec.Signature{R: r, S: s}
+
+	// verify the signature
+	spk, err := pk.Secp256K1()
+	if err != nil {
+		return fmt.Errorf("fail to get secp256k1 pubkey: %w", err)
+	}
+	if !signature.Verify([]byte(pk.String()), spk) {
+		return fmt.Errorf("signature verification failed")
+	}
+	return nil
+}
+
+func MsgTssPoolValidateV3_0_0(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) error {
+	// ValidateBasic is also executed in message service router's handler and isn't versioned there
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
+
 	if msg.KeygenType != AsgardKeygen {
 		return fmt.Errorf("only asgard vaults allowed for tss")
 	}
 
-	newMsg, err := NewMsgTssPool(msg.PubKeys, msg.PoolPubKey, nil, msg.KeygenType, msg.Height, msg.Blame, msg.Chains, msg.Signer, msg.KeygenTime)
+	newMsg, err := NewMsgTssPool(msg.PubKeys, msg.PoolPubKey, nil, nil, msg.KeygenType, msg.Height, msg.Blame, msg.Chains, msg.Signer, msg.KeygenTime)
 	if err != nil {
 		return fmt.Errorf("fail to recreate MsgTssPool,err: %w", err)
 	}
@@ -54,6 +89,22 @@ func MsgTssPoolValidateV124(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) er
 	churnRetryBlocks := mgr.Keeper().GetConfigInt64(ctx, constants.ChurnRetryInterval)
 	if msg.Height <= ctx.BlockHeight()-churnRetryBlocks {
 		return cosmos.ErrUnknownRequest("invalid keygen block")
+	}
+
+	// verify the check signatures if provided (only a subset of members in signing party)
+	if len(msg.Secp256K1Signature) > 0 {
+		err = verifySecp256K1Signature(msg.PoolPubKey, msg.Secp256K1Signature)
+		if err != nil {
+			ctx.Logger().Error(
+				"invalid secp256k1 check signature",
+				"err", err,
+				"ID", msg.ID,
+				"signer", msg.Signer.String(),
+				"pubkey", msg.PoolPubKey,
+				"signature", base64.StdEncoding.EncodeToString(msg.Secp256K1Signature),
+			)
+			return cosmos.ErrUnknownRequest("invalid secp256k1 check signature")
+		}
 	}
 
 	keygenBlock, err := mgr.Keeper().GetKeygenBlock(ctx, msg.Height)
@@ -100,7 +151,7 @@ func validateTssAuth(ctx cosmos.Context, k keeper.Keeper, signer cosmos.AccAddre
 	return nil
 }
 
-func MsgTssPoolHandleV134(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) (*cosmos.Result, error) {
+func MsgTssPoolHandleV3_0_0(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) (*cosmos.Result, error) {
 	ctx.Logger().Info("handler tss", "current version", mgr.GetVersion())
 	blames := make([]string, 0)
 	if !msg.Blame.IsEmpty() {
@@ -165,7 +216,7 @@ func MsgTssPoolHandleV134(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) (*co
 		telemetry.NewLabel("reason", "failed_observe_tss_pool"),
 	}))
 
-	if !voter.Sign(msg.Signer, msg.Chains) {
+	if !voter.Sign(msg.Signer, msg.Chains, string(msg.Secp256K1Signature)) {
 		// Slash for the network having to handle the extra message/s.
 		mgr.Slasher().IncSlashPoints(slashCtx, observeSlashPoints, msg.Signer)
 		ctx.Logger().Info("signer already signed MsgTssPool", "signer", msg.Signer.String(), "txid", msg.ID)
@@ -310,10 +361,7 @@ func MsgTssPoolHandleV134(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) (*co
 						)
 					}
 
-					tx := common.Tx{}
-					tx.ID = common.BlankTxID
-					tx.FromAddress = na.BondAddress
-					bondEvent := NewEventBond(slashBond, BondCost, tx)
+					bondEvent := NewEventBond(slashBond, BondCost, common.Tx{}, &na, nil)
 					if err := mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
 						return nil, fmt.Errorf("fail to emit bond event: %w", err)
 					}
@@ -343,6 +391,25 @@ func MsgTssPoolHandleV134(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) (*co
 				"id", msg.ID,
 				"pubkey", msg.PoolPubKey,
 			)
+
+			// we must also have quorum on the check signature
+			consensusSig, ok := voter.ConsensusCheckSignature()
+			if !ok {
+				ctx.Logger().Error("keygen rejected due to lacking check signature quorum")
+				return &cosmos.Result{}, nil
+			}
+
+			// log an error if any bad nodes submitted a mismatched check signature
+			for _, sig := range voter.Secp256K1Signatures {
+				if sig != consensusSig {
+					ctx.Logger().Error(
+						"mismatched check signature detected",
+						"expected", base64.StdEncoding.EncodeToString([]byte(consensusSig)),
+						"found", base64.StdEncoding.EncodeToString([]byte(sig)),
+					)
+				}
+			}
+
 			// Update the BlockHeight to reflect the newly reached state.
 			voter.BlockHeight = ctx.BlockHeight()
 			mgr.Keeper().SetTssVoter(ctx, voter)
@@ -456,6 +523,11 @@ func judgeLateSigner(ctx cosmos.Context, mgr Manager, msg *MsgTssPool, voter Tss
 // TssAnteHandler called by the ante handler to gate mempool entry
 // and also during deliver. Store changes will persist if this function
 // succeeds, regardless of the success of the transaction.
-func TssAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgTssPool) error {
-	return validateTssAuth(ctx, k, msg.Signer)
+func TssAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, msg MsgTssPool) (cosmos.Context, error) {
+	err := validateTssAuth(ctx, k, msg.Signer)
+	if err != nil {
+		return ctx.WithPriority(ActiveNodePriority), err
+	}
+
+	return ctx, nil
 }

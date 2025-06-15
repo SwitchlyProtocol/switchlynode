@@ -5,16 +5,27 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	ctypes "github.com/cosmos/cosmos-sdk/types"
 	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-	btypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	authvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	distribtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	govv1beta1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
+	paramsproptypes "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -23,13 +34,13 @@ import (
 	rpcclienthttp "github.com/cometbft/cometbft/rpc/client/http"
 	tmtypes "github.com/cometbft/cometbft/types"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
 )
 
 // SolvencyReporter is to report solvency info to THORNode
@@ -62,25 +73,27 @@ var (
 
 // CosmosBlockScanner is to scan the blocks
 type CosmosBlockScanner struct {
-	cfg              config.BifrostBlockScannerConfiguration
-	logger           zerolog.Logger
-	db               blockscanner.ScannerStorage
-	cdc              *codec.ProtoCodec
-	txConfig         client.TxConfig
-	rpc              TendermintRPC
-	bridge           thorclient.ThorchainBridge
-	solvencyReporter SolvencyReporter
+	cfg                   config.BifrostBlockScannerConfiguration
+	logger                zerolog.Logger
+	db                    blockscanner.ScannerStorage
+	cdc                   *codec.ProtoCodec
+	txConfig              client.TxConfig
+	rpc                   TendermintRPC
+	bridge                thorclient.ThorchainBridge
+	solvencyReporter      SolvencyReporter
+	globalNetworkFeeQueue chan common.NetworkFee
 
 	// feeCache contains a rolling window of suggested gas fees which are computed as the
 	// gas price paid in each observed transaction multiplied by the default GasLimit.
 	// Fees are stored at 100x the values on the observed chain due to compensate for the
 	// difference in base chain decimals (thorchain:1e8, gaia:1e6).
-	feeCache []ctypes.Uint
-	lastFee  ctypes.Uint
+	feeCache []sdkmath.Uint
+	lastFee  sdkmath.Uint
 }
 
 // NewCosmosBlockScanner create a new instance of BlockScan
-func NewCosmosBlockScanner(cfg config.BifrostBlockScannerConfiguration,
+func NewCosmosBlockScanner(rpcHost string,
+	cfg config.BifrostBlockScannerConfiguration,
 	scanStorage blockscanner.ScannerStorage,
 	bridge thorclient.ThorchainBridge,
 	m *metrics.Metrics,
@@ -98,16 +111,25 @@ func NewCosmosBlockScanner(cfg config.BifrostBlockScannerConfiguration,
 	// Bifrost only supports an "RPCHost" in its configuration.
 	// We also need to access GRPC for Cosmos chains
 
-	// Registry for decoding txs
-	registry := bridge.GetContext().InterfaceRegistry
-
-	btypes.RegisterInterfaces(registry)
+	// Registry for decoding gaia txs
+	// Note: we register gaia's cosmos sdk types
+	// don't use thorchain's codec as it is a smaller subset of codecs
+	registry := codectypes.NewInterfaceRegistry()
+	authtypes.RegisterInterfaces(registry)
+	banktypes.RegisterInterfaces(registry)
+	authvesting.RegisterInterfaces(registry)
+	stakingtypes.RegisterInterfaces(registry)
+	cryptocodec.RegisterInterfaces(registry)
+	govv1types.RegisterInterfaces(registry)
+	govv1beta1types.RegisterInterfaces(registry)
+	paramsproptypes.RegisterInterfaces(registry)
+	upgradetypes.RegisterInterfaces(registry)
+	distribtypes.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 
 	// Registry for encoding txs
-	marshaler := codec.NewProtoCodec(registry)
-	txConfig := tx.NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_DIRECT})
-	rpcClient, err := rpcclienthttp.New(cfg.RPCHost, "/websocket")
+	txConfig := tx.NewTxConfig(cdc, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_DIRECT})
+	rpcClient, err := rpcclienthttp.New(rpcHost, "/websocket")
 	if err != nil {
 		logger.Fatal().Err(err).Msg("fail to create tendemrint rpcclient")
 	}
@@ -119,8 +141,8 @@ func NewCosmosBlockScanner(cfg config.BifrostBlockScannerConfiguration,
 		cdc:              cdc,
 		txConfig:         txConfig,
 		rpc:              rpcClient,
-		feeCache:         make([]ctypes.Uint, 0),
-		lastFee:          ctypes.NewUint(0),
+		feeCache:         make([]sdkmath.Uint, 0),
+		lastFee:          sdkmath.NewUint(0),
 		bridge:           bridge,
 		solvencyReporter: solvencyReporter,
 	}, nil
@@ -139,6 +161,11 @@ func (c *CosmosBlockScanner) GetHeight() (int64, error) {
 	}
 
 	return resultBlock.Block.Header.Height - 1, nil
+}
+
+// GetNetworkFee returns current chain network fee according to Bifrost.
+func (c *CosmosBlockScanner) GetNetworkFee() (transactionSize, transactionFeeRate uint64) {
+	return 1, c.lastFee.Uint64()
 }
 
 // FetchMemPool returns nothing since we are only concerned about finalized transactions in Cosmos
@@ -171,7 +198,7 @@ func (c *CosmosBlockScanner) updateGasCache(tx ctypes.FeeTx) {
 	}
 
 	// only consider transactions with fee paid in uatom
-	coin, err := fromCosmosToThorchain(fees[0])
+	coin, err := c.fromCosmosToThorchain(fees[0])
 	if err != nil || !coin.Asset.Equals(c.cfg.ChainID.GetGasAsset()) {
 		return
 	}
@@ -190,10 +217,10 @@ func (c *CosmosBlockScanner) updateGasCache(tx ctypes.FeeTx) {
 
 	// TODO: This conversion could be broken into a separate function for additional testing.
 	// add the fee to our cache
-	amount := coin.Amount.Mul(ctypes.NewUint(GasPriceFactor)) // multiply to handle price < 1
-	price := amount.Quo(ctypes.NewUint(tx.GetGas()))          // divide by gas to get the price
-	fee := price.Mul(ctypes.NewUint(GasLimit))                // tx fee for default gas limit
-	fee = fee.Quo(ctypes.NewUint(GasPriceFactor))             // unroll the multiple
+	amount := coin.Amount.Mul(sdkmath.NewUint(GasPriceFactor)) // multiply to handle price < 1
+	price := amount.Quo(sdkmath.NewUint(tx.GetGas()))          // divide by gas to get the price
+	fee := price.Mul(sdkmath.NewUint(GasLimit))                // tx fee for default gas limit
+	fee = fee.Quo(sdkmath.NewUint(GasPriceFactor))             // unroll the multiple
 	c.feeCache = append(c.feeCache, fee)
 
 	// truncate gas prices older than our max cached transactions
@@ -202,27 +229,27 @@ func (c *CosmosBlockScanner) updateGasCache(tx ctypes.FeeTx) {
 	}
 }
 
-func (c *CosmosBlockScanner) averageFee() ctypes.Uint {
+func (c *CosmosBlockScanner) averageFee() sdkmath.Uint {
 	// avoid divide by zero
 	if len(c.feeCache) == 0 {
-		return ctypes.NewUint(0)
+		return sdkmath.NewUint(0)
 	}
 
 	// compute mean
-	sum := ctypes.NewUint(0)
+	sum := sdkmath.NewUint(0)
 	for _, val := range c.feeCache {
 		sum = sum.Add(val)
 	}
-	mean := sum.Quo(ctypes.NewUint(uint64(len(c.feeCache))))
+	mean := sum.Quo(sdkmath.NewUint(uint64(len(c.feeCache))))
 
 	// round the price up to avoid fee noise
-	resolution := ctypes.NewUint(uint64(c.cfg.GasPriceResolution))
+	resolution := sdkmath.NewUint(uint64(c.cfg.GasPriceResolution))
 	if mean.LTE(resolution) {
 		return resolution
 	}
-	mean = mean.Sub(ctypes.NewUint(1))
+	mean = mean.Sub(sdkmath.NewUint(1))
 	mean = mean.Quo(resolution)
-	mean = mean.Add(ctypes.NewUint(1))
+	mean = mean.Add(sdkmath.NewUint(1))
 	mean = mean.Mul(resolution)
 
 	return mean
@@ -239,8 +266,8 @@ func (c *CosmosBlockScanner) updateGasFees(height int64) error {
 		}
 
 		// skip fee if less than 1 resolution away from the last
-		feeDelta := ctypes.MaxUint(c.lastFee, gasFee).Sub(ctypes.MinUint(c.lastFee, gasFee))
-		if feeDelta.LTE(ctypes.NewUint(uint64(c.cfg.GasPriceResolution))) {
+		feeDelta := sdkmath.MaxUint(c.lastFee, gasFee).Sub(sdkmath.MinUint(c.lastFee, gasFee))
+		if feeDelta.LTE(sdkmath.NewUint(uint64(c.cfg.GasPriceResolution))) {
 			return nil
 		}
 
@@ -249,13 +276,14 @@ func (c *CosmosBlockScanner) updateGasFees(height int64) error {
 		// correct fee. We cannot pass the proper size and rate without a deeper change to
 		// Thornode, as the rate on Cosmos chains is less than 1 and cannot be represented
 		// by the uint.
-		feeTx, err := c.bridge.PostNetworkFee(height, c.cfg.ChainID, 1, gasFee.Uint64())
-		if err != nil {
-			return err
+		c.globalNetworkFeeQueue <- common.NetworkFee{
+			Chain:           c.cfg.ChainID,
+			Height:          height,
+			TransactionSize: 1,
+			TransactionRate: gasFee.Uint64(),
 		}
 		c.lastFee = gasFee
 		c.logger.Info().
-			Str("tx", feeTx.String()).
 			Uint64("fee", gasFee.Uint64()).
 			Int64("height", height).
 			Msg("sent network fee to THORChain")
@@ -264,7 +292,7 @@ func (c *CosmosBlockScanner) updateGasFees(height int64) error {
 	return nil
 }
 
-func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]types.TxInItem, error) {
+func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]*types.TxInItem, error) {
 	// Proto types for Cosmos chains that we are transacting with may not be included in this repo.
 	// Therefore, it is necessary to include them in the "proto" directory and register them in
 	// the cdc (codec) that is passed below. Registry occurs in the NewCosmosBlockScanner function.
@@ -275,10 +303,10 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]ty
 	defer cancel()
 	blockResults, err := c.rpc.BlockResults(ctx, &height)
 	if err != nil {
-		return []types.TxInItem{}, fmt.Errorf("unable to get BlockResults: %w", err)
+		return nil, fmt.Errorf("unable to get BlockResults: %w", err)
 	}
 
-	var txIn []types.TxInItem
+	var txIn []*types.TxInItem
 	for i, rawTx := range rawTxs {
 		hash := hex.EncodeToString(tmhash.Sum(rawTx))
 		var tx ctypes.Tx
@@ -303,7 +331,7 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]ty
 		c.updateGasCache(feeTx)
 
 		for _, msg := range tx.GetMsgs() {
-			if msg, isMsgSend := msg.(*btypes.MsgSend); isMsgSend {
+			if msg, isMsgSend := msg.(*banktypes.MsgSend); isMsgSend {
 				// Transaction contains a relevant MsgSend, check if the transaction was successful...
 				if blockResults.TxsResults[i].Code != 0 {
 					c.logger.Warn().Str("txhash", hash).Int64("height", height).Msg("inbound tx has non-zero response code, ignoring...")
@@ -314,7 +342,7 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]ty
 				coins := common.Coins{}
 				for _, coin := range msg.Amount {
 					var cCoin common.Coin
-					cCoin, err = fromCosmosToThorchain(coin)
+					cCoin, err = c.fromCosmosToThorchain(coin)
 					if err != nil {
 						c.logger.Debug().Err(err).Interface("coins", c).Msg("unable to convert coin, not whitelisted. skipping...")
 						continue
@@ -331,7 +359,7 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]ty
 				gasFees := common.Gas{}
 				for _, fee := range fees {
 					var cCoin common.Coin
-					cCoin, err = fromCosmosToThorchain(fee)
+					cCoin, err = c.fromCosmosToThorchain(fee)
 					if err != nil {
 						c.logger.Debug().Err(err).Interface("fees", fees).Msg("unable to convert coin, not whitelisted. skipping...")
 						continue
@@ -343,7 +371,7 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]ty
 				if gasFees.IsEmpty() {
 					gasFees = append(gasFees, common.NewCoin(c.cfg.ChainID.GetGasAsset(), cosmos.NewUint(1)))
 				}
-				txIn = append(txIn, types.TxInItem{
+				txIn = append(txIn, &types.TxInItem{
 					Tx:          hash,
 					BlockHeight: height,
 					Memo:        memo,
@@ -377,7 +405,6 @@ func (c *CosmosBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, er
 	}
 
 	txIn := types.TxIn{
-		Count:    strconv.Itoa(len(txs)),
 		Chain:    c.cfg.ChainID,
 		TxArray:  txs,
 		Filtered: false,

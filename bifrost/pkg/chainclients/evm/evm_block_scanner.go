@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"sort"
-	"strconv"
 	"strings"
 
 	_ "embed"
@@ -22,23 +21,23 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm/types"
-	evmtypes "gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm/types"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/signercache"
-	. "gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/types"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/common/tokenlist"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/aggregators"
-	memo "gitlab.com/thorchain/thornode/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	evmtypes "gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/signercache"
+	. "gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/aggregators"
+	memo "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -46,28 +45,29 @@ import (
 ////////////////////////////////////////////////////////////////////////////////////////
 
 type EVMScanner struct {
-	cfg                  config.BifrostBlockScannerConfiguration
-	logger               zerolog.Logger
-	db                   blockscanner.ScannerStorage
-	m                    *metrics.Metrics
-	errCounter           *prometheus.CounterVec
-	gasPriceChanged      bool
-	gasPrice             *big.Int
-	lastReportedGasPrice uint64
-	ethClient            *ethclient.Client
-	ethRpc               *evm.EthRPC
-	blockMetaAccessor    evm.BlockMetaAccessor
-	globalErrataQueue    chan<- stypes.ErrataBlock
-	bridge               thorclient.ThorchainBridge
-	pubkeyMgr            pubkeymanager.PubKeyValidator
-	eipSigner            etypes.Signer
-	currentBlockHeight   int64
-	gasCache             []*big.Int
-	solvencyReporter     SolvencyReporter
-	whitelistTokens      []tokenlist.ERC20Token
-	whitelistContracts   []common.Address
-	signerCacheManager   *signercache.CacheManager
-	tokenManager         *evm.TokenManager
+	cfg                   config.BifrostBlockScannerConfiguration
+	logger                zerolog.Logger
+	db                    blockscanner.ScannerStorage
+	m                     *metrics.Metrics
+	errCounter            *prometheus.CounterVec
+	gasPriceChanged       bool
+	gasPrice              *big.Int
+	lastReportedGasPrice  uint64
+	ethClient             *ethclient.Client
+	ethRpc                *evm.EthRPC
+	blockMetaAccessor     evm.BlockMetaAccessor
+	globalErrataQueue     chan<- stypes.ErrataBlock
+	globalNetworkFeeQueue chan<- common.NetworkFee
+	bridge                thorclient.ThorchainBridge
+	pubkeyMgr             pubkeymanager.PubKeyValidator
+	eipSigner             etypes.Signer
+	currentBlockHeight    int64
+	gasCache              []*big.Int
+	solvencyReporter      SolvencyReporter
+	whitelistTokens       []tokenlist.ERC20Token
+	whitelistContracts    []common.Address
+	signerCacheManager    *signercache.CacheManager
+	tokenManager          *evm.TokenManager
 
 	vaultABI *abi.ABI
 	erc20ABI *abi.ABI
@@ -119,7 +119,7 @@ func NewEVMScanner(cfg config.BifrostBlockScannerConfiguration,
 	}
 
 	// load token list
-	allTokens := tokenlist.GetEVMTokenList(cfg.ChainID, common.LatestVersion).Tokens
+	allTokens := tokenlist.GetEVMTokenList(cfg.ChainID).Tokens
 	var whitelistTokens []tokenlist.ERC20Token
 	for _, addr := range cfg.WhitelistTokens {
 		// find matching token in token list
@@ -164,7 +164,7 @@ func NewEVMScanner(cfg config.BifrostBlockScannerConfiguration,
 
 	// load whitelist contracts for the chain
 	whitelistContracts := []common.Address{}
-	for _, agg := range aggregators.DexAggregators(common.LatestVersion) {
+	for _, agg := range aggregators.DexAggregators() {
 		if agg.Chain.Equals(cfg.ChainID) {
 			whitelistContracts = append(whitelistContracts, common.Address(agg.Address))
 		}
@@ -206,13 +206,9 @@ func (e *EVMScanner) GetGasPrice() *big.Int {
 	return e.gasPrice
 }
 
-// GetHeight returns the current block height.
-func (e *EVMScanner) GetHeight() (int64, error) {
-	height, err := e.ethRpc.GetBlockHeight()
-	if err != nil {
-		return -1, err
-	}
-	return height, nil
+// GetNetworkFee returns current chain network fee according to Bifrost.
+func (e *EVMScanner) GetNetworkFee() (transactionSize, transactionFeeRate uint64) {
+	return e.cfg.MaxGasLimit, e.lastReportedGasPrice / 1e10 // 1e18 -> 1e8
 }
 
 // GetNonce returns the nonce (including pending) for the given address.
@@ -290,12 +286,10 @@ func (e *EVMScanner) FetchTxs(height, chainHeight int64) (stypes.TxIn, error) {
 
 func (e *EVMScanner) processBlock(block *etypes.Block) (stypes.TxIn, error) {
 	txIn := stypes.TxIn{
-		Chain:           e.cfg.ChainID,
-		TxArray:         nil,
-		Filtered:        false,
-		MemPool:         false,
-		SentUnFinalised: false,
-		Finalised:       false,
+		Chain:    e.cfg.ChainID,
+		TxArray:  nil,
+		Filtered: false,
+		MemPool:  false,
 	}
 
 	// skip empty blocks
@@ -355,6 +349,11 @@ func (e *EVMScanner) getTxInOptimized(method string, block *etypes.Block) (stype
 			continue
 		}
 
+		// skip blob transactions
+		if tx.Type() == etypes.BlobTxType {
+			continue
+		}
+
 		// best effort remove the tx from the signed txs (ok if it does not exist)
 		if err := e.blockMetaAccessor.RemoveSignedTxItem(tx.Hash().String()); err != nil {
 			e.logger.Err(err).Str("tx hash", tx.Hash().String()).Msg("failed to remove signed tx item")
@@ -411,33 +410,22 @@ func (e *EVMScanner) getTxInOptimized(method string, block *etypes.Block) (stype
 
 		// add the txInItem to the txInbound
 		txInItem.BlockHeight = block.Number().Int64()
-		txInbound.TxArray = append(txInbound.TxArray, *txInItem)
+		txInbound.TxArray = append(txInbound.TxArray, txInItem)
 	}
 
 	if len(txInbound.TxArray) == 0 {
 		e.logger.Debug().Uint64("block", block.NumberU64()).Msg("no tx need to be processed in this block")
 		return stypes.TxIn{}, nil
 	}
-	txInbound.Count = strconv.Itoa(len(txInbound.TxArray))
 	return txInbound, nil
 }
 
 func (e *EVMScanner) getTxIn(block *etypes.Block) (stypes.TxIn, error) {
 	// CHANGEME: if an EVM chain supports some way of fetching all transaction receipts
 	// within a block, register it here.
-	// switch e.cfg.ChainID {
-	// case common.BSCChain:
-	// return e.getTxInOptimized("eth_getTransactionReceiptsByBlockNumber", block)
-	// TODO: add ETH chain after giving BSC some time to bake on mainnet
-	// case common.ETHChain:
-	// 	return e.getTxInOptimized("eth_getBlockReceipts", block)
-	// TODO: add AVAX chain when supported
-	// case common.AVAXChain:
-	// 	return e.getTxIn("TBD", block)
-	// }
-
-	if e.cfg.ChainID.IsBSCChain() {
-		return e.getTxInOptimized("eth_getTransactionReceiptsByBlockNumber", block)
+	switch e.cfg.ChainID {
+	case common.BASEChain, common.BSCChain:
+		return e.getTxInOptimized("eth_getBlockReceipts", block)
 	}
 
 	txInbound := stypes.TxIn{
@@ -451,6 +439,11 @@ func (e *EVMScanner) getTxIn(block *etypes.Block) (stypes.TxIn, error) {
 	batch := []*etypes.Transaction{}
 	for _, tx := range block.Transactions() {
 		if tx == nil || tx.To() == nil {
+			continue
+		}
+
+		// skip blob transactions
+		if tx.Type() == etypes.BlobTxType {
 			continue
 		}
 
@@ -525,7 +518,7 @@ func (e *EVMScanner) getTxIn(block *etypes.Block) (stypes.TxIn, error) {
 
 			// add the txInItem to the txInbound
 			txInItem.BlockHeight = block.Number().Int64()
-			txInbound.TxArray = append(txInbound.TxArray, *txInItem)
+			txInbound.TxArray = append(txInbound.TxArray, txInItem)
 		}
 	}
 
@@ -533,7 +526,6 @@ func (e *EVMScanner) getTxIn(block *etypes.Block) (stypes.TxIn, error) {
 		e.logger.Debug().Uint64("block", block.NumberU64()).Msg("no tx need to be processed in this block")
 		return stypes.TxIn{}, nil
 	}
-	txInbound.Count = strconv.Itoa(len(txInbound.TxArray))
 	return txInbound, nil
 }
 
@@ -793,15 +785,18 @@ func (e *EVMScanner) reportNetworkFee(height int64) {
 		}
 	}
 
-	// gas price to 1e8
-	tcGasPrice := new(big.Int).Div(gasPrice, big.NewInt(common.One*100))
+	// gas price to 1e8 from 1e18
+	tcGasPrice := new(big.Int).Div(gasPrice, big.NewInt(1e10))
 
 	// post to thorchain
-	if _, err := e.bridge.PostNetworkFee(height, e.cfg.ChainID, e.cfg.MaxGasLimit, tcGasPrice.Uint64()); err != nil {
-		e.logger.Err(err).Msg("failed to post EVM chain single transfer fee to THORNode")
-	} else {
-		e.lastReportedGasPrice = gasPrice.Uint64()
+	e.globalNetworkFeeQueue <- common.NetworkFee{
+		Chain:           e.cfg.ChainID,
+		Height:          height,
+		TransactionSize: e.cfg.MaxGasLimit,
+		TransactionRate: tcGasPrice.Uint64(),
 	}
+
+	e.lastReportedGasPrice = gasPrice.Uint64()
 }
 
 // --------------------------------- parse transaction ---------------------------------
@@ -833,10 +828,7 @@ func (e *EVMScanner) getTxInFromTransaction(tx *etypes.Transaction, receipt *ety
 	nativeValue := e.tokenManager.ConvertAmount(evm.NativeTokenAddr, tx.Value())
 	txInItem.Coins = append(txInItem.Coins, common.NewCoin(e.cfg.ChainID.GetGasAsset(), nativeValue))
 	txGasPrice := tx.GasPrice()
-	if txGasPrice.Cmp(big.NewInt(tenGwei)) < 0 {
-		txGasPrice = big.NewInt(tenGwei)
-	}
-	txInItem.Gas = common.MakeEVMGas(e.cfg.ChainID, txGasPrice, receipt.GasUsed)
+	txInItem.Gas = common.MakeEVMGas(e.cfg.ChainID, txGasPrice, receipt.GasUsed, receipt.L1Fee)
 	txInItem.Gas[0].Asset = e.cfg.ChainID.GetGasAsset()
 
 	if txInItem.Coins.IsEmpty() {
@@ -844,7 +836,7 @@ func (e *EVMScanner) getTxInFromTransaction(tx *etypes.Transaction, receipt *ety
 			// When the Sender and To is the same then there's no balance chance whatever the Coins,
 			// and for Tx-received Valid() a non-zero Amount is needed to observe
 			// the transaction fees (THORChain gas cost) of unstuck.go's cancel transactions.
-			observableAmount := e.cfg.ChainID.DustThreshold().Add(cosmos.OneUint()) // Adding 1 for if DustThreshold is 0.
+			observableAmount := e.cfg.ChainID.DustThreshold()
 			txInItem.Coins = common.NewCoins(common.NewCoin(txInItem.Gas[0].Asset, observableAmount))
 
 			// remove the outbound from signer cache so it can be re-attempted
@@ -940,10 +932,7 @@ func (e *EVMScanner) getTxInFromSmartContract(tx *etypes.Transaction, receipt *e
 
 	// under no circumstance EVM gas price will be less than 1 Gwei, unless it is in dev environment
 	txGasPrice := tx.GasPrice()
-	if txGasPrice.Cmp(big.NewInt(tenGwei)) < 0 {
-		txGasPrice = big.NewInt(tenGwei)
-	}
-	txInItem.Gas = common.MakeEVMGas(e.cfg.ChainID, txGasPrice, receipt.GasUsed)
+	txInItem.Gas = common.MakeEVMGas(e.cfg.ChainID, txGasPrice, receipt.GasUsed, receipt.L1Fee)
 	if txInItem.Coins.IsEmpty() {
 		return nil, nil
 	}
@@ -970,9 +959,6 @@ func (e *EVMScanner) getTxInFromFailedTransaction(tx *etypes.Transaction, receip
 		return nil
 	}
 	txGasPrice := tx.GasPrice()
-	if txGasPrice.Cmp(big.NewInt(tenGwei)) < 0 {
-		txGasPrice = big.NewInt(tenGwei)
-	}
 	txHash := tx.Hash().Hex()[2:]
 	return &stypes.TxInItem{
 		Tx:     txHash,
@@ -980,6 +966,6 @@ func (e *EVMScanner) getTxInFromFailedTransaction(tx *etypes.Transaction, receip
 		Sender: strings.ToLower(fromAddr.String()),
 		To:     strings.ToLower(tx.To().String()),
 		Coins:  common.NewCoins(common.NewCoin(e.cfg.ChainID.GetGasAsset(), cosmos.NewUint(1))),
-		Gas:    common.MakeEVMGas(e.cfg.ChainID, txGasPrice, receipt.GasUsed),
+		Gas:    common.MakeEVMGas(e.cfg.ChainID, txGasPrice, receipt.GasUsed, receipt.L1Fee),
 	}
 }

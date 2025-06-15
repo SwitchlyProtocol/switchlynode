@@ -15,10 +15,10 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/syndtr/goleveldb/leveldb"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/common/tokenlist"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
 )
 
 const (
@@ -255,9 +255,9 @@ func (h *TokenManager) getDecimals(token string) (uint64, error) {
 	return h.defaultDecimals, fmt.Errorf("%s is %T fail to parse it", output[0], output[0])
 }
 
-// replace the . in symbol to *, and replace the - in symbol to #
-// because . and - had been reserved to use in THORChain symbol
-var symbolReplacer = strings.NewReplacer(".", "*", "-", "#", `\u0000`, "", "\u0000", "")
+// . and - had been reserved to use in THORChain symbol
+// and + similarly is not accepted by common package NewSymbol's isAlphaNumeric
+var symbolReplacer = strings.NewReplacer(".", "", "-", "", `\u0000`, "", "\u0000", "", "+", "")
 
 func sanitiseSymbol(symbol string) string {
 	return symbolReplacer.Replace(symbol)

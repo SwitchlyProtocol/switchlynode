@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"net/http"
 
-	btypes "gitlab.com/thorchain/thornode/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/common"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // GetKeygenBlock retrieves keygen request for the given block height from thorchain
@@ -37,7 +37,10 @@ func (b *thorchainBridge) GetKeygenBlock(blockHeight int64, pk string) (types.Ke
 		return types.KeygenBlock{}, fmt.Errorf("fail to marshal keygen block to json: %w", err)
 	}
 
-	pubKey := b.keys.GetSignerInfo().GetPubKey()
+	pubKey, err := b.keys.GetSignerInfo().GetPubKey()
+	if err != nil {
+		return types.KeygenBlock{}, fmt.Errorf("fail to get signer pub key: %w", err)
+	}
 	s, err := base64.StdEncoding.DecodeString(query.Signature)
 	if err != nil {
 		return types.KeygenBlock{}, errors.New("invalid keygen signature: cannot decode signature")

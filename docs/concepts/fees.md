@@ -14,9 +14,23 @@ There are 4 different fees the user should know about.
 - **SourceChain**: the chain the user is swapping from
 - **DestinationChain**: the chain the user is swapping to txSize: the size of the transaction in bytes (or units)
 - **gasRate**: the current gas rate of the external network
-- **swapAmount**: the amount the user is swapping swapSlip: the slip created by the
-- **swapAmount**, as a function of poolDepth
+- **swapAmount**: the amount the user is swapping swapSlip: the slip created by the as a function of poolDepth
 - **affiliateFee**: optional fee set by interface in basis points
+
+## Fee Ordering for Swaps
+
+Fees are taken in the following order when conducting a swap.
+
+1. Inbound Fee (user wallet controlled, not THORChain controlled)
+1. Swap Fee (denoted in output asset)
+1. Affiliate Fee (if any)
+1. Outbound Fee (taken from the swap output)
+
+To work out the total fees, fees should be converted to a common asset (e.g. RUNE or USD) then added up. Total fees should be less than the input else it is likely to result in a refund.
+
+```admonish info
+Because the affiliate fee is deducted after the Swap Fee, using streaming swaps is recommended for better swap efficiency.
+```
 
 ## Fees Details
 
@@ -50,6 +64,12 @@ $$
 fee =slip * swapAmount
 $$
 
+See more information in the [Liquidity Section]
+
+```admonish warning
+A minimum swap fee in basis points (bps) applies for different asset types, governed by the [mimir network settings](../mimir.md#swapping).
+```
+
 ### Affiliate Fee
 
 Within the transactions you build for your users you can include an affiliate for your exchange.
@@ -58,81 +78,13 @@ Within the transactions you build for your users you can include an affiliate fo
 - The affiliate fee is in basis points (0-10,000) and will be deducted from the inbound or outbound transaction amount.
 - A THORName is required to collect affiliate address. See a guide on creating THORNames [here](../affiliate-guide/thorname-guide.md).
 - Affiliates are paid in $RUNE by default however a [preferred asset](../affiliate-guide/thorname-guide.md#preferred-asset-for-affiliate-fees) can be specified within the THORName.
+- Mupiple Affiliates are possible for swaps.
 
 $$
 affliateFee = \frac{feeInBasisPoints * txAmount}{10000}
 $$
 
-### Affiliate Fee Taking Process
-
-- If the inbound swap asset is a native THORChain asset ($RUNE, synth or trade asset) the affiliate fee amount will be deducted directly from the transaction amount.
-- If the inbound swap asset is on any other chain the network will submit a swap to $RUNE with the destination address as your affiliate fee address.
-- If the affiliate is added to an ADDLP tx, then the affiliate is included in the network as an LP.
-- If the affiliate is added as a lending or a savers deposit, it is taken from the transaction amount.
-- If the affiliate is added as a RUNEPool withdraw, it is deducted from the profit amount (positive PnL), not the principle.
-
-Read [https://medium.com/thorchain/affiliate-fees-on-thorchain-17cbc176a11b](https://medium.com/thorchain/affiliate-fees-on-thorchain-17cbc176a11b) for more information.
-
-### Preferred Asset for Affiliate Fees
-
-Affiliates can collect their fees in the asset of their choice (choosing from the assets that have a pool on THORChain). In order to collect fees in a preferred asset, affiliates must use a [THORName](../affiliate-guide/thorname-guide.md#preferred-asset-for-affiliate-fees) in the [memos](memos.md).
-
-### How it Works
-
-If an affiliate's THORName has the proper preferred asset configuration set, the network will begin collecting their affiliate fees in $RUNE in the [AffiliateCollector module](https://thornode.ninerealms.com/thorchain/balance/module/affiliate_collector). Once the accrued RUNE in the module is greater than [`PreferredAssetOutboundFeeMultiplier`](../mimir.md#fee-management)`* outbound_fee` of the preferred asset's chain, the network initiates a swap from $RUNE -> Preferred Asset on behalf of the affiliate. At the time of writing, `PreferredAssetOutboundFeeMultiplier` is set to `100`, so the preferred asset swap happens when the outbound fee is 1% of the accrued $RUNE.
-
-**Configuring a Preferred Asset for a THORName.**
-
-1. [**Register a THORName**](../affiliate-guide/thorname-guide.md) if not done already. This is done with a `MsgDeposit` posted to the THORChain network.
-2. Set your preferred asset's chain alias (the address you'll be paid out to), and your preferred asset. _Note: your preferred asset must be currently supported by THORChain._
-
-For example, if you wanted to be paid out in USDC you would:
-
-1. Grab the full USDC name from the [Pools](https://thornode.ninerealms.com/thorchain/pools) endpoint: `ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48`
-2. Post a `MsgDeposit` to the THORChain network with the appropriate memo to register your THORName, set your preferred asset as USDC, and set your Ethereum network address alias. Assuming the following info:
-
-   1. THORChain address: `thor1dl7un46w7l7f3ewrnrm6nq58nerjtp0dradjtd`
-   2. THORName: `ac-test`
-   3. ETH payout address: `0x6621d872f17109d6601c49edba526ebcfd332d5d`
-
-   The full memo would look like:
-
-   > `~:ac-test:ETH:0x6621d872f17109d6601c49edba526ebcfd332d5d:thor1dl7un46w7l7f3ewrnrm6nq58nerjtp0dradjtd:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48`
-
-```admonish info
-You can use [Asgardex](https://github.com/asgardex/asgardex-desktop) to post a MsgDeposit with a custom memo. Load your wallet, then open your THORChain wallet page > Deposit > Custom.
-```
-
-```admonish info
-You will also need a THOR alias set to collect affiliate fees. Use another MsgDeposit with memo: `~:<thorname>:THOR:<thorchain-address>` to set your THOR alias. Your THOR alias address can be the same as your owner address, but won't be used for anything if a preferred asset is set.
-```
-
-Once you successfully post your MsgDeposit you can verify that your THORName is configured properly. View your THORName info from THORNode at the following endpoint:\
-[https://thornode.ninerealms.com/thorchain/thorname/ac-test](https://thornode.ninerealms.com/thorchain/thorname/ac-test)
-
-The response should look like:
-
-```json
-{
-  "affiliate_collector_rune": "0",
-  "aliases": [
-    {
-      "address": "0x6621d872f17109d6601c49edba526ebcfd332d5d",
-      "chain": "ETH"
-    },
-    {
-      "address": "thor1dl7un46w7l7f3ewrnrm6nq58nerjtp0dradjtd",
-      "chain": "THOR"
-    }
-  ],
-  "expire_block_height": 22061405,
-  "name": "ac-test",
-  "owner": "thor1dl7un46w7l7f3ewrnrm6nq58nerjtp0dradjtd",
-  "preferred_asset": "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48"
-}
-```
-
-Your THORName is now properly configured and any affiliate fees will begin accruing in the AffiliateCollector module. You can verify that fees are being collected by checking the `affiliate_collector_rune` value of the above endpoint.
+See the [Affiliate Fee Guide](../affiliate-guide/affiliate-fee-guide.md) for more information.
 
 ### Outbound Fee
 
@@ -147,17 +99,6 @@ $$
 The minimum Outbound Layer1 Fee the network will charge is on `/thorchain/mimir` and is priced in USD (based on THORChain's USD pool prices). This means really cheap chains still pay their fair share. It is currently set to `100000000` = $1.00
 
 See [Outbound Fee](https://docs.thorchain.org/how-it-works/fees#outbound-fee) for more information.
-
-## Fee Ordering for Swaps
-
-Fees are taken in the following order when conducting a swap.
-
-1. Inbound Fee (user wallet controlled, not THORChain controlled)
-2. Affiliate Fee (if any) - skimmed from the input.
-3. Swap Fee (denoted in output asset)
-4. Outbound Fee (taken from the swap output)
-
-To work out the total fees, fees should be converted to a common asset (e.g. RUNE or USD) then added up. Total fees should be less than the input else it is likely to result in a refund.
 
 ### Refunds and Minimum Swappable Amount
 
@@ -175,19 +116,23 @@ _Remember, if the swap limit is not met or the swap is otherwise refunded the ou
 
 ### Understanding gas_rate
 
-THORNode keeps track of current gas prices. Access these at the `/inbound_addresses` endpoint of the [THORNode API](https://dev.thorchain.org/thorchain-dev/wallets/connecting-to-thorchain#thornode). The response is an array of objects like this:
+THORNode keeps track of current gas prices. Access these at the `/inbound_addresses` endpoint of the [THORNode API](./connecting-to-thorchain.md#thornode). The response is an array of objects like this:
 
 ```json
 {
     "chain": "ETH",
-    "pub_key": "thorpub1addwnpepqdlx0avvuax3x9skwcpvmvsvhdtnw6hr5a0398vkcvn9nk2ytpdx5cpp70n",
-    "address": "0x74ce1c3556a6d864de82575b36c3d1fb9c303a80",
-    "router": "0x3624525075b88B24ecc29CE226b0CEc1fFcB6976",
+    "pub_key": "thorpub1addwnpepqfzafst6y2f33pdvheq6qe25xyzrwy542m4tq0nfnh6cn67d56n3g3lfwej",
+    "address": "0x215520b3943c89e4fa501902ef7b76fdd199023b",
+    "router": "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146",
     "halted": false,
-    "gas_rate": "10"
-    "gas_rate_units": "satsperbyte",
-    "outbound_fee": "30000",
-    "outbound_tx_size": "1000",
+    "global_trading_paused": false,
+    "chain_trading_paused": false,
+    "chain_lp_actions_paused": false,
+    "gas_rate": "60",
+    "gas_rate_units": "gwei",
+    "outbound_tx_size": "100000",
+    "outbound_fee": "180200",
+    "dust_threshold": "0
 }
 ```
 
@@ -199,7 +144,7 @@ The `outbound_tx_size` is what THORChain internally budgets as a typical transac
 
 The `outbound_fee` is `gas_rate * outbound_tx_size * OFM` and developers can use this to budget for the fee to be charged to the user. The current Outbound Fee Multiplier (OFM) can be found on the [Network Endpoint](https://thornode.ninerealms.com/thorchain/network).
 
-Keep in mind the `outbound_fee` is priced in the gas asset of each chain. For chains with tokens, be sure to convert the `outbound_fee` to the outbound token to determine how much will be taken from the outbound amount. To do this, use the `getValueOfAsset1InAsset2` formula described in the [`Math`](https://dev.thorchain.org/thorchain-dev/interface-guide/math#example-1) section.
+Keep in mind the `outbound_fee` is priced in the gas asset of each chain. For chains with tokens, be sure to convert the `outbound_fee` to the outbound token to determine how much will be taken from the outbound amount. To do this, use the `getValueOfAsset1InAsset2` formula described in the [`Math`](./math.md#example) section.
 
 ## Fee Calculation by Chain
 

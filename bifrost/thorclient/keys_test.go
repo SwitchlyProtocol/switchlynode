@@ -7,13 +7,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain"
 )
 
 type KeysSuite struct{}
@@ -38,7 +41,10 @@ func (*KeysSuite) setupKeysForTest(c *C) string {
 	buf.WriteByte('\n')
 	buf.WriteString(signerPasswordForTest)
 	buf.WriteByte('\n')
-	kb, err := cKeys.New(cosmos.KeyringServiceName(), cKeys.BackendFile, thorcliDir, buf)
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb, err := cKeys.New(cosmos.KeyringServiceName(), cKeys.BackendFile, thorcliDir, buf, cdc)
 	c.Assert(err, IsNil)
 	_, _, err = kb.NewMnemonic(signerNameForTest, cKeys.English, cmd.THORChainHDPath, signerPasswordForTest, hd.Secp256k1)
 	c.Assert(err, IsNil)
@@ -64,7 +70,7 @@ func (ks *KeysSuite) TestNewKeys(c *C) {
 	ki := NewKeysWithKeybase(k, signerNameForTest, signerPasswordForTest)
 	info = ki.GetSignerInfo()
 	c.Assert(info, NotNil)
-	c.Assert(info.GetName(), Equals, signerNameForTest)
+	c.Assert(info.Name, Equals, signerNameForTest)
 	priKey, err := ki.GetPrivateKey()
 	c.Assert(err, IsNil)
 	c.Assert(priKey, NotNil)

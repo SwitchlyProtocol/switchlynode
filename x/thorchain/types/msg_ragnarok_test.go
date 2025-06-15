@@ -3,8 +3,8 @@ package types
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type MsgRagnarokSuite struct{}
@@ -15,7 +15,7 @@ func (MsgRagnarokSuite) TestMsgRagnarokSuite(c *C) {
 	txID := GetRandomTxHash()
 	eth := GetRandomETHAddress()
 	acc1 := GetRandomBech32Addr()
-	tx := NewObservedTx(common.NewTx(
+	tx := common.NewObservedTx(common.NewTx(
 		txID,
 		eth,
 		GetRandomETHAddress(),
@@ -25,7 +25,6 @@ func (MsgRagnarokSuite) TestMsgRagnarokSuite(c *C) {
 	), 12, GetRandomPubKey(), 12)
 	m := NewMsgRagnarok(tx, 10, acc1)
 	EnsureMsgBasicCorrect(m, c)
-	c.Check(m.Type(), Equals, "ragnarok")
 
 	inputs := []struct {
 		txID        common.TxID
@@ -60,7 +59,7 @@ func (MsgRagnarokSuite) TestMsgRagnarokSuite(c *C) {
 	}
 
 	for _, item := range inputs {
-		tx = NewObservedTx(common.NewTx(
+		tx = common.NewObservedTx(common.NewTx(
 			item.txID,
 			item.sender,
 			GetRandomETHAddress(),

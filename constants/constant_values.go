@@ -34,6 +34,9 @@ const (
 	DynamicMaxAnchorCalcInterval
 	ChurnInterval
 	ChurnRetryInterval
+	MissingBlockChurnOut
+	MaxMissingBlockChurnOut
+	MaxTrackMissingBlock
 	BadValidatorRedline
 	LackOfObservationPenalty
 	SigningTransactionPeriod
@@ -59,6 +62,7 @@ const (
 	MinSwapsPerBlock
 	MaxSwapsPerBlock
 	EnableOrderBooks
+	EnableAdvSwapQueue
 	MaxSynthPerPoolDepth
 	MaxSynthsForSaversYield
 	VirtualMultSynths
@@ -120,6 +124,8 @@ const (
 	TradeAccountsSlipMinBps
 	DerivedSlipMinBps
 	TradeAccountsEnabled
+	TradeAccountsDepositEnabled
+	SecuredAssetSlipMinBps
 	EVMDisableContractWhitelist
 	OperationalVotesMin
 	RUNEPoolEnabled
@@ -129,6 +135,28 @@ const (
 	SystemIncomeBurnRateBps
 	DevFundSystemIncomeBps
 	DevFundAddress
+	PendulumAssetsBasisPoints
+	PendulumUseEffectiveSecurity
+	PendulumUseVaultAssets
+	TVLCapBasisPoints
+	MultipleAffiliatesMaxCount
+	BondSlashBan
+	BankSendEnabled
+	RUNEPoolHaltDeposit
+	RUNEPoolHaltWithdraw
+	MinRuneForTCYStakeDistribution
+	MinTCYForTCYStakeDistribution
+	TCYStakeSystemIncomeBps
+	TCYClaimingSwapHalt
+	TCYStakeDistributionHalt
+	TCYStakingHalt
+	TCYUnstakingHalt
+	TCYClaimingHalt
+
+	// Stellar-specific constants
+	StellarMinAccountBalance
+	StellarBaseFee
+	StellarMaxMemoLength
 
 	// These are the implicitly-0 Constants undisplayed in the API endpoint (no explicit value set).
 	ArtificialRagnarokBlockHeight
@@ -150,6 +178,7 @@ type ConstantValues interface {
 	GetInt64Value(name ConstantName) int64
 	GetBoolValue(name ConstantName) bool
 	GetStringValue(name ConstantName) string
+	GetConstantValsByKeyname() ConstantValsByKeyname
 }
 
 // GetConstantValues will return an  implementation of ConstantValues which provide ways to get constant values

@@ -5,26 +5,24 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcutil"
-	bchtxscript "gitlab.com/thorchain/thornode/bifrost/txscript/bchd-txscript"
-	dogetxscript "gitlab.com/thorchain/thornode/bifrost/txscript/dogd-txscript"
-	ltctxscript "gitlab.com/thorchain/thornode/bifrost/txscript/ltcd-txscript"
-	btctxscript "gitlab.com/thorchain/thornode/bifrost/txscript/txscript"
+	bchtxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/bchd-txscript"
+	dogetxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/dogd-txscript"
+	ltctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/ltcd-txscript"
+	btctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/txscript"
 
-	btypes "gitlab.com/thorchain/thornode/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/utxo"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	mem "gitlab.com/thorchain/thornode/x/thorchain/memo"
+	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/utxo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -283,8 +281,9 @@ func (c *Client) sendNetworkFee(height int64) error {
 			feeRate++
 		}
 	}
-	if c.cfg.ChainID.Equals(common.BCHChain) && feeRate < 2 {
-		feeRate = 2
+
+	if feeRate < uint64(c.cfg.UTXO.MinSatsPerVByte) {
+		feeRate = uint64(c.cfg.UTXO.MinSatsPerVByte)
 	}
 
 	// if gas cache blocks are set, use the max gas over that window
@@ -306,11 +305,14 @@ func (c *Client) sendNetworkFee(height int64) error {
 	}
 
 	c.lastFeeRate = feeRate
-	txid, err := c.bridge.PostNetworkFee(height, c.cfg.ChainID, c.cfg.UTXO.EstimatedAverageTxSize, feeRate)
-	if err != nil {
-		return fmt.Errorf("fail to post network fee to thornode: %w", err)
+	c.globalNetworkFeeQueue <- common.NetworkFee{
+		Chain:           c.cfg.ChainID,
+		Height:          height,
+		TransactionSize: c.cfg.UTXO.EstimatedAverageTxSize,
+		TransactionRate: feeRate,
 	}
-	c.log.Debug().Str("txid", txid.String()).Msg("send network fee to THORNode successfully")
+
+	c.log.Debug().Msg("send network fee to THORNode successfully")
 	return nil
 }
 
@@ -362,11 +364,13 @@ func (c *Client) sendNetworkFeeFromBlock(blockResult *btcjson.GetBlockVerboseTxR
 		Uint64("feeRateSats", feeRateSats).
 		Msg("sendNetworkFee")
 
-	_, err = c.bridge.PostNetworkFee(height, c.cfg.ChainID, c.cfg.UTXO.EstimatedAverageTxSize, feeRateSats)
-	if err != nil {
-		c.log.Error().Err(err).Msg("failed to post network fee to thornode")
-		return fmt.Errorf("fail to post network fee to thornode: %w", err)
+	c.globalNetworkFeeQueue <- common.NetworkFee{
+		Chain:           c.cfg.ChainID,
+		Height:          height,
+		TransactionSize: c.cfg.UTXO.EstimatedAverageTxSize,
+		TransactionRate: feeRateSats,
 	}
+
 	c.lastFeeRate = feeRateSats
 
 	return nil
@@ -644,7 +648,7 @@ func (c *Client) extractTxs(block *btcjson.GetBlockVerboseTxResult) (types.TxIn,
 		}
 	}
 
-	var txItems []types.TxInItem
+	var txItems []*types.TxInItem
 	for idx, tx := range block.Tx {
 		// mempool transaction get committed to block , thus remove it from mempool cache
 		c.removeFromMemPoolCache(tx.Hash)
@@ -676,10 +680,9 @@ func (c *Client) extractTxs(block *btcjson.GetBlockVerboseTxResult) (types.TxIn,
 			}
 			continue
 		}
-		txItems = append(txItems, txInItem)
+		txItems = append(txItems, &txInItem)
 	}
 	txIn.TxArray = txItems
-	txIn.Count = strconv.Itoa(len(txItems))
 	return txIn, nil
 }
 
@@ -829,11 +832,16 @@ func (c *Client) getAddressesFromScriptPubKey(scriptPubKey btcjson.ScriptPubKeyR
 
 // getMemo returns memo for a btc tx, using vout OP_RETURN
 func (c *Client) getMemo(tx *btcjson.TxRawResult) (string, error) {
-	var opReturns string
+	var memo string
+
 	for _, vOut := range tx.Vout {
-		if !strings.EqualFold(vOut.ScriptPubKey.Type, "nulldata") {
+		switch strings.ToLower(vOut.ScriptPubKey.Type) {
+		case "witness_v0_keyhash", "pubkeyhash", "nulldata":
+			// do nothing
+		default:
 			continue
 		}
+
 		buf, err := hex.DecodeString(vOut.ScriptPubKey.Hex)
 		if err != nil {
 			c.log.Err(err).Msg("fail to hex decode scriptPubKey")
@@ -858,24 +866,133 @@ func (c *Client) getMemo(tx *btcjson.TxRawResult) (string, error) {
 			c.log.Err(err).Msg("fail to disasm script pubkey")
 			continue
 		}
-		opReturnFields := strings.Fields(asm)
-		if len(opReturnFields) == 2 {
+		fields := strings.Fields(asm)
+
+		if len(fields) < 2 {
+			// we need at least OP_RETURN + data, or 0 + address
+			continue
+		}
+
+		if fields[0] == "OP_RETURN" {
 			// skip "0" field to avoid log noise
-			if opReturnFields[1] == "0" {
+			if fields[1] == "0" {
 				continue
 			}
 
-			var decoded []byte
-			decoded, err = hex.DecodeString(opReturnFields[1])
+			decoded, err := c.decodeHexString(fields[1])
 			if err != nil {
-				c.log.Err(err).Msgf("fail to decode OP_RETURN string: %s", opReturnFields[1])
+				// silently return no memo to reduce log noise
+				return "", nil
+			}
+			memo += decoded
+			continue
+		}
+
+		// don't inspect further non OP_RETURN outputs unless we found one
+		if len(memo) < constants.MaxOpReturnDataSize {
+			continue
+		}
+
+		// marker can be at position >= 79 for a single / multiple OP_RETURN_
+		if strings.LastIndex(memo, "^") < constants.MaxOpReturnDataSize-1 {
+			// no continuation marker found
+			continue
+		}
+
+		var pubkey string
+
+		switch len(fields) {
+		case 2:
+			// Pay-to-witness-public-key-hash (P2WPKH) script format
+			// Format: <0> <20-byte-key-hash>
+			if fields[0] != "0" {
 				continue
 			}
-			opReturns += string(decoded)
+
+			pubkey = fields[1]
+		case 5:
+			// Pay-to-public-key-hash (P2PKH) script format
+			// Format: OP_DUP OP_HASH160 <20-byte-key-hash> OP_EQUALVERIFY OP_CHECKSIG
+			requiredOps := []string{
+				"OP_DUP", "OP_HASH160", fields[2],
+				"OP_EQUALVERIFY", "OP_CHECKSIG",
+			}
+
+			isValidScript := true
+			for i := 0; i < 4; i++ {
+				if fields[i] != requiredOps[i] {
+					isValidScript = false
+					break
+				}
+			}
+
+			if !isValidScript {
+				continue
+			}
+
+			pubkey = fields[2]
+		default:
+			continue
+		}
+
+		// process pubkey
+
+		// pubkey hash is ripemd-160, which is 20 bytes, 40 chars in hex
+		if len(pubkey) != 40 {
+			continue
+		}
+
+		// remove trailing zeros, if found
+		pubkey = c.regexpRemoveTrailingZeros.ReplaceAllString(pubkey, "")
+
+		decoded, err := c.decodeHexString(pubkey)
+		if err != nil {
+			// silently return no memo to reduce log noise
+			return "", nil
+		}
+		memo += decoded
+
+		// if pubkey has been stripped (was ending with "00") stop processing
+		if len(pubkey) != 40 {
+			break
+		}
+
+		// if memo > max size, stop processing
+		if len(memo) >= constants.MaxMemoSize {
+			break
 		}
 	}
 
-	return opReturns, nil
+	if strings.LastIndex(memo, "^") >= constants.MaxOpReturnDataSize-1 {
+		memo = strings.Replace(memo, "^", "", 1)
+	}
+
+	return memo, nil
+}
+
+// decodeHexString decodes a provided hex string and returns the result
+// as string or "" if the decoding failed
+func (c *Client) decodeHexString(hexString string) (string, error) {
+	errMsg := "fail to decode data: " + hexString
+
+	decoded, err := hex.DecodeString(hexString)
+	if err != nil {
+		c.log.Debug().Err(err).Msg(errMsg)
+		return "", err
+	}
+
+	// check for non alphanumeric chars
+	// only allow letters: a-z A-Z, numbers, space and the following symbols:
+	// !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+	for i, b := range decoded {
+		if b < 0x20 || b > 0x7E {
+			err := fmt.Errorf("invalid hex value at position %d: 0x%X", i, b)
+			c.log.Debug().Err(err).Msg(errMsg)
+			return "", err
+		}
+	}
+
+	return string(decoded), nil
 }
 
 // getGas returns gas for a tx (sum vin - sum vout)
@@ -961,21 +1078,4 @@ func (c *Client) getBlockRequiredConfirmation(txIn types.TxIn, height int64) (in
 	c.log.Info().Msgf("totalTxValue:%s, totalFeeAndSubsidy:%d, confirm:%d", totalTxValue, totalFeeAndSubsidy, confirm)
 
 	return int64(confirm), nil
-}
-
-// getVaultSignerLock , with consolidate UTXO process add into bifrost , there are two entry points for SignTx , one is from signer , signing the outbound tx
-// from state machine, the other one will be consolidate utxo process
-// this keep a lock per vault pubkey , the goal is each vault we only have one key sign in flight at a time, however different vault can do key sign in parallel
-// assume there are multiple asgards(A,B), when A is signing, B should be able to sign as well
-// however if A already has a key sign in flight , bifrost should not kick off another key sign in parallel, otherwise we might double spend some UTXOs
-func (c *Client) getVaultSignerLock(vaultPubKey string) *sync.Mutex {
-	c.signerLock.Lock()
-	defer c.signerLock.Unlock()
-	l, ok := c.vaultSignerLocks[vaultPubKey]
-	if !ok {
-		newLock := &sync.Mutex{}
-		c.vaultSignerLocks[vaultPubKey] = newLock
-		return newLock
-	}
-	return l
 }

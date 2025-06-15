@@ -3,7 +3,7 @@ package keeperv1
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
+	"gitlab.com/thorchain/thornode/v3/common"
 )
 
 type KeeperHaltSuite struct{}
@@ -69,6 +69,42 @@ func (s *KeeperHaltSuite) TestIsTradingHalt(c *C) {
 	c.Check(k.IsTradingHalt(ctx, withdrawMsg), Equals, true)
 
 	_ = k.DeleteMimir(ctx, "HaltTrading")
+
+	// TCY trading halt
+	k.SetMimir(ctx, "HaltTCYTrading", 1)
+
+	txTCY := common.Tx{Coins: common.Coins{common.Coin{Asset: common.RuneNative}}}
+	swapTCYMsg := &MsgSwap{Tx: txTCY, TargetAsset: common.TCY}
+	addTCYMsg := &MsgAddLiquidity{Asset: common.TCY}
+	withdrawTCYMsg := &MsgWithdrawLiquidity{Asset: common.TCY}
+
+	c.Check(k.IsTradingHalt(ctx, swapTCYMsg), Equals, true)
+	c.Check(k.IsTradingHalt(ctx, addTCYMsg), Equals, true)
+	c.Check(k.IsTradingHalt(ctx, withdrawTCYMsg), Equals, false)
+
+	txTCY = common.Tx{Coins: common.Coins{common.Coin{Asset: common.TCY}}}
+	swapTCYMsg = &MsgSwap{Tx: txTCY, TargetAsset: common.RuneNative}
+	c.Check(k.IsTradingHalt(ctx, swapTCYMsg), Equals, true)
+
+	_ = k.DeleteMimir(ctx, "HaltTCYTrading")
+
+	// ETH trading halt from TCY
+	k.SetMimir(ctx, "HaltETHTrading", 1)
+
+	txTCY = common.Tx{Coins: common.Coins{common.Coin{Asset: common.TCY}}}
+	swapTCYMsg = &MsgSwap{Tx: txTCY, TargetAsset: common.ETHAsset}
+	c.Check(k.IsTradingHalt(ctx, swapTCYMsg), Equals, true)
+
+	_ = k.DeleteMimir(ctx, "HaltETHTrading")
+
+	// ETH trading halt to TCY
+	k.SetMimir(ctx, "HaltETHTrading", 1)
+
+	txTCY = common.Tx{Coins: common.Coins{common.Coin{Asset: common.ETHAsset}}}
+	swapTCYMsg = &MsgSwap{Tx: txTCY, TargetAsset: common.TCY}
+	c.Check(k.IsTradingHalt(ctx, swapTCYMsg), Equals, true)
+
+	_ = k.DeleteMimir(ctx, "HaltETHTrading")
 
 	// no halts
 	c.Check(k.IsTradingHalt(ctx, swapMsg), Equals, false)
@@ -224,4 +260,26 @@ func (s *KeeperHaltSuite) TestIsLPPaused(c *C) {
 
 	// no pauses
 	c.Check(k.IsLPPaused(ctx, common.BTCChain), Equals, false)
+}
+
+func (s *KeeperHaltSuite) TestIsPoolDepositPaused(c *C) {
+	ctx, k := setupKeeperForTest(c)
+	ctx = ctx.WithBlockHeight(10)
+
+	// deposits are not paused
+	c.Check(k.IsPoolDepositPaused(ctx, common.BTCAsset), Equals, false)
+	c.Check(k.IsPoolDepositPaused(ctx, common.ETHAsset), Equals, false)
+
+	// BTC is paused but ETH is not
+	// XXX Should be replaced with SetMimirWithRef() when available a la MR 3561
+	k.SetMimir(ctx, "PauseLPDeposit-BTC-BTC", 1)
+	c.Check(k.IsPoolDepositPaused(ctx, common.BTCAsset), Equals, true)
+	c.Check(k.IsPoolDepositPaused(ctx, common.ETHAsset), Equals, false)
+
+	// XXX Should be replaced with SetMimirWithRef() when available a la MR 3561
+	_ = k.DeleteMimir(ctx, "PauseLPDeposit-BTC-BTC")
+
+	// back to normal
+	c.Check(k.IsPoolDepositPaused(ctx, common.BTCAsset), Equals, false)
+	c.Check(k.IsPoolDepositPaused(ctx, common.ETHAsset), Equals, false)
 }

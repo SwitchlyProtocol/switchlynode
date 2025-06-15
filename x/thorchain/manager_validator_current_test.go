@@ -3,12 +3,13 @@ package thorchain
 import (
 	"strconv"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/types"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 type ValidatorMgrVCURTestSuite struct{}
@@ -479,7 +480,7 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_SingleNodeAccount(c *C) {
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc}, 1)
 
@@ -491,10 +492,10 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_AllSameBondAddress(c *C) {
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
-	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: types.NewUint(60), BondAddress: common.Address("bondAddr1")}
-	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: types.NewUint(70), BondAddress: common.Address("bondAddr1")}
-	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: types.NewUint(80), BondAddress: common.Address("bondAddr1")}
+	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: sdkmath.NewUint(60), BondAddress: common.Address("bondAddr1")}
+	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: sdkmath.NewUint(70), BondAddress: common.Address("bondAddr1")}
+	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: sdkmath.NewUint(80), BondAddress: common.Address("bondAddr1")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc1, nodeAcc2, nodeAcc3, nodeAcc4}, 2)
 
@@ -513,10 +514,10 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_DifferentBondAddresses(c *C) {
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
-	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: types.NewUint(60), BondAddress: common.Address("bondAddr2")}
-	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: types.NewUint(70), BondAddress: common.Address("bondAddr3")}
-	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: types.NewUint(80), BondAddress: common.Address("bondAddr4")}
+	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: sdkmath.NewUint(60), BondAddress: common.Address("bondAddr2")}
+	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: sdkmath.NewUint(70), BondAddress: common.Address("bondAddr3")}
+	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: sdkmath.NewUint(80), BondAddress: common.Address("bondAddr4")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc1, nodeAcc2, nodeAcc3, nodeAcc4}, 2)
 
@@ -535,8 +536,8 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_SameBondSameAddress(c *C) {
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
-	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc1, nodeAcc2}, 2)
 
@@ -552,7 +553,7 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_ZeroAsgardSize(c *C) {
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc}, 0)
 
@@ -563,7 +564,7 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_NegativeAsgardSize(c *C) {
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc}, -1)
 
@@ -574,8 +575,8 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_AsgardSizeLargerThanLen(c *C) 
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
-	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: types.NewUint(60), BondAddress: common.Address("bondAddr1")}
+	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: sdkmath.NewUint(60), BondAddress: common.Address("bondAddr1")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc1, nodeAcc2}, 3)
 
@@ -590,10 +591,10 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_MultipleDuplicates(c *C) {
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(50), BondAddress: common.Address("bondAddr1")}
-	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: types.NewUint(60), BondAddress: common.Address("bondAddr1")}
-	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: types.NewUint(70), BondAddress: common.Address("bondAddr2")}
-	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: types.NewUint(80), BondAddress: common.Address("bondAddr2")}
+	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(50), BondAddress: common.Address("bondAddr1")}
+	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: sdkmath.NewUint(60), BondAddress: common.Address("bondAddr1")}
+	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: sdkmath.NewUint(70), BondAddress: common.Address("bondAddr2")}
+	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: sdkmath.NewUint(80), BondAddress: common.Address("bondAddr2")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc1, nodeAcc2, nodeAcc3, nodeAcc4}, 2)
 
@@ -612,13 +613,13 @@ func (s *ValidatorMgrVCURTestSuite) TestSplitNext_MultipleDuplicatesOfDiffSizes(
 	var vm ValidatorMgrVCUR
 	ctx, _ := setupKeeperForTest(c)
 
-	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: types.NewUint(200), BondAddress: common.Address("bondAddr0")}
-	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: types.NewUint(60), BondAddress: common.Address("bondAddr1")}
-	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: types.NewUint(70), BondAddress: common.Address("bondAddr2")}
-	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: types.NewUint(80), BondAddress: common.Address("bondAddr2")}
-	nodeAcc5 := NodeAccount{NodeAddress: types.AccAddress("addr5"), Bond: types.NewUint(85), BondAddress: common.Address("bondAddr3")}
-	nodeAcc6 := NodeAccount{NodeAddress: types.AccAddress("addr6"), Bond: types.NewUint(100), BondAddress: common.Address("bondAddr3")}
-	nodeAcc7 := NodeAccount{NodeAddress: types.AccAddress("addr7"), Bond: types.NewUint(90), BondAddress: common.Address("bondAddr3")}
+	nodeAcc1 := NodeAccount{NodeAddress: types.AccAddress("addr1"), Bond: sdkmath.NewUint(200), BondAddress: common.Address("bondAddr0")}
+	nodeAcc2 := NodeAccount{NodeAddress: types.AccAddress("addr2"), Bond: sdkmath.NewUint(60), BondAddress: common.Address("bondAddr1")}
+	nodeAcc3 := NodeAccount{NodeAddress: types.AccAddress("addr3"), Bond: sdkmath.NewUint(70), BondAddress: common.Address("bondAddr2")}
+	nodeAcc4 := NodeAccount{NodeAddress: types.AccAddress("addr4"), Bond: sdkmath.NewUint(80), BondAddress: common.Address("bondAddr2")}
+	nodeAcc5 := NodeAccount{NodeAddress: types.AccAddress("addr5"), Bond: sdkmath.NewUint(85), BondAddress: common.Address("bondAddr3")}
+	nodeAcc6 := NodeAccount{NodeAddress: types.AccAddress("addr6"), Bond: sdkmath.NewUint(100), BondAddress: common.Address("bondAddr3")}
+	nodeAcc7 := NodeAccount{NodeAddress: types.AccAddress("addr7"), Bond: sdkmath.NewUint(90), BondAddress: common.Address("bondAddr3")}
 
 	groups := vm.splitNext(ctx, NodeAccounts{nodeAcc7, nodeAcc3, nodeAcc2, nodeAcc4, nodeAcc5, nodeAcc6, nodeAcc1}, 4)
 
@@ -828,6 +829,77 @@ func (vts *ValidatorMgrVCURTestSuite) TestWeightedBondReward(c *C) {
 	c.Check(nodeOperator3Balance.AmountOf(common.RuneNative.Native()).String(), Equals, strconv.FormatInt(1250000, 10))
 }
 
+func (vts *ValidatorMgrVCURTestSuite) TestNodeAccountPreflightCheckMaintenance(c *C) {
+	ctx, k := setupKeeperForTest(c)
+	ctx = ctx.WithBlockHeight(1000)
+	mgr := NewDummyMgrWithKeeper(k)
+
+	validatorMgr := newValidatorMgrVCUR(k, mgr.NetworkMgr(), mgr.TxOutStore(), mgr.EventMgr())
+	c.Assert(validatorMgr, NotNil)
+
+	// Test with a valid node account
+	nodeAccount := GetRandomValidatorNode(NodeActive)
+	nodeAccount.Bond = cosmos.NewUint(10 * common.One) // well above min bond
+	nodeAccount.PubKeySet = GetRandomPubKeySet()
+	nodeAccount.Version = constants.SWVersion.String()
+	nodeAccount.IPAddress = "192.168.0.1"
+
+	// Add the node account to the store
+	c.Assert(k.SetNodeAccount(ctx, nodeAccount), IsNil)
+
+	// Set minimum bond
+	k.SetMimir(ctx, constants.MinimumBondInRune.String(), 1000000)
+
+	// Test normal operation first (should be Ready)
+	status, err := validatorMgr.NodeAccountPreflightCheck(ctx, nodeAccount, k.GetConstants())
+	c.Assert(err, IsNil)
+	c.Assert(status, Equals, NodeReady)
+
+	// Test with maintenance mode enabled
+	nodeAccount.Maintenance = true
+	c.Assert(k.SetNodeAccount(ctx, nodeAccount), IsNil)
+
+	status, err = validatorMgr.NodeAccountPreflightCheck(ctx, nodeAccount, k.GetConstants())
+	c.Assert(status, Equals, NodeStandby)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "node account is in maintenance mode")
+
+	// Test with maintenance mode disabled again
+	nodeAccount.Maintenance = false
+	c.Assert(k.SetNodeAccount(ctx, nodeAccount), IsNil)
+
+	status, err = validatorMgr.NodeAccountPreflightCheck(ctx, nodeAccount, k.GetConstants())
+	c.Assert(err, IsNil)
+	c.Assert(status, Equals, NodeReady)
+
+	// Test with other failure conditions while in maintenance
+
+	// Test with maintenance mode + forced to leave
+	nodeAccount.Maintenance = true
+	nodeAccount.ForcedToLeave = true
+	c.Assert(k.SetNodeAccount(ctx, nodeAccount), IsNil)
+
+	status, err = validatorMgr.NodeAccountPreflightCheck(ctx, nodeAccount, k.GetConstants())
+	c.Assert(status, Equals, NodeDisabled)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "node account has been banned")
+
+	// Reset forced to leave
+	nodeAccount.ForcedToLeave = false
+	c.Assert(k.SetNodeAccount(ctx, nodeAccount), IsNil)
+
+	// Test with maintenance mode + requested to leave
+	nodeAccount.RequestedToLeave = true
+	c.Assert(k.SetNodeAccount(ctx, nodeAccount), IsNil)
+
+	status, err = validatorMgr.NodeAccountPreflightCheck(ctx, nodeAccount, k.GetConstants())
+	c.Assert(status, Equals, NodeStandby)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Equals, "node account has requested to leave")
+
+	// Maintenance mode error should be masked by more severe errors
+}
+
 func (vts *ValidatorMgrVCURTestSuite) TestActiveNodeRequestToLeaveShouldBeStandby(c *C) {
 	var err error
 	ctx, mgr := setupManagerForTest(c)
@@ -872,4 +944,104 @@ func (vts *ValidatorMgrVCURTestSuite) TestActiveNodeRequestToLeaveShouldBeStandb
 	naAfter, err := mgr.Keeper().GetNodeAccount(ctx, na.NodeAddress)
 	c.Assert(err, IsNil)
 	c.Assert(naAfter.RequestedToLeave, Equals, false)
+}
+
+func (vts *ValidatorMgrVCURTestSuite) TestMarkMissingActors(c *C) {
+	ctx, mgr := setupManagerForTest(c)
+	ctx = ctx.WithBlockHeight(1000)
+
+	networkMgr := newValidatorMgrVCUR(mgr.Keeper(), mgr.NetworkMgr(), mgr.TxOutStore(), mgr.EventMgr())
+	c.Assert(networkMgr, NotNil)
+
+	// Set MissingBlockChurnOut mimir
+	missingBlocksThreshold := int64(10)
+	mgr.Keeper().SetMimir(ctx, constants.MissingBlockChurnOut.String(), missingBlocksThreshold)
+
+	// Create active nodes with different missing blocks counts
+	activeNode1 := GetRandomValidatorNode(NodeActive)
+	activeNode1.MissingBlocks = 5 // Below threshold
+	c.Assert(mgr.Keeper().SetNodeAccount(ctx, activeNode1), IsNil)
+
+	activeNode2 := GetRandomValidatorNode(NodeActive)
+	activeNode2.MissingBlocks = 15 // Above threshold
+	c.Assert(mgr.Keeper().SetNodeAccount(ctx, activeNode2), IsNil)
+
+	activeNode3 := GetRandomValidatorNode(NodeActive)
+	activeNode3.MissingBlocks = 20 // Above threshold but already marked for churn
+	activeNode3.LeaveScore = 100
+	c.Assert(mgr.Keeper().SetNodeAccount(ctx, activeNode3), IsNil)
+
+	// Run the function being tested
+	err := networkMgr.markMissingActors(ctx)
+	c.Assert(err, IsNil)
+
+	// Check results
+	node1After, err := mgr.Keeper().GetNodeAccount(ctx, activeNode1.NodeAddress)
+	c.Assert(err, IsNil)
+	c.Assert(node1After.LeaveScore, Equals, uint64(0), Commentf("Node with missing blocks below threshold should not be marked"))
+
+	node2After, err := mgr.Keeper().GetNodeAccount(ctx, activeNode2.NodeAddress)
+	c.Assert(err, IsNil)
+	c.Assert(node2After.LeaveScore, Equals, uint64(100000000000), Commentf("Node with missing blocks above threshold should be marked, %d", node2After.LeaveScore))
+
+	node3After, err := mgr.Keeper().GetNodeAccount(ctx, activeNode3.NodeAddress)
+	c.Assert(err, IsNil)
+	c.Assert(node3After.LeaveScore, Equals, uint64(100), Commentf("Node already marked for churn should keep its leave score"))
+}
+
+func (vts *ValidatorMgrVCURTestSuite) TestMarkMissingActors_NoActiveNodes(c *C) {
+	ctx, mgr := setupManagerForTest(c)
+	networkMgr := newValidatorMgrVCUR(mgr.Keeper(), mgr.NetworkMgr(), mgr.TxOutStore(), mgr.EventMgr())
+
+	// Set MissingBlockChurnOut mimir
+	mgr.Keeper().SetMimir(ctx, constants.MissingBlockChurnOut.String(), 10)
+
+	// Run with no active nodes
+	err := networkMgr.markMissingActors(ctx)
+	c.Assert(err, IsNil, Commentf("Should handle empty node list gracefully"))
+}
+
+func (vts *ValidatorMgrVCURTestSuite) TestMarkMissingActors_EdgeCases(c *C) {
+	ctx, mgr := setupManagerForTest(c)
+	networkMgr := newValidatorMgrVCUR(mgr.Keeper(), mgr.NetworkMgr(), mgr.TxOutStore(), mgr.EventMgr())
+
+	// Set MissingBlockChurnOut mimir to exactly match a node's missing blocks
+	missingBlocksThreshold := int64(10)
+	mgr.Keeper().SetMimir(ctx, constants.MissingBlockChurnOut.String(), missingBlocksThreshold)
+
+	// Create node with exactly the threshold number of missing blocks
+	activeNode := GetRandomValidatorNode(NodeActive)
+	activeNode.MissingBlocks = uint64(missingBlocksThreshold)
+	c.Assert(mgr.Keeper().SetNodeAccount(ctx, activeNode), IsNil)
+
+	// Run the function
+	err := networkMgr.markMissingActors(ctx)
+	c.Assert(err, IsNil)
+
+	// Check result - node should not be marked as the condition is > threshold, not >=
+	nodeAfter, err := mgr.Keeper().GetNodeAccount(ctx, activeNode.NodeAddress)
+	c.Assert(err, IsNil)
+	c.Assert(nodeAfter.LeaveScore, Equals, uint64(0), Commentf("Node with missing blocks equal to threshold should not be marked"))
+}
+
+func (vts *ValidatorMgrVCURTestSuite) TestMarkMissingActors_MimirDisabled(c *C) {
+	ctx, mgr := setupManagerForTest(c)
+	networkMgr := newValidatorMgrVCUR(mgr.Keeper(), mgr.NetworkMgr(), mgr.TxOutStore(), mgr.EventMgr())
+
+	// Set MissingBlockChurnOut mimir to 0 (disabled)
+	mgr.Keeper().SetMimir(ctx, constants.MissingBlockChurnOut.String(), 0)
+
+	// Create node with missing blocks
+	activeNode := GetRandomValidatorNode(NodeActive)
+	activeNode.MissingBlocks = 100 // High number of missing blocks
+	c.Assert(mgr.Keeper().SetNodeAccount(ctx, activeNode), IsNil)
+
+	// Run the function
+	err := networkMgr.markMissingActors(ctx)
+	c.Assert(err, IsNil)
+
+	// Check result - node should not be marked when mimir is disabled
+	nodeAfter, err := mgr.Keeper().GetNodeAccount(ctx, activeNode.NodeAddress)
+	c.Assert(err, IsNil)
+	c.Assert(nodeAfter.LeaveScore, Equals, uint64(0), Commentf("Node should not be marked when MissingBlockChurnOut is disabled"))
 }

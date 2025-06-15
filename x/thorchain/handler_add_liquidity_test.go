@@ -6,10 +6,10 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type HandlerAddLiquiditySuite struct{}
@@ -425,8 +425,8 @@ var notExistLiquidityProviderAsset, _ = common.NewAsset("ETH.NotExistLiquidityPr
 
 func (p *AddLiquidityTestKeeper) GetPool(ctx cosmos.Context, asset common.Asset) (Pool, error) {
 	if p, ok := p.store[asset.String()]; ok {
-		pool, ok := p.(Pool)
-		if !ok {
+		pool, poolOk := p.(Pool)
+		if !poolOk {
 			return pool, fmt.Errorf("dev error: failed to cast pool")
 		}
 		return pool, nil
@@ -466,7 +466,7 @@ func (p *AddLiquidityTestKeeper) GetLiquidityProvider(ctx cosmos.Context, asset 
 	}
 	key := p.GetKey("lp/", lp.Key())
 	if res, ok := p.store[key]; ok {
-		lp, ok := res.(LiquidityProvider)
+		lp, ok = res.(LiquidityProvider)
 		if !ok {
 			return lp, fmt.Errorf("dev error: failed to cast liquidity provider")
 		}

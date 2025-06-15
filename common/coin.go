@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // THORChainDecimals indicate the number of decimal points used in THORChain
@@ -90,6 +90,11 @@ func (c Coin) IsNative() bool {
 // IsRune checks whether the coin's Asset is RUNE.
 func (c Coin) IsRune() bool {
 	return c.Asset.IsRune()
+}
+
+// IsTCY checks whether the coin's Asset is TCY.
+func (c Coin) IsTCY() bool {
+	return c.Asset.IsTCY()
 }
 
 // Native create a new instance of cosmos.Coin

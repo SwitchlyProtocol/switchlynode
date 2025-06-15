@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type SwapperVCUR struct{}
@@ -99,9 +99,9 @@ func (s *SwapperVCUR) Swap(ctx cosmos.Context,
 	}
 	swapEvents = append(swapEvents, swapEvt)
 	if !swapTarget.IsZero() && assetAmount.LT(swapTarget) {
-		// **NOTE** this error string is utilized by the order book manager to
+		// **NOTE** this error string is utilized by the adv swap queue manager to
 		// catch the error. DO NOT change this error string without updating
-		// the order book manager as well
+		// the adv swap queue manager as well
 		return cosmos.ZeroUint(), swapEvents, fmt.Errorf("emit asset %s less than price limit %s", assetAmount, swapTarget)
 	}
 	// emit asset is zero
@@ -121,15 +121,6 @@ func (s *SwapperVCUR) Swap(ctx cosmos.Context,
 		}
 		if err := mgr.EventMgr().EmitEvent(ctx, evt); err != nil {
 			ctx.Logger().Error("fail to emit swap event", "error", err)
-		}
-		if !evt.Pool.IsDerivedAsset() {
-			if err := keeper.AddToLiquidityFees(ctx, evt.Pool, evt.LiquidityFeeInRune); err != nil {
-				return assetAmount, swapEvents, fmt.Errorf("fail to add to liquidity fees: %w", err)
-			}
-			// use calculated floor
-			if err := keeper.AddToSwapSlip(ctx, evt.Pool, cosmos.NewInt(int64(evt.PoolSlip.Uint64()))); err != nil {
-				return assetAmount, swapEvents, fmt.Errorf("fail to add to swap slip: %w", err)
-			}
 		}
 		telemetry.IncrCounterWithLabels(
 			[]string{"thornode", "swap", "count"},
@@ -182,6 +173,7 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 	synthVirtualDepthMult int64,
 ) (amt cosmos.Uint, evt *EventSwap, swapErr error) {
 	tradeAccountsEnabled := mgr.Keeper().GetConfigInt64(ctx, constants.TradeAccountsEnabled)
+	tradeAccountsDepositEnabled := mgr.Keeper().GetConfigInt64(ctx, constants.TradeAccountsDepositEnabled)
 
 	source := tx.Coins[0].Asset
 	amount := tx.Coins[0].Amount
@@ -211,6 +203,22 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		}
 	}
 
+	if source.IsSecuredAsset() {
+		fromAcc, err := cosmos.AccAddressFromBech32(tx.FromAddress.String())
+		if err != nil {
+			return cosmos.ZeroUint(), evt, ErrInternal(err, "fail to parse from address")
+		}
+		withdrawAmount, err := mgr.SecuredAssetManager().Withdraw(ctx, source, amount, fromAcc, common.NoAddress, tx.ID)
+		if err != nil {
+			return cosmos.ZeroUint(), evt, ErrInternal(err, "fail to withdraw from secured asset")
+		}
+		amount = withdrawAmount.Amount
+	}
+
+	if target.IsTradeAsset() && tradeAccountsDepositEnabled <= 0 {
+		return cosmos.ZeroUint(), evt, fmt.Errorf("trade accounts deposits are disabled")
+	}
+
 	swapEvt := NewEventSwap(
 		poolAsset,
 		swapTarget,
@@ -221,6 +229,11 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		common.NoCoin,
 		cosmos.ZeroUint(),
 	)
+
+	// Update swap event input with source and amount details,
+	// notably for if the Trade/Secured amount withdrawn is less than the transaction-specified amount.
+	// For streaming swaps, InTx already only represents the sub-swap amount, not the original inbound.
+	swapEvt.InTx.Coins = common.NewCoins(common.NewCoin(source, amount))
 
 	if poolAsset.IsDerivedAsset() {
 		// regenerate derived virtual pool
@@ -240,7 +253,7 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 	}
 	// sanity check: ensure we're never swapping with the vault
 	// (technically is actually the yield bearing synth vault)
-	if pool.Asset.IsVaultAsset() {
+	if pool.Asset.IsSyntheticAsset() {
 		return cosmos.ZeroUint(), evt, ErrInternal(err, fmt.Sprintf("dev error: swapping with a vault(%s) is not allowed", pool.Asset))
 	}
 	synthSupply := keeper.GetTotalSupply(ctx, pool.Asset.GetSyntheticAsset())
@@ -288,12 +301,6 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		liquidityFee cosmos.Uint
 	)
 	emitAssets, liquidityFee, swapEvt.SwapSlip = s.GetSwapCalc(X, x, Y, swapSlipBps, minSlipBps)
-	if source.IsRune() {
-		swapEvt.LiquidityFeeInRune = pool.AssetValueInRune(liquidityFee)
-	} else {
-		// because the output asset is RUNE , so liquidity Fee is already in RUNE
-		swapEvt.LiquidityFeeInRune = liquidityFee
-	}
 	emitAssets = cosmos.RoundToDecimal(emitAssets, pool.Decimals)
 	swapEvt.EmitAsset = common.NewCoin(target, emitAssets)
 	swapEvt.LiquidityFee = liquidityFee
@@ -360,6 +367,50 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		synthSupply = keeper.GetTotalSupply(ctx, pool.Asset.GetSyntheticAsset())
 		pool.CalcUnits(synthSupply)
 	}
+
+	// Now that pool depths have been adjusted to post-swap, determine LiquidityFeeInRune.
+	if target.IsRune() {
+		// Because the output asset is RUNE, liquidity Fee is already in RUNE.
+		swapEvt.LiquidityFeeInRune = swapEvt.LiquidityFee
+	} else {
+		// Momentarily deduct the liquidity fee for RuneDisbursementForAssetAdd.
+		pool.BalanceAsset = common.SafeSub(pool.BalanceAsset, swapEvt.LiquidityFee)
+		swapEvt.LiquidityFeeInRune = pool.RuneDisbursementForAssetAdd(swapEvt.LiquidityFee)
+		// Restore the BalanceAsset which is constant-depths-product swapped for the LiquidityFeeInRune.
+		pool.BalanceAsset = pool.BalanceAsset.Add(swapEvt.LiquidityFee)
+	}
+
+	if !pool.Asset.IsDerivedAsset() {
+		// Deduct LiquidityFeeInRune from the pool's RUNE depth and send it to the Reserve Module to be system income.
+		// (So that the liquidity fee isn't used for later swaps in the same block.)
+		if !swapEvt.LiquidityFeeInRune.IsZero() {
+			pool.BalanceRune = common.SafeSub(pool.BalanceRune, swapEvt.LiquidityFeeInRune)
+			liqFeeCoin := common.NewCoin(common.RuneAsset(), swapEvt.LiquidityFeeInRune)
+
+			targetModule := ReserveName
+			if pool.Asset.IsTCY() {
+				targetModule = TCYClaimingName
+			}
+
+			if err := mgr.Keeper().SendFromModuleToModule(ctx, AsgardName, targetModule, common.NewCoins(liqFeeCoin)); err != nil {
+				ctx.Logger().Error("fail to move liquidity fee RUNE during swap", "module", targetModule, "error", err)
+				return cosmos.ZeroUint(), evt, err
+			}
+
+			// Only add to liquidity fees if not TCY
+			if !pool.Asset.IsTCY() {
+				if err := keeper.AddToLiquidityFees(ctx, pool.Asset, swapEvt.LiquidityFeeInRune); err != nil {
+					return cosmos.ZeroUint(), evt, fmt.Errorf("fail to add to liquidity fees: %w", err)
+				}
+			}
+		}
+
+		// use calculated floor
+		if err := keeper.AddToSwapSlip(ctx, pool.Asset, cosmos.NewInt(int64(swapEvt.PoolSlip.Uint64()))); err != nil {
+			return cosmos.ZeroUint(), evt, fmt.Errorf("fail to add to swap slip: %w", err)
+		}
+	}
+
 	ctx.Logger().Info("post swap", "pool", pool.Asset, "rune", pool.BalanceRune, "asset", pool.BalanceAsset, "lp units", pool.LPUnits, "synth units", pool.SynthUnits, "emit asset", emitAssets)
 
 	// Even for a Derived Asset pool, set the pool so the txout manager's GetFee for toi.Coin.Asset uses updated balances.
@@ -367,18 +418,17 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		return cosmos.ZeroUint(), evt, fmt.Errorf("fail to set pool")
 	}
 
-	// if target is trade account, deposit the asset to trade account
+	// if target is trade account, check whether swaps to trade assets are enabled
 	if target.IsTradeAsset() {
 		if tradeAccountsEnabled <= 0 {
 			return cosmos.ZeroUint(), evt, fmt.Errorf("trade accounts are disabled")
 		}
-		acc, err := destination.AccAddress()
-		if err != nil {
-			return cosmos.ZeroUint(), evt, ErrInternal(err, "fail to parse trade account address")
-		}
-		_, err = mgr.TradeAccountManager().Deposit(ctx, target, emitAssets, acc, common.NoAddress, tx.ID)
-		if err != nil {
-			return cosmos.ZeroUint(), evt, ErrInternal(err, "fail to deposit to trade account")
+	}
+
+	// if target is secured asset, check whether swaps to secured assets are enabled
+	if target.IsSecuredAsset() {
+		if err := mgr.SecuredAssetManager().CheckHalt(ctx); err != nil {
+			return cosmos.ZeroUint(), evt, err
 		}
 	}
 

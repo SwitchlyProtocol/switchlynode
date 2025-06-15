@@ -6,14 +6,16 @@ import (
 	"math/big"
 	"os"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	ctypes "github.com/cosmos/cosmos-sdk/types"
 	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
 	btypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/proto"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 	grpc "google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -62,8 +64,8 @@ func buildUnsigned(
 	return txBuilder, nil
 }
 
-func fromCosmosToThorchain(c cosmos.Coin) (common.Coin, error) {
-	cosmosAsset, exists := GetAssetByCosmosDenom(c.Denom)
+func (c *CosmosBlockScanner) fromCosmosToThorchain(coin cosmos.Coin) (common.Coin, error) {
+	cosmosAsset, exists := c.GetAssetByCosmosDenom(coin.Denom)
 	if !exists {
 		return common.NoCoin, fmt.Errorf("asset does not exist / not whitelisted by client")
 	}
@@ -74,7 +76,7 @@ func fromCosmosToThorchain(c cosmos.Coin) (common.Coin, error) {
 	}
 
 	decimals := cosmosAsset.CosmosDecimals
-	amount := c.Amount.BigInt()
+	amount := coin.Amount.BigInt()
 	var exp big.Int
 	// Decimals are more than native THORChain, so divide...
 	if decimals > common.THORChainDecimals {
@@ -87,13 +89,13 @@ func fromCosmosToThorchain(c cosmos.Coin) (common.Coin, error) {
 	}
 	return common.Coin{
 		Asset:    thorAsset,
-		Amount:   ctypes.NewUintFromBigInt(amount),
+		Amount:   sdkmath.NewUintFromBigInt(amount),
 		Decimals: int64(decimals),
 	}, nil
 }
 
-func fromThorchainToCosmos(coin common.Coin) (cosmos.Coin, error) {
-	asset, exists := GetAssetByThorchainSymbol(coin.Asset.Symbol.String())
+func (c *CosmosBlockScanner) fromThorchainToCosmos(coin common.Coin) (cosmos.Coin, error) {
+	asset, exists := c.GetAssetByThorchainSymbol(coin.Asset.Symbol.String())
 	if !exists {
 		return cosmos.Coin{}, fmt.Errorf("asset does not exist / not whitelisted by client")
 	}
@@ -110,7 +112,7 @@ func fromThorchainToCosmos(coin common.Coin) (cosmos.Coin, error) {
 		decimalDiff := int64(common.THORChainDecimals - decimals)
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
-	return cosmos.NewCoin(asset.CosmosDenom, ctypes.NewIntFromBigInt(amount)), nil
+	return cosmos.NewCoin(asset.CosmosDenom, sdkmath.NewIntFromBigInt(amount)), nil
 }
 
 func getGRPCConn(host string, tls bool) (*grpc.ClientConn, error) {
@@ -126,7 +128,7 @@ func getGRPCConn(host string, tls bool) (*grpc.ClientConn, error) {
 		creds = insecure.NewCredentials()
 	}
 
-	return grpc.Dial(host, grpc.WithTransportCredentials(creds))
+	return grpc.NewClient(host, grpc.WithTransportCredentials(creds))
 }
 
 func unmarshalJSONToPb(filePath string, msg proto.Message) error {

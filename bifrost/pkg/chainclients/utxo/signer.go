@@ -20,10 +20,10 @@ import (
 	dogewire "github.com/eager7/dogd/wire"
 	"github.com/eager7/dogutil"
 
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/utxo"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/utxo"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -54,15 +54,6 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) ([]byte, []b
 		c.log.Info().Msgf("ignoring already signed transaction: (%+v)", tx)
 		return nil, nil, nil, nil
 	}
-
-	// only one keysign per chain at a time
-	vaultSignerLock := c.getVaultSignerLock(tx.VaultPubKey.String())
-	if vaultSignerLock == nil {
-		c.log.Error().Msgf("fail to get signer lock for vault pub key: %s", tx.VaultPubKey.String())
-		return nil, nil, nil, fmt.Errorf("fail to get signer lock")
-	}
-	vaultSignerLock.Lock()
-	defer vaultSignerLock.Unlock()
 
 	sourceScript, err := c.getSourceScript(tx)
 	if err != nil {
@@ -257,7 +248,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) ([]byte, []b
 	sender, err := tx.VaultPubKey.GetAddress(tx.Chain)
 	if err == nil {
 		txIn = stypes.NewTxInItem(
-			chainHeight+1,
+			chainHeight,
 			redeemTx.TxHash().String(),
 			tx.Memo,
 			sender.String(),
@@ -276,6 +267,20 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) ([]byte, []b
 	}
 
 	return signedTx.Bytes(), nil, txIn, nil
+}
+
+// GetVaultLock returns a mutex for the given vault pubkey. This is primarily used to
+// ensure transactions from the signer do not conflict with consolidate transactions.
+func (c *Client) GetVaultLock(vaultPubKey string) *sync.Mutex {
+	c.signerLock.Lock()
+	defer c.signerLock.Unlock()
+	l, ok := c.vaultLocks[vaultPubKey]
+	if !ok {
+		newLock := &sync.Mutex{}
+		c.vaultLocks[vaultPubKey] = newLock
+		return newLock
+	}
+	return l
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

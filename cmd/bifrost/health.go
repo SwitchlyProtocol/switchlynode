@@ -16,13 +16,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // -------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 		defer resp.Body.Close()
 
 		// set the height from header
-		res.ThornodeHeight, err = strconv.ParseInt(resp.Header.Get("x-thorchain-height"), 10, 64)
+		res.ThornodeHeight, err = strconv.ParseInt(resp.Header.Get("grpc-metadata-x-cosmos-block-height"), 10, 64)
 		if err != nil {
 			s.logger.Error().Err(err).Msg("fail to parse thornode height")
 		}
@@ -348,7 +348,7 @@ func (s *HealthServer) chainScanner(w http.ResponseWriter, _ *http.Request) {
 	} else {
 		defer resp.Body.Close()
 		var height int64
-		height, err = strconv.ParseInt(resp.Header.Get("x-thorchain-height"), 10, 64)
+		height, err = strconv.ParseInt(resp.Header.Get("grpc-metadata-x-cosmos-block-height"), 10, 64)
 		if err != nil {
 			s.logger.Error().Err(err).Msg("fail to parse thornode height")
 		}

@@ -20,6 +20,10 @@ type NetworkResponse struct {
 	BondRewardRune string `json:"bond_reward_rune"`
 	// total bonded RUNE
 	TotalBondUnits string `json:"total_bond_units"`
+	// RUNE in Available pools (equal in value to the Assets in those pools)
+	AvailablePoolsRune string `json:"available_pools_rune"`
+	// RUNE value of Layer 1 Assets in vaults
+	VaultsLiquidityRune string `json:"vaults_liquidity_rune"`
 	// effective security bond used to determine maximum pooled RUNE
 	EffectiveSecurityBond string `json:"effective_security_bond"`
 	// total reserve RUNE
@@ -44,16 +48,20 @@ type NetworkResponse struct {
 	RunePriceInTor string `json:"rune_price_in_tor"`
 	// the tor price in rune
 	TorPriceInRune string `json:"tor_price_in_rune"`
+	// indicates if all anchor chains are halted (true), or at least one anchor chain is available (false)
+	TorPriceHalted bool `json:"tor_price_halted"`
 }
 
 // NewNetworkResponse instantiates a new NetworkResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewNetworkResponse(bondRewardRune string, totalBondUnits string, effectiveSecurityBond string, totalReserve string, vaultsMigrating bool, gasSpentRune string, gasWithheldRune string, nativeOutboundFeeRune string, nativeTxFeeRune string, tnsRegisterFeeRune string, tnsFeePerBlockRune string, runePriceInTor string, torPriceInRune string) *NetworkResponse {
+func NewNetworkResponse(bondRewardRune string, totalBondUnits string, availablePoolsRune string, vaultsLiquidityRune string, effectiveSecurityBond string, totalReserve string, vaultsMigrating bool, gasSpentRune string, gasWithheldRune string, nativeOutboundFeeRune string, nativeTxFeeRune string, tnsRegisterFeeRune string, tnsFeePerBlockRune string, runePriceInTor string, torPriceInRune string, torPriceHalted bool) *NetworkResponse {
 	this := NetworkResponse{}
 	this.BondRewardRune = bondRewardRune
 	this.TotalBondUnits = totalBondUnits
+	this.AvailablePoolsRune = availablePoolsRune
+	this.VaultsLiquidityRune = vaultsLiquidityRune
 	this.EffectiveSecurityBond = effectiveSecurityBond
 	this.TotalReserve = totalReserve
 	this.VaultsMigrating = vaultsMigrating
@@ -65,6 +73,7 @@ func NewNetworkResponse(bondRewardRune string, totalBondUnits string, effectiveS
 	this.TnsFeePerBlockRune = tnsFeePerBlockRune
 	this.RunePriceInTor = runePriceInTor
 	this.TorPriceInRune = torPriceInRune
+	this.TorPriceHalted = torPriceHalted
 	return &this
 }
 
@@ -122,6 +131,54 @@ func (o *NetworkResponse) GetTotalBondUnitsOk() (*string, bool) {
 // SetTotalBondUnits sets field value
 func (o *NetworkResponse) SetTotalBondUnits(v string) {
 	o.TotalBondUnits = v
+}
+
+// GetAvailablePoolsRune returns the AvailablePoolsRune field value
+func (o *NetworkResponse) GetAvailablePoolsRune() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.AvailablePoolsRune
+}
+
+// GetAvailablePoolsRuneOk returns a tuple with the AvailablePoolsRune field value
+// and a boolean to check if the value has been set.
+func (o *NetworkResponse) GetAvailablePoolsRuneOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.AvailablePoolsRune, true
+}
+
+// SetAvailablePoolsRune sets field value
+func (o *NetworkResponse) SetAvailablePoolsRune(v string) {
+	o.AvailablePoolsRune = v
+}
+
+// GetVaultsLiquidityRune returns the VaultsLiquidityRune field value
+func (o *NetworkResponse) GetVaultsLiquidityRune() string {
+	if o == nil {
+		var ret string
+		return ret
+	}
+
+	return o.VaultsLiquidityRune
+}
+
+// GetVaultsLiquidityRuneOk returns a tuple with the VaultsLiquidityRune field value
+// and a boolean to check if the value has been set.
+func (o *NetworkResponse) GetVaultsLiquidityRuneOk() (*string, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.VaultsLiquidityRune, true
+}
+
+// SetVaultsLiquidityRune sets field value
+func (o *NetworkResponse) SetVaultsLiquidityRune(v string) {
+	o.VaultsLiquidityRune = v
 }
 
 // GetEffectiveSecurityBond returns the EffectiveSecurityBond field value
@@ -420,6 +477,30 @@ func (o *NetworkResponse) SetTorPriceInRune(v string) {
 	o.TorPriceInRune = v
 }
 
+// GetTorPriceHalted returns the TorPriceHalted field value
+func (o *NetworkResponse) GetTorPriceHalted() bool {
+	if o == nil {
+		var ret bool
+		return ret
+	}
+
+	return o.TorPriceHalted
+}
+
+// GetTorPriceHaltedOk returns a tuple with the TorPriceHalted field value
+// and a boolean to check if the value has been set.
+func (o *NetworkResponse) GetTorPriceHaltedOk() (*bool, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.TorPriceHalted, true
+}
+
+// SetTorPriceHalted sets field value
+func (o *NetworkResponse) SetTorPriceHalted(v bool) {
+	o.TorPriceHalted = v
+}
+
 func (o NetworkResponse) MarshalJSON_deprecated() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
@@ -427,6 +508,12 @@ func (o NetworkResponse) MarshalJSON_deprecated() ([]byte, error) {
 	}
 	if true {
 		toSerialize["total_bond_units"] = o.TotalBondUnits
+	}
+	if true {
+		toSerialize["available_pools_rune"] = o.AvailablePoolsRune
+	}
+	if true {
+		toSerialize["vaults_liquidity_rune"] = o.VaultsLiquidityRune
 	}
 	if true {
 		toSerialize["effective_security_bond"] = o.EffectiveSecurityBond
@@ -463,6 +550,9 @@ func (o NetworkResponse) MarshalJSON_deprecated() ([]byte, error) {
 	}
 	if true {
 		toSerialize["tor_price_in_rune"] = o.TorPriceInRune
+	}
+	if true {
+		toSerialize["tor_price_halted"] = o.TorPriceHalted
 	}
 	return json.Marshal(toSerialize)
 }

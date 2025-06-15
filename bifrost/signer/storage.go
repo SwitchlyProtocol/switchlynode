@@ -12,10 +12,10 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/db"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/config"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/db"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/config"
 )
 
 const (
@@ -40,6 +40,7 @@ type TxOutStoreItem struct {
 	Round7Retry  bool
 	Checkpoint   []byte
 	SignedTx     []byte
+	Observation  *types.TxInItem
 	RetrievalKey string `json:"-"`
 	// RetrievalKey is to ensure consistent KV overwrite/deletion after iterator retrieval;
 	// the json "-" tag is to not store it in the KVStore.

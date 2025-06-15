@@ -1,6 +1,7 @@
 package utxo
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,19 +14,22 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcd/btcjson"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/utxo"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	ttypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/utxo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	ttypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 type BitcoinSuite struct {
@@ -41,7 +45,11 @@ var _ = Suite(&BitcoinSuite{})
 
 func (s *BitcoinSuite) SetUpSuite(c *C) {
 	ttypes.SetupConfigForTest()
-	kb := cKeys.NewInMemory()
+
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.THORChainHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.keys = thorclient.NewKeysWithKeybase(kb, bob, password)
@@ -196,6 +204,7 @@ func (s *BitcoinSuite) SetUpTest(c *C) {
 	s.cfg.RPCHost = s.server.Listener.Addr().String()
 	s.client, err = NewClient(s.keys, s.cfg, nil, s.bridge, s.m)
 	s.client.disableVinZeroBatch = true
+	s.client.globalNetworkFeeQueue = make(chan common.NetworkFee, 1)
 	c.Assert(err, IsNil)
 	c.Assert(s.client, NotNil)
 }
@@ -228,7 +237,6 @@ func (s *BitcoinSuite) TestFetchTxs(c *C) {
 	txs, err := s.client.FetchTxs(0, 0)
 	c.Assert(err, IsNil)
 	c.Assert(txs.Chain, Equals, common.BTCChain)
-	c.Assert(txs.Count, Equals, "1")
 	c.Assert(txs.TxArray[0].BlockHeight, Equals, int64(1696761))
 	c.Assert(txs.TxArray[0].Tx, Equals, "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2")
 	c.Assert(txs.TxArray[0].Sender, Equals, "tb1qdxxlx4r4jk63cve3rjpj428m26xcukjn5yegff")
@@ -303,6 +311,302 @@ func (s *BitcoinSuite) TestGetMemo(c *C) {
 	memo, err = s.client.getMemo(&tx)
 	c.Assert(err, IsNil)
 	c.Assert(memo, Equals, "")
+
+	// OP_RETURN + data encoded in subsequent vout addresses
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "swap:eth.0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:0xc54c1512696F3EA7956bd9aD4^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 737761703a6574682e3078633534633135313236393646334541373935366264396144343130383138654563414443466666663a3078633534633135313236393646334541373935366264396144345e",
+					Type: "nulldata",
+					Hex:  "6a4c50737761703a6574682e3078633534633135313236393646334541373935366264396144343130383138654563414443466666663a3078633534633135313236393646334541373935366264396144345e",
+				},
+			},
+			{
+				// data: "10818eEcADCFfff:1000"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 3130383138654563414443466666663a31303030",
+					Type: "witness_v0_keyhash",
+					Hex:  "00143130383138654563414443466666663a31303030",
+				},
+			},
+			{
+				// data: "0000000"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 3030303030303000000000000000000000000000",
+					Type: "witness_v0_keyhash",
+					Hex:  "00143030303030303000000000000000000000000000",
+				},
+			},
+		},
+	}
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "swap:eth.0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:10000000000")
+
+	// OP_RETURN + data encoded in subsequent vout addresses off different kind
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "swap:eth.0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:0xc54c1512696F3EA7956bd9aD4^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 737761703a6574682e3078633534633135313236393646334541373935366264396144343130383138654563414443466666663a3078633534633135313236393646334541373935366264396144345e",
+					Type: "nulldata",
+					Hex:  "6a4c50737761703a6574682e3078633534633135313236393646334541373935366264396144343130383138654563414443466666663a3078633534633135313236393646334541373935366264396144345e",
+				},
+			},
+			{
+				// data: "10818eEcADCFfff:1000"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_DUP OP_HASH160 3130383138654563414443466666663a31303030 OP_EQUALVERIFY OP_CHECKSIG",
+					Type: "pubkeyhash",
+					Hex:  "76a9143130383138654563414443466666663a3130303088ac",
+				},
+			},
+			{
+				// data: "0000000"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 3030303030303000000000000000000000000000",
+					Type: "witness_v0_keyhash",
+					Hex:  "00143030303030303000000000000000000000000000",
+				},
+			},
+		},
+	}
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "swap:eth.0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:0xc54c1512696F3EA7956bd9aD410818eEcADCFfff:10000000000")
+
+	// OP_RETURN exactly 80 chars
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "SWAP:AVAX.USDC-C48A6E:0x2BBA9D4B62A3673146C36FE3B31C36AF02648E99:0/1/0:-_/t:5/50"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 535741503a415641582e555344432d4334384136453a3078324242413944344236324133363733313436433336464533423331433336414630323634384539393a302f312f303a2d5f2f743a352f3530",
+					Type: "nulldata",
+					Hex:  "6a4c50535741503a415641582e555344432d4334384136453a3078324242413944344236324133363733313436433336464533423331433336414630323634384539393a302f312f303a2d5f2f743a352f3530",
+				},
+			},
+			{
+				// no marker at position >= 79, ignore this vout
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 47715D6877ACF46FAEADDFE010DBDEA83FC19577",
+					Type: "witness_v0_keyhash",
+					Hex:  "001447715D6877ACF46FAEADDFE010DBDEA83FC19577",
+				},
+			},
+		},
+	}
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "SWAP:AVAX.USDC-C48A6E:0x2BBA9D4B62A3673146C36FE3B31C36AF02648E99:0/1/0:-_/t:5/50")
+
+	// OP_RETURN + OP_RETURN + data encoded in subsequent vout address
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "SWAP:"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 535741503a",
+					Type: "nulldata",
+					Hex:  "6a05535741503a",
+				},
+			},
+			{
+				// no marker at position >= 79, ignore this vout
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 47715D6877ACF46FAEADDFE010DBDEA83FC19577",
+					Type: "witness_v0_keyhash",
+					Hex:  "001447715D6877ACF46FAEADDFE010DBDEA83FC19577",
+				},
+			},
+			{
+				// data: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0x2BBA9D4B62A3673146C36FE3B^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 4554482e555344432d3058413042383639393143363231384233364331443139443441324539454230434533363036454234383a3078324242413944344236324133363733313436433336464533425e",
+					Type: "nulldata",
+					Hex:  "6a4c504554482e555344432d3058413042383639393143363231384233364331443139443441324539454230434533363036454234383a3078324242413944344236324133363733313436433336464533425e",
+				},
+			},
+			{
+				// data: "31C36AF02648E99"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 3331433336414630323634384539390000000000",
+					Type: "witness_v0_keyhash",
+					Hex:  "00143331433336414630323634384539390000000000",
+				},
+			},
+		},
+	}
+
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "SWAP:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0x2BBA9D4B62A3673146C36FE3B31C36AF02648E99")
+
+	// OP_RETURN with marker + invalid encoded data (eg. real address)
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0x2BBA9D4B62A3673146C36FE3B^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 4554482e555344432d3058413042383639393143363231384233364331443139443441324539454230434533363036454234383a3078324242413944344236324133363733313436433336464533425e",
+					Type: "nulldata",
+					Hex:  "6a4c504554482e555344432d3058413042383639393143363231384233364331443139443441324539454230434533363036454234383a3078324242413944344236324133363733313436433336464533425e",
+				},
+			},
+			{
+				// real address, containing non alphanumeric chars
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 47715D6877ACF46FAEADDFE010DBDEA83FC19577",
+					Type: "witness_v0_keyhash",
+					Hex:  "001447715D6877ACF46FAEADDFE010DBDEA83FC19577",
+				},
+			},
+		},
+	}
+
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "")
+
+	// 2 x OP_RETURN with multiple markers + data encoded in subsequent vout address
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "SWAP:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB4^^8:0x2BBA9D4B62A3673146^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 535741503a4554482e555344432d30584130423836393931433632313842333643314431394434413245394542304345333630364542345e5e383a30783242424139443442363241333637333134365e",
+					Type: "nulldata",
+					Hex:  "6a4c50535741503a4554482e555344432d30584130423836393931433632313842333643314431394434413245394542304345333630364542345e5e383a30783242424139443442363241333637333134365e",
+				},
+			},
+			{
+				// data: "^C3^6F^E3^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 5e43335e36465e45335e",
+					Type: "nulldata",
+					Hex:  "6a0a5e43335e36465e45335e",
+				},
+			},
+			{
+				// data: "B31C36AF02648E99"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 4233314333364146303236343845393900000000",
+					Type: "witness_v0_keyhash",
+					Hex:  "00144233314333364146303236343845393900000000",
+				},
+			},
+		},
+	}
+
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "SWAP:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB4^8:0x2BBA9D4B62A3673146^^C3^6F^E3^B31C36AF02648E99")
+
+	// 2 x OP_RETURN every allowed chars
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 2122232425262728292a2b2c2d2e2f3a3b3c3d3e3f405b5c5d5e5f607b7c7d7e",
+					Type: "nulldata",
+					Hex:  "6a202122232425262728292a2b2c2d2e2f3a3b3c3d3e3f405b5c5d5e5f607b7c7d7e",
+				},
+			},
+			{
+				// data: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 303132333435363738394142434445464748494a4b4c4d4e4f505152535455565758595a6162636465666768696a6b6c6d6e6f707172737475767778797a",
+					Type: "nulldata",
+					Hex:  "6a3e303132333435363738394142434445464748494a4b4c4d4e4f505152535455565758595a6162636465666768696a6b6c6d6e6f707172737475767778797a",
+				},
+			},
+		},
+	}
+
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	// ^ marker not removed removed
+	c.Assert(memo, Equals, "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+
+	// OP_RETURN + data address, end parsing on first 00 terminated address
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "=:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0x2BBA9D4B62A3673146C36FE^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 3d3a4554482e555344432d3058413042383639393143363231384233364331443139443441324539454230434533363036454234383a307832424241394434423632413336373331343643333646455e",
+					Type: "nulldata",
+					Hex:  "6a4c503d3a4554482e555344432d3058413042383639393143363231384233364331443139443441324539454230434533363036454234383a307832424241394434423632413336373331343643333646455e",
+				},
+			},
+			{
+				// data: "3B31C36AF02648E99"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "0 3342333143333641463032363438453939000000",
+					Type: "witness_v0_keyhash",
+					Hex:  "00143342333143333641463032363438453939000000",
+				},
+			},
+			{
+				// previous address ending with 00, parsing already stopped
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "3342333143333641463032363438453939000000",
+					Type: "witness_v0_keyhash",
+					Hex:  "00143342333143333641463032363438453939000000",
+				},
+			},
+		},
+	}
+
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, "=:ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48:0x2BBA9D4B62A3673146C36FE3B31C36AF02648E99")
+
+	// OP_RETURN + 10 data addresses,
+	// stop processing after the 9th address, MaxMemoSize (250) already reached
+	expectedMemo := "0000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
+	tx = btcjson.TxRawResult{
+		Vout: []btcjson.Vout{
+			{
+				// data: "0000000000000000000000000000000000000000000000000000000000000000000000000000000^"
+				ScriptPubKey: btcjson.ScriptPubKeyResult{
+					Asm:  "OP_RETURN 303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030305e",
+					Type: "nulldata",
+					Hex:  "6a4c50303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030305e",
+				},
+			},
+		},
+	}
+
+	for i := 1; i <= 10; i++ {
+		text := strings.Repeat(fmt.Sprintf("%d", i), 20)
+		encoded := hex.EncodeToString([]byte(text))
+
+		// memo only processed up to the 9th vout
+		if i <= 9 {
+			expectedMemo += text
+		}
+
+		tx.Vout = append(tx.Vout, btcjson.Vout{
+			ScriptPubKey: btcjson.ScriptPubKeyResult{
+				Asm:  "0 " + encoded,
+				Type: "witness_v0_keyhash",
+				Hex:  "0014" + encoded,
+			},
+		})
+	}
+
+	memo, err = s.client.getMemo(&tx)
+	c.Assert(err, IsNil)
+	c.Assert(memo, Equals, expectedMemo)
+
+	// TODO:
+	// - test mixed vouts
 }
 
 func (s *BitcoinSuite) TestIgnoreTx(c *C) {
@@ -767,9 +1071,8 @@ func (s *BitcoinSuite) TestGetHeight(c *C) {
 func (s *BitcoinSuite) TestOnObservedTxIn(c *C) {
 	pkey := ttypes.GetRandomPubKey()
 	txIn := types.TxIn{
-		Count: "1",
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 1,
 				Tx:          "31f8699ce9028e9cd37f8a6d58a79e614a96e3fdd0f58be5fc36d2d95484716f",
@@ -785,15 +1088,14 @@ func (s *BitcoinSuite) TestOnObservedTxIn(c *C) {
 	}
 	blockMeta := utxo.NewBlockMeta("000000001ab8a8484eb89f04b87d90eb88e2cbb2829e84eb36b966dcb28af90b", 1, "00000000ffa57c95f4f226f751114e9b24fdf8dbe2dbc02a860da9320bebd63e")
 	c.Assert(s.client.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta), IsNil)
-	s.client.OnObservedTxIn(txIn.TxArray[0], 1)
+	s.client.OnObservedTxIn(*txIn.TxArray[0], 1)
 	blockMeta, err := s.client.temporalStorage.GetBlockMeta(1)
 	c.Assert(err, IsNil)
 	c.Assert(blockMeta, NotNil)
 
 	txIn = types.TxIn{
-		Count: "1",
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -809,15 +1111,14 @@ func (s *BitcoinSuite) TestOnObservedTxIn(c *C) {
 	}
 	blockMeta = utxo.NewBlockMeta("000000001ab8a8484eb89f04b87d90eb88e2cbb2829e84eb36b966dcb28af90b", 2, "00000000ffa57c95f4f226f751114e9b24fdf8dbe2dbc02a860da9320bebd63e")
 	c.Assert(s.client.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta), IsNil)
-	s.client.OnObservedTxIn(txIn.TxArray[0], 2)
+	s.client.OnObservedTxIn(*txIn.TxArray[0], 2)
 	blockMeta, err = s.client.temporalStorage.GetBlockMeta(2)
 	c.Assert(err, IsNil)
 	c.Assert(blockMeta, NotNil)
 
 	txIn = types.TxIn{
-		Count: "2",
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 3,
 				Tx:          "44ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -845,7 +1146,7 @@ func (s *BitcoinSuite) TestOnObservedTxIn(c *C) {
 	blockMeta = utxo.NewBlockMeta("000000001ab8a8484eb89f04b87d90eb88e2cbb2829e84eb36b966dcb28af90b", 3, "00000000ffa57c95f4f226f751114e9b24fdf8dbe2dbc02a860da9320bebd63e")
 	c.Assert(s.client.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta), IsNil)
 	for _, item := range txIn.TxArray {
-		s.client.OnObservedTxIn(item, 3)
+		s.client.OnObservedTxIn(*item, 3)
 	}
 
 	blockMeta, err = s.client.temporalStorage.GetBlockMeta(3)

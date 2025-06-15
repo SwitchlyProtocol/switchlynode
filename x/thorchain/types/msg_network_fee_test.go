@@ -3,8 +3,8 @@ package types
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	cosmos "gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type MsgNetworkFeeSuite struct{}
@@ -13,7 +13,6 @@ var _ = Suite(&MsgNetworkFeeSuite{})
 
 func (MsgNetworkFeeSuite) TestMsgNetworkFee(c *C) {
 	msg := NewMsgNetworkFee(1024, common.ETHChain, 1, 37500, GetRandomBech32Addr())
-	c.Assert(msg.Type(), Equals, "set_network_fee")
 	EnsureMsgBasicCorrect(msg, c)
 
 	testCases := []struct {

@@ -11,10 +11,10 @@ import (
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	memo "gitlab.com/thorchain/thornode/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	memo "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
 )
 
 const (
@@ -79,12 +79,6 @@ func (scp *SmartContractLogParser) parseDeposit(log etypes.Log) (vaultDepositEve
 		return event, fmt.Errorf("fail to unpack event: %w", err)
 	}
 	return event, nil
-}
-
-// RouterCoin represent the coins transfer between vault
-type RouterCoin struct {
-	Asset  ecommon.Address
-	Amount *big.Int
 }
 
 func (scp *SmartContractLogParser) unpackVaultLog(out interface{}, event string, log etypes.Log) error {

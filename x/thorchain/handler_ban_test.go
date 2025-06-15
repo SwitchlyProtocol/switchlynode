@@ -7,10 +7,10 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 var _ = Suite(&HandlerBanSuite{})
@@ -136,16 +136,16 @@ func (s *HandlerBanSuite) TestHandle(c *C) {
 	msg := NewMsgBan(toBan.NodeAddress, banner1.NodeAddress)
 	_, err := handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
-	c.Check(int64(keeper.banner1.Bond.Uint64()), Equals, int64(99900000))
-	c.Check(keeper.modules[ReserveName], Equals, int64(100000))
+	c.Check(int64(keeper.banner1.Bond.Uint64()), Equals, int64(100000000))
+	c.Check(keeper.modules[ReserveName], Equals, int64(0))
 	c.Check(keeper.toBan.ForcedToLeave, Equals, false)
 	c.Check(keeper.ban.Signers, HasLen, 1)
 
 	// ensure banner 1 can't ban twice
 	_, err = handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
-	c.Check(int64(keeper.banner1.Bond.Uint64()), Equals, int64(99900000))
-	c.Check(keeper.modules[ReserveName], Equals, int64(100000))
+	c.Check(int64(keeper.banner1.Bond.Uint64()), Equals, int64(100000000))
+	c.Check(keeper.modules[ReserveName], Equals, int64(0))
 	c.Check(keeper.toBan.ForcedToLeave, Equals, false)
 	c.Check(keeper.ban.Signers, HasLen, 1)
 
@@ -153,8 +153,8 @@ func (s *HandlerBanSuite) TestHandle(c *C) {
 	msg = NewMsgBan(toBan.NodeAddress, banner2.NodeAddress)
 	_, err = handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
-	c.Check(int64(keeper.banner2.Bond.Uint64()), Equals, int64(99900000))
-	c.Check(keeper.modules[ReserveName], Equals, int64(200000))
+	c.Check(int64(keeper.banner2.Bond.Uint64()), Equals, int64(100000000))
+	c.Check(keeper.modules[ReserveName], Equals, int64(0))
 	c.Check(keeper.toBan.ForcedToLeave, Equals, true)
 	c.Check(keeper.toBan.LeaveScore, Equals, uint64(1))
 	c.Check(keeper.ban.Signers, HasLen, 2)
@@ -305,18 +305,6 @@ func (s *HandlerBanSuite) TestBanHandlerValidation(c *C) {
 			validator: func(c *C, result *cosmos.Result, err error, helper *TestBanKeeperHelper, name string) {
 				c.Check(err, IsNil, Commentf(name))
 				c.Check(result, NotNil, Commentf(name))
-			},
-		},
-		{
-			name: "ban an not active account should return an error",
-			messageProvider: func(ctx cosmos.Context, helper *TestBanKeeperHelper) cosmos.Msg {
-				na := GetRandomValidatorNode(NodeStandby)
-				c.Assert(helper.SetNodeAccount(ctx, na), IsNil)
-				return NewMsgBan(na.NodeAddress, bannerNodeAddr)
-			},
-			validator: func(c *C, result *cosmos.Result, err error, helper *TestBanKeeperHelper, name string) {
-				c.Check(err, NotNil, Commentf(name))
-				c.Check(result, IsNil, Commentf(name))
 			},
 		},
 		{

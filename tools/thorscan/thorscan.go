@@ -1,9 +1,11 @@
 package thorscan
 
 import (
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -12,10 +14,10 @@ import (
 	"time"
 
 	ctypes "github.com/cosmos/cosmos-sdk/types"
-	"gitlab.com/thorchain/thornode/app"
-	"gitlab.com/thorchain/thornode/app/params"
-	"gitlab.com/thorchain/thornode/constants"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
+	"gitlab.com/thorchain/thornode/v3/app"
+	"gitlab.com/thorchain/thornode/v3/app/params"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -28,7 +30,6 @@ import (
 const (
 	// ---------- environment keys ----------
 
-	EnvRPCEndpoint = "RPC_ENDPOINT"
 	EnvAPIEndpoint = "API_ENDPOINT"
 	EnvParallelism = "PARALLELISM"
 )
@@ -70,7 +71,8 @@ func getBlock(height int64) (*BlockResponse, error) {
 	req.Header.Set("Accept-Encoding", "gzip")
 
 	// send request
-	res, err := httpClient.Do(req)
+	var res *http.Response
+	res, err = httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +93,14 @@ func getBlock(height int64) (*BlockResponse, error) {
 	case http.StatusOK:
 	case http.StatusNotFound:
 		return nil, fmt.Errorf("block not found")
+	case http.StatusInternalServerError:
+		// attempt to read the body
+		var body []byte
+		body, err = io.ReadAll(res.Body)
+		if err == nil && bytes.Contains(body, []byte("cannot query with height in the future")) {
+			return nil, fmt.Errorf("block not found")
+		}
+		fallthrough
 	default:
 		return nil, fmt.Errorf("bad status code: %d", res.StatusCode)
 	}
@@ -111,7 +121,7 @@ func getBlock(height int64) (*BlockResponse, error) {
 
 var (
 	Parallelism = 4
-	APIEndpoint = "https://thornode-v1.ninerealms.com"
+	APIEndpoint = "https://thornode-archive.ninerealms.com"
 
 	encodingConfig params.EncodingConfig
 )

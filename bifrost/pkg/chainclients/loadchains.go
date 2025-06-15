@@ -4,19 +4,20 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
 
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/ethereum"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/evm"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/gaia"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/types"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/stellar"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/utxo"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/ethereum"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/evm"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/gaia"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/stellar"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/utxo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/xrp"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
 )
 
 // ChainClient exports the shared type.
@@ -41,14 +42,16 @@ func LoadChains(thorKeys *thorclient.Keys,
 		switch chain.ChainID {
 		case common.ETHChain:
 			return ethereum.NewClient(thorKeys, chain, server, thorchainBridge, m, pubKeyValidator, poolMgr)
-		case common.AVAXChain, common.BSCChain:
+		case common.AVAXChain, common.BSCChain, common.BASEChain:
 			return evm.NewEVMClient(thorKeys, chain, server, thorchainBridge, m, pubKeyValidator, poolMgr)
 		case common.GAIAChain:
 			return gaia.NewCosmosClient(thorKeys, chain, server, thorchainBridge, m)
 		case common.BTCChain, common.BCHChain, common.LTCChain, common.DOGEChain:
 			return utxo.NewClient(thorKeys, chain, server, thorchainBridge, m)
-		case common.STELLARChain:
-			return stellar.NewStellarClient(thorKeys, chain, server, thorchainBridge, m)
+		case common.XRPChain:
+			return xrp.NewClient(thorKeys, chain, server, thorchainBridge, m)
+		case common.StellarChain:
+			return stellar.NewClient(thorKeys, chain, server, thorchainBridge, m)
 		default:
 			log.Fatal().Msgf("chain %s is not supported", chain.ChainID)
 			return nil, nil

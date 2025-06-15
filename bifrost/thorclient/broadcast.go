@@ -11,8 +11,8 @@ import (
 
 	stypes "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/common"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/common"
 )
 
 // Broadcast Broadcasts tx to thorchain
@@ -48,17 +48,20 @@ func (b *thorchainBridge) Broadcast(msgs ...stypes.Msg) (common.TxID, error) {
 	flags := flag.NewFlagSet("thorchain", 0)
 
 	ctx := b.GetContext()
-	factory := clienttx.NewFactoryCLI(ctx, flags)
+	factory, err := clienttx.NewFactoryCLI(ctx, flags)
+	if err != nil {
+		return noTxID, fmt.Errorf("failed to get factory, %w", err)
+	}
 	factory = factory.WithAccountNumber(b.accountNumber)
 	factory = factory.WithSequence(b.seqNumber)
 	factory = factory.WithSignMode(signing.SignMode_SIGN_MODE_DIRECT)
 
-	builder, err := clienttx.BuildUnsignedTx(factory, msgs...)
+	builder, err := factory.BuildUnsignedTx(msgs...)
 	if err != nil {
 		return noTxID, err
 	}
 	builder.SetGasLimit(4000000000)
-	err = clienttx.Sign(factory, ctx.GetFromName(), builder, true)
+	err = clienttx.Sign(ctx.CmdContext, factory, ctx.GetFromName(), builder, true)
 	if err != nil {
 		return noTxID, err
 	}
@@ -75,7 +78,6 @@ func (b *thorchainBridge) Broadcast(msgs ...stypes.Msg) (common.TxID, error) {
 	}
 
 	b.m.GetCounter(metrics.TxToThorchainSigned).Inc()
-	// b.logger.Debug().Str("body", string(body)).Msg("broadcast response from THORChain")
 	txHash, err := common.NewTxID(commit.TxHash)
 	if err != nil {
 		return common.BlankTxID, fmt.Errorf("fail to convert txhash: %w", err)

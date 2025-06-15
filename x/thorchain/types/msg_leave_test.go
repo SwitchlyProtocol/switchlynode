@@ -6,8 +6,8 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type MsgLeaveSuite struct{}
@@ -28,7 +28,6 @@ func (MsgLeaveSuite) TestMsgLeave(c *C) {
 	msgLeave := NewMsgLeave(tx, nodeAddr, nodeAddr)
 	EnsureMsgBasicCorrect(msgLeave, c)
 	c.Assert(msgLeave.ValidateBasic(), IsNil)
-	c.Assert(msgLeave.Type(), Equals, "leave")
 
 	msgLeave1 := NewMsgLeave(tx, nodeAddr, nodeAddr)
 	c.Assert(msgLeave1.ValidateBasic(), IsNil)

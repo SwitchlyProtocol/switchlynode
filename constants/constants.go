@@ -42,6 +42,14 @@ const DollarMulti = 1e9
 // MaxETHGas define the maximum gas for a single transaction on ETH
 const MaxETHGas = 50000000
 
+// max amount of data that can be provided with OP_RETURN (bytes)
+const MaxOpReturnDataSize = 80
+
+// when using fake transactions to encode further memo information, support up
+// to eight fake addresses (20 bytes each):
+// 80 (op_return) + 8 * 20 (addresses) - 1 ('^' marker)
+const MaxMemoSizeUtxoExtended = MaxOpReturnDataSize - 1 + 8*20
+
 // The provided key must be comparable and should not be of type string or any other built-in type to avoid collisions between packages using context. Users of WithValue should define their own types for keys. To avoid allocating when assigning to an interface{}, context keys often have concrete type struct{}. Alternatively, exported context key variables' static type should be a pointer or interface.
 type contextKey string
 
@@ -49,9 +57,15 @@ const (
 	CtxMetricLabels  contextKey = "metricLabels"
 	CtxLoanTxID      contextKey = "loan-txid"
 	CtxLoanToAddress contextKey = "loan-toaddress"
+	CtxObservedTx    contextKey = "observed-tx"
 )
 
+// Permitted characters in Mimirs
 const MimirKeyRegex = `^[a-zA-Z0-9-]+$`
+
+// Maximum length of a mimir (in bytes)
+// If increasing this value, be sure to adjust test/regression/suites/mimir/mimir.yaml
+const MaxMimirLength = 128
 
 // ConstantVals implement ConstantValues interface
 type ConstantVals struct {
@@ -122,16 +136,18 @@ func (cv *ConstantVals) String() string {
 	return sb.String()
 }
 
-// MarshalJSON marshal result to json format
-func (cv ConstantVals) MarshalJSON() ([]byte, error) {
-	var result struct {
-		Int64Values  map[string]int64  `json:"int_64_values"`
-		BoolValues   map[string]bool   `json:"bool_values"`
-		StringValues map[string]string `json:"string_values"`
-	}
+type ConstantValsByKeyname struct {
+	Int64Values  map[string]int64  `json:"int_64_values"`
+	BoolValues   map[string]bool   `json:"bool_values"`
+	StringValues map[string]string `json:"string_values"`
+}
+
+func (cv ConstantVals) GetConstantValsByKeyname() ConstantValsByKeyname {
+	result := ConstantValsByKeyname{}
 	result.Int64Values = make(map[string]int64)
 	result.BoolValues = make(map[string]bool)
 	result.StringValues = make(map[string]string)
+
 	// analyze-ignore(map-iteration)
 	for k, v := range cv.int64values {
 		result.Int64Values[k.String()] = v
@@ -157,5 +173,11 @@ func (cv ConstantVals) MarshalJSON() ([]byte, error) {
 		result.StringValues[k.String()] = v
 	}
 
+	return result
+}
+
+// MarshalJSON marshal result to json format
+func (cv ConstantVals) MarshalJSON() ([]byte, error) {
+	result := cv.GetConstantValsByKeyname()
 	return json.MarshalIndent(result, "", "	")
 }

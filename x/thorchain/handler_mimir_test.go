@@ -3,9 +3,8 @@ package thorchain
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 type HandlerMimirSuite struct{}
@@ -19,58 +18,29 @@ func (s *HandlerMimirSuite) SetUpSuite(c *C) {
 func (s *HandlerMimirSuite) TestValidate(c *C) {
 	ctx, keeper := setupKeeperForTest(c)
 
-	addr, _ := cosmos.AccAddressFromBech32(ADMINS[0])
 	handler := NewMimirHandler(NewDummyMgrWithKeeper(keeper))
-	// happy path
-	msg := NewMsgMimir("foo", 44, addr)
-	err := handler.validate(ctx, *msg)
-	c.Assert(err, IsNil)
 
 	// invalid msg
-	msg = &MsgMimir{}
-	err = handler.validate(ctx, *msg)
+	msg := &MsgMimir{}
+	err := handler.validate(ctx, *msg)
 	c.Assert(err, NotNil)
 }
 
 func (s *HandlerMimirSuite) TestMimirHandle(c *C) {
 	ctx, keeper := setupKeeperForTest(c)
 	handler := NewMimirHandler(NewDummyMgrWithKeeper(keeper))
-	addr, err := cosmos.AccAddressFromBech32(ADMINS[0])
-	c.Assert(err, IsNil)
-	msg := NewMsgMimir("foo", 55, addr)
-	sdkErr := handler.handle(ctx, *msg)
-	c.Assert(sdkErr, IsNil)
-	val, err := keeper.GetMimir(ctx, "foo")
-	c.Assert(err, IsNil)
-	c.Check(val, Equals, int64(55))
 
 	invalidMsg := NewMsgNetworkFee(ctx.BlockHeight(), common.ETHChain, 1, 10000, GetRandomBech32Addr())
 	result, err := handler.Run(ctx, invalidMsg)
 	c.Check(err, NotNil)
 	c.Check(result, IsNil)
 
-	msg.Signer = GetRandomBech32Addr()
+	// Non-validator address for MsgMimir (so fails validation).
+	addr := GetRandomBech32Addr()
+	msg := NewMsgMimir("foo", 55, addr)
 	result, err = handler.Run(ctx, msg)
 	c.Assert(err, NotNil)
 	c.Assert(result, IsNil)
-
-	msg1 := NewMsgMimir("hello", 1, addr)
-	result, err = handler.Run(ctx, msg1)
-	c.Check(err, IsNil)
-	c.Check(result, NotNil)
-
-	val, err = keeper.GetMimir(ctx, "hello")
-	c.Assert(err, IsNil)
-	c.Assert(val, Equals, int64(1))
-
-	// delete mimir
-	msg1 = NewMsgMimir("hello", -3, addr)
-	result, err = handler.Run(ctx, msg1)
-	c.Check(err, IsNil)
-	c.Check(result, NotNil)
-	val, err = keeper.GetMimir(ctx, "hello")
-	c.Assert(err, IsNil)
-	c.Assert(val, Equals, int64(-1))
 
 	// node set mimir
 	FundModule(c, ctx, keeper, BondName, 100*common.One)
@@ -149,7 +119,7 @@ func (s *HandlerMimirSuite) TestMimirHandle(c *C) {
 	result, err = handler.Run(ctx, NewMsgMimir("HaltSigning", 1, na2.NodeAddress))
 	c.Assert(err, IsNil)
 	c.Assert(result, NotNil)
-	val, err = keeper.GetMimir(ctx, "HaltSigning")
+	val, err := keeper.GetMimir(ctx, "HaltSigning")
 	c.Assert(err, IsNil)
 	c.Assert(val, Equals, int64(-1))
 	// Now the third.

@@ -1,21 +1,20 @@
 package thorchain
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/armon/go-metrics"
 	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 	"github.com/hashicorp/go-multierror"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func refundTx(ctx cosmos.Context, tx ObservedTx, mgr Manager, refundCode uint32, refundReason, sourceModuleName string) error {
@@ -24,6 +23,14 @@ func refundTx(ctx cosmos.Context, tx ObservedTx, mgr Manager, refundCode uint32,
 
 	refundCoins := make(common.Coins, 0)
 	for _, coin := range tx.Tx.Coins {
+		// Do not emit Trade/Secured Asset refund event or attempt refund txout,
+		// as Trade/Secured Asset withdrawals take place in the internal handlers
+		// (state changes and event emission only if the internal handler succeeds)
+		// and not in the deposit handler.
+		if coin.Asset.IsTradeAsset() || coin.Asset.IsSecuredAsset() {
+			continue
+		}
+
 		if coin.IsRune() && coin.Asset.GetChain().Equals(common.ETHChain) {
 			continue
 		}
@@ -141,90 +148,59 @@ func unrefundableCoinCleanup(ctx cosmos.Context, mgr Manager, toi TxOutItem, bur
 func getMaxSwapQuantity(ctx cosmos.Context, mgr Manager, sourceAsset, targetAsset common.Asset, swp StreamingSwap) (uint64, error) {
 	version := mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("2.136.0")):
-		return getMaxSwapQuantityV136(ctx, mgr, sourceAsset, targetAsset, swp)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return getMaxSwapQuantityV3_0_0(ctx, mgr, sourceAsset, targetAsset, swp)
 	default:
-		return getMaxSwapQuantityV1(ctx, mgr, sourceAsset, targetAsset, swp)
+		return 0, errBadVersion
 	}
 }
 
-func getMaxSwapQuantityV136(ctx cosmos.Context, mgr Manager, sourceAsset, targetAsset common.Asset, swp StreamingSwap) (uint64, error) {
+func getMaxSwapQuantityV3_0_0(ctx cosmos.Context, mgr Manager, sourceAsset, targetAsset common.Asset, swp StreamingSwap) (uint64, error) {
 	if swp.Interval == 0 {
 		return 0, nil
 	}
 
 	// collect pools involved in this swap
-	var pools Pools
-	totalRuneDepth := cosmos.ZeroUint()
-	for _, asset := range []common.Asset{sourceAsset, targetAsset} {
+	minSwapSize := cosmos.ZeroUint()
+	var sourceAssetPool types.Pool
+	for i, asset := range []common.Asset{sourceAsset, targetAsset} {
 		if asset.IsRune() {
 			continue
 		}
 
+		// get the asset pool
 		pool, err := mgr.Keeper().GetPool(ctx, asset.GetLayer1Asset())
 		if err != nil {
 			ctx.Logger().Error("fail to fetch pool", "error", err)
 			return 0, err
 		}
-		pools = append(pools, pool)
-		totalRuneDepth = totalRuneDepth.Add(pool.BalanceRune)
-	}
-	if len(pools) == 0 {
-		return 0, fmt.Errorf("dev error: no pools selected during a streaming swap")
-	}
-	var virtualDepth cosmos.Uint
-	switch len(pools) {
-	case 1:
-		// single swap, virtual depth is the same size as the single pool
-		virtualDepth = totalRuneDepth
-	case 2:
-		// double swap, dynamically calculate a virtual pool that is between the
-		// depth of pool1 and pool2. This calculation should result in a
-		// consistent swap fee (in bps) no matter the depth of the pools. The
-		// larger the difference between the pools, the more the virtual pool
-		// skews towards the smaller pool. This results in less rewards given
-		// to the larger pool, and more rewards given to the smaller pool.
 
-		// (2*r1*r2) / (r1+r2)
-		r1 := pools[0].BalanceRune
-		r2 := pools[1].BalanceRune
-		num := r1.Mul(r2).MulUint64(2)
-		denom := r1.Add(r2)
-		if denom.IsZero() {
-			return 0, fmt.Errorf("dev error: both pools have no rune balance")
+		// store the source asset pool for later conversion of RUNE to asset
+		if i == 0 {
+			sourceAssetPool = pool
 		}
-		virtualDepth = num.Quo(denom)
-	default:
-		return 0, fmt.Errorf("dev error: unsupported number of pools in a streaming swap: %d", len(pools))
-	}
-	if !sourceAsset.IsRune() {
-		// since the inbound asset is not rune, the virtual depth needs to be
-		// recalculated to be the asset side
-		virtualDepth = common.GetUncappedShare(virtualDepth, pools[0].BalanceRune, pools[0].BalanceAsset)
-	}
 
-	// determine lowest min slip for the swap assets, which results in highest quantity
-	minMinSlip := cosmos.ZeroUint()
-	for _, asset := range []common.Asset{sourceAsset, targetAsset} {
-		if asset.IsRune() {
-			continue
-		}
+		// get the configured min slip for this asset
 		minSlip := getMinSlipBps(ctx, mgr.Keeper(), asset)
 		if minSlip.IsZero() {
 			continue
 		}
-		if minMinSlip.IsZero() || minSlip.LT(minMinSlip) {
-			minMinSlip = minSlip
+
+		// compute the minimum rune swap size for this leg of the swap
+		minRuneSwapSize := common.GetSafeShare(minSlip, cosmos.NewUint(constants.MaxBasisPts), pool.BalanceRune)
+		if minSwapSize.IsZero() || minRuneSwapSize.LT(minSwapSize) {
+			minSwapSize = minRuneSwapSize
 		}
 	}
-	if minMinSlip.IsZero() {
-		return 0, fmt.Errorf("streaming swaps are not allowed with a min slip of zero")
+
+	// calculate the max swap quantity
+	if !sourceAsset.IsRune() {
+		minSwapSize = sourceAssetPool.RuneValueInAsset(minSwapSize)
 	}
-	minSize := common.GetSafeShare(minMinSlip, cosmos.NewUint(constants.MaxBasisPts), virtualDepth)
-	if minSize.IsZero() {
+	if minSwapSize.IsZero() {
 		return 1, nil
 	}
-	maxSwapQuantity := swp.Deposit.Quo(minSize)
+	maxSwapQuantity := swp.Deposit.Quo(minSwapSize)
 
 	// make sure maxSwapQuantity doesn't infringe on max length that a
 	// streaming swap can exist
@@ -294,6 +270,8 @@ func getMinSlipBps(
 		ref = constants.TradeAccountsSlipMinBps
 	case asset.IsDerivedAsset():
 		ref = constants.DerivedSlipMinBps
+	case asset.IsSecuredAsset():
+		ref = constants.SecuredAssetSlipMinBps
 	default:
 		ref = constants.L1SlipMinBps
 	}
@@ -348,7 +326,7 @@ func refundBond(ctx cosmos.Context, tx common.Tx, acc cosmos.AccAddress, amt cos
 			return ErrInternal(err, "fail to send unbonded RUNE to bond address")
 		}
 
-		bondEvent := NewEventBond(amt, BondReturned, tx)
+		bondEvent := NewEventBond(amt, BondReturned, tx, nodeAcc, provider.BondAddress)
 		if err := mgr.EventMgr().EmitEvent(ctx, bondEvent); err != nil {
 			ctx.Logger().Error("fail to emit bond event", "error", err)
 		}
@@ -387,6 +365,13 @@ func isSignedByActiveNodeAccounts(ctx cosmos.Context, k keeper.Keeper, signers [
 		}
 	}
 	return true
+}
+
+func activeNodeAccountsSignerPriority(ctx cosmos.Context, k keeper.Keeper, signers []cosmos.AccAddress) (cosmos.Context, error) {
+	if isSignedByActiveNodeAccounts(ctx, k, signers) {
+		return ctx.WithPriority(ActiveNodePriority), nil
+	}
+	return ctx, cosmos.ErrUnauthorized(fmt.Sprintf("%+v are not authorized", signers))
 }
 
 // signedByActiveNodeAccounts returns an error unless all signers are active validator nodes
@@ -691,12 +676,12 @@ func emitEndBlockTelemetry(ctx cosmos.Context, mgr Manager) error {
 		telemetry.SetGaugeWithLabels([]string{"thornode", "vault", "total_value"}, telem(totalValue), labels)
 
 		for _, coin := range vault.Coins {
-			labels := []metrics.Label{
+			vaultCoinLabel := []metrics.Label{
 				telemetry.NewLabel("vault_type", vault.Type.String()),
 				telemetry.NewLabel("pubkey", vault.PubKey.String()),
 				telemetry.NewLabel("asset", coin.Asset.String()),
 			}
-			telemetry.SetGaugeWithLabels([]string{"thornode", "vault", "balance"}, telem(coin.Amount), labels)
+			telemetry.SetGaugeWithLabels([]string{"thornode", "vault", "balance"}, telem(coin.Amount), vaultCoinLabel)
 		}
 	}
 
@@ -762,6 +747,73 @@ func emitEndBlockTelemetry(ctx cosmos.Context, mgr Manager) error {
 	telemetry.SetGauge(telem(queueScheduledOutboundValue)*runeUSDPrice, "thornode", "queue", "scheduled", "value", "usd")
 
 	return nil
+}
+
+func getAvailablePoolsRune(ctx cosmos.Context, keeper keeper.Keeper) (Pools, cosmos.Uint, error) {
+	// Get Available layer 1 pools and sum their RUNE balances.
+	availablePoolsRune := cosmos.ZeroUint()
+	var availablePools Pools
+	iterator := keeper.GetPoolIterator(ctx)
+	defer iterator.Close()
+	for ; iterator.Valid(); iterator.Next() {
+		var pool Pool
+		if err := keeper.Cdc().Unmarshal(iterator.Value(), &pool); err != nil {
+			return nil, cosmos.ZeroUint(), fmt.Errorf("fail to unmarshal pool: %w", err)
+		}
+		if !pool.IsAvailable() {
+			continue
+		}
+		if pool.Asset.IsNative() {
+			continue
+		}
+		if pool.BalanceRune.IsZero() {
+			continue
+		}
+		availablePoolsRune = availablePoolsRune.Add(pool.BalanceRune)
+		availablePools = append(availablePools, pool)
+	}
+	return availablePools, availablePoolsRune, nil
+}
+
+func getVaultsLiquidityRune(ctx cosmos.Context, keeper keeper.Keeper) (cosmos.Uint, error) {
+	// Sum the RUNE values of non-Inactive vault Coins.
+	vaultsLiquidityRune := cosmos.ZeroUint()
+	poolCache := map[common.Asset]Pool{}
+	vaults, err := keeper.GetAsgardVaults(ctx)
+	if err != nil {
+		return cosmos.ZeroUint(), fmt.Errorf("fail to get vaults: %w", err)
+	}
+	for i := range vaults {
+		// cleanupAsgardIndex removes InactiveVaults from the index on churn,
+		// but RetiringVaults which become InactiveVaults and later receive inbounds
+		// are not cleared from the index until the next churn,
+		// so check nevertheless.
+		// Similarly, an InactiveVault inbound (to be automatically refunded)
+		// re-adds that InactiveVault to the Asgard Index with SetVault
+		// until cleared again in the next churn.
+		if vaults[i].Status == InactiveVault {
+			continue
+		}
+
+		for _, coin := range vaults[i].Coins {
+			if coin.IsRune() {
+				vaultsLiquidityRune = vaultsLiquidityRune.Add(coin.Amount)
+				continue
+			}
+
+			pool, ok := poolCache[coin.Asset]
+			if !ok {
+				pool, err = keeper.GetPool(ctx, coin.Asset)
+				if err != nil {
+					return cosmos.ZeroUint(), fmt.Errorf("fail to get pool for asset %s, err:%w", coin.Asset, err)
+				}
+				poolCache[coin.Asset] = pool
+			}
+
+			vaultsLiquidityRune = vaultsLiquidityRune.Add(pool.AssetValueInRune(coin.Amount))
+		}
+	}
+	return vaultsLiquidityRune, nil
 }
 
 // get the total bond of the bottom 2/3rds active nodes
@@ -956,6 +1008,9 @@ func atTVLCap(ctx cosmos.Context, coins common.Coins, mgr Manager) bool {
 		if pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {
 			continue
 		}
+		if pool.Asset.IsNative() {
+			continue
+		}
 		totalRuneValue = totalRuneValue.Add(pool.AssetValueInRune(coin.Amount))
 	}
 
@@ -965,10 +1020,20 @@ func atTVLCap(ctx cosmos.Context, coins common.Coins, mgr Manager) bool {
 		ctx.Logger().Error("fail to get validators to calculate TVL cap", "error", err)
 		return true
 	}
-	effectiveSecurity := getEffectiveSecurityBond(nodeAccounts)
 
-	if totalRuneValue.GT(effectiveSecurity) {
-		ctx.Logger().Debug("reached TVL cap", "total rune value", totalRuneValue.String(), "effective security", effectiveSecurity.String())
+	tvlCapBasisPoints := mgr.Keeper().GetConfigInt64(ctx, constants.TVLCapBasisPoints)
+	security := cosmos.ZeroUint()
+	if tvlCapBasisPoints > 0 {
+		for _, na := range nodeAccounts {
+			security = security.Add(na.Bond)
+		}
+		security = common.GetUncappedShare(cosmos.NewUint(uint64(tvlCapBasisPoints)), cosmos.NewUint(constants.MaxBasisPts), security)
+	} else {
+		security = getEffectiveSecurityBond(nodeAccounts)
+	}
+
+	if totalRuneValue.GT(security) {
+		ctx.Logger().Debug("reached TVL cap", "total rune value", totalRuneValue.String(), "security", security.String())
 		return true
 	}
 	return false
@@ -1006,110 +1071,15 @@ func isActionsItemDangling(voter ObservedTxVoter, i int) bool {
 	return true
 }
 
-func triggerPreferredAssetSwap(ctx cosmos.Context, mgr Manager, affiliateAddress common.Address, txID common.TxID, tn THORName, affcol AffiliateFeeCollector, queueIndex int) error {
-	// Check that the THORName has an address alias for the PreferredAsset, if not skip
-	// the swap
-	alias := tn.GetAlias(tn.PreferredAsset.GetChain())
-	if alias.Equals(common.NoAddress) {
-		return fmt.Errorf("no alias for preferred asset, skip preferred asset swap: %s", tn.Name)
-	}
-
-	// Sanity check: don't swap 0 amount
-	if affcol.RuneAmount.IsZero() {
-		return fmt.Errorf("can't execute preferred asset swap, accrued RUNE amount is zero")
-	}
-	// Sanity check: ensure the swap amount isn't more than the entire AffiliateCollector module
-	acBalance := mgr.Keeper().GetRuneBalanceOfModule(ctx, AffiliateCollectorName)
-	if affcol.RuneAmount.GT(acBalance) {
-		return fmt.Errorf("rune amount greater than module balance: (%s/%s)", affcol.RuneAmount.String(), acBalance.String())
-	}
-
-	affRune := affcol.RuneAmount
-	affCoin := common.NewCoin(common.RuneAsset(), affRune)
-
-	networkMemo := "THOR-PREFERRED-ASSET-" + tn.Name
-	asgardAddress, err := mgr.Keeper().GetModuleAddress(AsgardName)
-	if err != nil {
-		ctx.Logger().Error("failed to retrieve asgard address", "error", err)
-		return err
-	}
-	affColAddress, err := mgr.Keeper().GetModuleAddress(AffiliateCollectorName)
-	if err != nil {
-		ctx.Logger().Error("failed to retrieve affiliate collector module address", "error", err)
-		return err
-	}
-
-	ctx.Logger().Debug("execute preferred asset swap", "thorname", tn.Name, "amt", affRune.String(), "dest", alias)
-
-	// Generate a unique ID for the preferred asset swap, which is a hash of the THORName,
-	// affCoin, and BlockHeight This is to prevent the network thinking it's an outbound
-	// of the swap that triggered it
-	str := fmt.Sprintf("%s|%s|%d", tn.GetName(), affCoin.String(), ctx.BlockHeight())
-	hash := fmt.Sprintf("%X", sha256.Sum256([]byte(str)))
-
-	ctx.Logger().Info("preferred asset swap hash", "hash", hash)
-
-	paTxID, err := common.NewTxID(hash)
-	if err != nil {
-		return err
-	}
-
-	existingVoter, err := mgr.Keeper().GetObservedTxInVoter(ctx, paTxID)
-	if err != nil {
-		return fmt.Errorf("fail to get existing voter: %w", err)
-	}
-	if len(existingVoter.Txs) > 0 {
-		return fmt.Errorf("preferred asset tx: %s already exists", str)
-	}
-
-	// Construct preferred asset swap tx
-	tx := common.NewTx(
-		paTxID,
-		affColAddress,
-		asgardAddress,
-		common.NewCoins(affCoin),
-		common.Gas{},
-		networkMemo,
-	)
-
-	preferredAssetSwap := NewMsgSwap(
-		tx,
-		tn.PreferredAsset,
-		alias,
-		cosmos.ZeroUint(),
-		common.NoAddress,
-		cosmos.ZeroUint(),
-		"",
-		"", nil,
-		MarketOrder,
-		0, 0,
-		tn.Owner,
-	)
-
-	// Construct preferred asset swap inbound tx voter
-	txIn := ObservedTx{Tx: tx}
-	txInVoter := NewObservedTxVoter(txIn.Tx.ID, []ObservedTx{txIn})
-	txInVoter.Height = ctx.BlockHeight()
-	txInVoter.FinalisedHeight = ctx.BlockHeight()
-	txInVoter.Tx = txIn
-	mgr.Keeper().SetObservedTxInVoter(ctx, txInVoter)
-
-	// Queue the preferred asset swap
-	if err := mgr.Keeper().SetSwapQueueItem(ctx, *preferredAssetSwap, queueIndex); err != nil {
-		ctx.Logger().Error("fail to add preferred asset swap to queue", "error", err)
-		return err
-	}
-
-	return nil
-}
-
 func IsModuleAccAddress(keeper keeper.Keeper, accAddr cosmos.AccAddress) bool {
 	return accAddr.Equals(keeper.GetModuleAccAddress(AsgardName)) ||
 		accAddr.Equals(keeper.GetModuleAccAddress(BondName)) ||
 		accAddr.Equals(keeper.GetModuleAccAddress(ReserveName)) ||
 		accAddr.Equals(keeper.GetModuleAccAddress(LendingName)) ||
 		accAddr.Equals(keeper.GetModuleAccAddress(AffiliateCollectorName)) ||
-		accAddr.Equals(keeper.GetModuleAccAddress(ModuleName))
+		accAddr.Equals(keeper.GetModuleAccAddress(ModuleName)) ||
+		accAddr.Equals(keeper.GetModuleAccAddress(TCYClaimingName)) ||
+		accAddr.Equals(keeper.GetModuleAccAddress(TCYStakeName))
 }
 
 func NewSwapMemo(ctx cosmos.Context, mgr Manager, targetAsset common.Asset, destination common.Address, limit cosmos.Uint, affiliate string, affiliateBps cosmos.Uint) string {
@@ -1285,4 +1255,21 @@ func polPoolValue(ctx cosmos.Context, mgr Manager) (cosmos.Uint, error) {
 	}
 
 	return total, nil
+}
+
+// This removes the first prefix ending with "//" (if there is one) from a KVStore key,
+// such as when obtained through an Iterator, whatever the prefix may be.
+// The "/" at the end of every prefix, together with the "/" added by KVStore GetKey
+// (to ensure that no prefix ever contains another prefix)
+// should ensure that each prefix ends with "//".
+func trimKeyPrefix(key []byte) string {
+	keyString := string(key)
+	if _, after, found := strings.Cut(keyString, "//"); found {
+		return after
+	}
+	return keyString
+}
+
+func IsPeriodLastBlock(ctx cosmos.Context, blocksPerPeriod int64) bool {
+	return ctx.BlockHeight()%blocksPerPeriod == 0
 }

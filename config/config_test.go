@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"gitlab.com/thorchain/thornode/v3/common"
 	. "gopkg.in/check.v1"
 	"gopkg.in/yaml.v2"
 )
@@ -18,6 +19,46 @@ var _ = Suite(&Test{})
 func (Test) TestAllChainsReturned(c *C) {
 	b := Bifrost{}
 	c.Assert(len(b.GetChains()), Equals, reflect.TypeOf(b.Chains).NumField())
+}
+
+func (Test) TestStellarChainConfiguration(c *C) {
+	// Test that Stellar chain is properly configured
+	b := Bifrost{}
+	chains := b.GetChains()
+
+	// Verify Stellar chain is included in the chains map
+	_, exists := chains[common.StellarChain]
+	c.Assert(exists, Equals, true)
+
+	// Test that the number of chains matches the struct fields
+	c.Assert(len(chains), Equals, reflect.TypeOf(b.Chains).NumField())
+}
+
+func (Test) TestStellarChainMapping(c *C) {
+	// Test that Stellar chain maps to XLM configuration
+	b := Bifrost{
+		Chains: struct {
+			AVAX BifrostChainConfiguration `mapstructure:"avax"`
+			BCH  BifrostChainConfiguration `mapstructure:"bch"`
+			BSC  BifrostChainConfiguration `mapstructure:"bsc"`
+			BTC  BifrostChainConfiguration `mapstructure:"btc"`
+			DOGE BifrostChainConfiguration `mapstructure:"doge"`
+			ETH  BifrostChainConfiguration `mapstructure:"eth"`
+			GAIA BifrostChainConfiguration `mapstructure:"gaia"`
+			LTC  BifrostChainConfiguration `mapstructure:"ltc"`
+			BASE BifrostChainConfiguration `mapstructure:"base"`
+			XRP  BifrostChainConfiguration `mapstructure:"xrp"`
+			XLM  BifrostChainConfiguration `mapstructure:"xlm"`
+		}{
+			XLM: BifrostChainConfiguration{
+				ChainID: common.StellarChain,
+			},
+		},
+	}
+
+	chains := b.GetChains()
+	stellarConfig := chains[common.StellarChain]
+	c.Assert(stellarConfig.ChainID, Equals, common.StellarChain)
 }
 
 func (Test) TestAllDefaultDefined(c *C) {

@@ -1,24 +1,26 @@
 package types
 
 import (
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+)
+
+var (
+	_ sdk.Msg              = &MsgOutboundTx{}
+	_ sdk.HasValidateBasic = &MsgOutboundTx{}
+	_ sdk.LegacyMsg        = &MsgOutboundTx{}
 )
 
 // NewMsgOutboundTx is a constructor function for MsgOutboundTx
-func NewMsgOutboundTx(tx ObservedTx, txID common.TxID, signer cosmos.AccAddress) *MsgOutboundTx {
+func NewMsgOutboundTx(tx common.ObservedTx, txID common.TxID, signer cosmos.AccAddress) *MsgOutboundTx {
 	return &MsgOutboundTx{
 		Tx:     tx,
 		InTxID: txID,
 		Signer: signer,
 	}
 }
-
-// Route should return the route key of the module
-func (m *MsgOutboundTx) Route() string { return RouterKey }
-
-// Type should return the action
-func (m MsgOutboundTx) Type() string { return "set_tx_outbound" }
 
 // ValidateBasic runs stateless checks on the message
 func (m *MsgOutboundTx) ValidateBasic() error {
@@ -32,11 +34,6 @@ func (m *MsgOutboundTx) ValidateBasic() error {
 		return cosmos.ErrUnknownRequest(err.Error())
 	}
 	return nil
-}
-
-// GetSignBytes encodes the message for signing
-func (m *MsgOutboundTx) GetSignBytes() []byte {
-	return cosmos.MustSortJSON(ModuleCdc.MustMarshalJSON(m))
 }
 
 // GetSigners defines whose signature is required

@@ -8,10 +8,10 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 var IsValidTHORName = regexp.MustCompile(`^[a-zA-Z0-9+_-]+$`).MatchString
@@ -46,8 +46,8 @@ func (h ManageTHORNameHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Re
 func (h ManageTHORNameHandler) validate(ctx cosmos.Context, msg MsgManageTHORName) error {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.116.0")):
-		return h.validateV116(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.validateV3_0_0(ctx, msg)
 	default:
 		return errBadVersion
 	}
@@ -64,7 +64,7 @@ func (h ManageTHORNameHandler) validateName(n string) error {
 	return nil
 }
 
-func (h ManageTHORNameHandler) validateV116(ctx cosmos.Context, msg MsgManageTHORName) error {
+func (h ManageTHORNameHandler) validateV3_0_0(ctx cosmos.Context, msg MsgManageTHORName) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -125,15 +125,15 @@ func (h ManageTHORNameHandler) validateV116(ctx cosmos.Context, msg MsgManageTHO
 func (h ManageTHORNameHandler) handle(ctx cosmos.Context, msg MsgManageTHORName) (*cosmos.Result, error) {
 	version := h.mgr.GetVersion()
 	switch {
-	case version.GTE(semver.MustParse("1.116.0")):
-		return h.handleV116(ctx, msg)
+	case version.GTE(semver.MustParse("3.0.0")):
+		return h.handleV3_0_0(ctx, msg)
 	default:
 		return nil, errBadVersion
 	}
 }
 
 // handle process MsgManageTHORName
-func (h ManageTHORNameHandler) handleV116(ctx cosmos.Context, msg MsgManageTHORName) (*cosmos.Result, error) {
+func (h ManageTHORNameHandler) handleV3_0_0(ctx cosmos.Context, msg MsgManageTHORName) (*cosmos.Result, error) {
 	var err error
 
 	enable, _ := h.mgr.Keeper().GetMimir(ctx, "THORNames")
@@ -156,7 +156,7 @@ func (h ManageTHORNameHandler) handleV116(ctx cosmos.Context, msg MsgManageTHORN
 	// check if user is trying to extend expiration
 	if !msg.Coin.Amount.IsZero() {
 		// check that THORName is still valid, can't top up an invalid THORName
-		if err := h.validateName(msg.Name); err != nil {
+		if err = h.validateName(msg.Name); err != nil {
 			return nil, err
 		}
 		var addBlocks int64
@@ -199,7 +199,7 @@ func (h ManageTHORNameHandler) handleV116(ctx cosmos.Context, msg MsgManageTHORN
 	h.mgr.Keeper().SetTHORName(ctx, tn)
 
 	evt := NewEventTHORName(tn.Name, msg.Chain, msg.Address, registrationFeePaid, fundPaid, tn.ExpireBlockHeight, tn.Owner)
-	if err := h.mgr.EventMgr().EmitEvent(ctx, evt); nil != err {
+	if err = h.mgr.EventMgr().EmitEvent(ctx, evt); nil != err {
 		ctx.Logger().Error("fail to emit THORName event", "error", err)
 	}
 

@@ -3,12 +3,12 @@ package common
 import (
 	"fmt"
 
+	"github.com/cometbft/cometbft/crypto"
+	tmsecp256k1 "github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	"github.com/tendermint/tendermint/crypto"
-	tmsecp256k1 "github.com/tendermint/tendermint/crypto/secp256k1"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // One is useful type so THORNode doesn't need to manage 8 zeroes all the time

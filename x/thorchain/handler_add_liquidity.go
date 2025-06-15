@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/armon/go-metrics"
-	"github.com/blang/semver"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 // AddLiquidityHandler is to handle add liquidity
@@ -50,16 +49,6 @@ func (h AddLiquidityHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Resu
 }
 
 func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) error {
-	version := h.mgr.GetVersion()
-	switch {
-	case version.GTE(semver.MustParse("1.131.0")):
-		return h.validateV131(ctx, msg)
-	default:
-		return errBadVersion
-	}
-}
-
-func (h AddLiquidityHandler) validateV131(ctx cosmos.Context, msg MsgAddLiquidity) error {
 	if !msg.Tx.ID.IsBlank() { // don't validate tx if internal txn
 		if err := msg.ValidateBasic(); err != nil {
 			ctx.Logger().Error(err.Error())
@@ -69,6 +58,10 @@ func (h AddLiquidityHandler) validateV131(ctx cosmos.Context, msg MsgAddLiquidit
 
 	if msg.Asset.IsTradeAsset() {
 		return fmt.Errorf("asset cannot be a trade asset")
+	}
+
+	if msg.Asset.IsSecuredAsset() {
+		return fmt.Errorf("asset cannot be a secured asset")
 	}
 
 	// TODO on hard fork move network check to ValidateBasic
@@ -86,7 +79,7 @@ func (h AddLiquidityHandler) validateV131(ctx cosmos.Context, msg MsgAddLiquidit
 	gasAsset := msg.Asset.GetLayer1Asset().GetChain().GetGasAsset()
 	// Even if a destination gas asset pool is empty, the first add liquidity has to be symmetrical,
 	// and so there is no need to check at this stage for whether the addition is of RUNE or Asset or with needsSwap.
-	if !msg.Asset.Equals(gasAsset) {
+	if !msg.Asset.Equals(gasAsset) && !msg.Asset.IsTCY() && !msg.Asset.IsRUJI() {
 		gasPool, err := h.mgr.Keeper().GetPool(ctx, gasAsset)
 		// Note that for a synthetic asset msg.Asset.Chain (unlike msg.Asset.GetChain())
 		// is intentionally used to be the external chain rather than THOR.
@@ -110,7 +103,7 @@ func (h AddLiquidityHandler) validateV131(ctx cosmos.Context, msg MsgAddLiquidit
 	// At present, savers are authorized for:
 	// * layer 1 assets  (BTC, ETH, etc.)
 	// * stable pools (as determined by TOR anchor pool settings)
-	if msg.Asset.IsVaultAsset() {
+	if msg.Asset.IsSyntheticAsset() {
 		// Check if the asset is in the anchor pools
 		isAnchorAsset := false
 		for _, asset := range h.mgr.Keeper().GetAnchors(ctx, common.TOR) {
@@ -157,7 +150,7 @@ func (h AddLiquidityHandler) validateV131(ctx cosmos.Context, msg MsgAddLiquidit
 
 	// check if swap meets standards
 	if h.needsSwap(msg) {
-		if !msg.Asset.IsVaultAsset() {
+		if !msg.Asset.IsSyntheticAsset() {
 			return fmt.Errorf("swap & add liquidity is only available for synthetic pools")
 		}
 		if !msg.Asset.GetLayer1Asset().Equals(msg.Tx.Coins[0].Asset) {
@@ -177,10 +170,13 @@ func (h AddLiquidityHandler) validateV131(ctx cosmos.Context, msg MsgAddLiquidit
 	if h.mgr.Keeper().IsChainHalted(ctx, msg.Asset.Chain) || h.mgr.Keeper().IsLPPaused(ctx, msg.Asset.Chain) {
 		return fmt.Errorf("unable to add liquidity while chain has paused LP actions")
 	}
+	if h.mgr.Keeper().IsPoolDepositPaused(ctx, msg.Asset) {
+		return fmt.Errorf("unable to add liquidity, deposits are paused for asset (%s)", msg.Asset.String())
+	}
 
 	ensureLiquidityNoLargerThanBond := h.mgr.GetConstants().GetBoolValue(constants.StrictBondLiquidityRatio)
 	// if the pool is THORChain no need to check economic security
-	if msg.Asset.IsVaultAsset() || !ensureLiquidityNoLargerThanBond {
+	if msg.Asset.IsSyntheticAsset() || !ensureLiquidityNoLargerThanBond {
 		return nil
 	}
 
@@ -212,16 +208,6 @@ func (h AddLiquidityHandler) validateV131(ctx cosmos.Context, msg MsgAddLiquidit
 }
 
 func (h AddLiquidityHandler) handle(ctx cosmos.Context, msg MsgAddLiquidity) error {
-	version := h.mgr.GetVersion()
-	switch {
-	case version.GTE(semver.MustParse("1.121.0")):
-		return h.handleV121(ctx, msg)
-	default:
-		return errBadVersion
-	}
-}
-
-func (h AddLiquidityHandler) handleV121(ctx cosmos.Context, msg MsgAddLiquidity) (errResult error) {
 	// check if we need to swap before adding asset
 	if h.needsSwap(msg) {
 		return h.swap(ctx, msg)
@@ -240,7 +226,7 @@ func (h AddLiquidityHandler) handleV121(ctx cosmos.Context, msg MsgAddLiquidity)
 		defaultPoolStatus := PoolAvailable.String()
 		// only set the pool to default pool status if not for gas asset on the chain
 		if !pool.Asset.Equals(pool.Asset.GetChain().GetGasAsset()) &&
-			!pool.Asset.IsVaultAsset() {
+			!pool.Asset.IsSyntheticAsset() {
 			defaultPoolStatus = h.mgr.GetConstants().GetStringValue(constants.DefaultPoolStatus)
 		}
 		pool.Status = GetPoolStatus(defaultPoolStatus)
@@ -255,14 +241,12 @@ func (h AddLiquidityHandler) handleV121(ctx cosmos.Context, msg MsgAddLiquidity)
 	// set the decimals once.
 	if pool.Decimals == 0 {
 		coin := msg.GetTx().Coins.GetCoin(pool.Asset)
-		if !coin.IsEmpty() {
-			if coin.Decimals > 0 {
-				pool.Decimals = coin.Decimals
-			}
-			ctx.Logger().Info("try update pool decimals", "asset", msg.Asset, "pool decimals", pool.Decimals)
+		if !coin.IsEmpty() && coin.Decimals > 0 {
+			pool.Decimals = coin.Decimals
 			if err = h.mgr.Keeper().SetPool(ctx, pool); err != nil {
 				return ErrInternal(err, "fail to save pool to key value store")
 			}
+			ctx.Logger().Info("update pool decimals", "asset", msg.Asset, "pool decimals", pool.Decimals)
 		}
 	}
 
@@ -270,7 +254,7 @@ func (h AddLiquidityHandler) handleV121(ctx cosmos.Context, msg MsgAddLiquidity)
 	// transaction to commit all funds atomically. For pools of native assets
 	// only, stage is always false
 	stage := false
-	if !msg.Asset.IsVaultAsset() && !msg.Tx.ID.IsBlank() {
+	if !msg.Asset.IsSyntheticAsset() && !msg.Tx.ID.IsBlank() {
 		if !msg.AssetAddress.IsEmpty() && msg.AssetAmount.IsZero() {
 			stage = true
 		}
@@ -360,7 +344,7 @@ func (h AddLiquidityHandler) swap(ctx cosmos.Context, msg MsgAddLiquidity) error
 		ssInterval = 0
 	}
 
-	swapMsg := NewMsgSwap(msg.Tx, msg.Asset, common.NoopAddress, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketOrder, 0, uint64(ssInterval), msg.Signer)
+	swapMsg := NewMsgSwap(msg.Tx, msg.Asset, common.NoopAddress, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, MarketSwap, 0, uint64(ssInterval), msg.Signer)
 
 	// sanity check swap msg
 	handler := NewSwapHandler(h.mgr)
@@ -504,7 +488,7 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 			}
 		}
 
-		if asset.IsVaultAsset() {
+		if asset.IsSyntheticAsset() {
 			// new SU, by default, places the thor address to the rune address,
 			// but here we want it to be on the asset address only
 			su.AssetAddress = assetAddr
@@ -520,7 +504,7 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 		}
 	}
 
-	if asset.IsVaultAsset() {
+	if asset.IsSyntheticAsset() {
 		if su.AssetAddress.IsEmpty() || !su.AssetAddress.IsChain(asset.GetLayer1Asset().GetChain()) {
 			return errAddLiquidityMismatchAddr
 		}
@@ -590,7 +574,7 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 
 	oldPoolUnits := pool.GetPoolUnits()
 	var newPoolUnits, liquidityUnits cosmos.Uint
-	if asset.IsVaultAsset() {
+	if asset.IsSyntheticAsset() {
 		pendingRuneAmt = cosmos.ZeroUint() // sanity check
 		newPoolUnits, liquidityUnits = calculateVaultUnits(oldPoolUnits, balanceAsset, pendingAssetAmt)
 	} else {
@@ -607,7 +591,7 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 	pool.BalanceRune = poolRune
 	pool.BalanceAsset = poolAsset
 	ctx.Logger().Info("post add liquidity", "pool", pool.Asset, "rune", pool.BalanceRune, "asset", pool.BalanceAsset, "LP units", pool.LPUnits, "synth units", pool.SynthUnits, "add liquidity units", liquidityUnits)
-	if (pool.BalanceRune.IsZero() && !asset.IsVaultAsset()) || pool.BalanceAsset.IsZero() {
+	if (pool.BalanceRune.IsZero() && !asset.IsSyntheticAsset()) || pool.BalanceAsset.IsZero() {
 		return ErrInternal(err, "pool cannot have zero rune or asset balance")
 	}
 
@@ -681,7 +665,7 @@ func (h AddLiquidityHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.U
 		if p.Status == PoolSuspended {
 			continue
 		}
-		if p.Asset.IsVaultAsset() {
+		if p.Asset.IsSyntheticAsset() {
 			continue
 		}
 		if p.Asset.IsDerivedAsset() {

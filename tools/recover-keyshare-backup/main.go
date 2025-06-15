@@ -16,11 +16,11 @@ import (
 	"github.com/itchio/lzma"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/cmd"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	"gitlab.com/thorchain/thornode/tools/thorscan"
-	"gitlab.com/thorchain/thornode/x/thorchain"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	"gitlab.com/thorchain/thornode/v3/tools/thorscan"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -95,9 +95,6 @@ func main() {
 	cfg.SetCoinType(cmd.THORChainCoinType)
 	cfg.SetPurpose(cmd.THORChainCoinPurpose)
 	cfg.Seal()
-	types.SetCoinDenomRegex(func() string {
-		return cmd.DenomRegex
-	})
 
 	// prompt for thornode endpoint
 	reader := bufio.NewReader(os.Stdin)
@@ -122,7 +119,7 @@ func main() {
 
 	// get nodes at vault height
 	nodes := []openapi.Node{}
-	nodesUrl := fmt.Sprintf("%s/thorchain/nodes?height=%d", thornode, *vaultResponse.BlockHeight)
+	nodesUrl := fmt.Sprintf("%s/thorchain/nodes?height=%d", thornode, *vaultResponse.StatusSince)
 	err = get(nodesUrl, &nodes)
 	check(err, "Failed to get nodes")
 

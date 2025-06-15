@@ -14,9 +14,9 @@ import (
   dogeec "github.com/eager7/dogd/btcec"
   ltcec "github.com/ltcsuite/ltcd/btcec"
 
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type tssSignableBCH struct {
@@ -62,7 +62,7 @@ func (ts *tssSignableBCH) GetPubKey() *bchec.PublicKey {
 		ts.log.Err(err).Str("pubkey", ts.poolPubKey.String()).Msg("fail to get pubic key from the bech32 pool public key string")
 		return nil
 	}
-	secpPubKey, err := codec.ToTmPubKeyInterface(cpk)
+	secpPubKey, err := codec.ToCmtPubKeyInterface(cpk)
 	if err != nil {
 		ts.log.Err(err).Msgf("%s is not a secp256 k1 public key", ts.poolPubKey)
 		return nil
@@ -114,7 +114,7 @@ func (ts *tssSignableBTC) GetPubKey() *btcec.PublicKey {
 		ts.log.Err(err).Str("pubkey", ts.poolPubKey.String()).Msg("fail to get pubic key from the bech32 pool public key string")
 		return nil
 	}
-	secpPubKey, err := codec.ToTmPubKeyInterface(cpk)
+	secpPubKey, err := codec.ToCmtPubKeyInterface(cpk)
 	if err != nil {
 		ts.log.Err(err).Msgf("%s is not a secp256 k1 public key", ts.poolPubKey)
 		return nil
@@ -166,7 +166,7 @@ func (ts *tssSignableDOGE) GetPubKey() *dogeec.PublicKey {
 		ts.log.Err(err).Str("pubkey", ts.poolPubKey.String()).Msg("fail to get pubic key from the bech32 pool public key string")
 		return nil
 	}
-	secpPubKey, err := codec.ToTmPubKeyInterface(cpk)
+	secpPubKey, err := codec.ToCmtPubKeyInterface(cpk)
 	if err != nil {
 		ts.log.Err(err).Msgf("%s is not a secp256 k1 public key", ts.poolPubKey)
 		return nil
@@ -218,7 +218,7 @@ func (ts *tssSignableLTC) GetPubKey() *ltcec.PublicKey {
 		ts.log.Err(err).Str("pubkey", ts.poolPubKey.String()).Msg("fail to get pubic key from the bech32 pool public key string")
 		return nil
 	}
-	secpPubKey, err := codec.ToTmPubKeyInterface(cpk)
+	secpPubKey, err := codec.ToCmtPubKeyInterface(cpk)
 	if err != nil {
 		ts.log.Err(err).Msgf("%s is not a secp256 k1 public key", ts.poolPubKey)
 		return nil

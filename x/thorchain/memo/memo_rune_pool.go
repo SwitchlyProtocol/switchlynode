@@ -3,10 +3,10 @@ package thorchain
 import (
 	"strings"
 
-	"gitlab.com/thorchain/thornode/common"
-	cosmos "gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // "pool+"
@@ -73,7 +73,7 @@ func NewRunePoolWithdrawMemo(basisPoints cosmos.Uint, affAddr common.Address, af
 func (p *parser) ParseRunePoolWithdrawMemo() (RunePoolWithdrawMemo, error) {
 	basisPoints := p.getUint(1, true, cosmos.ZeroInt().Uint64())
 	affiliateAddress := p.getAddressWithKeeper(2, false, common.NoAddress, common.THORChain)
-	tn := p.getTHORName(2, false, types.NewTHORName("", 0, nil))
+	tn := p.getTHORName(2, false, types.NewTHORName("", 0, nil), -1)
 	affiliateBasisPoints := p.getUintWithMaxValue(3, false, 0, constants.MaxBasisPts)
 	return NewRunePoolWithdrawMemo(basisPoints, affiliateAddress, affiliateBasisPoints, tn), p.Error()
 }

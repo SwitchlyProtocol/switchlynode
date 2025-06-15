@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // GetMimir get a mimir value from key value store
@@ -15,10 +15,10 @@ func (k KVStore) GetMimir(ctx cosmos.Context, key string) (int64, error) {
 }
 
 // GetMimirWithRef is a helper function to more readably insert references (such as Asset MimirString or Chain) into Mimir key templates.
-func (k KVStore) GetMimirWithRef(ctx cosmos.Context, template, ref string) (int64, error) {
+func (k KVStore) GetMimirWithRef(ctx cosmos.Context, template string, ref ...any) (int64, error) {
 	// 'template' should be something like "Halt%sChain" (to halt an arbitrary specified chain)
 	// or "Ragnarok-%s" (to halt the pool of an arbitrary specified Asset (MimirString used for Assets to join Chain and Symbol with a hyphen).
-	key := fmt.Sprintf(template, ref)
+	key := fmt.Sprintf(template, ref...)
 	return k.GetMimir(ctx, key)
 }
 
@@ -51,6 +51,12 @@ func (k KVStore) SetNodeMimir(ctx cosmos.Context, key string, value int64, acc c
 		return err
 	}
 	record.Set(key, value, acc)
+
+	// delete the node mimir if value is negative
+	if value < 0 {
+		record.Delete(key, acc)
+	}
+
 	store := ctx.KVStore(k.storeKey)
 	buf := k.cdc.MustMarshal(&record)
 	if buf == nil || len(record.Mimirs) == 0 {
@@ -104,7 +110,6 @@ func (k KVStore) SetNodePauseChain(ctx cosmos.Context, acc cosmos.AccAddress) {
 
 func (k KVStore) IsOperationalMimir(key string) bool {
 	exactMatches := []string{
-		"BurnSynths",
 		"MintSynths",
 		"TradeAccountsEnabled",
 		"RUNEPoolEnabled",
@@ -114,6 +119,17 @@ func (k KVStore) IsOperationalMimir(key string) bool {
 	for i := range exactMatches {
 		if strings.EqualFold(key, exactMatches[i]) {
 			return true
+		}
+	}
+
+	exactUnmatches := []string{
+		"NodePauseChainBlocks",
+		"PauseLoans",
+		"PauseOnSlashThreshold",
+	}
+	for i := range exactUnmatches {
+		if strings.EqualFold(key, exactUnmatches[i]) {
+			return false
 		}
 	}
 

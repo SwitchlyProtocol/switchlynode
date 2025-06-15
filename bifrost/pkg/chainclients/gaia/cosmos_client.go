@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
+	"github.com/cometbft/cometbft/crypto"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -19,27 +21,26 @@ import (
 	grpctypes "github.com/cosmos/cosmos-sdk/types/grpc"
 	txtypes "github.com/cosmos/cosmos-sdk/types/tx"
 	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/cosmos/cosmos-sdk/x/auth/signing"
-	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	atypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	btypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/tendermint/tendermint/crypto"
-	tssp "gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
+	tssp "gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/runners"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/signercache"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	memo "gitlab.com/thorchain/thornode/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/runners"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/signercache"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	memo "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -47,7 +48,7 @@ import (
 // CosmosSuccessCodes a transaction is considered successful if it returns 0
 // or if tx is unauthorized or already in the mempool (another Bifrost already sent it)
 var CosmosSuccessCodes = map[uint32]bool{
-	errortypes.SuccessABCICode:                true,
+	errorsmod.SuccessABCICode:                 true,
 	errortypes.ErrTxInMempoolCache.ABCICode(): true,
 	errortypes.ErrWrongSequence.ABCICode():    true,
 }
@@ -94,7 +95,7 @@ func NewCosmosClient(
 		return nil, fmt.Errorf("fail to get private key: %w", err)
 	}
 
-	temp, err := cryptocodec.ToTmPubKeyInterface(priv.PubKey())
+	temp, err := cryptocodec.ToCmtPubKeyInterface(priv.PubKey())
 	if err != nil {
 		return nil, fmt.Errorf("fail to get tm pub key: %w", err)
 	}
@@ -120,7 +121,7 @@ func NewCosmosClient(
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	interfaceRegistry.RegisterImplementations((*ctypes.Msg)(nil), &btypes.MsgSend{})
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
-	txConfig := tx.NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_DIRECT})
+	txConfig := authtx.NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_DIRECT})
 
 	// CHANGEME: each THORNode network (e.g. mainnet, mocknet, etc.) may connect to a Cosmos chain with a different chain ID
 	// Implement the logic here for determinine which chain ID to use.
@@ -158,6 +159,7 @@ func NewCosmosClient(
 	}
 
 	c.cosmosScanner, err = NewCosmosBlockScanner(
+		c.cfg.RPCHost,
 		c.cfg.BlockScanner,
 		c.storage,
 		c.thorchainBridge,
@@ -183,10 +185,16 @@ func NewCosmosClient(
 }
 
 // Start Cosmos chain client
-func (c *CosmosClient) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan stypes.ErrataBlock, globalSolvencyQueue chan stypes.Solvency) {
+func (c *CosmosClient) Start(
+	globalTxsQueue chan stypes.TxIn,
+	globalErrataQueue chan stypes.ErrataBlock,
+	globalSolvencyQueue chan stypes.Solvency,
+	globalNetworkFeeQueue chan common.NetworkFee,
+) {
 	c.globalSolvencyQueue = globalSolvencyQueue
+	c.cosmosScanner.globalNetworkFeeQueue = globalNetworkFeeQueue
 	c.tssKeyManager.Start()
-	c.blockScanner.Start(globalTxsQueue)
+	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
 	go runners.SolvencyCheckRunner(c.GetChain(), c, c.thorchainBridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
 }
@@ -219,6 +227,11 @@ func (c *CosmosClient) GetHeight() (int64, error) {
 // GetBlockScannerHeight returns blockscanner height
 func (c *CosmosClient) GetBlockScannerHeight() (int64, error) {
 	return c.blockScanner.PreviousHeight(), nil
+}
+
+// RollbackBlockScanner rolls back the block scanner to the last observed block
+func (c *CosmosClient) RollbackBlockScanner() error {
+	return c.blockScanner.RollbackToLastObserved()
 }
 
 func (c *CosmosClient) GetLatestTxForVault(vault string) (string, string, error) {
@@ -267,7 +280,7 @@ func (c *CosmosClient) GetAccountByAddress(address string, height *big.Int) (com
 	nativeCoins := make([]common.Coin, 0)
 	for _, balance := range balances.Balances {
 		var coin common.Coin
-		coin, err = fromCosmosToThorchain(balance)
+		coin, err = c.cosmosScanner.fromCosmosToThorchain(balance)
 		if err != nil {
 			c.logger.Err(err).Interface("balances", balances.Balances).Msg("wasn't able to convert coins that passed whitelist")
 			continue
@@ -307,7 +320,7 @@ func (c *CosmosClient) processOutboundTx(tx stypes.TxOutItem, thorchainHeight in
 	for _, coin := range tx.Coins {
 		// convert to cosmos coin
 		var cosmosCoin ctypes.Coin
-		cosmosCoin, err = fromThorchainToCosmos(coin)
+		cosmosCoin, err = c.cosmosScanner.fromThorchainToCosmos(coin)
 		if err != nil {
 			c.logger.Warn().Err(err).Interface("tx", tx).Msg("unable to convert coin fromThorchainToCosmos")
 			continue
@@ -393,6 +406,16 @@ func (c *CosmosClient) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signe
 				}
 				c.accts.Set(tx.VaultPubKey, meta)
 			}
+			// Check whether the vault has enough funds for the intended outbound.
+			// If a vault attempts a GAIA outbound with insufficient funds,
+			// the unobserved gas cost will make the vault insolvent.
+			neededCoins := tx.Coins.Add(tx.MaxGas...)
+			for _, neededCoin := range neededCoins {
+				vaultCoin := acc.Coins.GetCoin(neededCoin.Asset)
+				if vaultCoin.Amount.LT(neededCoin.Amount) {
+					return nil, nil, nil, fmt.Errorf("insufficient vault balance (%s): %s < %s", vaultCoin.Asset.String(), vaultCoin.Amount.String(), neededCoin.Amount.String())
+				}
+			}
 		}
 	}
 
@@ -414,7 +437,7 @@ func (c *CosmosClient) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signe
 		c.logger.Err(err).Interface("coin", gasCoins[0]).Msg(err.Error())
 		return nil, nil, nil, err
 	}
-	cCoin, err := fromThorchainToCosmos(gasCoins[0])
+	cCoin, err := c.cosmosScanner.fromThorchainToCosmos(gasCoins[0])
 	if err != nil {
 		err = errors.New("gas coin is not defined in cosmos_assets.go, unable to pay fee")
 		c.logger.Err(err).Msg(err.Error())
@@ -461,15 +484,17 @@ func (c *CosmosClient) signMsg(
 	}
 
 	modeHandler := c.txConfig.SignModeHandler()
-	signingData := signing.SignerData{
+	signingData := authsigning.SignerData{
 		ChainID:       c.chainID,
 		AccountNumber: account,
 		Sequence:      sequence,
 	}
 
-	signBytes, err := modeHandler.GetSignBytes(signingtypes.SignMode_SIGN_MODE_DIRECT, signingData, txBuilder.GetTx())
+	signBytes, err := authsigning.GetSignBytesAdapter(
+		context.Background(), modeHandler, signingtypes.SignMode_SIGN_MODE_DIRECT, signingData, txBuilder.GetTx(),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to GetSignBytes on modeHandler: %w", err)
+		return nil, fmt.Errorf("fail GetSignBytesAdapter(): %w", err)
 	}
 
 	sigData := &signingtypes.SingleSignatureData{
@@ -537,7 +562,7 @@ func (c *CosmosClient) BroadcastTx(tx stypes.TxOutItem, txBytes []byte) (string,
 	c.accts.SeqInc(tx.VaultPubKey)
 	// Only add the transaction to signer cache when it is sure the transaction has been broadcast successfully.
 	// So for other scenario , like transaction already in mempool , invalid account sequence # , the transaction can be rescheduled , and retried
-	if broadcastRes.TxResponse.Code == errortypes.SuccessABCICode {
+	if broadcastRes.TxResponse.Code == errorsmod.SuccessABCICode {
 		if err = c.signerCacheManager.SetSigned(tx.CacheHash(), tx.CacheVault(c.GetChain()), broadcastRes.TxResponse.TxHash); err != nil {
 			c.logger.Err(err).Msg("fail to set signer cache")
 		}

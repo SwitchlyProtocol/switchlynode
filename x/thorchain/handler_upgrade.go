@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strconv"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
-	keeperv1 "gitlab.com/thorchain/thornode/x/thorchain/keeper/v1"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	keeperv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/blang/semver"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 // ProposeUpgradeHandler is to handle the ProposeUpgrade message
@@ -55,13 +56,10 @@ func (h ProposeUpgradeHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Re
 }
 
 func (h ProposeUpgradeHandler) validate(ctx cosmos.Context, msg *MsgProposeUpgrade) error {
-	if h.mgr.GetVersion().GTE(semver.MustParse("2.136.0")) {
-		return h.validateV136(ctx, msg)
-	}
-	return errBadVersion
+	return h.validateV3_0_0(ctx, msg)
 }
 
-func (h ProposeUpgradeHandler) validateV136(ctx cosmos.Context, msg *MsgProposeUpgrade) error {
+func (h ProposeUpgradeHandler) validateV3_0_0(ctx cosmos.Context, msg *MsgProposeUpgrade) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -84,15 +82,47 @@ func (h ProposeUpgradeHandler) validateV136(ctx cosmos.Context, msg *MsgProposeU
 		return cosmos.ErrUnknownRequest(fmt.Sprintf("upgrade proposal already exists: %s", msg.Name))
 	}
 
+	iter := k.GetUpgradeProposalIterator(ctx)
+	defer iter.Close()
+
+	const maxProposalCount = 3
+	count := 0
+	for ; iter.Valid(); iter.Next() {
+		key := iter.Key()
+		value := iter.Value()
+		var proposal types.UpgradeProposal
+		if err := k.Cdc().Unmarshal(value, &proposal); err != nil {
+			return cosmos.ErrUnknownRequest(fmt.Sprintf("failed to unmarshal upgrade proposal: %s", key))
+		}
+
+		if !proposal.Proposer.Equals(msg.Signer) {
+			continue
+		}
+
+		count++
+
+		if count == maxProposalCount {
+			return cosmos.ErrUnknownRequest(fmt.Sprintf("exceeded maximum number of upgrade proposals: %d", maxProposalCount))
+		}
+	}
+
 	return nil
 }
 
 func (h ProposeUpgradeHandler) handle(ctx cosmos.Context, msg *MsgProposeUpgrade) error {
+	return h.handleV3_0_0(ctx, msg)
+}
+
+func (h ProposeUpgradeHandler) handleV3_0_0(ctx cosmos.Context, msg *MsgProposeUpgrade) error {
 	u := msg.Upgrade
 	name := msg.Name
 	k := h.mgr.Keeper()
 
-	if err := k.ProposeUpgrade(ctx, name, u); err != nil {
+	if err := k.ProposeUpgrade(ctx, name, types.UpgradeProposal{
+		Height:   u.Height,
+		Info:     u.Info,
+		Proposer: msg.Signer,
+	}); err != nil {
 		return fmt.Errorf("failed to propose upgrade: %w", err)
 	}
 
@@ -156,25 +186,43 @@ func (h ApproveUpgradeHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Re
 }
 
 func (h ApproveUpgradeHandler) validate(ctx cosmos.Context, msg *MsgApproveUpgrade) error {
-	if h.mgr.GetVersion().GTE(semver.MustParse("2.136.0")) {
-		return h.validateV136(ctx, msg)
-	}
-	return errBadVersion
+	return h.validateV3_0_0(ctx, msg)
 }
 
-func (h ApproveUpgradeHandler) validateV136(ctx cosmos.Context, msg *MsgApproveUpgrade) error {
+func (h ApproveUpgradeHandler) validateV3_0_0(ctx cosmos.Context, msg *MsgApproveUpgrade) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
 
-	if err := signedByActiveNodeAccount(ctx, h.mgr.Keeper(), msg.Signer); err != nil {
+	k := h.mgr.Keeper()
+
+	if err := signedByActiveNodeAccount(ctx, k, msg.Signer); err != nil {
 		return cosmos.ErrUnauthorized(err.Error())
+	}
+
+	u, err := k.GetProposedUpgrade(ctx, msg.Name)
+	if err != nil {
+		return cosmos.ErrUnknownRequest(fmt.Sprintf("failed to get proposed upgrade: %s", msg.Name))
+	}
+
+	if u == nil {
+		return cosmos.ErrUnknownRequest(fmt.Sprintf("upgrade proposal does not exist: %s", msg.Name))
+	}
+
+	// Don't care about error here. If it doesn't exist, it's not approved.
+	v, _ := k.GetUpgradeVote(ctx, msg.Signer, msg.Name)
+	if v {
+		return cosmos.ErrUnknownRequest(fmt.Sprintf("upgrade already approved: %s", msg.Name))
 	}
 
 	return nil
 }
 
 func (h ApproveUpgradeHandler) handle(ctx cosmos.Context, msg *MsgApproveUpgrade) error {
+	return h.handleV3_0_0(ctx, msg)
+}
+
+func (h ApproveUpgradeHandler) handleV3_0_0(ctx cosmos.Context, msg *MsgApproveUpgrade) error {
 	k := h.mgr.Keeper()
 	name := msg.Name
 
@@ -226,25 +274,42 @@ func (h RejectUpgradeHandler) Run(ctx cosmos.Context, m cosmos.Msg) (*cosmos.Res
 }
 
 func (h RejectUpgradeHandler) validate(ctx cosmos.Context, msg *MsgRejectUpgrade) error {
-	if h.mgr.GetVersion().GTE(semver.MustParse("2.136.0")) {
-		return h.validateV136(ctx, msg)
-	}
-	return errBadVersion
+	return h.validateV3_0_0(ctx, msg)
 }
 
-func (h RejectUpgradeHandler) validateV136(ctx cosmos.Context, msg *MsgRejectUpgrade) error {
+func (h RejectUpgradeHandler) validateV3_0_0(ctx cosmos.Context, msg *MsgRejectUpgrade) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
 
+	k := h.mgr.Keeper()
+
 	if err := signedByActiveNodeAccount(ctx, h.mgr.Keeper(), msg.Signer); err != nil {
 		return cosmos.ErrUnauthorized(err.Error())
+	}
+
+	u, err := k.GetProposedUpgrade(ctx, msg.Name)
+	if err != nil {
+		return cosmos.ErrUnknownRequest(fmt.Sprintf("failed to get proposed upgrade: %s", msg.Name))
+	}
+
+	if u == nil {
+		return cosmos.ErrUnknownRequest(fmt.Sprintf("upgrade proposal does not exist: %s", msg.Name))
+	}
+
+	v, err := k.GetUpgradeVote(ctx, msg.Signer, msg.Name)
+	if err == nil && !v {
+		return cosmos.ErrUnknownRequest(fmt.Sprintf("upgrade already rejected: %s", msg.Name))
 	}
 
 	return nil
 }
 
 func (h RejectUpgradeHandler) handle(ctx cosmos.Context, msg *MsgRejectUpgrade) error {
+	return h.handleV3_0_0(ctx, msg)
+}
+
+func (h RejectUpgradeHandler) handleV3_0_0(ctx cosmos.Context, msg *MsgRejectUpgrade) error {
 	k := h.mgr.Keeper()
 	name := msg.Name
 
@@ -261,8 +326,8 @@ func (h RejectUpgradeHandler) handle(ctx cosmos.Context, msg *MsgRejectUpgrade) 
 }
 
 func scheduleUpgradeIfNecessary(ctx cosmos.Context, k keeper.Keeper, name string) error {
-	upgradePlan, upgradeScheduled := k.GetUpgradePlan(ctx)
-	if upgradeScheduled && upgradePlan.Name == name {
+	upgradePlan, upgradePlanErr := k.GetUpgradePlan(ctx)
+	if upgradePlanErr == nil && upgradePlan.Name == name {
 		// already scheduled
 		return nil
 	}
@@ -282,7 +347,7 @@ func scheduleUpgradeIfNecessary(ctx cosmos.Context, k keeper.Keeper, name string
 	}
 
 	if uq.Approved {
-		if upgradeScheduled {
+		if upgradePlanErr == nil {
 			return fmt.Errorf("a different upgrade is already scheduled: %s", upgradePlan.Name)
 		}
 
@@ -298,8 +363,8 @@ func scheduleUpgradeIfNecessary(ctx cosmos.Context, k keeper.Keeper, name string
 }
 
 func clearUpgradeIfNecessary(ctx cosmos.Context, k keeper.Keeper, name string) error {
-	upgradePlan, upgradeScheduled := k.GetUpgradePlan(ctx)
-	if !upgradeScheduled || (upgradeScheduled && upgradePlan.Name != name) {
+	upgradePlan, err := k.GetUpgradePlan(ctx)
+	if err != nil || upgradePlan.Name != name {
 		// upgrade by this name not scheduled
 		return nil
 	}
@@ -320,10 +385,10 @@ func clearUpgradeIfNecessary(ctx cosmos.Context, k keeper.Keeper, name string) e
 // ActiveValidatorAnteHandler called by the ante handler to gate mempool entry and
 // also during deliver to only active validator nodes. Store changes will persist
 // if this function succeeds, regardless of the success of the transaction.
-func ActiveValidatorAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, signer cosmos.AccAddress) error {
+func ActiveValidatorAnteHandler(ctx cosmos.Context, v semver.Version, k keeper.Keeper, signer cosmos.AccAddress) (cosmos.Context, error) {
 	if err := signedByActiveNodeAccount(ctx, k, signer); err != nil {
-		return err
+		return ctx, err
 	}
 
-	return k.DeductNativeTxFeeFromBond(ctx, signer)
+	return ctx, k.DeductNativeTxFeeFromBond(ctx, signer)
 }

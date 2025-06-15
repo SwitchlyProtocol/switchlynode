@@ -6,7 +6,22 @@ count: 1
 type: tx-mimir
 key: RUNEPoolEnabled
 value: 1
-signer: {{ addr_thor_dog }}
+signer: {{ addr_thor_cat }}
+---
+type: tx-mimir
+key: RUNEPoolEnabled
+value: 1
+signer: {{ addr_thor_pig }}
+---
+type: tx-mimir
+key: RUNEPoolEnabled
+value: 1
+signer: {{ addr_thor_frog }}
+---
+type: tx-mimir
+key: RUNEPoolEnabled
+value: 1
+signer: {{ addr_thor_goat }}
 ---
 type: check
 endpoint: http://localhost:1317/thorchain/pools
@@ -44,6 +59,11 @@ count: 1
 ########################################################################################
 # check balances after deposit
 ########################################################################################
+type: check
+endpoint: http://localhost:1317/thorchain/mimir/key/RUNEPoolEnabled
+asserts:
+  - . == 1
+---
 type: check
 endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fox }}
 asserts:
@@ -160,7 +180,8 @@ asserts:
   - .txs[0].result.events[-1].affiliate_address == "{{ addr_thor_cat }}"
   - .txs[0].result.events[-1].affiliate_amount == "0"
   - .txs[0].result.events[-1].affiliate_basis_points == "15"
-  - .txs[0].result.events[-1]|keys|length == 9
+  - .txs[0].result.events[-1].msg_index == "0"
+  - .txs[0].result.events[-1]|keys|length == 10
 ########################################################################################
 # withdraw rune with invalid affiliate pts
 ########################################################################################
@@ -168,7 +189,22 @@ asserts:
 type: tx-mimir
 key: MaxAffiliateFeeBasisPoints
 value: 10
-signer: {{ addr_thor_dog }}
+signer: {{ addr_thor_cat }}
+---
+type: tx-mimir
+key: MaxAffiliateFeeBasisPoints
+value: 10
+signer: {{ addr_thor_pig }}
+---
+type: tx-mimir
+key: MaxAffiliateFeeBasisPoints
+value: 10
+signer: {{ addr_thor_frog }}
+---
+type: tx-mimir
+key: MaxAffiliateFeeBasisPoints
+value: 10
+signer: {{ addr_thor_goat }}
 ---
 type: create-blocks
 count: 1
@@ -182,6 +218,11 @@ memo: "pool-:10000:{{ addr_thor_cat }}:11"
 ---
 type: create-blocks
 count: 1
+---
+type: check
+endpoint: http://localhost:1317/thorchain/mimir/key/MaxAffiliateFeeBasisPoints
+asserts:
+  - . == 10
 ---
 type: check
 endpoint: http://localhost:1317/thorchain/block
@@ -202,7 +243,22 @@ asserts:
 type: tx-mimir
 key: RUNEPoolDepositMaturityBlocks
 value: 2
-signer: {{ addr_thor_dog }}
+signer: {{ addr_thor_cat }}
+---
+type: tx-mimir
+key: RUNEPoolDepositMaturityBlocks
+value: 2
+signer: {{ addr_thor_pig }}
+---
+type: tx-mimir
+key: RUNEPoolDepositMaturityBlocks
+value: 2
+signer: {{ addr_thor_frog }}
+---
+type: tx-mimir
+key: RUNEPoolDepositMaturityBlocks
+value: 2
+signer: {{ addr_thor_goat }}
 ---
 type: create-blocks
 count: 1
@@ -211,6 +267,38 @@ type: check
 endpoint: http://localhost:1317/thorchain/mimir
 asserts:
   - .RUNEPOOLDEPOSITMATURITYBLOCKS == 2
+---
+type: tx-mimir
+key: RUNEPoolHaltDeposit
+value: 1
+signer: {{ addr_thor_goat }}
+---
+type: create-blocks
+count: 1
+---
+type: tx-deposit
+signer: {{ addr_thor_pig }}
+coins:
+  - amount: "10"
+    asset: "THOR.RUNE"
+memo: "pool+"
+---
+type: create-blocks
+count: 1
+---
+type: check
+endpoint: http://localhost:1317/thorchain/block
+asserts:
+  - >
+    select(.txs[0].result.log | contains("RUNEPool deposit paused"))
+---
+type: tx-mimir
+key: RUNEPoolHaltDeposit
+value: 0
+signer: {{ addr_thor_goat }}
+---
+type: create-blocks
+count: 1
 ---
 type: tx-deposit
 signer: {{ addr_thor_pig }}
@@ -227,7 +315,7 @@ endpoint: http://localhost:1317/thorchain/rune_provider/{{ addr_thor_pig }}
 asserts:
   - .rune_address == "{{ addr_thor_pig }}"
   - .deposit_amount == "10"
-  - .last_deposit_height == 8
+  - .last_deposit_height == 11
   - .last_withdraw_height == 0
 ---
 type: check
@@ -259,7 +347,7 @@ endpoint: http://localhost:1317/thorchain/rune_provider/{{ addr_thor_pig }}
 asserts:
   - .rune_address == "{{ addr_thor_pig }}"
   - .deposit_amount == "10" # no change
-  - .last_deposit_height == 8 # no change
+  - .last_deposit_height == 11 # no change
   - .last_withdraw_height == 0
 ---
 type: check
@@ -271,6 +359,38 @@ asserts:
 ########################################################################################
 # withdraw after maturity
 ########################################################################################
+type: tx-mimir
+key: RUNEPoolHaltWithdraw
+value: 1
+signer: {{ addr_thor_goat }}
+---
+type: create-blocks
+count: 1
+---
+type: tx-deposit
+signer: {{ addr_thor_pig }}
+coins:
+  - amount: "0"
+    asset: "THOR.RUNE"
+memo: "pool-:10000"
+---
+type: create-blocks
+count: 1
+---
+type: check
+endpoint: http://localhost:1317/thorchain/block
+asserts:
+  - >
+    select(.txs[0].result.log | contains("RUNEPool withdraw paused"))
+---
+type: tx-mimir
+key: RUNEPoolHaltWithdraw
+value: 0
+signer: {{ addr_thor_goat }}
+---
+type: create-blocks
+count: 1
+---
 type: tx-deposit
 signer: {{ addr_thor_pig }}
 coins:
@@ -288,8 +408,8 @@ asserts:
   - .value == "0"
   - .withdraw_amount == "10"
   - .deposit_amount == "10" # no change
-  - .last_deposit_height == 8 # no change
-  - .last_withdraw_height == 10
+  - .last_deposit_height == 11 # no change
+  - .last_withdraw_height == 16
 ---
 type: check
 endpoint: http://localhost:1317/thorchain/runepool

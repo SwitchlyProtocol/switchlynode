@@ -1,7 +1,8 @@
 package types
 
 import (
-	cosmos "gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
 	. "gopkg.in/check.v1"
 )
 
@@ -12,9 +13,9 @@ var _ = Suite(&MsgConsolidateSuite{})
 func (MsgConsolidateSuite) TestMsgConsolidate(c *C) {
 	addr := GetRandomBech32Addr()
 	c.Check(addr.Empty(), Equals, false)
-	tx := ObservedTx{
+	tx := common.ObservedTx{
 		Tx:             GetRandomTx(),
-		Status:         Status_done,
+		Status:         common.Status_done,
 		OutHashes:      nil,
 		BlockHeight:    1,
 		Signers:        []string{addr.String()},
@@ -23,7 +24,6 @@ func (MsgConsolidateSuite) TestMsgConsolidate(c *C) {
 	}
 	m := NewMsgConsolidate(tx, addr)
 	c.Check(m.ValidateBasic(), IsNil)
-	c.Check(m.Type(), Equals, "consolidate")
 	EnsureMsgBasicCorrect(m, c)
 	mEmpty := NewMsgConsolidate(tx, cosmos.AccAddress{})
 	c.Assert(mEmpty.ValidateBasic(), NotNil)

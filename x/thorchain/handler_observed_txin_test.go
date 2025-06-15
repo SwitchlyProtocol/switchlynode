@@ -8,10 +8,10 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type HandlerObservedTxInSuite struct{}
@@ -336,7 +336,7 @@ func (s *HandlerObservedTxInSuite) testHandleWithConfirmation(c *C) {
 	// make sure fund has been credit to vault correctly
 	ethCoin = keeper.vault.Coins.GetCoin(common.ETHAsset)
 	c.Assert(ethCoin.Amount.Equal(cosmos.OneUint()), Equals, true)
-	c.Check(keeper.msg.Tx.ID.Equals(tx.ID), Equals, true)
+	c.Check(keeper.msg.Tx.ID.String(), Equals, tx.ID.String())
 
 	// third finalised message
 	fMsg3 := NewMsgObservedTxIn(txs, keeper.nas[3].NodeAddress)
@@ -350,7 +350,7 @@ func (s *HandlerObservedTxInSuite) testHandleWithConfirmation(c *C) {
 	// make sure fund has not been doubled
 	ethCoin = keeper.vault.Coins.GetCoin(common.ETHAsset)
 	c.Assert(ethCoin.Amount.Equal(cosmos.OneUint()), Equals, true)
-	c.Check(keeper.msg.Tx.ID.Equals(tx.ID), Equals, true)
+	c.Check(keeper.msg.Tx.ID.String(), Equals, tx.ID.String())
 }
 
 func (s *HandlerObservedTxInSuite) testHandleWithVersion(c *C) {
@@ -386,7 +386,7 @@ func (s *HandlerObservedTxInSuite) testHandleWithVersion(c *C) {
 	_, err = handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
 	mgr.ObMgr().EndBlock(ctx, keeper)
-	c.Check(keeper.msg.Tx.ID.Equals(tx.ID), Equals, true)
+	c.Check(keeper.msg.Tx.ID.String(), Equals, tx.ID.String())
 	c.Check(keeper.observing, HasLen, 1)
 	c.Check(keeper.height, Equals, int64(12))
 	ethCoin := keeper.vault.Coins.GetCoin(common.ETHAsset)
@@ -728,7 +728,8 @@ func (s HandlerObservedTxInSuite) TestSwapWithAffiliate(c *C) {
 	ctx, mgr := setupManagerForTest(c)
 
 	queue := newSwapQueueVCUR(mgr.Keeper())
-	handler := NewObservedTxInHandler(mgr)
+
+	affAddr := GetRandomTHORAddress()
 
 	msg := NewMsgSwap(common.Tx{
 		ID:          common.TxID("5E1DF027321F1FE37CA19B9ECB11C2B4ABEC0D8322199D335D9CE4C39F85F115"),
@@ -739,18 +740,19 @@ func (s HandlerObservedTxInSuite) TestSwapWithAffiliate(c *C) {
 		},
 		Chain: common.ETHChain,
 		Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(2*common.One))},
-	}, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), GetRandomTHORAddress(), cosmos.NewUint(1000),
+		Memo:  "=:ETH.ETH:" + GetRandomETHAddress().String() + "::" + affAddr.String() + ":1000",
+	}, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), affAddr, cosmos.NewUint(1000),
 		"",
 		"", nil,
-		MarketOrder,
+		MarketSwap,
 		0, 0, GetRandomBech32Addr(),
 	)
-	handler.addSwap(ctx, *msg)
+	// no affiliate fees
+	addSwap(ctx, mgr.Keeper(), mgr.AdvSwapQueueMgr(), mgr.EventMgr(), *msg)
 	swaps, err := queue.FetchQueue(ctx)
 	c.Assert(err, IsNil)
-	c.Assert(swaps, HasLen, 2, Commentf("%d", len(swaps)))
-	c.Check(swaps[0].msg.Tx.Coins[0].Amount.Uint64(), Equals, uint64(180000000))
-	c.Check(swaps[1].msg.Tx.Coins[0].Amount.Uint64(), Equals, uint64(20000000))
+	c.Assert(swaps, HasLen, 1, Commentf("%d", len(swaps)))
+	c.Check(swaps[0].msg.Tx.Coins[0].Amount.Uint64(), Equals, uint64(200000000))
 }
 
 func (s *HandlerObservedTxInSuite) TestVaultStatus(c *C) {
@@ -851,7 +853,7 @@ func (s *HandlerObservedTxInSuite) TestObservingSlashing(c *C) {
 	observedTx.Tx.ToAddress, err = observedTx.ObservedPubKey.GetAddress(observedTx.Tx.Chain)
 	c.Assert(err, IsNil)
 
-	msg := NewMsgObservedTxIn([]ObservedTx{observedTx}, cosmos.AccAddress{})
+	msg := NewMsgObservedTxIn([]common.ObservedTx{observedTx}, cosmos.AccAddress{})
 	handler := NewObservedTxInHandler(mgr)
 
 	broadcast := func(c *C, ctx cosmos.Context, na NodeAccount, msg *MsgObservedTxIn) {
@@ -894,24 +896,35 @@ func (s *HandlerObservedTxInSuite) TestObservingSlashing(c *C) {
 	broadcast(c, ctx, nas[0], msg)
 	checkSlashPoints(c, ctx, nas, [7]int64{2, 0, 0, 0, 2, 2, 0})
 
-	// Within the ObservationDelayFlexibility period, nas[4] observes
-	// (and is decremented LackOfObservationPenalty).
+	// consensusMsg should be consistent with the consensus-observed message,
+	// but with a slightly later BlockHeight and FinaliseHeight,
+	// which is normal.
+	consensusMsg := msg
+	consensusMsg.Txs = []common.ObservedTx{msg.Txs[0]}
+	consensusMsg.Txs[0].BlockHeight++
+	consensusMsg.Txs[0].FinaliseHeight++
+
+	// Within the ObservationDelayFlexibility period, nas[4] observes with consensusMsg
+	// and is decremented LackOfObservationPenalty.
 	height += observeFlex
 	ctx = ctx.WithBlockHeight(height)
-	broadcast(c, ctx, nas[4], msg)
+	broadcast(c, ctx, nas[4], consensusMsg)
 	checkSlashPoints(c, ctx, nas, [7]int64{2, 0, 0, 0, 0, 2, 0})
 
 	// The ObservationDelayFlexibility period ends, after which nas[5] observes;
-	// it is not incremented ObserveSlashPoints (and it is added to the list of signers)
-	// and is also not decremented LackOfObservationPenalty.
+	// it is appropriately incremented ObserveSlashPoints since the network has to handle the observations
+	// (and it is added to the list of signers)
+	// and being past the ObservationDelayFlexibility period
+	// neither ObserveSlashPoints nor LackOfObservationPenalty is decremented.
 	height++
 	ctx = ctx.WithBlockHeight(height)
 	broadcast(c, ctx, nas[5], msg)
-	checkSlashPoints(c, ctx, nas, [7]int64{2, 0, 0, 0, 0, 2, 0})
+
+	checkSlashPoints(c, ctx, nas, [7]int64{2, 0, 0, 0, 0, 3, 0})
 
 	// nas[5] observes again, this time incremented ObserveSlashPoints for the extra signing.
 	broadcast(c, ctx, nas[5], msg)
-	checkSlashPoints(c, ctx, nas, [7]int64{2, 0, 0, 0, 0, 3, 0})
+	checkSlashPoints(c, ctx, nas, [7]int64{2, 0, 0, 0, 0, 4, 0})
 
 	// Note that nas[6], the Standby node, remains unaffected by the Actives nodes' observations.
 }

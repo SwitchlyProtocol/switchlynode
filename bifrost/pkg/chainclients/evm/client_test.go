@@ -10,22 +10,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/cmd"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
-	types2 "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/cmd"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
+	types2 "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func TestEVMPackage(t *testing.T) { TestingT(t) }
@@ -71,7 +73,7 @@ func (s *EVMSuite) SetUpTest(c *C) {
 			c.Assert(err, IsNil)
 		case thorclient.PubKeysEndpoint:
 			priKey, _ := s.thorKeys.GetPrivateKey()
-			tm, _ := codec.ToTmPubKeyInterface(priKey.PubKey())
+			tm, _ := cryptocodec.ToCmtPubKeyInterface(priKey.PubKey())
 			pk, err := common.NewPubKeyFromCrypto(tm)
 			c.Assert(err, IsNil)
 			content, err := os.ReadFile("../../../../test/fixtures/endpoints/vaults/pubKeys.json")
@@ -117,7 +119,7 @@ func (s *EVMSuite) SetUpTest(c *C) {
 			err = json.Unmarshal(body, &rpcRequest)
 			c.Assert(err, IsNil)
 			if rpcRequest.Method == "eth_getBalance" {
-				_, err = rw.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":"0x3b9aca00"}`))
+				_, err = rw.Write([]byte(`{"jsonrpc":"2.0","id":1,"result":"0x8ac7230489e80000"}`))
 				c.Assert(err, IsNil)
 			}
 			if rpcRequest.Method == "eth_getTransactionCount" {
@@ -206,7 +208,10 @@ func (s *EVMSuite) SetUpTest(c *C) {
 		ChainHomeFolder: s.thordir,
 	}
 
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
@@ -255,7 +260,6 @@ func (s *EVMSuite) TestConvertSigningAmount(c *C) {
 	a, err := NewEVMClient(s.thorKeys, config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			RPCHost:            "http://" + s.server.Listener.Addr().String(),
 			StartBlockHeight:   1, // avoids querying thorchain for block height
 			HTTPRequestTimeout: time.Second,
 		},
@@ -278,7 +282,6 @@ func (s *EVMSuite) TestGetTokenAddressFromAsset(c *C) {
 		ChainID: common.AVAXChain,
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			RPCHost:            "http://" + s.server.Listener.Addr().String(),
 			StartBlockHeight:   1, // avoids querying thorchain for block height
 			HTTPRequestTimeout: time.Second,
 		},
@@ -304,7 +307,6 @@ func (s *EVMSuite) TestClient(c *C) {
 		ChainID: common.AVAXChain,
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			RPCHost:            "http://" + s.server.Listener.Addr().String(),
 			StartBlockHeight:   1, // avoids querying thorchain for block height
 			HTTPRequestTimeout: time.Second,
 		},
@@ -323,7 +325,7 @@ func (s *EVMSuite) TestClient(c *C) {
 	acct, err := a2.GetAccount(types2.GetRandomPubKey(), nil)
 	c.Assert(err, IsNil)
 	c.Check(acct.Sequence, Equals, int64(0))
-	c.Check(acct.Coins[0].Amount.Uint64(), Equals, uint64(0))
+	c.Check(acct.Coins[0].Amount.Uint64(), Equals, uint64(10*common.One))
 	pk := types2.GetRandomPubKey()
 	addr := a2.GetAddress(pk)
 	c.Check(len(addr), Equals, 42)
@@ -385,6 +387,69 @@ func (s *EVMSuite) TestClient(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *EVMSuite) TestL1FeeDeduction(c *C) {
+	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
+	c.Assert(err, IsNil)
+	c.Assert(pubkeyMgr.Start(), IsNil)
+	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	chainConfig := config.BifrostChainConfiguration{
+		ChainID: common.AVAXChain,
+		RPCHost: "http://" + s.server.Listener.Addr().String(),
+		BlockScanner: config.BifrostBlockScannerConfiguration{
+			StartBlockHeight:   1, // avoids querying thorchain for block height
+			HTTPRequestTimeout: time.Second,
+			MaxGasLimit:        80000,
+		},
+	}
+	chainConfig.EVM.AggregatorMaxGasMultiplier = 10
+	chainConfig.EVM.TokenMaxGasMultiplier = 3
+	e, err := NewEVMClient(s.thorKeys, chainConfig, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
+	c.Assert(err, IsNil)
+	c.Assert(e, NotNil)
+
+	// sign tx without extra L1 gas fee
+	pubkeys := pubkeyMgr.GetPubKeys()
+	addr, err := pubkeys[len(pubkeys)-1].GetAddress(common.AVAXChain)
+	c.Assert(err, IsNil)
+	result, _, obs, err := e.SignTx(stypes.TxOutItem{
+		Chain:       common.AVAXChain,
+		ToAddress:   addr,
+		VaultPubKey: e.localPubKey,
+		Coins: common.Coins{
+			common.NewCoin(common.AVAXAsset, cosmos.NewUint(common.One)),
+		},
+		MaxGas: common.Gas{
+			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),
+		},
+		GasRate: 1,
+		Memo:    "OUT:4D91ADAFA69765E7805B5FF2F3A0BA1DBE69E37A1CFCD20C48B99C528AA3EE87",
+	}, 1)
+	c.Assert(err, IsNil)
+	c.Assert(result, NotNil)
+	c.Assert(obs, NotNil)
+	c.Assert(obs.Gas[0].Amount.Uint64(), Equals, e.cfg.BlockScanner.MaxGasLimit*4)
+
+	// sign tx with extra L1 gas fee
+	e.cfg.EVM.ExtraL1GasFee = int64(700)
+	result, _, obs, err = e.SignTx(stypes.TxOutItem{
+		Chain:       common.AVAXChain,
+		ToAddress:   addr,
+		VaultPubKey: e.localPubKey,
+		Coins: common.Coins{
+			common.NewCoin(common.AVAXAsset, cosmos.NewUint(common.One)),
+		},
+		MaxGas: common.Gas{
+			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),
+		},
+		GasRate: 1,
+		Memo:    "OUT:4D91ADAFA69765E7805B5FF2F3A0BA1DBE69E37A1CFCD20C48B99C528AA3EE87",
+	}, 1)
+	c.Assert(err, IsNil)
+	c.Assert(result, NotNil)
+	c.Assert(obs, NotNil)
+	c.Assert(obs.Gas[0].Amount.Uint64(), Equals, e.cfg.BlockScanner.MaxGasLimit*4-700)
+}
+
 func (s *EVMSuite) TestGetAccount(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
@@ -393,7 +458,6 @@ func (s *EVMSuite) TestGetAccount(c *C) {
 		ChainID: common.AVAXChain,
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			RPCHost:            "http://" + s.server.Listener.Addr().String(),
 			StartBlockHeight:   1, // avoids querying thorchain for block height
 			HTTPRequestTimeout: time.Second,
 		},
@@ -414,18 +478,18 @@ func (s *EVMSuite) TestSignEVMTx(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
 	poolMgr := thorclient.NewPoolMgr(s.bridge)
-	e, err := NewEVMClient(s.thorKeys, config.BifrostChainConfiguration{
+	chainConfig := config.BifrostChainConfiguration{
 		ChainID: common.AVAXChain,
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			RPCHost:            "http://" + s.server.Listener.Addr().String(),
 			StartBlockHeight:   1, // avoids querying thorchain for block height
 			HTTPRequestTimeout: time.Second,
 			MaxGasLimit:        80000,
 		},
-		AggregatorMaxGasMultiplier: 10,
-		TokenMaxGasMultiplier:      3,
-	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
+	}
+	chainConfig.EVM.AggregatorMaxGasMultiplier = 10
+	chainConfig.EVM.TokenMaxGasMultiplier = 3
+	e, err := NewEVMClient(s.thorKeys, chainConfig, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(err, IsNil)
 	c.Assert(e, NotNil)
 	c.Assert(pubkeyMgr.Start(), IsNil)
@@ -501,7 +565,7 @@ func (s *EVMSuite) TestSignEVMTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(common.AVAXAsset, cosmos.NewUint(1e18)),
+			common.NewCoin(common.AVAXAsset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),
@@ -525,7 +589,7 @@ func (s *EVMSuite) TestSignEVMTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(asset, cosmos.NewUint(1e18)),
+			common.NewCoin(asset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),
@@ -546,7 +610,7 @@ func (s *EVMSuite) TestSignEVMTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(common.AVAXAsset, cosmos.NewUint(1e18)),
+			common.NewCoin(common.AVAXAsset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),
@@ -567,7 +631,7 @@ func (s *EVMSuite) TestSignEVMTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(asset, cosmos.NewUint(1e18)),
+			common.NewCoin(asset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),
@@ -588,7 +652,7 @@ func (s *EVMSuite) TestSignEVMTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(common.AVAXAsset, cosmos.NewUint(1e18)),
+			common.NewCoin(common.AVAXAsset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),
@@ -609,7 +673,7 @@ func (s *EVMSuite) TestSignEVMTx(c *C) {
 		ToAddress:   addr,
 		VaultPubKey: e.localPubKey,
 		Coins: common.Coins{
-			common.NewCoin(asset, cosmos.NewUint(1e18)),
+			common.NewCoin(asset, cosmos.NewUint(common.One)),
 		},
 		MaxGas: common.Gas{
 			common.NewCoin(common.AVAXAsset, cosmos.NewUint(e.cfg.BlockScanner.MaxGasLimit*4)),

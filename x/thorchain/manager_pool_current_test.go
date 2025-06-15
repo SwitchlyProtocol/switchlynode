@@ -3,10 +3,10 @@ package thorchain
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type PoolMgrVCURSuite struct{}
@@ -145,7 +145,7 @@ func (s *PoolMgrVCURSuite) TestAbandonPool(c *C) {
 		if e.Type == "withdraw" {
 			actual := make(map[string]string)
 			for _, attr := range e.Attributes {
-				actual[string(attr.Key)] = string(attr.Value)
+				actual[attr.Key] = attr.Value
 			}
 			c.Assert(actual, DeepEquals, expected)
 		}

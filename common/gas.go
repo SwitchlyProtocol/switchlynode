@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"sort"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 // Gas coins
@@ -22,13 +22,19 @@ func GetEVMGasFee(chain Chain, gasPrice *big.Int, msgLen uint64) Gas {
 	}
 }
 
-func MakeEVMGas(chain Chain, gasPrice *big.Int, gas uint64) Gas {
+func MakeEVMGas(chain Chain, gasPrice *big.Int, gas uint64, layer1Fee *big.Int) Gas {
 	unroundedGasAmt := cosmos.NewUint(gas).Mul(cosmos.NewUintFromBigInt(gasPrice))
-	roundedGasAmt := unroundedGasAmt.QuoUint64(One * 100)
-	if unroundedGasAmt.GT(roundedGasAmt.MulUint64(One * 100)) {
+
+	// If there's a separate layer1Fee (for instance for BASEChain), add it before rounding.
+	if layer1Fee != nil {
+		unroundedGasAmt = unroundedGasAmt.Add(cosmos.NewUintFromBigInt(layer1Fee))
+	}
+
+	roundedGasAmt := unroundedGasAmt.QuoUint64(1e10) // EVM's 1e18 / 1e10 -> THORChain's 1e8
+	if unroundedGasAmt.GT(roundedGasAmt.MulUint64(1e10)) || roundedGasAmt.IsZero() {
 		// Round gas amount up rather than down,
 		// to increase rather than decrease solvency.
-		roundedGasAmt = roundedGasAmt.Add(cosmos.NewUint(1))
+		roundedGasAmt = roundedGasAmt.Add(cosmos.OneUint())
 	}
 
 	return Gas{

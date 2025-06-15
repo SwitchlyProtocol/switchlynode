@@ -1,5 +1,5 @@
-//go:build !mocknet && !stagenet
-// +build !mocknet,!stagenet
+//go:build !mocknet
+// +build !mocknet
 
 package config
 
@@ -10,16 +10,21 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
-
-	"gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 const (
-	rpcPort = 27147
-	p2pPort = 27146
+	rpcPort      = 27147
+	p2pPort      = 27146
+	ebifrostPort = 50051
 )
 
 func getSeedAddrs() (addrs []string) {
+	if config.Thornode.SeedNodesEndpoint == "" {
+		log.Warn().Msg("no seed nodes endpoint provided")
+		return
+	}
+
 	// get nodes
 	res, err := http.Get(config.Thornode.SeedNodesEndpoint)
 	if err != nil {
@@ -56,6 +61,11 @@ func getSeedAddrs() (addrs []string) {
 }
 
 func assertBifrostHasSeeds() {
+	if config.Thornode.SeedNodesEndpoint == "" {
+		log.Warn().Msg("no seed nodes endpoint provided, skipping seed file check")
+		return
+	}
+
 	// fail if seed file is missing or empty since bifrost will hang
 	seedPath := os.ExpandEnv("$HOME/.thornode/address_book.seed")
 	fi, err := os.Stat(seedPath)

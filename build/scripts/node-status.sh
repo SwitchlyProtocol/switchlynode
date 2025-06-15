@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -o pipefail
 format_1e8() {
@@ -13,9 +13,9 @@ calc_progress() {
   if [ "$1" = "$2" ]; then
     [ "$1" = "0" ] && echo "0.000%" || echo "100.000%"
   elif [ -n "$3" ]; then
-    progress="$(echo "scale=6; $3 * 100" | bc 2>/dev/null)" 2>/dev/null && printf "%.3f%%" "$progress" || echo "Error"
+    progress="$(echo "$3 100" | awk '{printf "%.6f", $1 * $2}' 2>/dev/null)" && printf "%.3f%%" "$progress" || echo "Error"
   else
-    progress="$(echo "scale=6; $1/$2 * 100" | bc 2>/dev/null)" 2>/dev/null && printf "%.3f%%" "$progress" || echo "Error"
+    progress="$(echo "$1 $2" | awk '{printf "%.6f", ($1/$2) * 100}' 2>/dev/null)" && printf "%.3f%%" "$progress" || echo "Error"
   fi
 }
 
@@ -28,10 +28,13 @@ LITECOIN_ENDPOINT="${LTC_HOST:-litecoin-daemon:${LITECOIN_DAEMON_SERVICE_PORT_RP
 BITCOIN_CASH_ENDPOINT="${BCH_HOST:-bitcoin-cash-daemon:${BITCOIN_CASH_DAEMON_SERVICE_PORT_RPC:-8332}}"
 DOGECOIN_ENDPOINT="${DOGE_HOST:-dogecoin-daemon:${DOGECOIN_DAEMON_SERVICE_PORT_RPC:-22555}}"
 ETHEREUM_ENDPOINT="${ETH_HOST:-http://ethereum-daemon:${ETHEREUM_DAEMON_SERVICE_PORT_RPC:-8545}}"
+# trunk-ignore(shellcheck/SC2001)
 ETHEREUM_BEACON_ENDPOINT=$(echo "$ETHEREUM_ENDPOINT" | sed 's/:[0-9]*$/:3500/g')
-BINANCE_SMART_ENDPOINT="${BSC_HOST:-http://binance-smart-daemon:${BINANCE_SMART_DAEMON_SERVICE_PORT_RPC:-8545}}"
+BINANCE_SMART_ENDPOINT="${BIFROST_CHAINS_BSC_RPC_HOST:-http://binance-smart-daemon:${BINANCE_SMART_DAEMON_SERVICE_PORT_RPC:-8545}}"
+BASE_ENDPOINT="${BIFROST_CHAINS_BASE_RPC_HOST:-http://base-daemon:${BASE_DAEMON_SERVICE_PORT_RPC:-8545}}"
 GAIA_ENDPOINT="${GAIA_HOST:-http://gaia-daemon:26657}"
 AVALANCHE_ENDPOINT="${AVAX_HOST:-http://avalanche-daemon:9650/ext/bc/C/rpc}"
+XRP_ENDPOINT="${BIFROST_CHAINS_XRP_RPC_HOST:-http://xrp-daemon:${XRP_DAEMON_SERVICE_PORT_RPC:-51234}}"
 
 ADDRESS=$(echo "$SIGNER_PASSWD" | thornode keys show "$SIGNER_NAME" -a --keyring-backend file)
 JSON=$(curl -sL --fail -m 10 "$API/thorchain/node/$ADDRESS")
@@ -115,16 +118,38 @@ if [ "$VALIDATOR" = "true" ]; then
   AVAX_PROGRESS=$(calc_progress "$AVAX_SYNC_HEIGHT" "$AVAX_HEIGHT")
 
   # calculate BSC chain sync progress
-  if [ -z "$BSC_DISABLED" ]; then
-    BSC_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H 'content-type: application/json' "https://bsc.nodereal.io")
-    BSC_SYNC_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H 'content-type: application/json' "$BINANCE_SMART_ENDPOINT")
-    BSC_HEIGHT=$(printf "%.0f" "$(echo "$BSC_HEIGHT_RESULT" | jq -r ".result")")
-    if [ -n "$BSC_SYNC_HEIGHT_RESULT" ]; then
-      BSC_SYNC_HEIGHT=$(printf "%.0f" "$(echo "$BSC_SYNC_HEIGHT_RESULT" | jq -r ".result")")
+  BSC_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H 'content-type: application/json' "https://bsc.nodereal.io")
+  BSC_SYNC_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H 'content-type: application/json' "$BINANCE_SMART_ENDPOINT")
+  BSC_HEIGHT=$(printf "%.0f" "$(echo "$BSC_HEIGHT_RESULT" | jq -r ".result")")
+  if [ -n "$BSC_SYNC_HEIGHT_RESULT" ]; then
+    BSC_SYNC_HEIGHT=$(printf "%.0f" "$(echo "$BSC_SYNC_HEIGHT_RESULT" | jq -r ".result")")
+  else
+    BSC_SYNC_HEIGHT=0
+  fi
+  BSC_PROGRESS=$(calc_progress "$BSC_SYNC_HEIGHT" "$BSC_HEIGHT")
+
+  # calculate BASE chain sync progress
+  BASE_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H 'content-type: application/json' "https://base.llamarpc.com")
+  BASE_SYNC_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' -H 'content-type: application/json' "$BASE_ENDPOINT")
+  BASE_HEIGHT=$(printf "%.0f" "$(echo "$BASE_HEIGHT_RESULT" | jq -r ".result")")
+  if [ -n "$BASE_SYNC_HEIGHT_RESULT" ]; then
+    BASE_SYNC_HEIGHT=$(printf "%.0f" "$(echo "$BASE_SYNC_HEIGHT_RESULT" | jq -r ".result")")
+  else
+    BASE_SYNC_HEIGHT=0
+  fi
+  BASE_PROGRESS=$(calc_progress "$BASE_SYNC_HEIGHT" "$BASE_HEIGHT")
+
+  # calculate XRP chain sync progress
+  if [ "$BIFROST_CHAINS_XRP_DISABLED" = "false" ]; then
+    XRP_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"ledger","params":[{"ledger_index":"validated"}],"id":1}' -H 'content-type: application/json' "https://s1.ripple.com:51234")
+    XRP_SYNC_HEIGHT_RESULT=$(curl -X POST -sL --fail -m 10 --data '{"jsonrpc":"2.0","method":"ledger","params":[{"ledger_index":"validated"}],"id":1}' -H 'content-type: application/json' "$XRP_ENDPOINT")
+    XRP_HEIGHT=$(printf "%.0f" "$(echo "$XRP_HEIGHT_RESULT" | jq -r ".result.ledger.ledger_index")")
+    if [ -n "$XRP_SYNC_HEIGHT_RESULT" ]; then
+      XRP_SYNC_HEIGHT=$(printf "%.0f" "$(echo "$XRP_SYNC_HEIGHT_RESULT" | jq -r ".result.ledger.ledger_index")")
     else
-      BSC_SYNC_HEIGHT=0
+      XRP_SYNC_HEIGHT=0
     fi
-    BSC_PROGRESS=$(calc_progress "$BSC_SYNC_HEIGHT" "$BSC_HEIGHT")
+    XRP_PROGRESS=$(calc_progress "$XRP_SYNC_HEIGHT" "$XRP_HEIGHT")
   fi
 fi
 
@@ -188,6 +213,8 @@ DOGE_HEIGHT=${DOGE_HEIGHT:=0}
 DOGE_SYNC_HEIGHT=${DOGE_SYNC_HEIGHT:=0}
 GAIA_HEIGHT=${GAIA_HEIGHT:=0}
 GAIA_SYNC_HEIGHT=${GAIA_SYNC_HEIGHT:=0}
+BASE_HEIGHT=${BASE_HEIGHT:=0}
+BASE_SYNC_HEIGHT=${BASE_SYNC_HEIGHT:=0}
 
 echo
 printf "%-18s %-10s %-14s %-10s\n" CHAIN SYNC BEHIND TIP
@@ -202,8 +229,10 @@ if [ "$VALIDATOR" = "true" ]; then
   printf "%-18s %-10s %-14s %-10s\n" DOGE "$DOGE_PROGRESS" "$(format_int $((DOGE_SYNC_HEIGHT - DOGE_HEIGHT)))" "$(format_int "$DOGE_HEIGHT")"
   printf "%-18s %-10s %-14s %-10s\n" GAIA "$GAIA_PROGRESS" "$(format_int $((GAIA_SYNC_HEIGHT - GAIA_HEIGHT)))" "$(format_int "$GAIA_HEIGHT")"
   printf "%-18s %-10s %-14s %-10s\n" AVAX "$AVAX_PROGRESS" "$(format_int $((AVAX_SYNC_HEIGHT - AVAX_HEIGHT)))" "$(format_int "$AVAX_HEIGHT")"
-  if [ -z "$BSC_DISABLED" ]; then
-    printf "%-18s %-10s %-14s %-10s\n" BSC "$BSC_PROGRESS" "$(format_int $((BSC_SYNC_HEIGHT - BSC_HEIGHT)))" "$(format_int "$BSC_HEIGHT")"
+  printf "%-18s %-10s %-14s %-10s\n" BSC "$BSC_PROGRESS" "$(format_int $((BSC_SYNC_HEIGHT - BSC_HEIGHT)))" "$(format_int "$BSC_HEIGHT")"
+  printf "%-18s %-10s %-14s %-10s\n" BASE "$BASE_PROGRESS" "$(format_int $((BASE_SYNC_HEIGHT - BASE_HEIGHT)))" "$(format_int "$BASE_HEIGHT")"
+  if [ "$BIFROST_CHAINS_XRP_DISABLED" = "false" ]; then
+    printf "%-18s %-10s %-14s %-10s\n" XRP "$XRP_PROGRESS" "$(format_int $((XRP_SYNC_HEIGHT - XRP_HEIGHT)))" "$(format_int "$XRP_HEIGHT")"
   fi
 fi
 
@@ -216,7 +245,8 @@ fi
 MIMIR=$(curl -sL --fail -m 10 "$API/thorchain/mimir")
 CONSTANTS=$(curl -sL --fail -m 10 "$API/thorchain/constants")
 VAULTS=$(curl -sL --fail -m 10 "$API/thorchain/vaults/asgard")
-CHURN_MIGRATE_ROUNDS=$(echo "$CONSTANTS" | jq -r ".int_64_values.ChurnMigrateRounds")
+CHURN_MIGRATE_ROUNDS=$(echo "$MIMIR" | jq -r ".CHURNMIGRATEROUNDS // empty")
+CHURN_MIGRATE_ROUNDS=${CHURN_MIGRATE_ROUNDS:-$(echo "$CONSTANTS" | jq -r ".int_64_values.ChurnMigrateRounds")}
 FUND_MIGRATION_INTERVAL=$(echo "$MIMIR" | jq -r ".FUNDMIGRATIONINTERVAL")
 CHURN_INTERVAL=$(echo "$MIMIR" | jq -r ".CHURNINTERVAL")
 

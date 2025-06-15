@@ -81,14 +81,6 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "LTC.LTC")
 
-	// XLM test
-	asset, err = NewAsset("xlm.xlm")
-	c.Assert(err, IsNil)
-	c.Check(asset.Valid(), IsNil)
-	c.Check(asset.Chain.Equals(STELLARChain), Equals, true)
-	c.Check(asset.Equals(XLMAsset), Equals, true)
-	
-
 	// btc/btc
 	asset, err = NewAsset("btc/btc")
 	c.Check(err, IsNil)
@@ -117,19 +109,32 @@ func (s AssetSuite) TestAsset(c *C) {
 	asset.Synth = true
 	err = asset.Valid()
 	c.Check(err, NotNil)
-	c.Check(err.Error(), Equals, "trade assets cannot be synth assets")
+	c.Check(err.Error(), Equals, "assets can only be one of trade, synth or secured")
+
+	asset.Synth = false
+	asset.Secured = true
+	err = asset.Valid()
+	c.Check(err, NotNil)
+	c.Check(err.Error(), Equals, "assets can only be one of trade, synth or secured")
 
 	// test shorts
 	asset, err = NewAssetWithShortCodes(semver.MustParse("999.0.0"), "b")
 	c.Assert(err, IsNil)
 	c.Check(asset.Valid(), IsNil)
 	c.Check(asset.String(), Equals, "BTC.BTC")
+
+	// test XLM short code
+	asset, err = NewAssetWithShortCodes(semver.MustParse("999.0.0"), "m")
+	c.Assert(err, IsNil)
+	c.Check(asset.Valid(), IsNil)
+	c.Check(asset.String(), Equals, "XLM.XLM")
+
 	asset, err = NewAssetWithShortCodes(semver.MustParse("999.0.0"), "BLAH.BLAH")
 	c.Assert(err, IsNil)
 	c.Check(asset.Valid(), IsNil)
 	c.Check(asset.String(), Equals, "BLAH.BLAH")
 
-	asset, err = NewAssetWithShortCodes(semver.MustParse("0.0.0"), "BTC.BTC")
+	asset, err = NewAssetWithShortCodes(semver.MustParse("3.0.0"), "BTC.BTC")
 	c.Assert(err, IsNil)
 	c.Check(asset.Valid(), IsNil)
 	c.Check(asset.String(), Equals, "BTC.BTC")
@@ -149,4 +154,62 @@ func (s AssetSuite) TestAsset(c *C) {
 	err = asset.Valid()
 	c.Assert(err, NotNil)
 	c.Check(strings.Contains(err.Error(), "invalid symbol"), Equals, true)
+
+	asset, err = NewAsset("ETH-RUNE-0x3155ba85d5f96b2d030a4966af206230e46849cb")
+	c.Assert(err, IsNil)
+	c.Check(asset.IsNative(), Equals, true)
+	c.Check(asset.IsSecuredAsset(), Equals, true)
+	c.Check(asset.IsTradeAsset(), Equals, false)
+	c.Check(asset.IsSyntheticAsset(), Equals, false)
+	c.Assert(asset.Chain, Equals, ETHChain)
+	c.Check(asset.Symbol.Equals(Symbol("RUNE-0X3155BA85D5F96B2D030A4966AF206230E46849CB")), Equals, true)
+	c.Check(asset.Ticker.Equals(Ticker("RUNE")), Equals, true)
+
+	asset, err = NewAsset("ETH.RUNE-0x3155ba85d5f96b2d030a4966af206230e46849cb")
+	c.Assert(err, IsNil)
+	c.Check(asset.IsNative(), Equals, false)
+	c.Check(asset.IsSecuredAsset(), Equals, false)
+	c.Check(asset.IsTradeAsset(), Equals, false)
+	c.Check(asset.IsSyntheticAsset(), Equals, false)
+	c.Assert(asset.Chain, Equals, ETHChain)
+	c.Check(asset.Symbol.Equals(Symbol("RUNE-0X3155BA85D5F96B2D030A4966AF206230E46849CB")), Equals, true)
+	c.Check(asset.Ticker.Equals(Ticker("RUNE")), Equals, true)
+
+	// Ensure that x/denom assets are not interpreted as synth assets
+	asset, err = NewAsset("x/custom")
+	c.Assert(err, NotNil)
+
+	// Ensure that x/denom assets cannot be interpreted by MsgDeposit
+	asset, err = NewAsset("THOR.X/CUSTOM")
+	c.Assert(err, NotNil)
+
+	// XLM test
+	asset, err = NewAsset("xlm.xlm")
+	c.Assert(err, IsNil)
+	c.Check(asset.Valid(), IsNil)
+	c.Check(asset.Chain.Equals(StellarChain), Equals, true)
+	c.Check(asset.Equals(XLMAsset), Equals, true)
+	c.Check(asset.IsRune(), Equals, false)
+	c.Check(asset.IsEmpty(), Equals, false)
+	c.Check(asset.String(), Equals, "XLM.XLM")
+
+	// XLM synth test
+	asset, err = NewAsset("xlm/xlm")
+	c.Check(err, IsNil)
+	c.Check(asset.Valid(), IsNil)
+	c.Check(asset.Chain.Equals(StellarChain), Equals, true)
+	c.Check(asset.Equals(XLMAsset), Equals, false)
+	c.Check(asset.IsSyntheticAsset(), Equals, true)
+	c.Check(asset.IsEmpty(), Equals, false)
+	c.Check(asset.String(), Equals, "XLM/XLM")
+
+	// XLM trade test
+	asset, err = NewAsset("xlm~xlm")
+	c.Check(err, IsNil)
+	c.Check(asset.Valid(), IsNil)
+	c.Check(asset.Chain.Equals(StellarChain), Equals, true)
+	c.Check(asset.Equals(XLMAsset), Equals, false)
+	c.Check(asset.IsTradeAsset(), Equals, true)
+	c.Check(asset.IsEmpty(), Equals, false)
+	c.Check(asset.String(), Equals, "XLM~XLM")
 }

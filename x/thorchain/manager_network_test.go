@@ -5,9 +5,11 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"github.com/cosmos/cosmos-sdk/codec"
+
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 type TestRagnarokChainKeeper struct {
@@ -98,7 +100,7 @@ func (k *TestRagnarokChainKeeper) GetPOL(_ cosmos.Context) (ProtocolOwnedLiquidi
 }
 
 func (k *TestRagnarokChainKeeper) GetLiquidityProviderIterator(ctx cosmos.Context, _ common.Asset) cosmos.Iterator {
-	cdc := makeTestCodec()
+	cdc := codec.NewLegacyAmino()
 	iter := keeper.NewDummyIterator()
 	for _, lp := range k.lps {
 		iter.AddItem([]byte("key"), cdc.MustMarshal(lp))

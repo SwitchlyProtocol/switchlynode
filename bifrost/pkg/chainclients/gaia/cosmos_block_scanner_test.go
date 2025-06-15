@@ -3,25 +3,32 @@ package gaia
 import (
 	"fmt"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	ctypes "github.com/cosmos/cosmos-sdk/types"
 	btypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/config"
+	protov2 "google.golang.org/protobuf/proto"
 
-	"gitlab.com/thorchain/thornode/cmd"
+	"github.com/rs/zerolog/log"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/config"
+
+	"gitlab.com/thorchain/thornode/v3/cmd"
 	. "gopkg.in/check.v1"
 )
 
 // -------------------------------------------------------------------------------------
 // Mock FeeTx
 // -------------------------------------------------------------------------------------
+
+var _ ctypes.FeeTx = &MockFeeTx{}
 
 type MockFeeTx struct {
 	fee ctypes.Coins
@@ -30,6 +37,10 @@ type MockFeeTx struct {
 
 func (m *MockFeeTx) GetMsgs() []ctypes.Msg {
 	return nil
+}
+
+func (m *MockFeeTx) GetMsgsV2() ([]protov2.Message, error) {
+	return nil, nil
 }
 
 func (m *MockFeeTx) ValidateBasic() error {
@@ -44,11 +55,11 @@ func (m *MockFeeTx) GetFee() ctypes.Coins {
 	return m.fee
 }
 
-func (m *MockFeeTx) FeePayer() ctypes.AccAddress {
+func (m *MockFeeTx) FeePayer() []byte {
 	return nil
 }
 
-func (m *MockFeeTx) FeeGranter() ctypes.AccAddress {
+func (m *MockFeeTx) FeeGranter() []byte {
 	return nil
 }
 
@@ -75,7 +86,10 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 		ChainHomeFolder: "",
 	}
 
-	kb := cKeys.NewInMemory()
+	registry := codectypes.NewInterfaceRegistry()
+	cryptocodec.RegisterInterfaces(registry)
+	cdc := codec.NewProtoCodec(registry)
+	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
@@ -86,21 +100,27 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 }
 
 func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
-	cfg := config.BifrostBlockScannerConfiguration{ChainID: common.GAIAChain, GasPriceResolution: 100_000}
+	cfg := config.BifrostBlockScannerConfiguration{
+		ChainID:            common.GAIAChain,
+		GasPriceResolution: 100_000,
+		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
+			{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+		},
+	}
 	blockScanner := CosmosBlockScanner{cfg: cfg}
 
 	atomToThorchain := int64(100)
 
 	blockScanner.updateGasCache(&MockFeeTx{
 		gas: GasLimit / 2,
-		fee: ctypes.Coins{ctypes.NewCoin("uatom", ctypes.NewInt(10000))},
+		fee: ctypes.Coins{ctypes.NewCoin("uatom", sdkmath.NewInt(10000))},
 	})
 	c.Check(len(blockScanner.feeCache), Equals, 1)
 	c.Check(blockScanner.averageFee().String(), Equals, fmt.Sprintf("%d", uint64(20000*atomToThorchain)))
 
 	blockScanner.updateGasCache(&MockFeeTx{
 		gas: GasLimit / 2,
-		fee: ctypes.Coins{ctypes.NewCoin("uatom", ctypes.NewInt(10000))},
+		fee: ctypes.Coins{ctypes.NewCoin("uatom", sdkmath.NewInt(10000))},
 	})
 	c.Check(len(blockScanner.feeCache), Equals, 2)
 	c.Check(blockScanner.averageFee().String(), Equals, fmt.Sprintf("%d", uint64(20000*atomToThorchain)))
@@ -108,11 +128,11 @@ func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
 	// two blocks at half fee should average to 75% of last
 	blockScanner.updateGasCache(&MockFeeTx{
 		gas: GasLimit,
-		fee: ctypes.Coins{ctypes.NewCoin("uatom", ctypes.NewInt(10000))},
+		fee: ctypes.Coins{ctypes.NewCoin("uatom", sdkmath.NewInt(10000))},
 	})
 	blockScanner.updateGasCache(&MockFeeTx{
 		gas: GasLimit,
-		fee: ctypes.Coins{ctypes.NewCoin("uatom", ctypes.NewInt(10000))},
+		fee: ctypes.Coins{ctypes.NewCoin("uatom", sdkmath.NewInt(10000))},
 	})
 	c.Check(len(blockScanner.feeCache), Equals, 4)
 	c.Check(blockScanner.averageFee().String(), Equals, fmt.Sprintf("%d", uint64(15000*atomToThorchain)))
@@ -121,8 +141,8 @@ func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
 	blockScanner.updateGasCache(&MockFeeTx{
 		gas: GasLimit,
 		fee: ctypes.Coins{
-			ctypes.NewCoin("uatom", ctypes.NewInt(10000)),
-			ctypes.NewCoin("uusd", ctypes.NewInt(10000)),
+			ctypes.NewCoin("uatom", sdkmath.NewInt(10000)),
+			ctypes.NewCoin("uusd", sdkmath.NewInt(10000)),
 		},
 	})
 	c.Check(len(blockScanner.feeCache), Equals, 4)
@@ -132,7 +152,7 @@ func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
 	blockScanner.updateGasCache(&MockFeeTx{
 		gas: GasLimit,
 		fee: ctypes.Coins{
-			ctypes.NewCoin("uusd", ctypes.NewInt(10000)),
+			ctypes.NewCoin("uusd", sdkmath.NewInt(10000)),
 		},
 	})
 	c.Check(len(blockScanner.feeCache), Equals, 4)
@@ -142,7 +162,7 @@ func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
 	blockScanner.updateGasCache(&MockFeeTx{
 		gas: GasLimit,
 		fee: ctypes.Coins{
-			ctypes.NewCoin("uusd", ctypes.NewInt(0)),
+			ctypes.NewCoin("uusd", sdkmath.NewInt(0)),
 		},
 	})
 	c.Check(len(blockScanner.feeCache), Equals, 4)
@@ -153,7 +173,7 @@ func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
 		blockScanner.updateGasCache(&MockFeeTx{
 			gas: GasLimit,
 			fee: ctypes.Coins{
-				ctypes.NewCoin("uatom", ctypes.NewInt(10000)),
+				ctypes.NewCoin("uatom", sdkmath.NewInt(10000)),
 			},
 		})
 	}
@@ -176,7 +196,12 @@ func (s *BlockScannerTestSuite) TestGetBlock(c *C) {
 }
 
 func (s *BlockScannerTestSuite) TestProcessTxs(c *C) {
-	cfg := config.BifrostBlockScannerConfiguration{ChainID: common.GAIAChain}
+	cfg := config.BifrostBlockScannerConfiguration{
+		ChainID: common.GAIAChain,
+		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
+			{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+		},
+	}
 	registry := s.bridge.GetContext().InterfaceRegistry
 	btypes.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)

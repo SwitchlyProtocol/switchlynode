@@ -12,9 +12,9 @@ import (
   {{ $chain }}ec "{{ $pkg }}"
   {{- end }}
 
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 {{- range $chain, $pkg := . }}
@@ -70,7 +70,7 @@ func (ts *tssSignable{{ ToUpper $chain }}) GetPubKey() *{{ $chain }}ec.PublicKey
 		ts.log.Err(err).Str("pubkey", ts.poolPubKey.String()).Msg("fail to get pubic key from the bech32 pool public key string")
 		return nil
 	}
-	secpPubKey, err := codec.ToTmPubKeyInterface(cpk)
+	secpPubKey, err := codec.ToCmtPubKeyInterface(cpk)
 	if err != nil {
 		ts.log.Err(err).Msgf("%s is not a secp256 k1 public key", ts.poolPubKey)
 		return nil

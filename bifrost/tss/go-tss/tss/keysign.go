@@ -12,13 +12,13 @@ import (
 	tsslibcommon "github.com/binance-chain/tss-lib/common"
 	"github.com/libp2p/go-libp2p-core/peer"
 
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/blame"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/common"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/conversion"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/keysign"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/messages"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/p2p"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/storage"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/conversion"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/storage"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/blame"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/common"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/keysign"
 )
 
 func (t *TssServer) waitForSignatures(msgID, poolPubKey string, msgsToSign [][]byte, sigChan chan string) (keysign.Response, error) {
@@ -321,15 +321,6 @@ func (t *TssServer) broadcastKeysignFailure(messageID string, peers []peer.ID) {
 	if err := t.signatureNotifier.BroadcastFailed(messageID, peers); err != nil {
 		t.logger.Err(err).Msg("fail to broadcast keysign failure")
 	}
-}
-
-func (t *TssServer) isPartOfKeysignParty(parties []string) bool {
-	for _, item := range parties {
-		if t.localNodePubKey == item {
-			return true
-		}
-	}
-	return false
 }
 
 func (t *TssServer) batchSignatures(sigs []*tsslibcommon.ECSignature, msgsToSign [][]byte) keysign.Response {

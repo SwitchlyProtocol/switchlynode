@@ -4,10 +4,74 @@ info:
     email: devs@thorchain.org
   description: Thornode REST API.
   title: Thornode API
-  version: 2.136.0
+  version: 3.7.0
 servers:
 - url: /
 paths:
+  /auth/accounts/{address}:
+    get:
+      description: Returns account information for the provided address.
+      operationId: account
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      - explode: false
+        in: path
+        name: address
+        required: true
+        schema:
+          example: thor1zupk5lmc84r2dh738a9g3zscavannjy3nzplwt
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+          description: OK
+      tags:
+      - Auth
+  /bank/balances/{address}:
+    get:
+      description: Returns balances for the provided address.
+      operationId: balances
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      - explode: false
+        in: path
+        name: address
+        required: true
+        schema:
+          example: thor1zupk5lmc84r2dh738a9g3zscavannjy3nzplwt
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalancesResponse'
+          description: OK
+      tags:
+      - Bank
   /thorchain/ping:
     get:
       operationId: ping
@@ -261,6 +325,142 @@ paths:
           description: OK
       tags:
       - Liquidity Providers
+  /thorchain/codes:
+    get:
+      description: Returns all whitelisted contract codes
+      operationId: codes
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodesResponse'
+          description: OK
+      tags:
+      - Codes
+  /thorchain/tcy_staker/{address}:
+    get:
+      description: Returns the tcy staker information for an address.
+      operationId: tcyStaker
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      - explode: false
+        in: path
+        name: address
+        required: true
+        schema:
+          example: thor1zupk5lmc84r2dh738a9g3zscavannjy3nzplwt
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TCYStakerResponse'
+          description: OK
+      tags:
+      - TCY Stakers
+  /thorchain/tcy_stakers:
+    get:
+      description: Returns all tcy stakers information.
+      operationId: tcyStakers
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TCYStakersResponse'
+          description: OK
+      tags:
+      - TCY Stakers
+  /thorchain/tcy_claimer/{address}:
+    get:
+      description: Returns the tcy claimer information for an address.
+      operationId: tcyClaimer
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      - explode: false
+        in: path
+        name: address
+        required: true
+        schema:
+          example: thor1zupk5lmc84r2dh738a9g3zscavannjy3nzplwt
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TCYClaimerResponse'
+          description: OK
+      tags:
+      - TCY Claimers
+  /thorchain/tcy_claimers:
+    get:
+      description: Returns all tcy claimers information.
+      operationId: tcyClaimers
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TCYClaimersResponse'
+          description: OK
+      tags:
+      - TCY Claimers
   /thorchain/runepool:
     get:
       description: Returns the pool information for the RUNE pool.
@@ -1369,6 +1569,62 @@ paths:
           description: OK
       tags:
       - TradeAccounts
+  /thorchain/securedasset/{asset}:
+    get:
+      description: Returns the total size and ratio of a secured asset
+      operationId: secured_asset
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      - explode: false
+        in: path
+        name: asset
+        required: true
+        schema:
+          example: BTC.BTC
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecuredAssetResponse'
+          description: OK
+      tags:
+      - SecuredAsset
+  /thorchain/securedassets:
+    get:
+      description: Returns the total size and ratio of all secured asset
+      operationId: secured_assets
+      parameters:
+      - description: "optional block height, defaults to current tip"
+        explode: true
+        in: query
+        name: height
+        required: false
+        schema:
+          format: int64
+          minimum: 0
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecuredAssetsResponse'
+          description: OK
+      tags:
+      - SecuredAssets
   /thorchain/queue:
     get:
       description: Returns queue statistics.
@@ -1873,6 +2129,17 @@ paths:
           format: int64
           type: integer
         style: form
+      - description: the maximum basis points of tolerance for pool price movements
+          to set the limit in the generated memo
+        explode: true
+        in: query
+        name: liquidity_tolerance_bps
+        required: false
+        schema:
+          example: 100
+          format: int64
+          type: integer
+        style: form
       - description: the affiliate fee in basis points
         explode: true
         in: query
@@ -2235,6 +2502,19 @@ paths:
           description: OK
       tags:
       - Block
+  /thorchain/export:
+    get:
+      description: Returns genesis export
+      operationId: export
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+          description: OK
+      tags:
+      - Export
 components:
   parameters:
     queryHeight:
@@ -2334,6 +2614,7 @@ components:
         synth_supply: "0"
         savers_capacity_remaining: "1000"
         loan_collateral_remaining: "123456"
+        trading_halted: false
         asset_tor_price: "123456"
         synth_mint_paused: true
         pending_inbound_rune: "464993836"
@@ -2435,6 +2716,10 @@ components:
             basis points)
           example: "123456"
           type: string
+        trading_halted:
+          description: indicates if the pool can be used for swaps
+          example: false
+          type: boolean
       required:
       - LP_units
       - asset
@@ -2710,6 +2995,103 @@ components:
       - pending_rune
       - rune_deposit_value
       - units
+      type: object
+    CodesResponse:
+      example:
+        codes:
+        - code: a70d5005130246ff44470494ed5cb63d7c9ddffebda8e556e56d11c2057b0820
+          deployers:
+          - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
+          - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
+          origin: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+        - code: a70d5005130246ff44470494ed5cb63d7c9ddffebda8e556e56d11c2057b0820
+          deployers:
+          - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
+          - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
+          origin: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+      properties:
+        codes:
+          items:
+            $ref: '#/components/schemas/Code'
+          type: array
+      type: object
+    Code:
+      example:
+        code: a70d5005130246ff44470494ed5cb63d7c9ddffebda8e556e56d11c2057b0820
+        deployers:
+        - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
+        - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
+        origin: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+      properties:
+        code:
+          example: a70d5005130246ff44470494ed5cb63d7c9ddffebda8e556e56d11c2057b0820
+          type: string
+        deployers:
+          items:
+            example: thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
+            type: string
+          type: array
+        origin:
+          example: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+          type: string
+      type: object
+    TCYStakerSummary:
+      example:
+        amount: "0"
+      properties:
+        amount:
+          example: "0"
+          type: string
+      required:
+      - amount
+      type: object
+    TCYStaker:
+      example:
+        amount: "0"
+        address: thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      properties:
+        address:
+          example: thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          type: string
+        amount:
+          example: "0"
+          type: string
+      required:
+      - amount
+      type: object
+    TCYClaimerSummary:
+      example:
+        amount: "0"
+        asset: BTC.BTC
+      properties:
+        amount:
+          example: "0"
+          type: string
+        asset:
+          example: BTC.BTC
+          type: string
+      required:
+      - amount
+      - asset
+      type: object
+    TCYClaimer:
+      example:
+        amount: "0"
+        l1_address: thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        asset: BTC.BTC
+      properties:
+        l1_address:
+          example: thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          type: string
+        amount:
+          example: "0"
+          type: string
+        asset:
+          example: BTC.BTC
+          type: string
+      required:
+      - amount
+      - asset
       type: object
     Saver:
       example:
@@ -3216,15 +3598,16 @@ components:
     InboundAddress:
       example:
         halted: false
+        observed_fee_rate: "114"
         chain: BTC
         address: bc1qn9esxuw8ca7ts8l6w66kdh800s09msvutydc46
-        gas_rate: "214"
+        gas_rate: "216"
         dust_threshold: "10000"
         pub_key: thorpub1addwnpepq2jqhv5rdqlkusfxy05stfzcgslhhz5qh8pxetw5ry2aa6awgdh3shq8s82
         outbound_tx_size: "1000"
         chain_lp_actions_paused: false
         router: 0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146
-        outbound_fee: "428000"
+        outbound_fee: "216000"
         gas_rate_units: satsperbyte
         chain_trading_paused: false
         global_trading_paused: false
@@ -3258,11 +3641,17 @@ components:
           description: Returns true if LP actions are paused for this chain
           example: false
           type: boolean
+        observed_fee_rate:
+          description: "The chain's observed fee rate in 1e8 format, before the 1.5x\
+            \ that makes an outbound more likely to have a sufficient gas rate.  Used\
+            \ by validators to check whether they need to report a fee change."
+          example: "114"
+          type: string
         gas_rate:
           description: The minimum fee rate used by vaults to send outbound TXs. The
             actual fee rate may be higher. For EVM chains this is returned in gwei
             (1e9).
-          example: "214"
+          example: "216"
           type: string
         gas_rate_units:
           description: Units of the gas_rate.
@@ -3276,8 +3665,9 @@ components:
           type: string
         outbound_fee:
           description: The total outbound fee charged to the user for outbound txs
-            in the gas asset of the chain.
-          example: "428000"
+            in the gas asset of the chain.  Can be observed_fee_rate * 1.5 * outbound_tx_size
+            or else kept to an equivalent of Mimir key MinimumL1OutboundFeeUSD.
+          example: "216000"
           type: string
         dust_threshold:
           description: "Defines the minimum transaction size for the chain in base\
@@ -3286,6 +3676,9 @@ components:
           example: "10000"
           type: string
       required:
+      - chain_lp_actions_paused
+      - chain_trading_paused
+      - global_trading_paused
       - halted
       type: object
     LastBlock:
@@ -3469,11 +3862,11 @@ components:
         destination: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
         affiliate_basis_points: affiliate_basis_points
         aggregator_target_limit: aggregator_target_limit
+        swap_type: swap_type
         stream_quantity: 0
         target_asset: ETH.ETH
         stream_interval: 6
         affiliate_address: thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
-        order_type: order_type
         signer: signer
       properties:
         tx:
@@ -3511,7 +3904,7 @@ components:
           description: the minimum amount of SwapOut asset to receive (else cancelling
             the SwapOut and receiving THORChain's output)
           type: string
-        order_type:
+        swap_type:
           description: "market if immediately completed or refunded, limit if held\
             \ until fulfillable"
           type: string
@@ -3535,9 +3928,11 @@ components:
         gas_rate: 0
         in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
         out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+        aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
         memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-        to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
         vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+        to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+        aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
         max_gas:
         - amount: "100000"
           decimals: 6
@@ -3545,27 +3940,35 @@ components:
         - amount: "100000"
           decimals: 6
           asset: BTC.BTC
+        aggregator_target_limit: "100"
         clout_spent: "1234"
+        height: 1234
         coin:
           amount: "100000"
           decimals: 6
           asset: BTC.BTC
-        height: 1234
       properties:
+        height:
+          example: 1234
+          format: int64
+          type: integer
+        vault_pub_key:
+          example: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+          type: string
+        in_hash:
+          example: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
+          type: string
+        out_hash:
+          example: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+          type: string
         chain:
           example: ETH
           type: string
         to_address:
           example: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
           type: string
-        vault_pub_key:
-          example: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
-          type: string
         coin:
           $ref: '#/components/schemas/Coin'
-        memo:
-          example: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-          type: string
         max_gas:
           items:
             $ref: '#/components/schemas/Coin'
@@ -3573,16 +3976,23 @@ components:
         gas_rate:
           format: int64
           type: integer
-        in_hash:
-          example: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
+        memo:
+          example: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
           type: string
-        out_hash:
-          example: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+        aggregator:
+          description: whitelisted DEX Aggregator contract address
+          example: 0xe4ddca21881bac219af7f217703db0475d2a9f02
           type: string
-        height:
-          example: 1234
-          format: int64
-          type: integer
+        aggregator_target_asset:
+          description: target asset for the aggregator contract to attempt a swap
+            to
+          example: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+          type: string
+        aggregator_target_limit:
+          description: the minimum number of tokens the swapper wants to receive of
+            the output asset
+          example: "100"
+          type: string
         clout_spent:
           description: clout spent in RUNE for the outbound
           example: "1234"
@@ -3663,6 +4073,7 @@ components:
           - bond_address: bond_address
             bond: bond
         node_operator_address: thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
+        maintenance: false
         status: Active
       properties:
         node_address:
@@ -3745,6 +4156,10 @@ components:
           items:
             $ref: '#/components/schemas/ChainHeight'
           type: array
+        maintenance:
+          description: indicates whether the node is in maintenance mode
+          example: false
+          type: boolean
         preflight_status:
           $ref: '#/components/schemas/NodePreflightStatus'
       required:
@@ -3755,6 +4170,7 @@ components:
       - ip_address
       - jail
       - leave_height
+      - maintenance
       - node_address
       - node_operator_address
       - observe_chains
@@ -3809,6 +4225,7 @@ components:
           address: bc1qn9esxuw8ca7ts8l6w66kdh800s09msvutydc46
         - chain: BTC
           address: bc1qn9esxuw8ca7ts8l6w66kdh800s09msvutydc46
+        preferred_asset_swap_threshold_rune: "500"
         name: thor
         affiliate_collector_rune: "100"
         expire_block_height: 1234
@@ -3825,6 +4242,11 @@ components:
           type: string
         preferred_asset:
           example: BTC.BTC
+          type: string
+        preferred_asset_swap_threshold_rune:
+          description: Amount of RUNE currently needed to trigger a preferred asset
+            swap.
+          example: "500"
           type: string
         affiliate_collector_rune:
           description: Amount of RUNE currently accrued by this thorname in affiliate
@@ -3980,6 +4402,70 @@ components:
       - node_address
       - vote
       type: object
+    Account:
+      example:
+        sequence: 1234
+        account_number: 1234
+        address: thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
+        type: /cosmos.auth.v1beta1.BaseAccount
+        pubkey: thorpub1addwnpepq27ck6u44zl8qqdnmzjjc8rg72amrxrsp42p9vd7kt6marhy6ww76z8shwe
+      properties:
+        type:
+          example: /cosmos.auth.v1beta1.BaseAccount
+          type: string
+        address:
+          example: thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
+          type: string
+        pubkey:
+          example: thorpub1addwnpepq27ck6u44zl8qqdnmzjjc8rg72amrxrsp42p9vd7kt6marhy6ww76z8shwe
+          type: string
+        sequence:
+          example: 1234
+          format: int64
+          type: integer
+        account_number:
+          example: 1234
+          format: int64
+          type: integer
+      type: object
+    Amount:
+      example:
+        amount: amount
+        denom: denom
+      properties:
+        denom:
+          type: string
+        amount:
+          type: string
+      required:
+      - amount
+      - denom
+      type: object
+    AccountResponse:
+      example:
+        result:
+          value:
+            sequence: 1234
+            account_number: 1234
+            address: thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
+            type: /cosmos.auth.v1beta1.BaseAccount
+            pubkey: thorpub1addwnpepq27ck6u44zl8qqdnmzjjc8rg72amrxrsp42p9vd7kt6marhy6ww76z8shwe
+      properties:
+        result:
+          $ref: '#/components/schemas/AccountResponse_result'
+      type: object
+    BalancesResponse:
+      example:
+        result:
+        - amount: amount
+          denom: denom
+        - amount: amount
+          denom: denom
+      properties:
+        result:
+          items:
+            $ref: '#/components/schemas/Amount'
+          type: array
     PoolResponse:
       $ref: '#/components/schemas/Pool'
     PoolsResponse:
@@ -4041,6 +4527,18 @@ components:
       type: array
     LiquidityProviderResponse:
       $ref: '#/components/schemas/LiquidityProvider'
+    TCYStakersResponse:
+      items:
+        $ref: '#/components/schemas/TCYStakerSummary'
+      type: array
+    TCYStakerResponse:
+      $ref: '#/components/schemas/TCYStaker'
+    TCYClaimersResponse:
+      items:
+        $ref: '#/components/schemas/TCYClaimerSummary'
+      type: array
+    TCYClaimerResponse:
+      $ref: '#/components/schemas/TCYClaimer'
     SaverResponse:
       $ref: '#/components/schemas/Saver'
     SaversResponse:
@@ -4206,9 +4704,11 @@ components:
           gas_rate: 0
           in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
           out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+          aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
           memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
           vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+          aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
           max_gas:
           - amount: "100000"
             decimals: 6
@@ -4216,19 +4716,22 @@ components:
           - amount: "100000"
             decimals: 6
             asset: BTC.BTC
+          aggregator_target_limit: "100"
           clout_spent: "1234"
+          height: 1234
           coin:
             amount: "100000"
             decimals: 6
             asset: BTC.BTC
-          height: 1234
         - chain: ETH
           gas_rate: 0
           in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
           out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+          aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
           memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
           vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+          aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
           max_gas:
           - amount: "100000"
             decimals: 6
@@ -4236,12 +4739,13 @@ components:
           - amount: "100000"
             decimals: 6
             asset: BTC.BTC
+          aggregator_target_limit: "100"
           clout_spent: "1234"
+          height: 1234
           coin:
             amount: "100000"
             decimals: 6
             asset: BTC.BTC
-          height: 1234
         txs:
         - signers:
           - thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
@@ -4443,9 +4947,11 @@ components:
           gas_rate: 0
           in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
           out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+          aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
           memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
           vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+          aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
           max_gas:
           - amount: "100000"
             decimals: 6
@@ -4453,19 +4959,22 @@ components:
           - amount: "100000"
             decimals: 6
             asset: BTC.BTC
+          aggregator_target_limit: "100"
           clout_spent: "1234"
+          height: 1234
           coin:
             amount: "100000"
             decimals: 6
             asset: BTC.BTC
-          height: 1234
         - chain: ETH
           gas_rate: 0
           in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
           out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+          aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
           memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
           vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+          aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
           max_gas:
           - amount: "100000"
             decimals: 6
@@ -4473,12 +4982,13 @@ components:
           - amount: "100000"
             decimals: 6
             asset: BTC.BTC
+          aggregator_target_limit: "100"
           clout_spent: "1234"
+          height: 1234
           coin:
             amount: "100000"
             decimals: 6
             asset: BTC.BTC
-          height: 1234
         txs:
         - signers:
           - thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
@@ -4854,6 +5364,7 @@ components:
         native_tx_fee_rune: "100000000"
         bond_reward_rune: "857134475040"
         effective_security_bond: "0"
+        available_pools_rune: "4785723312627752"
         total_bond_units: "0"
         gas_withheld_rune: "1500000000"
         outbound_fee_multiplier: "15000"
@@ -4862,8 +5373,10 @@ components:
         tns_fee_per_block_rune: "20"
         gas_spent_rune: "1000000000"
         rune_price_in_tor: "10"
+        tor_price_halted: false
         tns_register_fee_rune: "1000000000"
         tor_price_in_rune: "10"
+        vaults_liquidity_rune: "5792105087034476"
         vaults_migrating: false
       properties:
         bond_reward_rune:
@@ -4873,6 +5386,15 @@ components:
         total_bond_units:
           description: total bonded RUNE
           example: "0"
+          type: string
+        available_pools_rune:
+          description: RUNE in Available pools (equal in value to the Assets in those
+            pools)
+          example: "4785723312627752"
+          type: string
+        vaults_liquidity_rune:
+          description: RUNE value of Layer 1 Assets in vaults
+          example: "5792105087034476"
           type: string
         effective_security_bond:
           description: effective security bond used to determine maximum pooled RUNE
@@ -4927,7 +5449,13 @@ components:
           description: the tor price in rune
           example: "10"
           type: string
+        tor_price_halted:
+          description: "indicates if all anchor chains are halted (true), or at least\
+            \ one anchor chain is available (false)"
+          example: false
+          type: boolean
       required:
+      - available_pools_rune
       - bond_reward_rune
       - effective_security_bond
       - gas_spent_rune
@@ -4937,9 +5465,11 @@ components:
       - rune_price_in_tor
       - tns_fee_per_block_rune
       - tns_register_fee_rune
+      - tor_price_halted
       - tor_price_in_rune
       - total_bond_units
       - total_reserve
+      - vaults_liquidity_rune
       - vaults_migrating
       type: object
     OutboundFeesResponse:
@@ -5096,9 +5626,11 @@ components:
             gas_rate: 0
             in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
             out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+            aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
             memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-            to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
             vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+            to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+            aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
             max_gas:
             - amount: "100000"
               decimals: 6
@@ -5106,19 +5638,22 @@ components:
             - amount: "100000"
               decimals: 6
               asset: BTC.BTC
+            aggregator_target_limit: "100"
             clout_spent: "1234"
+            height: 1234
             coin:
               amount: "100000"
               decimals: 6
               asset: BTC.BTC
-            height: 1234
           - chain: ETH
             gas_rate: 0
             in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
             out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+            aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
             memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-            to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
             vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+            to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+            aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
             max_gas:
             - amount: "100000"
               decimals: 6
@@ -5126,12 +5661,13 @@ components:
             - amount: "100000"
               decimals: 6
               asset: BTC.BTC
+            aggregator_target_limit: "100"
             clout_spent: "1234"
+            height: 1234
             coin:
               amount: "100000"
               decimals: 6
               asset: BTC.BTC
-            height: 1234
           height: 0
       properties:
         keysign:
@@ -5298,6 +5834,31 @@ components:
       items:
         $ref: '#/components/schemas/TradeAccountResponse'
       type: array
+    SecuredAssetResponse:
+      example:
+        depth: depth
+        asset: BTC-BTC
+        supply: supply
+      properties:
+        asset:
+          description: secured account asset with "-" separator
+          example: BTC-BTC
+          type: string
+        supply:
+          description: total share tokens issued for the asset
+          type: string
+        depth:
+          description: total deposits of the asset
+          type: string
+      required:
+      - asset
+      - depth
+      - supply
+      type: object
+    SecuredAssetsResponse:
+      items:
+        $ref: '#/components/schemas/SecuredAssetResponse'
+      type: array
     MimirResponse:
       additionalProperties:
         type: string
@@ -5360,8 +5921,13 @@ components:
             $ref: '#/components/schemas/MimirVote'
           type: array
       type: object
+    ExportResponse:
+      type: object
     BlockResponse:
       example:
+        finalize_block_events:
+        - key: finalize_block_events
+        - key: finalize_block_events
         begin_block_events:
         - key: begin_block_events
         - key: begin_block_events
@@ -5428,6 +5994,12 @@ components:
           $ref: '#/components/schemas/BlockResponse_id'
         header:
           $ref: '#/components/schemas/BlockResponse_header'
+        finalize_block_events:
+          items:
+            additionalProperties:
+              type: string
+            type: object
+          type: array
         begin_block_events:
           items:
             additionalProperties:
@@ -5448,6 +6020,7 @@ components:
       required:
       - begin_block_events
       - end_block_events
+      - finalize_block_events
       - header
       - id
       - txs
@@ -6366,6 +6939,18 @@ components:
           example: ibc
           type: string
       type: object
+    AccountResponse_result:
+      example:
+        value:
+          sequence: 1234
+          account_number: 1234
+          address: thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5
+          type: /cosmos.auth.v1beta1.BaseAccount
+          pubkey: thorpub1addwnpepq27ck6u44zl8qqdnmzjjc8rg72amrxrsp42p9vd7kt6marhy6ww76z8shwe
+      properties:
+        value:
+          $ref: '#/components/schemas/Account'
+      type: object
     PoolSlipResponse_inner:
       example:
         long_rollup: 1500
@@ -6720,9 +7305,11 @@ components:
           gas_rate: 0
           in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
           out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+          aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
           memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
           vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+          aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
           max_gas:
           - amount: "100000"
             decimals: 6
@@ -6730,19 +7317,22 @@ components:
           - amount: "100000"
             decimals: 6
             asset: BTC.BTC
+          aggregator_target_limit: "100"
           clout_spent: "1234"
+          height: 1234
           coin:
             amount: "100000"
             decimals: 6
             asset: BTC.BTC
-          height: 1234
         - chain: ETH
           gas_rate: 0
           in_hash: 208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
           out_hash: 0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB
+          aggregator: 0xe4ddca21881bac219af7f217703db0475d2a9f02
           memo: OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA
-          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
           vault_pub_key: thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4
+          to_address: 0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b
+          aggregator_target_asset: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
           max_gas:
           - amount: "100000"
             decimals: 6
@@ -6750,12 +7340,13 @@ components:
           - amount: "100000"
             decimals: 6
             asset: BTC.BTC
+          aggregator_target_limit: "100"
           clout_spent: "1234"
+          height: 1234
           coin:
             amount: "100000"
             decimals: 6
             asset: BTC.BTC
-          height: 1234
         height: 0
       properties:
         height:

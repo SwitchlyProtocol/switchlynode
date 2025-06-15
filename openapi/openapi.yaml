@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Thornode API
-  version: 2.136.0
+  version: 3.7.0
   contact:
     email: devs@thorchain.org
   description: Thornode REST API.
@@ -11,6 +11,42 @@ info:
 ########################################################################################
 
 paths:
+  # ------------------------------ auth ------------------------------
+  /auth/accounts/{address}:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+      - $ref: "#/components/parameters/address"
+    get:
+      description: Returns account information for the provided address.
+      operationId: account
+      tags:
+        - Auth
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+
+  # ------------------------------ bank --------------------------------
+  /bank/balances/{address}:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+      - $ref: "#/components/parameters/address"
+    get:
+      description: Returns balances for the provided address.
+      operationId: balances
+      tags:
+        - Bank
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BalancesResponse"
+
   # ------------------------------ health ------------------------------
 
   /thorchain/ping:
@@ -170,6 +206,94 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LiquidityProvidersResponse"
+
+  # ------------------------------ codes ------------------------------
+
+  /thorchain/codes:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+    get:
+      description: Returns all whitelisted contract codes
+      operationId: codes
+      tags:
+        - Codes
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CodesResponse"
+
+  # ------------------------------ tcy stakers ------------------------------
+
+  /thorchain/tcy_staker/{address}:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+      - $ref: "#/components/parameters/address"
+    get:
+      description: Returns the tcy staker information for an address.
+      operationId: tcyStaker
+      tags:
+        - TCY Stakers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TCYStakerResponse"
+
+  /thorchain/tcy_stakers:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+    get:
+      description: Returns all tcy stakers information.
+      operationId: tcyStakers
+      tags:
+        - TCY Stakers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TCYStakersResponse"
+
+  # ------------------------------ tcy claimers ------------------------------
+
+  /thorchain/tcy_claimer/{address}:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+      - $ref: "#/components/parameters/address"
+    get:
+      description: Returns the tcy claimer information for an address.
+      operationId: tcyClaimer
+      tags:
+        - TCY Claimers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TCYClaimerResponse"
+
+  /thorchain/tcy_claimers:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+    get:
+      description: Returns all tcy claimers information.
+      operationId: tcyClaimers
+      tags:
+        - TCY Claimers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TCYClaimersResponse"
 
   # ------------------------------ rune pool ------------------------------
 
@@ -828,6 +952,41 @@ paths:
               schema:
                 $ref: "#/components/schemas/TradeAccountsResponse"
 
+  # ------------------------------ secured assets ------------------------------
+
+  /thorchain/securedasset/{asset}:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+      - $ref: "#/components/parameters/asset"
+    get:
+      description: Returns the total size and ratio of a secured asset
+      operationId: secured_asset
+      tags:
+        - SecuredAsset
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SecuredAssetResponse"
+
+  /thorchain/securedassets:
+    parameters:
+      - $ref: "#/components/parameters/queryHeight"
+    get:
+      description: Returns the total size and ratio of all secured asset
+      operationId: secured_assets
+      tags:
+        - SecuredAssets
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SecuredAssetsResponse"
+
   # ------------------------------ queue ------------------------------
 
   /thorchain/queue:
@@ -1146,6 +1305,13 @@ paths:
           type: integer
           format: int64
           example: 100
+      - name: liquidity_tolerance_bps
+        in: query
+        description: the maximum basis points of tolerance for pool price movements to set the limit in the generated memo
+        schema:
+          type: integer
+          format: int64
+          example: 100
       - name: affiliate_bps
         in: query
         description: the affiliate fee in basis points
@@ -1396,6 +1562,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/BlockResponse"
 
+  /thorchain/export:
+    get:
+      description: Returns genesis export
+      operationId: export
+      tags:
+        - Export
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportResponse"
 ########################################################################################
 # Components
 ########################################################################################
@@ -1592,7 +1771,10 @@ components:
           type: string
           example: "123456"
           description: the depth of the derived virtual pool relative to L1 pool (in basis points)
-
+        trading_halted:
+          type: boolean
+          example: false
+          description: indicates if the pool can be used for swaps
     DerivedPool:
       type: object
       required:
@@ -1798,6 +1980,79 @@ components:
         luvi_growth_pct:
           type: string
           example: "0"
+
+    CodesResponse:
+      type: object
+      properties:
+        codes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Code"
+
+    Code:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "a70d5005130246ff44470494ed5cb63d7c9ddffebda8e556e56d11c2057b0820"
+        deployers:
+          type: array
+          items:
+            type: string
+            example: "thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd"
+        origin:
+          type: string
+          example: "https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge"
+
+    TCYStakerSummary:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: string
+          example: "0"
+
+    TCYStaker:
+      type: object
+      required:
+        - amount
+      properties:
+        address:
+          type: string
+          example: "thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        amount:
+          type: string
+          example: "0"
+
+    TCYClaimerSummary:
+      type: object
+      required:
+        - amount
+        - asset
+      properties:
+        amount:
+          type: string
+          example: "0"
+        asset:
+          type: string
+          example: "BTC.BTC"
+
+    TCYClaimer:
+      type: object
+      required:
+        - amount
+        - asset
+      properties:
+        l1_address:
+          type: string
+          example: "thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        amount:
+          type: string
+          example: "0"
+        asset:
+          type: string
+          example: "BTC.BTC"
 
     Saver:
       type: object
@@ -2165,6 +2420,9 @@ components:
       type: object
       required:
         - halted
+        - global_trading_paused
+        - chain_trading_paused
+        - chain_lp_actions_paused
       properties:
         chain:
           type: string
@@ -2194,9 +2452,13 @@ components:
           type: boolean
           example: false
           description: "Returns true if LP actions are paused for this chain"
+        observed_fee_rate:
+          type: string
+          example: "114"
+          description: "The chain's observed fee rate in 1e8 format, before the 1.5x that makes an outbound more likely to have a sufficient gas rate.  Used by validators to check whether they need to report a fee change."
         gas_rate:
           type: string
-          example: "214"
+          example: "216"
           description: "The minimum fee rate used by vaults to send outbound TXs. The actual fee rate may be higher. For EVM chains this is returned in gwei (1e9)."
         gas_rate_units:
           type: string
@@ -2208,8 +2470,8 @@ components:
           description: "Avg size of outbound TXs on each chain. For UTXO chains it may be larger than average, as it takes into account vault consolidation txs, which can have many vouts"
         outbound_fee:
           type: string
-          example: "428000"
-          description: "The total outbound fee charged to the user for outbound txs in the gas asset of the chain."
+          example: "216000"
+          description: "The total outbound fee charged to the user for outbound txs in the gas asset of the chain.  Can be observed_fee_rate * 1.5 * outbound_tx_size or else kept to an equivalent of Mimir key MinimumL1OutboundFeeUSD."
         dust_threshold:
           type: string
           example: "10000"
@@ -2357,7 +2619,7 @@ components:
         aggregator_target_limit:
           type: string
           description: the minimum amount of SwapOut asset to receive (else cancelling the SwapOut and receiving THORChain's output)
-        order_type:
+        swap_type:
           type: string
           description: market if immediately completed or refunded, limit if held until fulfillable
         stream_quantity:
@@ -2377,20 +2639,27 @@ components:
         - coin
         - max_gas
       properties:
+        height:
+          type: integer
+          format: int64
+          example: 1234
+        vault_pub_key:
+          type: string
+          example: "thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4"
+        in_hash:
+          type: string
+          example: "208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA"
+        out_hash:
+          type: string
+          example: "0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB"
         chain:
           type: string
           example: "ETH"
         to_address:
           type: string
           example: "0x66fb1cd65b97fa40457b90b7d1ca6b92cb64b32b"
-        vault_pub_key:
-          type: string
-          example: "thorpub1addwnpepqt45wmsxj29xpgdrdsvg2h3dx68qeapgykw3hlyj6vuds2r0pnkwx5gt9m4"
         coin:
           $ref: "#/components/schemas/Coin"
-        memo:
-          type: string
-          example: "OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA"
         max_gas:
           type: array
           items:
@@ -2398,16 +2667,21 @@ components:
         gas_rate:
           type: integer
           format: int64
-        in_hash:
+        memo:
           type: string
-          example: "208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA"
-        out_hash:
+          example: "OUT:208BF0ACD78C89A0534B0457BA0867B101961A2319C1E49DD28676526904BBEA"
+        aggregator:
           type: string
-          example: "0D0B2FDB6DAD6E5FD3C5E46D39128F9DA15E96F0B2CC054CE059EA3532B150FB"
-        height:
-          type: integer
-          format: int64
-          example: 1234
+          description: whitelisted DEX Aggregator contract address
+          example: "0xe4ddca21881bac219af7f217703db0475d2a9f02"
+        aggregator_target_asset:
+          type: string
+          description: target asset for the aggregator contract to attempt a swap to
+          example: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        aggregator_target_limit:
+          type: string
+          description: the minimum number of tokens the swapper wants to receive of the output asset
+          example: "100"
         clout_spent:
           type: string
           description: clout spent in RUNE for the outbound
@@ -2457,6 +2731,7 @@ components:
         - jail
         - current_award
         - observe_chains
+        - maintenance
         - preflight_status
       properties:
         node_address:
@@ -2579,6 +2854,10 @@ components:
                 type: integer
                 format: int64
                 example: 2000000
+        maintenance:
+          type: boolean
+          description: indicates whether the node is in maintenance mode
+          example: false
         preflight_status:
           type: object
           title: NodePreflightStatus
@@ -2647,6 +2926,10 @@ components:
         preferred_asset:
           type: string
           example: "BTC.BTC"
+        preferred_asset_swap_threshold_rune:
+          type: string
+          example: "500"
+          description: Amount of RUNE currently needed to trigger a preferred asset swap.
         affiliate_collector_rune:
           type: string
           example: "100"
@@ -2791,7 +3074,54 @@ components:
           example: "approve"
           description: the vote cast by the node
 
+    Account:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "/cosmos.auth.v1beta1.BaseAccount"
+        address:
+          type: string
+          example: "thor1f3s7q037eancht7sg0aj995dht25rwrnu4ats5"
+        pubkey:
+          type: string
+          example: "thorpub1addwnpepq27ck6u44zl8qqdnmzjjc8rg72amrxrsp42p9vd7kt6marhy6ww76z8shwe"
+        sequence:
+          type: integer
+          format: int64
+          example: 1234
+        account_number:
+          type: integer
+          format: int64
+          example: 1234
+
+    Amount:
+      type: object
+      required:
+        - denom
+        - amount
+      properties:
+        denom:
+          type: string
+        amount:
+          type: string
+
     # ------------------------------ responses ------------------------------
+    AccountResponse:
+      type: object
+      properties:
+        result:
+          type: object
+          properties:
+            value:
+              $ref: "#/components/schemas/Account"
+
+    BalancesResponse:
+      properties:
+        result:
+          type: array
+          items:
+            $ref: "#/components/schemas/Amount"
 
     PoolResponse:
       $ref: "#/components/schemas/Pool"
@@ -2936,6 +3266,22 @@ components:
 
     LiquidityProviderResponse:
       $ref: "#/components/schemas/LiquidityProvider"
+
+    TCYStakersResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/TCYStakerSummary"
+
+    TCYStakerResponse:
+      $ref: "#/components/schemas/TCYStaker"
+
+    TCYClaimersResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/TCYClaimerSummary"
+
+    TCYClaimerResponse:
+      $ref: "#/components/schemas/TCYClaimer"
 
     SaverResponse:
       $ref: "#/components/schemas/Saver"
@@ -3273,6 +3619,8 @@ components:
         # so the schema should also be in alphabetical order.
         - bond_reward_rune
         - total_bond_units
+        - available_pools_rune
+        - vaults_liquidity_rune
         - effective_security_bond
         - total_reserve
         - vaults_migrating
@@ -3284,6 +3632,7 @@ components:
         - tns_fee_per_block_rune
         - rune_price_in_tor
         - tor_price_in_rune
+        - tor_price_halted
       properties:
         bond_reward_rune:
           type: string
@@ -3293,6 +3642,14 @@ components:
           type: string
           example: "0"
           description: total bonded RUNE
+        available_pools_rune:
+          type: string
+          example: "4785723312627752"
+          description: RUNE in Available pools (equal in value to the Assets in those pools)
+        vaults_liquidity_rune:
+          type: string
+          example: "5792105087034476"
+          description: RUNE value of Layer 1 Assets in vaults
         effective_security_bond:
           type: string
           example: "0"
@@ -3341,6 +3698,10 @@ components:
           type: string
           example: "10"
           description: the tor price in rune
+        tor_price_halted:
+          type: boolean
+          example: false
+          description: indicates if all anchor chains are halted (true), or at least one anchor chain is available (false)
 
     OutboundFeesResponse:
       type: array
@@ -3637,6 +3998,29 @@ components:
       items:
         $ref: "#/components/schemas/TradeAccountResponse"
 
+    SecuredAssetResponse:
+      type: object
+      required:
+        - asset
+        - supply
+        - depth
+      properties:
+        asset:
+          type: string
+          example: "BTC-BTC"
+          description: secured account asset with "-" separator
+        supply:
+          type: string
+          description: total share tokens issued for the asset
+        depth:
+          type: string
+          description: total deposits of the asset
+
+    SecuredAssetsResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/SecuredAssetResponse"
+
     MimirResponse:
       type: object
       additionalProperties:
@@ -3692,6 +4076,9 @@ components:
               signer:
                 type: string
 
+    ExportResponse:
+      type: object
+
     BlockResponse:
       type: object
       required:
@@ -3699,6 +4086,7 @@ components:
         - "header"
         - "begin_block_events"
         - "end_block_events"
+        - "finalize_block_events"
         - "txs"
       properties:
         id:
@@ -3812,6 +4200,12 @@ components:
             proposer_address:
               type: string
               example: "D540AB022088612AC74B287D076DBFBC4A377A2E"
+        finalize_block_events:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
         begin_block_events:
           type: array
           items:

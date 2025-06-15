@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/test/simulation/actors/core"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/evm"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/thornode"
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/actors/core"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/evm"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/thornode"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +29,10 @@ func Bootstrap() *Actor {
 		if chain == common.THORChain {
 			continue
 		}
+		// BSC not compatible with sim tests
+		if chain.Equals(common.BSCChain) {
+			continue
+		}
 		count++
 
 		a.Children[core.NewDualLPActor(chain.GetGasAsset())] = true
@@ -38,6 +42,10 @@ func Bootstrap() *Actor {
 	tokenPools := NewActor("Bootstrap-TokenPools")
 	for _, chain := range common.AllChains {
 		if !chain.IsEVM() {
+			continue
+		}
+		// BSC not compatible with sim tests
+		if chain.Equals(common.BSCChain) {
 			continue
 		}
 		count++

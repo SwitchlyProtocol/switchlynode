@@ -5,9 +5,11 @@ import (
 	"regexp"
 	"strings"
 
+	xrp "github.com/Peersyst/xrpl-go/address-codec"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcutil/bech32"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	dogchaincfg "github.com/eager7/dogd/chaincfg"
 	"github.com/eager7/dogutil"
 	eth "github.com/ethereum/go-ethereum/common"
@@ -17,20 +19,21 @@ import (
 	"github.com/ltcsuite/ltcutil"
 	"github.com/stellar/go/strkey"
 
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type Address string
 
 const (
-	NoAddress      = Address("")
-	NoopAddress    = Address("noop")
-	EVMNullAddress = Address("0x0000000000000000000000000000000000000000")
+	NoAddress       = Address("")
+	NoopAddress     = Address("noop")
+	EVMNullAddress  = Address("0x0000000000000000000000000000000000000000")
+	GaiaZeroAddress = Address("cosmos100000000000000000000000000000000708mjz")
 )
 
 var alphaNumRegex = regexp.MustCompile("^[:A-Za-z0-9]*$")
 
-// NewAddress create a new Address. Supports Binance, Bitcoin, Ethereum
+// NewAddress create a new Address. Supports ETH/bech2/BTC/LTC/BCH/DOGE/XRP/XLM.
 func NewAddress(address string) (Address, error) {
 	if len(address) == 0 {
 		return NoAddress, nil
@@ -51,73 +54,33 @@ func NewAddress(address string) (Address, error) {
 		return Address(address), nil
 	}
 
-	// Check other BTC address formats with mainnet
-	_, err = btcutil.DecodeAddress(address, &chaincfg.MainNetParams)
-	if err == nil {
+	// Check is xrp address
+	if IsValidXRPAddress(address) {
 		return Address(address), nil
 	}
 
-	// Check BTC address formats with testnet
-	_, err = btcutil.DecodeAddress(address, &chaincfg.TestNet3Params)
-	if err == nil {
+	// Check is xlm address
+	if IsValidXLMAddress(address) {
 		return Address(address), nil
 	}
 
-	// Check other LTC address formats with mainnet
-	_, err = ltcutil.DecodeAddress(address, &ltcchaincfg.MainNetParams)
-	if err == nil {
-		return Address(address), nil
+	// Network-specific (with build tags) address checking.
+	return newAddress(address)
+}
+
+func IsValidXRPAddress(address string) bool {
+	// checks checksum and returns prefix (1 byte, 0x00) + account id (20 bytes)
+	decoded, err := xrp.Base58CheckDecode(address)
+	if err != nil {
+		return false
 	}
 
-	// Check LTC address formats with testnet
-	_, err = ltcutil.DecodeAddress(address, &ltcchaincfg.TestNet4Params)
-	if err == nil {
-		return Address(address), nil
-	}
+	return len(decoded) == 21 && decoded[0] == 0x00
+}
 
-	// Check BCH address formats with mainnet
-	_, err = bchutil.DecodeAddress(address, &bchchaincfg.MainNetParams)
-	if err == nil {
-		return Address(address), nil
-	}
-
-	// Check BCH address formats with testnet
-	_, err = bchutil.DecodeAddress(address, &bchchaincfg.TestNet3Params)
-	if err == nil {
-		return Address(address), nil
-	}
-
-	// Check BCH address formats with mocknet
-	_, err = bchutil.DecodeAddress(address, &bchchaincfg.RegressionNetParams)
-	if err == nil {
-		return Address(address), nil
-	}
-
-	// Check DOGE address formats with mainnet
-	_, err = dogutil.DecodeAddress(address, &dogchaincfg.MainNetParams)
-	if err == nil {
-		return Address(address), nil
-	}
-
-	// Check DOGE address formats with testnet
-	_, err = dogutil.DecodeAddress(address, &dogchaincfg.TestNet3Params)
-	if err == nil {
-		return Address(address), nil
-	}
-
-	// Check DOGE address formats with mocknet
-	_, err = dogutil.DecodeAddress(address, &dogchaincfg.RegressionNetParams)
-	if err == nil {
-		return Address(address), nil
-	}
-
-	// Check if it's a valid Stellar address
-	_, err = strkey.Decode(strkey.VersionByteAccountID, address)
-	if err == nil {
-		return Address(address), nil
-	}
-
-	return NoAddress, fmt.Errorf("address format not supported: %s", address)
+func IsValidXLMAddress(address string) bool {
+	// Validate Stellar address using strkey
+	return strkey.IsValidEd25519PublicKey(address)
 }
 
 // IsValidBCHAddress determinate whether the address is a valid new BCH address format
@@ -196,6 +159,10 @@ func (addr Address) IsChain(chain Chain) bool {
 		return strings.HasPrefix(addr.String(), "0x")
 	}
 	switch chain {
+	case XRPChain:
+		return IsValidXRPAddress(addr.String())
+	case StellarChain:
+		return IsValidXLMAddress(addr.String())
 	case GAIAChain:
 		// Note: Gaia does not use a special prefix for testnet
 		prefix, _, _ := bech32.Decode(addr.String())
@@ -277,7 +244,7 @@ func (addr Address) IsChain(chain Chain) bool {
 // Note that this will always return ETHChain for an AVAXChain address,
 // so perhaps only use it when determining a network (e.g. mainnet/testnet).
 func (addr Address) GetChain() Chain {
-	for _, chain := range []Chain{ETHChain, THORChain, BTCChain, LTCChain, BCHChain, DOGEChain, GAIAChain, AVAXChain} {
+	for _, chain := range []Chain{ETHChain, THORChain, BTCChain, LTCChain, BCHChain, DOGEChain, GAIAChain, AVAXChain, XRPChain, StellarChain} {
 		if addr.IsChain(chain) {
 			return chain
 		}
@@ -383,6 +350,9 @@ func (addr Address) GetNetwork(chain Chain) ChainNetwork {
 		if err == nil {
 			return MockNet
 		}
+	case StellarChain:
+		// Stellar addresses don't have different formats per network
+		return currentNetwork
 	}
 	return currentNetwork
 }
@@ -405,4 +375,19 @@ func (addr Address) IsNoop() bool {
 
 func (addr Address) String() string {
 	return string(addr)
+}
+
+func (addr Address) MappedAccAddress() (cosmos.AccAddress, error) {
+	// TODO: Add support to map EVM addresses -> bech32.
+	// Will require new PubKey type to validate.
+	_, data, err := bech32.Decode(addr.String())
+	if err != nil {
+		return nil, err
+	}
+	encoded, err := bech32.Encode(sdk.GetConfig().GetBech32AccountAddrPrefix(), data)
+	if err != nil {
+		return nil, err
+	}
+
+	return cosmos.AccAddressFromBech32(encoded)
 }

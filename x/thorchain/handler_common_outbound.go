@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/armon/go-metrics"
-	"github.com/blang/semver"
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/telemetry"
-	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/hashicorp/go-metrics"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
 )
 
 // CommonOutboundTxHandler is the place where those common logic can be shared
@@ -30,7 +29,7 @@ func NewCommonOutboundTxHandler(mgr Manager) CommonOutboundTxHandler {
 	}
 }
 
-func (h CommonOutboundTxHandler) slashV96(ctx cosmos.Context, tx ObservedTx) error {
+func (h CommonOutboundTxHandler) slash(ctx cosmos.Context, tx ObservedTx) error {
 	toSlash := make(common.Coins, len(tx.Tx.Coins))
 	copy(toSlash, tx.Tx.Coins)
 	toSlash = toSlash.Add(tx.Tx.Gas.ToCoins()...)
@@ -44,16 +43,6 @@ func (h CommonOutboundTxHandler) slashV96(ctx cosmos.Context, tx ObservedTx) err
 }
 
 func (h CommonOutboundTxHandler) handle(ctx cosmos.Context, tx ObservedTx, inTxID common.TxID) (*cosmos.Result, error) {
-	version := h.mgr.GetVersion()
-	switch {
-	case version.GTE(semver.MustParse("1.127.0")):
-		return h.handleV127(ctx, tx, inTxID)
-	default:
-		return nil, errBadVersion
-	}
-}
-
-func (h CommonOutboundTxHandler) handleV127(ctx cosmos.Context, tx ObservedTx, inTxID common.TxID) (*cosmos.Result, error) {
 	// note: Outbound tx usually it is related to an inbound tx except migration
 	// thus here try to get the ObservedTxInVoter,  and set the tx out hash accordingly
 	voter, err := h.mgr.Keeper().GetObservedTxInVoter(ctx, inTxID)
@@ -88,7 +77,19 @@ func (h CommonOutboundTxHandler) handleV127(ctx cosmos.Context, tx ObservedTx, i
 	if voter.Height > earliestHeight {
 		earliestHeight = voter.Height
 	}
-	for height := ctx.BlockHeight(); height >= earliestHeight; height-- {
+
+	// A TxOutItem might be rescheduled (by LackSigning) rounded up to nearest multiple of RescheduleCoalesceBlocks,
+	// so check backwards from that future nearest multiple.
+	latestHeight := ctx.BlockHeight()
+	rescheduleCoalesceBlocks := h.mgr.Keeper().GetConfigInt64(ctx, constants.RescheduleCoalesceBlocks)
+	if rescheduleCoalesceBlocks > 1 {
+		overBlocks := latestHeight % rescheduleCoalesceBlocks
+		if overBlocks != 0 {
+			latestHeight += rescheduleCoalesceBlocks - overBlocks
+		}
+	}
+
+	for height := latestHeight; height >= earliestHeight; height-- {
 		// update txOut record with our TxID that sent funds out of the pool
 		// trunk-ignore(golangci-lint/govet): shadow
 		txOut, err := h.mgr.Keeper().GetTxOut(ctx, height)
@@ -207,6 +208,10 @@ func (h CommonOutboundTxHandler) handleV127(ctx cosmos.Context, tx ObservedTx, i
 						ctx.Logger().Error("fail to save swapper clout in", "error", err)
 					}
 
+					if cloutIn.Address.Equals(cloutOut.Address) {
+						// cloutOut is about to overwrite cloutIn, so reincrement with clout1.
+						cloutOut.Reclaim(clout1)
+					}
 					cloutOut.Reclaim(clout2)
 					cloutOut.LastReclaimHeight = ctx.BlockHeight()
 					// trunk-ignore(golangci-lint/govet): shadow
@@ -238,7 +243,7 @@ func (h CommonOutboundTxHandler) handleV127(ctx cosmos.Context, tx ObservedTx, i
 			}
 		}
 
-		if err := h.slashV96(ctx, tx); err != nil {
+		if err := h.slash(ctx, tx); err != nil {
 			return nil, ErrInternal(err, "fail to slash account")
 		}
 	}
@@ -259,7 +264,7 @@ func calcReclaim(reclaimable1, reclaimable2, spent cosmos.Uint) (reclaim1, recla
 	}
 
 	// Split the spent clout in half
-	halfSpent := spent.Quo(types.NewUint(2))
+	halfSpent := spent.Quo(sdkmath.NewUint(2))
 
 	// If either clout is less than half the spent amount, allocate all to that clout
 	if reclaimable1.LT(halfSpent) {
@@ -296,7 +301,7 @@ func isOutboundFakeGasTX(tx ObservedTx) bool {
 		return false
 	}
 
-	if !tx.Tx.Coins[0].Amount.Equal(types.NewUint(1)) {
+	if !tx.Tx.Coins[0].Amount.Equal(sdkmath.NewUint(1)) {
 		return false
 	}
 

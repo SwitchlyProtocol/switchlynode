@@ -8,23 +8,22 @@ import (
 	"sync"
 
 	bkeygen "github.com/binance-chain/tss-lib/ecdsa/keygen"
+	tcrypto "github.com/cometbft/cometbft/crypto"
 	coskey "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types/bech32/legacybech32"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-peerstore/addr"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	tcrypto "github.com/tendermint/tendermint/crypto"
 
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/common"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/conversion"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/keygen"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/keysign"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/messages"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/monitor"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/p2p"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/storage"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/conversion"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/storage"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/common"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/keygen"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/keysign"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/monitor"
 )
 
 // TssServer is the structure that can provide all keysign and key gen features
@@ -36,6 +35,7 @@ type TssServer struct {
 	preParams         *bkeygen.LocalPreParams
 	tssKeyGenLocker   *sync.Mutex
 	stopChan          chan struct{}
+	joinPartyChan     chan struct{}
 	partyCoordinator  *p2p.PartyCoordinator
 	stateManager      storage.LocalStateManager
 	signatureNotifier *keysign.SignatureNotifier
@@ -50,14 +50,11 @@ type PeerInfo struct {
 
 // NewTss create a new instance of Tss
 func NewTss(
-	cmdBootstrapPeers addr.AddrList,
-	p2pPort int,
+	comm *p2p.Communication,
+	stateManager storage.LocalStateManager,
 	priKey tcrypto.PrivKey,
-	rendezvous,
-	baseFolder string,
 	conf common.TssConfig,
 	preParams *bkeygen.LocalPreParams,
-	externalIP string,
 ) (*TssServer, error) {
 	pk := coskey.PubKey{
 		Key: priKey.PubKey().Bytes()[:],
@@ -68,23 +65,6 @@ func NewTss(
 		return nil, fmt.Errorf("fail to genearte the key: %w", err)
 	}
 
-	stateManager, err := storage.NewFileStateMgr(baseFolder)
-	if err != nil {
-		return nil, fmt.Errorf("fail to create file state manager")
-	}
-
-	var bootstrapPeers addr.AddrList
-	savedPeers, err := stateManager.RetrieveP2PAddresses()
-	if err != nil {
-		bootstrapPeers = cmdBootstrapPeers
-	} else {
-		bootstrapPeers = savedPeers
-		bootstrapPeers = append(bootstrapPeers, cmdBootstrapPeers...)
-	}
-	comm, err := p2p.NewCommunication(rendezvous, bootstrapPeers, p2pPort, externalIP)
-	if err != nil {
-		return nil, fmt.Errorf("fail to create communication layer: %w", err)
-	}
 	// When using the keygen party it is recommended that you pre-compute the
 	// "safe primes" and Paillier secret beforehand because this can take some
 	// time.
@@ -100,13 +80,6 @@ func NewTss(
 		return nil, errors.New("invalid preparams")
 	}
 
-	priKeyRawBytes, err := conversion.GetPriKeyRawBytes(priKey)
-	if err != nil {
-		return nil, fmt.Errorf("fail to get private key")
-	}
-	if err := comm.Start(priKeyRawBytes); nil != err {
-		return nil, fmt.Errorf("fail to start p2p network: %w", err)
-	}
 	pc := p2p.NewPartyCoordinator(comm.GetHost(), conf.PartyTimeout)
 	sn := keysign.NewSignatureNotifier(comm.GetHost())
 	metrics := monitor.NewMetric()
@@ -133,7 +106,7 @@ func NewTss(
 
 // Start Tss server
 func (t *TssServer) Start() error {
-	log.Info().Msg("Starting the TSS servers")
+	t.logger.Info().Msg("starting the tss servers")
 	return nil
 }
 
@@ -146,7 +119,21 @@ func (t *TssServer) Stop() {
 		t.logger.Error().Msgf("error in shutdown the p2p server")
 	}
 	t.partyCoordinator.Stop()
-	log.Info().Msg("The Tss and p2p server has been stopped successfully")
+	t.logger.Info().Msg("The tss and p2p server has been stopped successfully")
+}
+
+func (t *TssServer) setJoinPartyChan(jpc chan struct{}) {
+	t.joinPartyChan = jpc
+}
+
+func (t *TssServer) unsetJoinPartyChan() {
+	t.joinPartyChan = nil
+}
+
+func (t *TssServer) notifyJoinPartyChan() {
+	if t.joinPartyChan != nil {
+		t.joinPartyChan <- struct{}{}
+	}
 }
 
 func (t *TssServer) requestToMsgId(request interface{}) (string, error) {

@@ -6,10 +6,10 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/hashicorp/go-multierror"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/btcsuite/btcd/btcjson"
@@ -18,32 +18,32 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	btcwire "github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
-	btctxscript "gitlab.com/thorchain/thornode/bifrost/txscript/txscript"
+	btctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/txscript"
 
 	dogeec "github.com/eager7/dogd/btcec"
 	dogechaincfg "github.com/eager7/dogd/chaincfg"
 	dogewire "github.com/eager7/dogd/wire"
 	"github.com/eager7/dogutil"
-	dogetxscript "gitlab.com/thorchain/thornode/bifrost/txscript/dogd-txscript"
+	dogetxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/dogd-txscript"
 
 	"github.com/gcash/bchd/bchec"
 	bchchaincfg "github.com/gcash/bchd/chaincfg"
 	bchwire "github.com/gcash/bchd/wire"
 	"github.com/gcash/bchutil"
-	bchtxscript "gitlab.com/thorchain/thornode/bifrost/txscript/bchd-txscript"
+	bchtxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/bchd-txscript"
 
 	ltcec "github.com/ltcsuite/ltcd/btcec"
 	ltcchaincfg "github.com/ltcsuite/ltcd/chaincfg"
 	ltcwire "github.com/ltcsuite/ltcd/wire"
 	"github.com/ltcsuite/ltcutil"
-	ltctxscript "gitlab.com/thorchain/thornode/bifrost/txscript/ltcd-txscript"
+	ltctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/ltcd-txscript"
 
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/utxo/rpc"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/utxo/rpc"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ func NewClient(chain common.Chain, host string, keys *thorclient.Keys) (LiteChai
 	}
 
 	// import address to wallet, rescan if master account
-	if keys.GetSignerInfo().GetName() == "master" {
+	if keys.GetSignerInfo().Name == "master" {
 		err = rpc.ImportAddressRescan(address.String())
 	} else {
 		err = rpc.ImportAddress(address.String())

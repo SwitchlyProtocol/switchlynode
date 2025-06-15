@@ -17,20 +17,20 @@ import (
 	"github.com/ipfs/go-log"
 
 	"github.com/binance-chain/tss-lib/crypto"
+	tcrypto "github.com/cometbft/cometbft/crypto"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/libp2p/go-libp2p-core/peer"
-	tcrypto "github.com/tendermint/tendermint/crypto"
-	"github.com/tendermint/tendermint/crypto/secp256k1"
 
 	btsskeygen "github.com/binance-chain/tss-lib/ecdsa/keygen"
 	btss "github.com/binance-chain/tss-lib/tss"
 	maddr "github.com/multiformats/go-multiaddr"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/common"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/conversion"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/messages"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/p2p"
-	"gitlab.com/thorchain/thornode/bifrost/tss/go-tss/storage"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/conversion"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/storage"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/common"
 )
 
 var (
@@ -117,13 +117,13 @@ func (s *TssKeygenTestSuite) SetUpTest(c *C) {
 		buf, err := base64.StdEncoding.DecodeString(testPriKeyArr[i])
 		c.Assert(err, IsNil)
 		if i == 0 {
-			comm, err := p2p.NewCommunication("asgard", nil, ports[i], "")
+			comm, err := p2p.NewCommunication(&p2p.Config{Port: ports[i], RendezvousString: "asgard"}, nil)
 			c.Assert(err, IsNil)
 			c.Assert(comm.Start(buf[:]), IsNil)
 			s.comms[i] = comm
 			continue
 		}
-		comm, err := p2p.NewCommunication("asgard", []maddr.Multiaddr{multiAddr}, ports[i], "")
+		comm, err := p2p.NewCommunication(&p2p.Config{Port: ports[i], RendezvousString: "asgard", BootstrapPeers: []maddr.Multiaddr{multiAddr}}, nil)
 		c.Assert(err, IsNil)
 		c.Assert(comm.Start(buf[:]), IsNil)
 		s.comms[i] = comm
@@ -260,7 +260,7 @@ func (s *TssKeygenTestSuite) TestGenerateNewKeyWithStop(c *C) {
 			defer comm.CancelSubscribe(messages.TSSTaskDone, messageID)
 			if idx == 0 {
 				go func() {
-					time.Sleep(time.Millisecond * 2000)
+					time.Sleep(time.Millisecond * 200)
 					close(keygenInstance.stopChan)
 				}()
 			}

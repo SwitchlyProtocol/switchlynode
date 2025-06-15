@@ -6,8 +6,8 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type MsgReserveContributorSuite struct{}
@@ -24,7 +24,6 @@ func (s *MsgReserveContributorSuite) TestMsgReserveContributor(c *C) {
 	c.Check(msg.Contributor.IsEmpty(), Equals, false)
 	c.Check(msg.Signer.Equals(signer), Equals, true)
 	EnsureMsgBasicCorrect(msg, c)
-	c.Assert(msg.Type(), Equals, "set_reserve_contributor")
 
 	tx1 := GetRandomTx()
 	tx1.FromAddress = ""

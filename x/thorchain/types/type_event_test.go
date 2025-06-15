@@ -3,8 +3,8 @@ package types
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
 )
 
 type EventSuite struct{}
@@ -77,6 +77,7 @@ func (s EventSuite) TestReward(c *C) {
 		[]PoolAmt{{common.ETHAsset, 30}, {common.BTCAsset, 40}},
 		cosmos.NewUint(50),
 		cosmos.NewUint(60),
+		cosmos.NewUint(70),
 	)
 	c.Check(evt.Type(), Equals, "rewards")
 	c.Check(evt.BondReward.String(), Equals, "300")
@@ -87,6 +88,7 @@ func (s EventSuite) TestReward(c *C) {
 	c.Check(evt.PoolRewards[1].Amount, Equals, int64(40))
 	c.Check(evt.DevFundReward.String(), Equals, "50")
 	c.Check(evt.IncomeBurn.String(), Equals, "60")
+	c.Check(evt.TcyStakeReward.String(), Equals, "70")
 	events, err := evt.Events()
 	c.Check(err, IsNil)
 	c.Check(events, NotNil)
@@ -200,7 +202,7 @@ func (EventSuite) TestEventRefund(c *C) {
 }
 
 func (EventSuite) TestEventBond(c *C) {
-	e := NewEventBond(cosmos.NewUint(100), BondType_bond_paid, GetRandomTx())
+	e := NewEventBond(cosmos.NewUint(100), BondType_bond_paid, GetRandomTx(), &NodeAccount{}, nil)
 	c.Check(e.Type(), Equals, "bond")
 	events, err := e.Events()
 	c.Check(err, IsNil)

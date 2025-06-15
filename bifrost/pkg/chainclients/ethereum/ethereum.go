@@ -23,25 +23,25 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/evm"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/runners"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/signercache"
-	"gitlab.com/thorchain/thornode/bifrost/pkg/chainclients/shared/utxo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/runners"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/signercache"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/utxo"
 
-	tssp "gitlab.com/thorchain/thornode/bifrost/tss/go-tss/tss"
+	tssp "gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
 
-	"gitlab.com/thorchain/thornode/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/bifrost/tss"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/aggregators"
-	mem "gitlab.com/thorchain/thornode/x/thorchain/memo"
+	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
+	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
+	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
+	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/aggregators"
+	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
 )
 
 const (
@@ -94,7 +94,7 @@ func NewClient(thorKeys *thorclient.Keys,
 		return nil, fmt.Errorf("fail to get private key: %w", err)
 	}
 
-	temp, err := codec.ToTmPubKeyInterface(priv.PubKey())
+	temp, err := codec.ToCmtPubKeyInterface(priv.PubKey())
 	if err != nil {
 		return nil, fmt.Errorf("fail to get tm pub key: %w", err)
 	}
@@ -134,7 +134,6 @@ func NewClient(thorKeys *thorclient.Keys,
 	if err != nil {
 		return nil, fmt.Errorf("fail to get contract abi: %w", err)
 	}
-	pubkeyMgr.GetPubKeys()
 	c := &Client{
 		logger:       log.With().Str("module", "ethereum").Logger(),
 		cfg:          cfg,
@@ -193,11 +192,12 @@ func IsETH(token string) bool {
 }
 
 // Start to monitor Ethereum block chain
-func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan stypes.ErrataBlock, globalSolvencyQueue chan stypes.Solvency) {
+func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan stypes.ErrataBlock, globalSolvencyQueue chan stypes.Solvency, globalNetworkFeeQueue chan common.NetworkFee) {
 	c.ethScanner.globalErrataQueue = globalErrataQueue
+	c.ethScanner.globalNetworkFeeQueue = globalNetworkFeeQueue
 	c.globalSolvencyQueue = globalSolvencyQueue
 	c.tssKeySigner.Start()
-	c.blockScanner.Start(globalTxsQueue)
+	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
 	go c.unstuck()
 	c.wg.Add(1)
@@ -251,6 +251,11 @@ func (c *Client) GetHeight() (int64, error) {
 // GetBlockScannerHeight returns blockscanner height
 func (c *Client) GetBlockScannerHeight() (int64, error) {
 	return c.blockScanner.PreviousHeight(), nil
+}
+
+// RollbackBlockScanner rolls back the block scanner to the last observed block
+func (c *Client) RollbackBlockScanner() error {
+	return c.blockScanner.RollbackToLastObserved()
 }
 
 func (c *Client) GetLatestTxForVault(vault string) (string, string, error) {
@@ -544,7 +549,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 	}
 
 	// tip cap at configured percentage of max fee
-	tipCap := new(big.Int).Mul(gasRate, big.NewInt(int64(c.cfg.MaxGasTipPercentage)))
+	tipCap := new(big.Int).Mul(gasRate, big.NewInt(int64(c.cfg.EVM.MaxGasTipPercentage)))
 	tipCap.Div(tipCap, big.NewInt(100))
 
 	c.logger.Info().
@@ -603,7 +608,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 	if tx.Aggregator != "" {
 		var gasLimitForAggregator uint64
 		gasLimitForAggregator, err = aggregators.FetchDexAggregatorGasLimit(
-			common.LatestVersion, c.cfg.ChainID, tx.Aggregator,
+			c.cfg.ChainID, tx.Aggregator,
 		)
 		if err != nil {
 			c.logger.Err(err).
@@ -625,11 +630,12 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 		// set limit to aggregator gas limit
 		estimatedGas = gasLimitForAggregator
 
-		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.AggregatorMaxGasMultiplier))
+		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.EVM.AggregatorMaxGasMultiplier))
 	} else if !tx.Coins[0].Asset.IsGasAsset() {
-		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.TokenMaxGasMultiplier))
+		scheduledMaxFee = scheduledMaxFee.Mul(scheduledMaxFee, big.NewInt(c.cfg.EVM.TokenMaxGasMultiplier))
 	}
 
+	var estimatedFee *big.Int
 	if c.cfg.BlockScanner.FixedGasRate == 0 {
 		// determine max gas units based on scheduled max gas (fee) and current rate
 		maxGasUnits := new(big.Int).Div(scheduledMaxFee, gasRate).Uint64()
@@ -646,6 +652,10 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 			return nil, nil, nil, nil
 		}
 
+		estimatedFee = big.NewInt(int64(estimatedGas))
+		totalGasRate := big.NewInt(0).Add(gasRate, tipCap)
+		estimatedFee.Mul(estimatedFee, totalGasRate)
+
 		to := ecommon.HexToAddress(contractAddr.String())
 		createdTx = etypes.NewTx(&etypes.DynamicFeeTx{
 			ChainID:   c.chainID,
@@ -660,7 +670,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 	} else {
 
 		// if over max scheduled gas, abort and let thornode reschedule
-		estimatedFee := big.NewInt(int64(estimatedGas) * gasRate.Int64())
+		estimatedFee = big.NewInt(int64(estimatedGas) * gasRate.Int64())
 		if scheduledMaxFee.Cmp(estimatedFee) < 0 {
 			c.logger.Warn().
 				Stringer("in_hash", tx.InHash).
@@ -677,6 +687,16 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 		)
 	}
 
+	// before signing, confirm the vault has enough gas asset
+	gasBalance, err := c.GetBalance(fromAddr.String(), ethToken, nil)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fail to get gas asset balance: %w", err)
+	}
+
+	if gasBalance.Cmp(big.NewInt(0).Add(ethValue, estimatedFee)) < 0 {
+		return nil, nil, nil, fmt.Errorf("insufficient gas asset balance: %s < %s + %s", gasBalance.String(), ethValue.String(), estimatedFee.String())
+	}
+
 	rawTx, err := c.sign(createdTx, tx.VaultPubKey, height, tx)
 	if err != nil || len(rawTx) == 0 {
 		return nil, nonceBytes, nil, fmt.Errorf("fail to sign message: %w", err)
@@ -688,7 +708,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 		chainHeight = c.ethScanner.currentBlockHeight
 	}
 	coin := tx.Coins[0]
-	gas := common.MakeEVMGas(c.GetChain(), createdTx.GasPrice(), createdTx.Gas())
+	gas := common.MakeEVMGas(c.GetChain(), createdTx.GasPrice(), createdTx.Gas(), nil)
 	// This is the maximum gas, using the gas limit for instant-observation
 	// rather than the GasUsed which can only be gotten from the receipt when scanning.
 
@@ -701,7 +721,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 
 	if err == nil {
 		txIn = stypes.NewTxInItem(
-			chainHeight+1,
+			chainHeight,
 			signedTx.Hash().Hex()[2:],
 			tx.Memo,
 			fromAddr.String(),

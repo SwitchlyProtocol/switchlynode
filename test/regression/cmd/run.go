@@ -24,7 +24,7 @@ import (
 // Run
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func run(out io.Writer, path string, routine int) (failExportInvariants bool, err error) {
+func run(out io.Writer, path string, routine int, doneWithRetries func(path string) bool, abort <-chan struct{}) (failExportInvariants bool, err error) {
 	localLog := consoleLogger(out)
 
 	home := "/" + strconv.Itoa(routine)
@@ -50,6 +50,7 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 		fmt.Sprintf("THOR_TENDERMINT_CONSENSUS_TIMEOUT_COMMIT=%s", time.Second*getTimeFactor()),
 		// all ports will be offset by the routine number
 		fmt.Sprintf("THOR_COSMOS_API_ADDRESS=tcp://0.0.0.0:%d", 1317+routine),
+		fmt.Sprintf("THOR_COSMOS_EBIFROST_ADDRESS=127.0.0.1:%d", 50051+routine),
 		fmt.Sprintf("THOR_TENDERMINT_RPC_LISTEN_ADDRESS=tcp://0.0.0.0:%d", 26657+routine),
 		fmt.Sprintf("THOR_TENDERMINT_P2P_LISTEN_ADDRESS=tcp://0.0.0.0:%d", 27000+routine),
 		"CREATE_BLOCK_PORT=" + strconv.Itoa(8080+routine),
@@ -57,8 +58,9 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 	}
 
 	// if DEBUG is set also output thornode debug logs
-	if os.Getenv("DEBUG") != "" {
-		env = append(env, "THOR_TENDERMINT_LOG_LEVEL=debug")
+	debugVar := os.Getenv("DEBUG")
+	if debugVar != "" {
+		env = append(env, "THOR_TENDERMINT_LOG_LEVEL="+debugVar)
 	}
 
 	// init chain with dog mnemonic
@@ -104,7 +106,7 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 		log.Fatal().Msgf("test name collision: %s", filepath.Base(path))
 	}
 
-	ops, opLines, env := parseOps(localLog, path, tmpls, env)
+	ops, opLines, env, failExportInvariants := parseOps(localLog, path, tmpls, env)
 
 	// warn if no operations found
 	if len(ops) == 0 {
@@ -120,18 +122,17 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 	blocksPath = strings.TrimSuffix(blocksPath, ".yaml")
 	_ = os.RemoveAll(blocksPath)
 
-	// extract fail-export operation from end if provided
-	if _, ok := ops[len(ops)-1].(*OpFailExportInvariants); ok {
-		failExportInvariants = true
-		ops = ops[:len(ops)-1]
-	}
-
 	// execute all state operations
 	stateOpCount := 0
 	for i, op := range ops {
+		select {
+		case <-abort:
+			return false, nil
+		default:
+		}
 		if _, ok := op.(*OpState); ok {
 			localLog.Info().Int("line", opLines[i]).Msgf(">>> [%d] %s", i+1, op.OpType())
-			err = op.Execute(out, path, routine, cmd.Process, nil)
+			err = op.Execute(out, path, opLines[i], routine, cmd.Process, nil)
 			if err != nil {
 				log.Fatal().Err(err).Msg("failed to execute state operation")
 			}
@@ -143,16 +144,17 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 
 	// validate genesis
 	localLog.Debug().Msg("Validating genesis")
-	cmd = exec.Command("thornode", "validate-genesis")
+	cmd = exec.Command("thornode", "genesis", "validate")
 	cmd.Env = env
 	cmdOut, err = cmd.CombinedOutput()
 	if err != nil {
+		cmdErr := err
 		// dump the genesis
 		fmt.Println(ColorPurple + "Genesis:" + ColorReset)
 		var f *os.File
 		f, err = os.OpenFile(filepath.Join(home, ".thornode/config/genesis.json"), os.O_RDWR, 0o644)
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to open genesis file")
+			log.Fatal().Err(err).Str("path", path).Msg("failed to open genesis file")
 		}
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
@@ -162,7 +164,7 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 
 		// dump error and exit
 		fmt.Println(string(cmdOut))
-		log.Fatal().Err(err).Msg("genesis validation failed")
+		log.Fatal().Err(cmdErr).Msg("genesis validation failed")
 	}
 
 	// render config
@@ -184,9 +186,9 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 	}
 
 	logLevel := "info"
-	switch os.Getenv("DEBUG") {
+	switch debugVar {
 	case "trace", "debug", "info", "warn", "error", "fatal", "panic":
-		logLevel = os.Getenv("DEBUG")
+		logLevel = debugVar
 	}
 
 	// setup process io
@@ -204,7 +206,7 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 			stderrLines <- stderrScanner.Text()
 		}
 	}()
-	if os.Getenv("DEBUG") != "" {
+	if debugVar != "" {
 		thornode.Stdout = os.Stdout
 		thornode.Stderr = os.Stderr
 	}
@@ -235,11 +237,21 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 	var returnErr error
 	localLog.Info().Msgf("Executing %d operations", len(ops))
 	for i, op := range ops {
+		select {
+		case <-abort:
+			return false, nil
+		default:
+		}
 
-		// prefetch if this is the first of a sequence of check operations
-		if op.OpType() == "check" && ops[i-1].OpType() != "check" {
+		// prefetch sequences of check operations
+		if os.Getenv("AUTO_UPDATE") == "" && op.OpType() == "check" && ops[i-1].OpType() != "check" {
 			wg := sync.WaitGroup{}
 			for j := i; j < len(ops); j++ {
+				select {
+				case <-abort:
+					return false, nil
+				default:
+				}
 				if ops[j].OpType() != "check" {
 					break
 				}
@@ -254,7 +266,7 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 		}
 
 		localLog.Info().Int("line", opLines[i]).Msgf(">>> [%d] %s", stateOpCount+i+1, op.OpType())
-		returnErr = op.Execute(out, path, routine, thornode.Process, stderrLines)
+		returnErr = op.Execute(out, path, opLines[i], routine, thornode.Process, stderrLines)
 		if returnErr != nil {
 			localLog.Error().Err(returnErr).
 				Int("line", opLines[i]).
@@ -264,6 +276,16 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 				Msg("operation failed")
 			dumpLogs(out, stderrLines)
 			break
+		}
+
+		// if in AUTO_UPDATE and the operation was a check, re-render future operations
+		if os.Getenv("AUTO_UPDATE") != "" && op.OpType() == "check" {
+			newOps, _, _, _ := parseOps(localLog, path, tmpls, env)
+			remainingOps := len(ops) - i - 1
+			newOps = newOps[len(newOps)-remainingOps:]
+			for j, newOp := range newOps {
+				ops[i+j+1] = newOp
+			}
 		}
 	}
 
@@ -283,6 +305,18 @@ func run(out io.Writer, path string, routine int) (failExportInvariants bool, er
 	_, err = thornode.Process.Wait()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to wait for thornode")
+	}
+
+	// retry context deadline exceeded errors and all errors in CI
+	if returnErr != nil && (strings.Contains(returnErr.Error(), "context deadline exceeded") || os.Getenv("CI") != "") {
+		log.Warn().Err(returnErr).Str("path", path).Msg("retrying suite")
+		fmt.Println()
+
+		if doneWithRetries(path) {
+			return false, returnErr
+		}
+
+		return run(out, path, routine, doneWithRetries, abort)
 	}
 
 	// if failed and debug enabled restart to allow inspection

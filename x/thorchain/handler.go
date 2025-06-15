@@ -2,17 +2,15 @@ package thorchain
 
 import (
 	"fmt"
-	"runtime"
 	"strings"
 
-	"github.com/blang/semver"
-	sdkerrs "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/common/tokenlist"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 // MsgHandler is an interface expect all handler to implement
@@ -20,104 +18,13 @@ type MsgHandler interface {
 	Run(ctx cosmos.Context, msg cosmos.Msg) (*cosmos.Result, error)
 }
 
-// NewExternalHandler returns a handler for "thorchain" type messages.
-func NewExternalHandler(mgr Manager) cosmos.Handler {
-	return func(ctx cosmos.Context, msg cosmos.Msg) (_ *cosmos.Result, err error) {
-		defer func() {
-			if r := recover(); r != nil {
-				// print stack
-				stack := make([]byte, 1024)
-				length := runtime.Stack(stack, true)
-				ctx.Logger().Error("panic", "msg", msg)
-				fmt.Println(string(stack[:length]))
-				err = fmt.Errorf("panic: %v", r)
-			}
-		}()
-
-		ctx = ctx.WithEventManager(cosmos.NewEventManager())
-		handlerMap := getHandlerMapping(mgr)
-		legacyMsg, ok := msg.(legacytx.LegacyMsg)
-		if !ok {
-			return nil, cosmos.ErrUnknownRequest("unknown message type")
-		}
-		h, ok := handlerMap[legacyMsg.Type()]
-		if !ok {
-			errMsg := fmt.Sprintf("Unrecognized thorchain Msg type: %v", legacyMsg.Type())
-			return nil, cosmos.ErrUnknownRequest(errMsg)
-		}
-		result, err := h.Run(ctx, msg)
-		if err != nil {
-			if _, code, _ := sdkerrs.ABCIInfo(err, false); code == 1 {
-				// This would be redacted, so wrap it.
-				err = sdkerrs.Wrap(errInternal, err.Error())
-			}
-			return nil, err
-		}
-		if result == nil {
-			result = &cosmos.Result{}
-		}
-		if len(ctx.EventManager().Events()) > 0 {
-			result.Events = ctx.EventManager().ABCIEvents()
-		}
-		return result, nil
-	}
-}
-
-func getHandlerMapping(mgr Manager) map[string]MsgHandler {
-	if mgr.GetVersion().GTE(semver.MustParse("2.136.0")) {
-		return getHandlerMappingV136(mgr)
-	}
-	return getHandlerMappingV65(mgr)
-}
-
-func getHandlerMappingV65(mgr Manager) map[string]MsgHandler {
-	// New arch handlers
-	m := make(map[string]MsgHandler)
-
-	// Consensus handlers - can only be sent by addresses in
-	//   the active validator set.
-	m[MsgTssPool{}.Type()] = NewTssHandler(mgr)
-	m[MsgObservedTxIn{}.Type()] = NewObservedTxInHandler(mgr)
-	m[MsgObservedTxOut{}.Type()] = NewObservedTxOutHandler(mgr)
-	m[MsgTssKeysignFail{}.Type()] = NewTssKeysignHandler(mgr)
-	m[MsgErrataTx{}.Type()] = NewErrataTxHandler(mgr)
-	m[MsgBan{}.Type()] = NewBanHandler(mgr)
-	m[MsgNetworkFee{}.Type()] = NewNetworkFeeHandler(mgr)
-	m[MsgSolvency{}.Type()] = NewSolvencyHandler(mgr)
-
-	// cli handlers (non-consensus)
-	m[MsgMimir{}.Type()] = NewMimirHandler(mgr)
-	m[MsgSetNodeKeys{}.Type()] = NewSetNodeKeysHandler(mgr)
-	m[MsgSetVersion{}.Type()] = NewVersionHandler(mgr)
-	m[MsgSetIPAddress{}.Type()] = NewIPAddressHandler(mgr)
-	m[MsgNodePauseChain{}.Type()] = NewNodePauseChainHandler(mgr)
-
-	// native handlers (non-consensus)
-	m[MsgSend{}.Type()] = NewSendHandler(mgr)
-	m[MsgDeposit{}.Type()] = NewDepositHandler(mgr)
-	return m
-}
-
-func getHandlerMappingV136(mgr Manager) map[string]MsgHandler {
-	m := getHandlerMappingV65(mgr)
-	m[MsgProposeUpgrade{}.Type()] = NewProposeUpgradeHandler(mgr)
-	m[MsgApproveUpgrade{}.Type()] = NewApproveUpgradeHandler(mgr)
-	m[MsgRejectUpgrade{}.Type()] = NewRejectUpgradeHandler(mgr)
-
-	return m
-}
-
 // NewInternalHandler returns a handler for "thorchain" internal type messages.
 func NewInternalHandler(mgr Manager) cosmos.Handler {
 	return func(ctx cosmos.Context, msg cosmos.Msg) (*cosmos.Result, error) {
 		handlerMap := getInternalHandlerMapping(mgr)
-		legacyMsg, ok := msg.(legacytx.LegacyMsg)
+		h, ok := handlerMap[sdk.MsgTypeURL(msg)]
 		if !ok {
-			return nil, cosmos.ErrUnknownRequest("invalid message type")
-		}
-		h, ok := handlerMap[legacyMsg.Type()]
-		if !ok {
-			errMsg := fmt.Sprintf("Unrecognized thorchain Msg type: %v", legacyMsg.Type())
+			errMsg := fmt.Sprintf("Unrecognized thorchain Msg type: %v", sdk.MsgTypeURL(msg))
 			return nil, cosmos.ErrUnknownRequest(errMsg)
 		}
 
@@ -130,7 +37,6 @@ func NewInternalHandler(mgr Manager) cosmos.Handler {
 		if err == nil {
 			// Success, commit the cached changes and events
 			commit()
-			ctx.EventManager().EmitEvents(cacheCtx.EventManager().Events())
 		}
 
 		return res, err
@@ -140,27 +46,35 @@ func NewInternalHandler(mgr Manager) cosmos.Handler {
 func getInternalHandlerMapping(mgr Manager) map[string]MsgHandler {
 	// New arch handlers
 	m := make(map[string]MsgHandler)
-	m[MsgOutboundTx{}.Type()] = NewOutboundTxHandler(mgr)
-	m[MsgSwap{}.Type()] = NewSwapHandler(mgr)
-	m[MsgReserveContributor{}.Type()] = NewReserveContributorHandler(mgr)
-	m[MsgBond{}.Type()] = NewBondHandler(mgr)
-	m[MsgUnBond{}.Type()] = NewUnBondHandler(mgr)
-	m[MsgLeave{}.Type()] = NewLeaveHandler(mgr)
-	m[MsgDonate{}.Type()] = NewDonateHandler(mgr)
-	m[MsgWithdrawLiquidity{}.Type()] = NewWithdrawLiquidityHandler(mgr)
-	m[MsgAddLiquidity{}.Type()] = NewAddLiquidityHandler(mgr)
-	m[MsgRefundTx{}.Type()] = NewRefundHandler(mgr)
-	m[MsgMigrate{}.Type()] = NewMigrateHandler(mgr)
-	m[MsgRagnarok{}.Type()] = NewRagnarokHandler(mgr)
-	m[MsgNoOp{}.Type()] = NewNoOpHandler(mgr)
-	m[MsgConsolidate{}.Type()] = NewConsolidateHandler(mgr)
-	m[MsgManageTHORName{}.Type()] = NewManageTHORNameHandler(mgr)
-	m[MsgLoanOpen{}.Type()] = NewLoanOpenHandler(mgr)
-	m[MsgLoanRepayment{}.Type()] = NewLoanRepaymentHandler(mgr)
-	m[MsgTradeAccountDeposit{}.Type()] = NewTradeAccountDepositHandler(mgr)
-	m[MsgTradeAccountWithdrawal{}.Type()] = NewTradeAccountWithdrawalHandler(mgr)
-	m[MsgRunePoolDeposit{}.Type()] = NewRunePoolDepositHandler(mgr)
-	m[MsgRunePoolWithdraw{}.Type()] = NewRunePoolWithdrawHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgOutboundTx{})] = NewOutboundTxHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgSwap{})] = NewSwapHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgReserveContributor{})] = NewReserveContributorHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgBond{})] = NewBondHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgUnBond{})] = NewUnBondHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgLeave{})] = NewLeaveHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgMaint{})] = NewMaintHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgDonate{})] = NewDonateHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgWithdrawLiquidity{})] = NewWithdrawLiquidityHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgAddLiquidity{})] = NewAddLiquidityHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgRefundTx{})] = NewRefundHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgMigrate{})] = NewMigrateHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgRagnarok{})] = NewRagnarokHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgNoOp{})] = NewNoOpHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgConsolidate{})] = NewConsolidateHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgManageTHORName{})] = NewManageTHORNameHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgLoanOpen{})] = NewLoanOpenHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgLoanRepayment{})] = NewLoanRepaymentHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgTradeAccountDeposit{})] = NewTradeAccountDepositHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgTradeAccountWithdrawal{})] = NewTradeAccountWithdrawalHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgSecuredAssetDeposit{})] = NewSecuredAssetDepositHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgSecuredAssetWithdraw{})] = NewSecuredAssetWithdrawHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgRunePoolDeposit{})] = NewRunePoolDepositHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgRunePoolWithdraw{})] = NewRunePoolWithdrawHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgWasmExec{})] = NewWasmExecHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgSwitch{})] = NewSwitchHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgTCYClaim{})] = NewTCYClaimHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgTCYStake{})] = NewTCYStakeHandler(mgr)
+	m[sdk.MsgTypeURL(&MsgTCYUnstake{})] = NewTCYUnstakeHandler(mgr)
 	return m
 }
 
@@ -168,7 +82,7 @@ func getMsgSwapFromMemo(memo SwapMemo, tx ObservedTx, signer cosmos.AccAddress) 
 	if memo.Destination.IsEmpty() {
 		memo.Destination = tx.Tx.FromAddress
 	}
-	return NewMsgSwap(tx.Tx, memo.GetAsset(), memo.Destination, memo.SlipLimit, memo.AffiliateAddress, memo.AffiliateBasisPoints, memo.GetDexAggregator(), memo.GetDexTargetAddress(), memo.GetDexTargetLimit(), memo.GetOrderType(), memo.GetStreamQuantity(), memo.GetStreamInterval(), signer), nil
+	return NewMsgSwap(tx.Tx, memo.GetAsset(), memo.Destination, memo.SlipLimit, memo.AffiliateAddress, memo.AffiliateBasisPoints, memo.GetDexAggregator(), memo.GetDexTargetAddress(), memo.GetDexTargetLimit(), memo.GetSwapType(), memo.GetStreamQuantity(), memo.GetStreamInterval(), signer), nil
 }
 
 func getMsgWithdrawFromMemo(memo WithdrawLiquidityMemo, tx ObservedTx, signer cosmos.AccAddress) (cosmos.Msg, error) {
@@ -246,6 +160,10 @@ func getMsgUnbondFromMemo(memo UnbondMemo, tx ObservedTx, signer cosmos.AccAddre
 	return NewMsgUnBond(tx.Tx, memo.GetAccAddress(), memo.GetAmount(), tx.Tx.FromAddress, memo.BondProviderAddress, signer), nil
 }
 
+func getMsgMaintFromMemo(memo MaintMemo, signer cosmos.AccAddress) (cosmos.Msg, error) {
+	return types.NewMsgMaint(memo.GetAccAddress(), signer), nil
+}
+
 func getMsgManageTHORNameFromMemo(memo ManageTHORNameMemo, tx ObservedTx, signer cosmos.AccAddress) (cosmos.Msg, error) {
 	if len(tx.Tx.Coins) == 0 {
 		return nil, fmt.Errorf("transaction must have rune in it")
@@ -273,10 +191,11 @@ func processOneTxIn(ctx cosmos.Context, keeper keeper.Keeper, tx ObservedTx, sig
 		newMsg, err = getMsgAddLiquidityFromMemo(ctx, m, tx, signer)
 	case WithdrawLiquidityMemo:
 		m.Asset = fuzzyAssetMatch(ctx, keeper, m.Asset)
+		m.WithdrawalAsset = fuzzyAssetMatch(ctx, keeper, m.WithdrawalAsset)
 		newMsg, err = getMsgWithdrawFromMemo(m, tx, signer)
 	case SwapMemo:
 		m.Asset = fuzzyAssetMatch(ctx, keeper, m.Asset)
-		m.DexTargetAddress = externalAssetMatch(keeper.GetVersion(), m.Asset.GetChain(), m.DexTargetAddress)
+		m.DexTargetAddress = externalAssetMatch(m.Asset.GetChain(), m.DexTargetAddress)
 		newMsg, err = getMsgSwapFromMemo(m, tx, signer)
 	case DonateMemo:
 		m.Asset = fuzzyAssetMatch(ctx, keeper, m.Asset)
@@ -316,10 +235,34 @@ func processOneTxIn(ctx cosmos.Context, keeper keeper.Keeper, tx ObservedTx, sig
 	case TradeAccountWithdrawalMemo:
 		coin := tx.Tx.Coins[0]
 		newMsg = NewMsgTradeAccountWithdrawal(coin.Asset, coin.Amount, m.GetAddress(), signer, tx.Tx)
+	case SecuredAssetDepositMemo:
+		coin := tx.Tx.Coins[0]
+		newMsg = NewMsgSecuredAssetDeposit(coin.Asset, coin.Amount, m.GetAccAddress(), signer, tx.Tx)
+	case SecuredAssetWithdrawMemo:
+		coin := tx.Tx.Coins[0]
+		newMsg = NewMsgSecuredAssetWithdraw(coin.Asset, coin.Amount, m.GetAddress(), signer, tx.Tx)
 	case RunePoolDepositMemo:
 		newMsg = NewMsgRunePoolDeposit(signer, tx.Tx)
 	case RunePoolWithdrawMemo:
 		newMsg = NewMsgRunePoolWithdraw(signer, tx.Tx, m.GetBasisPts(), m.GetAffiliateAddress(), m.GetAffiliateBasisPoints())
+	case ExecMemo:
+		coin := tx.Tx.Coins[0]
+		sender, err := tx.Tx.FromAddress.MappedAccAddress()
+		if err != nil {
+			return nil, err
+		}
+		newMsg = NewMsgWasmExec(coin.Asset, coin.Amount, m.ContractAddress, sender, signer, m.Msg, tx.Tx)
+	case SwitchMemo:
+		coin := tx.Tx.Coins[0]
+		newMsg = NewMsgSwitch(coin.Asset, coin.Amount, m.GetAccAddress(), signer, tx.Tx)
+	case TCYClaimMemo:
+		newMsg = NewMsgTCYClaim(m.Address, tx.Tx.FromAddress, signer)
+	case TCYStakeMemo:
+		newMsg = NewMsgTCYStake(tx.Tx, signer)
+	case TCYUnstakeMemo:
+		newMsg = NewMsgTCYUnstake(tx.Tx, m.BasisPoints, signer)
+	case MaintMemo:
+		newMsg, err = getMsgMaintFromMemo(m, signer)
 	default:
 		return nil, errInvalidMemo
 	}
@@ -327,7 +270,13 @@ func processOneTxIn(ctx cosmos.Context, keeper keeper.Keeper, tx ObservedTx, sig
 	if err != nil {
 		return newMsg, err
 	}
-	return newMsg, newMsg.ValidateBasic()
+
+	newMsgV, ok := newMsg.(sdk.HasValidateBasic)
+	if !ok {
+		return newMsg, fmt.Errorf("msg does not implement sdk.HasValidateBasic: %T", newMsg)
+	}
+
+	return newMsg, newMsgV.ValidateBasic()
 }
 
 func fuzzyAssetMatch(ctx cosmos.Context, keeper keeper.Keeper, origAsset common.Asset) common.Asset {
@@ -386,11 +335,13 @@ func fuzzyAssetMatch(ctx cosmos.Context, keeper keeper.Keeper, origAsset common.
 			continue
 		}
 	}
-	winner.Asset.Synth = origAsset.Synth
-	return winner.Asset
+	// Since the Chain and Ticker must already match, replace just the Symbol with the winner's,
+	// keeping other fields like Synth and Trade the same as the original.
+	origAsset.Symbol = winner.Asset.Symbol
+	return origAsset
 }
 
-func externalAssetMatch(version semver.Version, chain common.Chain, hint string) string {
+func externalAssetMatch(chain common.Chain, hint string) string {
 	if len(hint) == 0 {
 		return hint
 	}
@@ -398,7 +349,7 @@ func externalAssetMatch(version semver.Version, chain common.Chain, hint string)
 		// find all potential matches
 		firstMatch := ""
 		addrHint := strings.ToLower(hint)
-		for _, token := range tokenlist.GetEVMTokenList(chain, version).Tokens {
+		for _, token := range tokenlist.GetEVMTokenList(chain).Tokens {
 			if strings.HasSuffix(strings.ToLower(token.Address), addrHint) {
 				// store first found address
 				if firstMatch == "" {

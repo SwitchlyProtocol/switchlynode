@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	btypes "gitlab.com/thorchain/thornode/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
+	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
 )
 
 var ErrNotFound = fmt.Errorf("not found")
@@ -43,7 +43,10 @@ func (b *thorchainBridge) GetKeysign(blockHeight int64, pk string) (types.TxOut,
 	if err != nil {
 		return types.TxOut{}, fmt.Errorf("fail to marshal keysign block to json: %w", err)
 	}
-	pubKey := b.keys.GetSignerInfo().GetPubKey()
+	pubKey, err := b.keys.GetSignerInfo().GetPubKey()
+	if err != nil {
+		return types.TxOut{}, fmt.Errorf("fail to get signer pub key: %w", err)
+	}
 	s, err := base64.StdEncoding.DecodeString(query.Signature)
 	if err != nil {
 		return types.TxOut{}, errors.New("invalid keysign signature: cannot decode signature")

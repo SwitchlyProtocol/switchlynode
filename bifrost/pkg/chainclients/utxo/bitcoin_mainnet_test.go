@@ -6,10 +6,10 @@ package utxo
 import (
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	ttypes "gitlab.com/thorchain/thornode/x/thorchain/types"
+	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	ttypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
 )
 
 func (s *BitcoinSuite) TestGetAddress(c *C) {
@@ -28,7 +28,7 @@ func (s *BitcoinSuite) TestConfirmationCountReady(c *C) {
 	pkey := ttypes.GetRandomPubKey()
 	c.Assert(s.client.ConfirmationCountReady(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -47,7 +47,7 @@ func (s *BitcoinSuite) TestConfirmationCountReady(c *C) {
 	s.client.currentBlockHeight.Store(3)
 	c.Assert(s.client.ConfirmationCountReady(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -67,7 +67,7 @@ func (s *BitcoinSuite) TestConfirmationCountReady(c *C) {
 
 	c.Assert(s.client.ConfirmationCountReady(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -99,7 +99,7 @@ func (s *BitcoinSuite) TestGetConfirmationCount(c *C) {
 	// mempool txin , confirmation count should be 0
 	c.Assert(s.client.GetConfirmationCount(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -119,7 +119,7 @@ func (s *BitcoinSuite) TestGetConfirmationCount(c *C) {
 
 	c.Assert(s.client.GetConfirmationCount(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -139,7 +139,7 @@ func (s *BitcoinSuite) TestGetConfirmationCount(c *C) {
 
 	c.Assert(s.client.GetConfirmationCount(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -159,7 +159,7 @@ func (s *BitcoinSuite) TestGetConfirmationCount(c *C) {
 
 	c.Assert(s.client.GetConfirmationCount(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
@@ -179,7 +179,7 @@ func (s *BitcoinSuite) TestGetConfirmationCount(c *C) {
 
 	c.Assert(s.client.GetConfirmationCount(types.TxIn{
 		Chain: common.BTCChain,
-		TxArray: []types.TxInItem{
+		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",

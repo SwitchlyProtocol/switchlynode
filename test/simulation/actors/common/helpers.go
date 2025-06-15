@@ -1,18 +1,19 @@
 package common
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
 	ecommon "github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/evm"
-	"gitlab.com/thorchain/thornode/test/simulation/pkg/thornode"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/evm"
+	"gitlab.com/thorchain/thornode/v3/test/simulation/pkg/thornode"
 
-	. "gitlab.com/thorchain/thornode/test/simulation/pkg/types"
+	. "gitlab.com/thorchain/thornode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +65,7 @@ func DepositL1Token(log *zerolog.Logger, client LiteChainClient, asset common.As
 	}
 	if routerAddr == nil {
 		log.Error().Msg("failed to get router address")
-		return "", err
+		return "", fmt.Errorf("failed to get router address")
 	}
 	token := evm.Tokens(asset.Chain)[asset]
 

@@ -1,13 +1,14 @@
 package thorchain
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/common"
-	"gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/constants"
-	"gitlab.com/thorchain/thornode/x/thorchain/keeper"
+	"gitlab.com/thorchain/thornode/v3/common"
+	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/constants"
+	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
 )
 
 // SwapQueueVCUR is going to manage the swaps queue
@@ -154,8 +155,14 @@ func (vm *SwapQueueVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 					ctx.Logger().Error("failed to retrieve AffiliateCollector module address", "error", err)
 				}
 
-				if strings.HasPrefix(pick.msg.Tx.Memo, "THOR-PREFERRED-ASSET") && pick.msg.Tx.FromAddress.Equals(affColAddress) {
+				if strings.HasPrefix(pick.msg.Tx.Memo, PreferredAssetSwapMemoPrefix) && pick.msg.Tx.FromAddress.Equals(affColAddress) {
 					triggerRefund = false
+					// clean up failed preferred asset swap
+					runeAmt := pick.msg.Tx.Coins[0].Amount
+					memo := pick.msg.Tx.Memo
+					if err := vm.cleanupFailedPreferredAssetSwap(ctx, mgr, memo, runeAmt); err != nil {
+						ctx.Logger().Error("failed to cleanup failed preferred asset swap", "error", err)
+					}
 				}
 			}
 
@@ -177,7 +184,7 @@ func (vm *SwapQueueVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 		}
 
 		if pick.msg.IsStreaming() {
-			swp, err := vm.k.GetStreamingSwap(ctx, pick.msg.Tx.ID)
+			swp, err = vm.k.GetStreamingSwap(ctx, pick.msg.Tx.ID)
 			if err != nil {
 				ctx.Logger().Error("fail to fetch streaming swap", "error", err)
 				return err
@@ -206,7 +213,6 @@ func (vm *SwapQueueVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 					dexAgg := ""
 					if len(pick.msg.Aggregator) > 0 {
 						dexAgg, err = FetchDexAggregator(
-							mgr.GetVersion(),
 							pick.msg.TargetAsset.GetChain(),
 							pick.msg.Aggregator,
 						)
@@ -229,6 +235,15 @@ func (vm *SwapQueueVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 					if _, err := mgr.TxOutStore().TryAddTxOutItem(ctx, mgr, toi, cosmos.ZeroUint()); err != nil {
 						ctx.Logger().Error("fail streaming swap outbound", "error", err)
 						unrefundableCoinCleanup(ctx, mgr, toi, "failed_outbound")
+
+						// Emit a "fail to refund" refund event to signal to explorers/interfaces what has happened to the streaming swap output.
+						refundReason := fmt.Sprintf("%s; fail to refund (%s): streaming swap output", err, toi.Coin.String())
+						// All aspects of the inbound Tx are unchanged except for the Coins, which here have become the already-swapped output Coins.
+						refundTx := common.NewTx(pick.msg.Tx.ID, pick.msg.Tx.FromAddress, pick.msg.Tx.ToAddress, common.NewCoins(toi.Coin), pick.msg.Tx.Gas, pick.msg.Tx.Memo)
+						eventRefund := NewEventRefund(CodeFailAddOutboundTx, refundReason, refundTx, common.Fee{}) // fee param not used in downstream event
+						if err := mgr.EventMgr().EmitEvent(ctx, eventRefund); err != nil {
+							ctx.Logger().Error("fail to emit refund event", "error", err)
+						}
 					}
 				}
 
@@ -239,7 +254,7 @@ func (vm *SwapQueueVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 					refundCoinTx := pick.msg.Tx
 					refundCoinTx.Coins = common.NewCoins(refundCoin)
 					// As this is a streaming swap's partial refund, the vault context may have changed, so do vault selection.
-					if refundErr := refundTx(ctx, ObservedTx{Tx: refundCoinTx}, mgr, CodeSwapFail, handleErr.Error(), ""); refundErr != nil {
+					if refundErr := refundTx(ctx, ObservedTx{Tx: refundCoinTx}, mgr, CodeSwapFail, "streaming partial-refund", ""); refundErr != nil {
 						ctx.Logger().Error("fail to partial-refund swap", "error", refundErr)
 					}
 				}
@@ -253,6 +268,33 @@ func (vm *SwapQueueVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 			vm.k.RemoveSwapQueueItem(ctx, pick.msg.Tx.ID, pick.index)
 		}
 	}
+	return nil
+}
+
+func (vm *SwapQueueVCUR) cleanupFailedPreferredAssetSwap(ctx cosmos.Context, mgr Manager, memo string, runeAmt cosmos.Uint) error {
+	ctx.Logger().Info("preferred asset swap failed, send rune back to affiliate collector", "runeAmt", runeAmt.String(), "memo", memo)
+	// get the preferred asset swap's thorname
+	name, ok := strings.CutPrefix(memo, fmt.Sprintf("%s-", PreferredAssetSwapMemoPrefix))
+	if !ok {
+		return fmt.Errorf("failed to get thorname from memo: %s", memo)
+	}
+	if tn, err := vm.k.GetTHORName(ctx, name); err == nil {
+		affCol, err := mgr.Keeper().GetAffiliateCollector(ctx, tn.Owner)
+		if err != nil {
+			return fmt.Errorf("failed to get affiliate collector record: %w", err)
+		} else {
+			affCol.RuneAmount = affCol.RuneAmount.Add(runeAmt)
+			mgr.Keeper().SetAffiliateCollector(ctx, affCol)
+		}
+	} else {
+		return fmt.Errorf("failed to get thorname: %w", err)
+	}
+
+	// send rune back to affiliate collector
+	if err := mgr.Keeper().SendFromModuleToModule(ctx, AsgardName, AffiliateCollectorName, common.NewCoins(common.NewCoin(common.RuneAsset(), runeAmt))); err != nil {
+		return fmt.Errorf("failed to send rune back to affiliate collector: %w", err)
+	}
+
 	return nil
 }
 

@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
-	"gitlab.com/thorchain/thornode/common"
-	sdk "gitlab.com/thorchain/thornode/common/cosmos"
-	"gitlab.com/thorchain/thornode/config"
-	openapi "gitlab.com/thorchain/thornode/openapi/gen"
+	"gitlab.com/thorchain/thornode/v3/common"
+	sdk "gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"gitlab.com/thorchain/thornode/v3/config"
+	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +31,10 @@ func init() {
 	}
 }
 
+func BaseURL() string {
+	return thornodeURL
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // Exported
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -41,7 +47,7 @@ func GetBalances(addr common.Address) (common.Coins, error) {
 			Amount string `json:"amount"`
 		} `json:"balances"`
 	}
-	err := get(url, &balances)
+	err := Get(url, &balances)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +74,7 @@ func GetBalances(addr common.Address) (common.Coins, error) {
 func GetInboundAddress(chain common.Chain) (address common.Address, router *common.Address, err error) {
 	url := fmt.Sprintf("%s/thorchain/inbound_addresses", thornodeURL)
 	var inboundAddresses []openapi.InboundAddress
-	err = get(url, &inboundAddresses)
+	err = Get(url, &inboundAddresses)
 	if err != nil {
 		return "", nil, err
 	}
@@ -90,7 +96,7 @@ func GetInboundAddress(chain common.Chain) (address common.Address, router *comm
 func GetRouterAddress(chain common.Chain) (common.Address, error) {
 	url := fmt.Sprintf("%s/thorchain/inbound_addresses", thornodeURL)
 	var inboundAddresses []openapi.InboundAddress
-	err := get(url, &inboundAddresses)
+	err := Get(url, &inboundAddresses)
 	if err != nil {
 		return "", err
 	}
@@ -108,28 +114,42 @@ func GetRouterAddress(chain common.Chain) (common.Address, error) {
 func GetLiquidityProviders(asset common.Asset) ([]openapi.LiquidityProvider, error) {
 	url := fmt.Sprintf("%s/thorchain/pool/%s/liquidity_providers", thornodeURL, asset.String())
 	var liquidityProviders []openapi.LiquidityProvider
-	err := get(url, &liquidityProviders)
+	err := Get(url, &liquidityProviders)
 	return liquidityProviders, err
-}
-
-func GetSavers(asset common.Asset) ([]openapi.Saver, error) {
-	url := fmt.Sprintf("%s/thorchain/pool/%s/savers", thornodeURL, asset.GetLayer1Asset().String())
-	var savers []openapi.Saver
-	err := get(url, &savers)
-	return savers, err
 }
 
 func GetPools() ([]openapi.Pool, error) {
 	url := fmt.Sprintf("%s/thorchain/pools", thornodeURL)
 	var pools []openapi.Pool
-	err := get(url, &pools)
+	err := Get(url, &pools)
 	return pools, err
+}
+
+func GetVaults() ([]openapi.Vault, error) {
+	url := fmt.Sprintf("%s/thorchain/vaults/asgard", thornodeURL)
+	var vaults []openapi.Vault
+	err := Get(url, &vaults)
+	return vaults, err
+}
+
+func GetNetwork() (openapi.NetworkResponse, error) {
+	url := fmt.Sprintf("%s/thorchain/network", thornodeURL)
+	var network openapi.NetworkResponse
+	err := Get(url, &network)
+	return network, err
+}
+
+func GetNodes() ([]openapi.Node, error) {
+	url := fmt.Sprintf("%s/thorchain/nodes", thornodeURL)
+	var nodes []openapi.Node
+	err := Get(url, &nodes)
+	return nodes, err
 }
 
 func GetPool(asset common.Asset) (openapi.Pool, error) {
 	url := fmt.Sprintf("%s/thorchain/pool/%s", thornodeURL, asset.String())
 	var pool openapi.Pool
-	err := get(url, &pool)
+	err := Get(url, &pool)
 	return pool, err
 }
 
@@ -147,62 +167,57 @@ func GetSwapQuote(from, to common.Asset, amount sdk.Uint) (openapi.QuoteSwapResp
 	url := parsedURL.String()
 
 	var quote openapi.QuoteSwapResponse
-	err = get(url, &quote)
-	return quote, err
-}
-
-func GetSaverDepositQuote(asset common.Asset, amount sdk.Uint) (openapi.QuoteSaverDepositResponse, error) {
-	baseURL := fmt.Sprintf("%s/thorchain/quote/saver/deposit", thornodeURL)
-	parsedURL, err := url.Parse(baseURL)
-	if err != nil {
-		return openapi.QuoteSaverDepositResponse{}, err
-	}
-	params := url.Values{}
-	params.Add("asset", asset.String())
-	params.Add("amount", amount.String())
-	parsedURL.RawQuery = params.Encode()
-	url := parsedURL.String()
-
-	var quote openapi.QuoteSaverDepositResponse
-	err = get(url, &quote)
+	err = Get(url, &quote)
 	return quote, err
 }
 
 func GetTxStages(txid string) (openapi.TxStagesResponse, error) {
 	url := fmt.Sprintf("%s/thorchain/tx/stages/%s", thornodeURL, txid)
 	var stages openapi.TxStagesResponse
-	err := get(url, &stages)
+	err := Get(url, &stages)
 	return stages, err
 }
 
 func GetTxDetails(txid string) (openapi.TxDetailsResponse, error) {
 	url := fmt.Sprintf("%s/thorchain/tx/details/%s", thornodeURL, txid)
 	var details openapi.TxDetailsResponse
-	err := get(url, &details)
+	err := Get(url, &details)
 	return details, err
 }
 
 func GetMimirs() (map[string]int64, error) {
 	url := fmt.Sprintf("%s/thorchain/mimir", thornodeURL)
 	var mimirs map[string]int64
-	err := get(url, &mimirs)
+	err := Get(url, &mimirs)
 	return mimirs, err
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// Internal
-////////////////////////////////////////////////////////////////////////////////////////
+func GetBlock(height int64) (openapi.BlockResponse, error) {
+	url := fmt.Sprintf("%s/thorchain/block", thornodeURL)
+	if height > 0 {
+		url = fmt.Sprintf("%s?height=%d", url, height)
+	}
+	var block openapi.BlockResponse
+	err := Get(url, &block)
+	return block, err
+}
 
-func get(url string, target interface{}) error {
-	resp, err := http.Get(url)
+func Get(url string, target interface{}) error {
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("(%s) HTTP: %d => %s", url, resp.StatusCode, body)
+	}
+
 	// extract error if the request failed
 	type ErrorResponse struct {
-		Error string `json:"error"`
+		Code    int    `json:"code"`
+		Message string `json:"message"`
 	}
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -210,10 +225,23 @@ func get(url string, target interface{}) error {
 	}
 	errResp := ErrorResponse{}
 	err = json.Unmarshal(buf, &errResp)
-	if err == nil && errResp.Error != "" {
-		return fmt.Errorf(errResp.Error)
+	if err == nil && errResp.Code != 0 && errResp.Message != "" {
+		return fmt.Errorf("code: %d, message: %s", errResp.Code, errResp.Message)
 	}
 
 	// decode response
 	return json.Unmarshal(buf, target)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Internal
+////////////////////////////////////////////////////////////////////////////////////////
+
+var httpClient = &http.Client{
+	Transport: &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).Dial,
+	},
+	Timeout: 5 * time.Second,
 }
