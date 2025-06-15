@@ -6,11 +6,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // MsgHandler is an interface expect all handler to implement

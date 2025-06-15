@@ -3,7 +3,7 @@ package thorchain
 import (
 	"github.com/cometbft/cometbft/crypto"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 type nodeAddressValidatorAddressPair struct {

@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 type NodeRelayMsg struct {

@@ -1,6 +1,6 @@
 package types
 
-import "gitlab.com/thorchain/thornode/v3/common"
+import "github.com/switchlyprotocol/switchlynode/v1/common"
 
 type ErrataBlock struct {
 	Height int64

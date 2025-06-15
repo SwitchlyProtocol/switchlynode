@@ -3,8 +3,8 @@ package denom
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/v3/x/denom/keeper"
-	"gitlab.com/thorchain/thornode/v3/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/keeper"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
 )
 
 // InitGenesis initializes the denom module's state from a provided genesis

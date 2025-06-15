@@ -6,9 +6,9 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rs/zerolog"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
 )
 
 // SignCheckpoint is used to checkpoint the built transaction before signing, for use in

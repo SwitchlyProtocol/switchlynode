@@ -8,9 +8,9 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/db"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/db"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 // ObserverStorage save the ondeck tx in item to key value store, in case bifrost restart

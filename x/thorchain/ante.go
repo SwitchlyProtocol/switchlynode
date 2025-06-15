@@ -13,10 +13,10 @@ import (
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 const (

@@ -2,7 +2,7 @@ package keeperv1
 
 import (
 	"cosmossdk.io/math"
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 	. "gopkg.in/check.v1"
 )
 

@@ -3,7 +3,7 @@ package common
 import (
 	"sync"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
 )
 
 // LocalCacheItem used to cache the unconfirmed broadcast message

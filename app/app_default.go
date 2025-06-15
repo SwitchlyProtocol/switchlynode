@@ -7,7 +7,7 @@ import (
 	"os"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 // BeginBlocker application updates every begin block

@@ -13,11 +13,11 @@ import (
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/evm/types"
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/config"
-	"gitlab.com/thorchain/thornode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
 )
 
 func (c *Client) unstuck() {

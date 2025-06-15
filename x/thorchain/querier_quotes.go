@@ -20,11 +20,11 @@ import (
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // -------------------------------------------------------------------------------------

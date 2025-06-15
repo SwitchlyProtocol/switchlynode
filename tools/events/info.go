@@ -12,16 +12,16 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
-	"gitlab.com/thorchain/thornode/v3/tools/events/pkg/config"
-	"gitlab.com/thorchain/thornode/v3/tools/events/pkg/notify"
-	"gitlab.com/thorchain/thornode/v3/tools/events/pkg/util"
-	"gitlab.com/thorchain/thornode/v3/tools/thorscan"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/notify"
+	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/util"
+	"github.com/switchlyprotocol/switchlynode/v1/tools/thorscan"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -10,13 +10,13 @@ import (
 	"github.com/stellar/go/txnbuild"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/signercache"
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/signercache"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }

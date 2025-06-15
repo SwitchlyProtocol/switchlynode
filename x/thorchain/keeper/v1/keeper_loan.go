@@ -3,9 +3,9 @@ package keeperv1
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/types"
 )
 
 func (k KVStore) setLoan(ctx cosmos.Context, key string, record Loan) {

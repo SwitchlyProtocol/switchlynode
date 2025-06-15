@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/v3/tools/events/pkg/config"
-	"gitlab.com/thorchain/thornode/v3/tools/events/pkg/util"
+	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/util"
 )
 
 func discord(webhook, title string, block int64, lines []string, level Level, fields *util.OrderedMap) error {

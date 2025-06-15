@@ -3,8 +3,8 @@ package keeperv1
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 func (k KVStore) setObservedNetworkFeeVoter(ctx cosmos.Context, key string, record ObservedNetworkFeeVoter) {

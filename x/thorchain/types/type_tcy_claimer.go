@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"cosmossdk.io/math"
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 func NewTCYClaimer(l1Address common.Address, asset common.Asset, amount math.Uint) TCYClaimer {

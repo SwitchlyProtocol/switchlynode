@@ -1,7 +1,7 @@
 package tcysmartcontract
 
 import (
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 func IsTCYSmartContractAddress(address common.Address) bool {

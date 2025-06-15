@@ -5,11 +5,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/config"
-	thorchaintypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	thorchaintypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // MockThorchainBridge is a mock implementation for testing

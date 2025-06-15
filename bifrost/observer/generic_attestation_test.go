@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 // TestNewAttestationState tests the creation of a new attestation state

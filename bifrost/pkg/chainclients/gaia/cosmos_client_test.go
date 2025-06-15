@@ -22,13 +22,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	btypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/cmd"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/cmd"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 	. "gopkg.in/check.v1"
 )
 

@@ -9,7 +9,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	tssp "gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
+	tssp "github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
 
 	"github.com/stellar/go/clients/horizonclient"
 	"github.com/stellar/go/network"
@@ -17,16 +17,16 @@ import (
 	"github.com/stellar/go/txnbuild"
 
 	"github.com/stellar/go/xdr"
-	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/runners"
-	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/shared/signercache"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/bifrost/tss"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/config"
-	"gitlab.com/thorchain/thornode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/runners"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/signercache"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
 )
 
 // Client is a structure to sign and broadcast tx to Stellar chain used by signer mostly

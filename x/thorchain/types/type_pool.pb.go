@@ -8,8 +8,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	_ "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	_ "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -65,7 +65,7 @@ func (PoolStatus) EnumDescriptor() ([]byte, []int) {
 type Pool struct {
 	BalanceRune         cosmossdk_io_math.Uint                        `protobuf:"bytes,1,opt,name=balance_rune,json=balanceRune,proto3,customtype=cosmossdk.io/math.Uint" json:"balance_rune"`
 	BalanceAsset        cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=balance_asset,json=balanceAsset,proto3,customtype=cosmossdk.io/math.Uint" json:"balance_asset"`
-	Asset               gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,3,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	Asset               gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,3,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	LPUnits             cosmossdk_io_math.Uint                        `protobuf:"bytes,4,opt,name=LP_units,json=LPUnits,proto3,customtype=cosmossdk.io/math.Uint" json:"LP_units"`
 	Status              PoolStatus                                    `protobuf:"varint,5,opt,name=status,proto3,enum=types.PoolStatus" json:"status,omitempty"`
 	StatusSince         int64                                         `protobuf:"varint,10,opt,name=status_since,json=statusSince,proto3" json:"status_since,omitempty"`

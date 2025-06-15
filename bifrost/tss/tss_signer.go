@@ -14,10 +14,10 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/tendermint/btcd/btcec"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/keysign"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keysign"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 const (

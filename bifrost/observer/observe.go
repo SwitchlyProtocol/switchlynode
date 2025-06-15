@@ -18,16 +18,16 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients"
-	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/config"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	stypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pubkeymanager"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // signedTxOutCacheSize is the number of signed tx out observations to keep in memory

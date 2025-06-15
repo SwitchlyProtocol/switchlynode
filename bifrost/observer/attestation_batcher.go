@@ -10,9 +10,9 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 // we have one semaphore per peer (per active validator node), so we don't need to prune that often

@@ -17,9 +17,9 @@ import (
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	ma "github.com/multiformats/go-multiaddr"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 func extractIPAddress(s string) (string, error) {

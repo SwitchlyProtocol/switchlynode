@@ -6,7 +6,7 @@ import (
 
 	b64 "encoding/base64"
 
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 // NewTHORName create a new instance of THORName

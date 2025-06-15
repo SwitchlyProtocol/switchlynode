@@ -5,8 +5,8 @@ import (
 
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 
-	common "gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 
 	. "gopkg.in/check.v1"
 )

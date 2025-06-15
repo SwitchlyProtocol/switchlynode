@@ -7,7 +7,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
 )
 
 type peerStatus struct {

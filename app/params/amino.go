@@ -10,9 +10,9 @@ import (
 	"cosmossdk.io/x/tx/signing/aminojson"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	apicommon "gitlab.com/thorchain/thornode/v3/api/common"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	apicommon "github.com/switchlyprotocol/switchlynode/v1/api/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 func bech32Encoder(_ *aminojson.Encoder, v protoreflect.Value, w io.Writer) error {

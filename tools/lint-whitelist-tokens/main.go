@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 func main() {

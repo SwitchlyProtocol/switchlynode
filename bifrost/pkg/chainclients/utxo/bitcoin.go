@@ -7,10 +7,10 @@ import (
 	btcjson "github.com/btcsuite/btcd/btcjson"
 	btcchaincfg "github.com/btcsuite/btcd/chaincfg"
 	btcwire "github.com/btcsuite/btcd/wire"
-	btctxscript "gitlab.com/thorchain/thornode/v3/bifrost/txscript/txscript"
+	btctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/txscript"
 
-	stypes "gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/common"
+	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 func (c *Client) getChainCfgBTC() *btcchaincfg.Params {

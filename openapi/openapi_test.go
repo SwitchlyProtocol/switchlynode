@@ -11,9 +11,9 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	gen "gitlab.com/thorchain/thornode/v3/openapi/gen"
-	types "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	gen "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	types "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 
 	. "gopkg.in/check.v1"
 )

@@ -21,7 +21,7 @@ import (
 	"github.com/decred/dcrd/dcrec/edwards"
 	"github.com/spf13/cobra"
 
-	"gitlab.com/thorchain/thornode/v3/app"
+	"github.com/switchlyprotocol/switchlynode/v1/app"
 )
 
 const (

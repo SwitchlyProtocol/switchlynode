@@ -23,10 +23,10 @@ import (
 	"github.com/cometbft/cometbft/crypto"
 	eth "github.com/ethereum/go-ethereum/crypto"
 
-	xrpkm "gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/xrp/keymanager"
+	xrpkm "github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/xrp/keymanager"
 
 	"github.com/stellar/go/strkey"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // PubKey used in thorchain, it should be bech32 encoded string

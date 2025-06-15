@@ -1,9 +1,9 @@
 package thorchain
 
 import (
-	"gitlab.com/thorchain/thornode/v3/common"
-	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
-	keeper "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	keeper "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
 )
 
 type DummyObserverManager struct{}

@@ -9,8 +9,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -28,7 +28,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgDonate struct {
-	Asset       gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	Asset       gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	AssetAmount cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=asset_amount,json=assetAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"asset_amount"`
 	RuneAmount  cosmossdk_io_math.Uint                        `protobuf:"bytes,3,opt,name=rune_amount,json=runeAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amount"`
 	Tx          common.Tx                                     `protobuf:"bytes,4,opt,name=tx,proto3" json:"tx"`

@@ -8,7 +8,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -26,7 +26,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type ReserveContributor struct {
-	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"address,omitempty"`
+	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"address,omitempty"`
 	Amount  cosmossdk_io_math.Uint                          `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 

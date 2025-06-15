@@ -4,7 +4,7 @@ package types
 import (
 	fmt "fmt"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
-	common "gitlab.com/thorchain/thornode/v3/api/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/api/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoiface "google.golang.org/protobuf/runtime/protoiface"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"

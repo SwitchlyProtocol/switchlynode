@@ -10,8 +10,8 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // Valid check whether the node status is valid or not

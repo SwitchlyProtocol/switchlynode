@@ -6,8 +6,8 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/db"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/db"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 // ScannerStorage define the method need to be used by scanner

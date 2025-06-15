@@ -18,13 +18,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p"
-	"gitlab.com/thorchain/thornode/v3/bifrost/p2p/conversion"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/config"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
 )
 
 // TestLogWriter is a custom writer that writes to testing.T.Log

@@ -1,4 +1,4 @@
-module gitlab.com/thorchain/thornode/v3
+module github.com/thorchain/thornode/v3
 
 go 1.23.4
 

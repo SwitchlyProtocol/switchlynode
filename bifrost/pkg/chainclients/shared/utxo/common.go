@@ -3,8 +3,8 @@ package utxo
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 func GetAsgardAddress(chain common.Chain, bridge thorclient.ThorchainBridge) ([]common.Address, error) {

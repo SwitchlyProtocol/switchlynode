@@ -9,8 +9,8 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -28,10 +28,10 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgSolvency struct {
-	Id     gitlab_com_thorchain_thornode_v3_common.TxID   `protobuf:"bytes,1,opt,name=id,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"id,omitempty"`
-	Chain  gitlab_com_thorchain_thornode_v3_common.Chain  `protobuf:"bytes,2,opt,name=chain,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Chain" json:"chain,omitempty"`
-	PubKey gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,3,opt,name=pub_key,json=pubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"pub_key,omitempty"`
-	Coins  gitlab_com_thorchain_thornode_v3_common.Coins  `protobuf:"bytes,4,rep,name=coins,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.Coins" json:"coins"`
+	Id     gitlab_com_thorchain_thornode_v3_common.TxID   `protobuf:"bytes,1,opt,name=id,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"id,omitempty"`
+	Chain  gitlab_com_thorchain_thornode_v3_common.Chain  `protobuf:"bytes,2,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
+	PubKey gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,3,opt,name=pub_key,json=pubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pub_key,omitempty"`
+	Coins  gitlab_com_thorchain_thornode_v3_common.Coins  `protobuf:"bytes,4,rep,name=coins,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Coins" json:"coins"`
 	Height int64                                          `protobuf:"varint,5,opt,name=height,proto3" json:"height,omitempty"`
 	Signer github_com_cosmos_cosmos_sdk_types.AccAddress  `protobuf:"bytes,6,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }

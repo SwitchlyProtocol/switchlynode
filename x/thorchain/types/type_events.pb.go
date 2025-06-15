@@ -9,8 +9,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -109,7 +109,7 @@ func (MintBurnSupplyType) EnumDescriptor() ([]byte, []int) {
 }
 
 type PoolMod struct {
-	Asset    gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	Asset    gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	RuneAmt  cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=rune_amt,json=runeAmt,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amt"`
 	RuneAdd  bool                                          `protobuf:"varint,3,opt,name=rune_add,json=runeAdd,proto3" json:"rune_add,omitempty"`
 	AssetAmt cosmossdk_io_math.Uint                        `protobuf:"bytes,4,opt,name=asset_amt,json=assetAmt,proto3,customtype=cosmossdk.io/math.Uint" json:"asset_amt"`
@@ -166,7 +166,7 @@ func (m *PoolMod) GetAssetAdd() bool {
 type EventLimitSwap struct {
 	Source common.Coin                                  `protobuf:"bytes,1,opt,name=source,proto3" json:"source"`
 	Target common.Coin                                  `protobuf:"bytes,2,opt,name=target,proto3" json:"target"`
-	TxID   gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,3,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID   gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,3,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventLimitSwap) Reset()         { *m = EventLimitSwap{} }
@@ -224,7 +224,7 @@ func (m *EventLimitSwap) GetTxID() gitlab_com_thorchain_thornode_v3_common.TxID 
 }
 
 type EventStreamingSwap struct {
-	TxID              gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID              gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	Interval          uint64                                       `protobuf:"varint,2,opt,name=interval,proto3" json:"interval,omitempty"`
 	Quantity          uint64                                       `protobuf:"varint,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Count             uint64                                       `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
@@ -341,7 +341,7 @@ func (m *EventStreamingSwap) GetFailedSwapReasons() []string {
 }
 
 type EventSwap struct {
-	Pool                  gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool                  gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 	SwapTarget            cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=swap_target,json=swapTarget,proto3,customtype=cosmossdk.io/math.Uint" json:"swap_target"`
 	SwapSlip              cosmossdk_io_math.Uint                        `protobuf:"bytes,3,opt,name=swap_slip,json=swapSlip,proto3,customtype=cosmossdk.io/math.Uint" json:"swap_slip"`
 	LiquidityFee          cosmossdk_io_math.Uint                        `protobuf:"bytes,4,opt,name=liquidity_fee,json=liquidityFee,proto3,customtype=cosmossdk.io/math.Uint" json:"liquidity_fee"`
@@ -424,11 +424,11 @@ func (m *EventSwap) GetStreamingSwapCount() uint64 {
 }
 
 type EventAffiliateFee struct {
-	TxID        gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID        gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	Memo        string                                          `protobuf:"bytes,2,opt,name=memo,proto3" json:"memo,omitempty"`
 	Thorname    string                                          `protobuf:"bytes,3,opt,name=thorname,proto3" json:"thorname,omitempty"`
-	RuneAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
-	Asset       gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,5,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	RuneAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
+	Asset       gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,5,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	GrossAmount cosmossdk_io_math.Uint                          `protobuf:"bytes,6,opt,name=gross_amount,json=grossAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"gross_amount"`
 	FeeBps      uint64                                          `protobuf:"varint,7,opt,name=fee_bps,json=feeBps,proto3" json:"fee_bps,omitempty"`
 	FeeAmount   cosmossdk_io_math.Uint                          `protobuf:"bytes,8,opt,name=fee_amount,json=feeAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"fee_amount"`
@@ -503,14 +503,14 @@ func (m *EventAffiliateFee) GetFeeBps() uint64 {
 }
 
 type EventAddLiquidity struct {
-	Pool          gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool          gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 	ProviderUnits cosmossdk_io_math.Uint                          `protobuf:"bytes,2,opt,name=provider_units,json=providerUnits,proto3,customtype=cosmossdk.io/math.Uint" json:"provider_units"`
-	RuneAddress   gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
+	RuneAddress   gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
 	RuneAmount    cosmossdk_io_math.Uint                          `protobuf:"bytes,4,opt,name=rune_amount,json=runeAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amount"`
 	AssetAmount   cosmossdk_io_math.Uint                          `protobuf:"bytes,5,opt,name=asset_amount,json=assetAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"asset_amount"`
-	RuneTxID      gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,6,opt,name=rune_tx_id,json=runeTxId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"rune_tx_id,omitempty"`
-	AssetTxID     gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=asset_tx_id,json=assetTxId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"asset_tx_id,omitempty"`
-	AssetAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,8,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
+	RuneTxID      gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,6,opt,name=rune_tx_id,json=runeTxId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"rune_tx_id,omitempty"`
+	AssetTxID     gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=asset_tx_id,json=assetTxId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"asset_tx_id,omitempty"`
+	AssetAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,8,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
 }
 
 func (m *EventAddLiquidity) Reset()         { *m = EventAddLiquidity{} }
@@ -575,7 +575,7 @@ func (m *EventAddLiquidity) GetAssetAddress() gitlab_com_thorchain_thornode_v3_c
 }
 
 type EventWithdraw struct {
-	Pool          gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool          gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 	ProviderUnits cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=provider_units,json=providerUnits,proto3,customtype=cosmossdk.io/math.Uint" json:"provider_units"`
 	BasisPoints   int64                                         `protobuf:"varint,3,opt,name=basis_points,json=basisPoints,proto3" json:"basis_points,omitempty"`
 	Asymmetry     cosmossdk_io_math.LegacyDec                   `protobuf:"bytes,4,opt,name=asymmetry,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"asymmetry"`
@@ -632,14 +632,14 @@ func (m *EventWithdraw) GetInTx() common.Tx {
 }
 
 type EventPendingLiquidity struct {
-	Pool         gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool         gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 	PendingType  PendingLiquidityType                            `protobuf:"varint,2,opt,name=pending_type,json=pendingType,proto3,enum=types.PendingLiquidityType" json:"pending_type,omitempty"`
-	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
+	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
 	RuneAmount   cosmossdk_io_math.Uint                          `protobuf:"bytes,4,opt,name=rune_amount,json=runeAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amount"`
-	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
+	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
 	AssetAmount  cosmossdk_io_math.Uint                          `protobuf:"bytes,6,opt,name=asset_amount,json=assetAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"asset_amount"`
-	RuneTxID     gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=rune_tx_id,json=runeTxId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"rune_tx_id,omitempty"`
-	AssetTxID    gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,8,opt,name=asset_tx_id,json=assetTxId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"asset_tx_id,omitempty"`
+	RuneTxID     gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=rune_tx_id,json=runeTxId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"rune_tx_id,omitempty"`
+	AssetTxID    gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,8,opt,name=asset_tx_id,json=assetTxId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"asset_tx_id,omitempty"`
 }
 
 func (m *EventPendingLiquidity) Reset()         { *m = EventPendingLiquidity{} }
@@ -711,7 +711,7 @@ func (m *EventPendingLiquidity) GetAssetTxID() gitlab_com_thorchain_thornode_v3_
 }
 
 type EventDonate struct {
-	Pool gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 	InTx common.Tx                                     `protobuf:"bytes,2,opt,name=in_tx,json=inTx,proto3" json:"in_tx"`
 }
 
@@ -756,7 +756,7 @@ func (m *EventDonate) GetInTx() common.Tx {
 }
 
 type EventPool struct {
-	Pool   gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool   gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 	Status PoolStatus                                    `protobuf:"varint,2,opt,name=Status,proto3,enum=types.PoolStatus" json:"Status,omitempty"`
 }
 
@@ -801,7 +801,7 @@ func (m *EventPool) GetStatus() PoolStatus {
 }
 
 type PoolAmt struct {
-	Asset  gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	Asset  gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	Amount int64                                         `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
 }
 
@@ -1031,7 +1031,7 @@ func (m *EventBond) GetBondAddress() github_com_cosmos_cosmos_sdk_types.AccAddre
 }
 
 type GasPool struct {
-	Asset    gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	Asset    gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	RuneAmt  cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=rune_amt,json=runeAmt,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amt"`
 	AssetAmt cosmossdk_io_math.Uint                        `protobuf:"bytes,3,opt,name=asset_amt,json=assetAmt,proto3,customtype=cosmossdk.io/math.Uint" json:"asset_amt"`
 	Count    int64                                         `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
@@ -1270,7 +1270,7 @@ func (m *EventSecurity) GetTx() common.Tx {
 }
 
 type EventSlash struct {
-	Pool        gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"pool"`
+	Pool        gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,1,opt,name=pool,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"pool"`
 	SlashAmount []PoolAmt                                     `protobuf:"bytes,2,rep,name=slash_amount,json=slashAmount,proto3" json:"slash_amount"`
 }
 
@@ -1315,7 +1315,7 @@ func (m *EventSlash) GetSlashAmount() []PoolAmt {
 }
 
 type EventErrata struct {
-	TxID  gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID  gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	Pools PoolMods                                     `protobuf:"bytes,2,rep,name=pools,proto3,castrepeated=PoolMods" json:"pools"`
 }
 
@@ -1367,7 +1367,7 @@ func (m *EventErrata) GetPools() PoolMods {
 }
 
 type EventFee struct {
-	TxID       gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID       gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	Fee        common.Fee                                   `protobuf:"bytes,2,opt,name=fee,proto3" json:"fee"`
 	SynthUnits cosmossdk_io_math.Uint                       `protobuf:"bytes,3,opt,name=synth_units,json=synthUnits,proto3,customtype=cosmossdk.io/math.Uint" json:"synth_units"`
 }
@@ -1420,7 +1420,7 @@ func (m *EventFee) GetFee() common.Fee {
 }
 
 type EventOutbound struct {
-	InTxID gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=in_tx_id,json=inTxId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"in_tx_id,omitempty"`
+	InTxID gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=in_tx_id,json=inTxId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"in_tx_id,omitempty"`
 	Tx     common.Tx                                    `protobuf:"bytes,2,opt,name=tx,proto3" json:"tx"`
 }
 
@@ -1472,7 +1472,7 @@ func (m *EventOutbound) GetTx() common.Tx {
 }
 
 type EventTssKeygenSuccess struct {
-	PubKey  gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"pub_key,omitempty"`
+	PubKey  gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pub_key,omitempty"`
 	Members []string                                       `protobuf:"bytes,2,rep,name=members,proto3" json:"members,omitempty"`
 	Height  int64                                          `protobuf:"varint,3,opt,name=height,proto3" json:"height,omitempty"`
 }
@@ -1608,7 +1608,7 @@ func (m *EventTssKeygenFailure) GetHeight() int64 {
 }
 
 type EventTssKeygenMetric struct {
-	PubKey           gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"pub_key,omitempty"`
+	PubKey           gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pub_key,omitempty"`
 	MedianDurationMs int64                                          `protobuf:"varint,2,opt,name=median_duration_ms,json=medianDurationMs,proto3" json:"median_duration_ms,omitempty"`
 }
 
@@ -1660,7 +1660,7 @@ func (m *EventTssKeygenMetric) GetMedianDurationMs() int64 {
 }
 
 type EventTssKeysignMetric struct {
-	TxID             gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID             gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	MedianDurationMs int64                                        `protobuf:"varint,2,opt,name=median_duration_ms,json=medianDurationMs,proto3" json:"median_duration_ms,omitempty"`
 }
 
@@ -1886,10 +1886,10 @@ func (m *EventMintBurn) GetReason() string {
 
 type EventTradeAccountDeposit struct {
 	Amount       cosmossdk_io_math.Uint                          `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
-	Asset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
-	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
-	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
-	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	Asset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
+	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
+	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventTradeAccountDeposit) Reset()         { *m = EventTradeAccountDeposit{} }
@@ -1948,10 +1948,10 @@ func (m *EventTradeAccountDeposit) GetTxID() gitlab_com_thorchain_thornode_v3_co
 
 type EventTradeAccountWithdraw struct {
 	Amount       cosmossdk_io_math.Uint                          `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
-	Asset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
-	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
-	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
-	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	Asset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
+	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
+	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventTradeAccountWithdraw) Reset()         { *m = EventTradeAccountWithdraw{} }
@@ -2011,9 +2011,9 @@ func (m *EventTradeAccountWithdraw) GetTxID() gitlab_com_thorchain_thornode_v3_c
 type EventSecuredAssetDeposit struct {
 	Amount       cosmossdk_io_math.Uint                          `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 	Asset        common.Asset                                    `protobuf:"bytes,2,opt,name=asset,proto3" json:"asset"`
-	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
-	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
-	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
+	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
+	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventSecuredAssetDeposit) Reset()         { *m = EventSecuredAssetDeposit{} }
@@ -2080,9 +2080,9 @@ func (m *EventSecuredAssetDeposit) GetTxID() gitlab_com_thorchain_thornode_v3_co
 type EventSecuredAssetWithdraw struct {
 	Amount       cosmossdk_io_math.Uint                          `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 	Asset        common.Asset                                    `protobuf:"bytes,2,opt,name=asset,proto3" json:"asset"`
-	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
-	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
-	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
+	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
+	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventSecuredAssetWithdraw) Reset()         { *m = EventSecuredAssetWithdraw{} }
@@ -2150,7 +2150,7 @@ type EventRUNEPoolDeposit struct {
 	RuneAddress github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,1,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"rune_address,omitempty"`
 	RuneAmount  cosmossdk_io_math.Uint                        `protobuf:"bytes,2,opt,name=rune_amount,json=runeAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amount"`
 	Units       cosmossdk_io_math.Uint                        `protobuf:"bytes,3,opt,name=units,proto3,customtype=cosmossdk.io/math.Uint" json:"units"`
-	TxId        gitlab_com_thorchain_thornode_v3_common.TxID  `protobuf:"bytes,4,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxId        gitlab_com_thorchain_thornode_v3_common.TxID  `protobuf:"bytes,4,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventRUNEPoolDeposit) Reset()         { *m = EventRUNEPoolDeposit{} }
@@ -2205,10 +2205,10 @@ type EventRUNEPoolWithdraw struct {
 	BasisPoints       int64                                           `protobuf:"varint,2,opt,name=basis_points,json=basisPoints,proto3" json:"basis_points,omitempty"`
 	RuneAmount        cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=rune_amount,json=runeAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"rune_amount"`
 	Units             cosmossdk_io_math.Uint                          `protobuf:"bytes,4,opt,name=units,proto3,customtype=cosmossdk.io/math.Uint" json:"units"`
-	TxId              gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxId              gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	AffiliateBasisPts int64                                           `protobuf:"varint,6,opt,name=affiliate_basis_pts,json=affiliateBasisPts,proto3" json:"affiliate_basis_pts,omitempty"`
 	AffiliateAmount   cosmossdk_io_math.Uint                          `protobuf:"bytes,7,opt,name=affiliate_amount,json=affiliateAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"affiliate_amount"`
-	AffiliateAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,8,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"affiliate_address,omitempty"`
+	AffiliateAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,8,opt,name=affiliate_address,json=affiliateAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"affiliate_address,omitempty"`
 }
 
 func (m *EventRUNEPoolWithdraw) Reset()         { *m = EventRUNEPoolWithdraw{} }
@@ -2281,12 +2281,12 @@ func (m *EventRUNEPoolWithdraw) GetAffiliateAddress() gitlab_com_thorchain_thorn
 
 type EventLoanOpen struct {
 	CollateralDeposited    cosmossdk_io_math.Uint                          `protobuf:"bytes,1,opt,name=collateral_deposited,json=collateralDeposited,proto3,customtype=cosmossdk.io/math.Uint" json:"collateral_deposited"`
-	CollateralAsset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"collateral_asset"`
+	CollateralAsset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"collateral_asset"`
 	CollateralizationRatio cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=collateralization_ratio,json=collateralizationRatio,proto3,customtype=cosmossdk.io/math.Uint" json:"collateralization_ratio"`
 	DebtIssued             cosmossdk_io_math.Uint                          `protobuf:"bytes,4,opt,name=debt_issued,json=debtIssued,proto3,customtype=cosmossdk.io/math.Uint" json:"debt_issued"`
-	Owner                  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=owner,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"owner,omitempty"`
-	TargetAsset            gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,6,opt,name=target_asset,json=targetAsset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"target_asset"`
-	TxID                   gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	Owner                  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,5,opt,name=owner,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"owner,omitempty"`
+	TargetAsset            gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,6,opt,name=target_asset,json=targetAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"target_asset"`
+	TxID                   gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventLoanOpen) Reset()         { *m = EventLoanOpen{} }
@@ -2338,10 +2338,10 @@ func (m *EventLoanOpen) GetTxID() gitlab_com_thorchain_thornode_v3_common.TxID {
 
 type EventLoanRepayment struct {
 	CollateralWithdrawn cosmossdk_io_math.Uint                          `protobuf:"bytes,1,opt,name=collateral_withdrawn,json=collateralWithdrawn,proto3,customtype=cosmossdk.io/math.Uint" json:"collateral_withdrawn"`
-	CollateralAsset     gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"collateral_asset"`
+	CollateralAsset     gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=collateral_asset,json=collateralAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"collateral_asset"`
 	DebtRepaid          cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=debt_repaid,json=debtRepaid,proto3,customtype=cosmossdk.io/math.Uint" json:"debt_repaid"`
-	Owner               gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=owner,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"owner,omitempty"`
-	TxID                gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	Owner               gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=owner,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"owner,omitempty"`
+	TxID                gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,7,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventLoanRepayment) Reset()         { *m = EventLoanRepayment{} }
@@ -2393,8 +2393,8 @@ func (m *EventLoanRepayment) GetTxID() gitlab_com_thorchain_thornode_v3_common.T
 
 type EventTHORName struct {
 	Name            string                                          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Chain           gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,2,opt,name=chain,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Chain" json:"chain,omitempty"`
-	Address         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=address,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"address,omitempty"`
+	Chain           gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,2,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
+	Address         gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"address,omitempty"`
 	RegistrationFee cosmossdk_io_math.Uint                          `protobuf:"bytes,4,opt,name=registration_fee,json=registrationFee,proto3,customtype=cosmossdk.io/math.Uint" json:"registration_fee"`
 	FundAmt         cosmossdk_io_math.Uint                          `protobuf:"bytes,5,opt,name=fund_amt,json=fundAmt,proto3,customtype=cosmossdk.io/math.Uint" json:"fund_amt"`
 	Expire          int64                                           `protobuf:"varint,6,opt,name=expire,proto3" json:"expire,omitempty"`
@@ -2628,9 +2628,9 @@ func (m *EventVersion) GetVersion() string {
 type EventSwitch struct {
 	Amount       cosmossdk_io_math.Uint                          `protobuf:"bytes,1,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 	Asset        common.Asset                                    `protobuf:"bytes,2,opt,name=asset,proto3" json:"asset"`
-	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
-	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
-	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
+	RuneAddress  gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
+	TxID         gitlab_com_thorchain_thornode_v3_common.TxID    `protobuf:"bytes,5,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 }
 
 func (m *EventSwitch) Reset()         { *m = EventSwitch{} }
@@ -2740,10 +2740,10 @@ func (m *EventTCYDistribution) GetRuneAddress() github_com_cosmos_cosmos_sdk_typ
 }
 
 type EventTCYClaim struct {
-	RuneAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=rune_address,json=runeAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"rune_address,omitempty"`
+	RuneAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=rune_address,json=runeAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"rune_address,omitempty"`
 	TcyAmount   cosmossdk_io_math.Uint                          `protobuf:"bytes,2,opt,name=tcy_amount,json=tcyAmount,proto3,customtype=cosmossdk.io/math.Uint" json:"tcy_amount"`
-	L1Address   gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=l1_address,json=l1Address,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"l1_address,omitempty"`
-	Asset       gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,4,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	L1Address   gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,3,opt,name=l1_address,json=l1Address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"l1_address,omitempty"`
+	Asset       gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,4,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 }
 
 func (m *EventTCYClaim) Reset()         { *m = EventTCYClaim{} }
@@ -2794,7 +2794,7 @@ func (m *EventTCYClaim) GetL1Address() gitlab_com_thorchain_thornode_v3_common.A
 }
 
 type EventTCYStake struct {
-	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"address,omitempty"`
+	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"address,omitempty"`
 	Amount  cosmossdk_io_math.Uint                          `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 
@@ -2839,7 +2839,7 @@ func (m *EventTCYStake) GetAddress() gitlab_com_thorchain_thornode_v3_common.Add
 }
 
 type EventTCYUnstake struct {
-	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"address,omitempty"`
+	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,1,opt,name=address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"address,omitempty"`
 	Amount  cosmossdk_io_math.Uint                          `protobuf:"bytes,2,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 

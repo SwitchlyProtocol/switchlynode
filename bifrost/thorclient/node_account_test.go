@@ -7,7 +7,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 type NodeAccountSuite struct {

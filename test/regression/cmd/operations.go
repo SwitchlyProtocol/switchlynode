@@ -25,9 +25,9 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/v3/common"
-	openapi "gitlab.com/thorchain/thornode/v3/openapi/gen"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 	"gopkg.in/yaml.v3"
 )
 

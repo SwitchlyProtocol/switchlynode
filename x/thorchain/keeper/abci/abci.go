@@ -4,8 +4,8 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ebifrost "gitlab.com/thorchain/thornode/v3/x/thorchain/ebifrost"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
+	ebifrost "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
 )
 
 type ProposalHandler struct {

@@ -8,8 +8,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -225,7 +225,7 @@ func (m *QueryTxStatusRequest) GetHeight() string {
 type QueryTxStatusResponse struct {
 	Tx            *common.Tx                                  `protobuf:"bytes,1,opt,name=tx,proto3" json:"tx,omitempty"`
 	PlannedOutTxs []*PlannedOutTx                             `protobuf:"bytes,2,rep,name=planned_out_txs,json=plannedOutTxs,proto3" json:"planned_out_txs,omitempty"`
-	OutTxs        gitlab_com_thorchain_thornode_v3_common.Txs `protobuf:"bytes,3,rep,name=out_txs,json=outTxs,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.Txs" json:"out_txs"`
+	OutTxs        gitlab_com_thorchain_thornode_v3_common.Txs `protobuf:"bytes,3,rep,name=out_txs,json=outTxs,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Txs" json:"out_txs"`
 	Stages        QueryTxStagesResponse                       `protobuf:"bytes,4,opt,name=stages,proto3" json:"stages"`
 }
 
@@ -428,7 +428,7 @@ type QueryObservedTx struct {
 	OutHashes             []string                                       `protobuf:"bytes,3,rep,name=out_hashes,json=outHashes,proto3" json:"out_hashes,omitempty"`
 	BlockHeight           int64                                          `protobuf:"varint,4,opt,name=block_height,json=blockHeight,proto3" json:"external_observed_height,omitempty"`
 	Signers               []string                                       `protobuf:"bytes,5,rep,name=signers,proto3" json:"signers,omitempty"`
-	ObservedPubKey        gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,6,opt,name=observed_pub_key,json=observedPubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"observed_pub_key,omitempty"`
+	ObservedPubKey        gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,6,opt,name=observed_pub_key,json=observedPubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"observed_pub_key,omitempty"`
 	KeysignMs             int64                                          `protobuf:"varint,7,opt,name=keysign_ms,json=keysignMs,proto3" json:"keysign_ms,omitempty"`
 	FinaliseHeight        int64                                          `protobuf:"varint,8,opt,name=finalise_height,json=finaliseHeight,proto3" json:"external_confirmation_delay_height,omitempty"`
 	Aggregator            string                                         `protobuf:"bytes,9,opt,name=aggregator,proto3" json:"aggregator,omitempty"`
@@ -541,12 +541,12 @@ func (m *QueryObservedTx) GetAggregatorTarget() string {
 
 // Same as ObservedTxVoter, but changes height (openapi spec)
 type QueryObservedTxVoter struct {
-	TxID            gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID            gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	Tx              QueryObservedTx                              `protobuf:"bytes,2,opt,name=tx,proto3" json:"tx"`
 	Height          int64                                        `protobuf:"varint,3,opt,name=height,proto3" json:"consensus_height,omitempty"`
 	Txs             []QueryObservedTx                            `protobuf:"bytes,4,rep,name=txs,proto3" json:"txs"`
 	Actions         []TxOutItem                                  `protobuf:"bytes,5,rep,name=actions,proto3" json:"actions"`
-	OutTxs          gitlab_com_thorchain_thornode_v3_common.Txs  `protobuf:"bytes,6,rep,name=out_txs,json=outTxs,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.Txs" json:"out_txs"`
+	OutTxs          gitlab_com_thorchain_thornode_v3_common.Txs  `protobuf:"bytes,6,rep,name=out_txs,json=outTxs,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Txs" json:"out_txs"`
 	FinalisedHeight int64                                        `protobuf:"varint,7,opt,name=finalised_height,json=finalisedHeight,proto3" json:"finalised_height,omitempty"`
 	UpdatedVault    bool                                         `protobuf:"varint,8,opt,name=updated_vault,json=updatedVault,proto3" json:"updated_vault,omitempty"`
 	Reverted        bool                                         `protobuf:"varint,9,opt,name=reverted,proto3" json:"reverted,omitempty"`

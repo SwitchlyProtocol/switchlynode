@@ -9,8 +9,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"gitlab.com/thorchain/thornode/v3/app/upgrades"
-	keeperv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
+	"github.com/switchlyprotocol/switchlynode/v1/app/upgrades"
+	keeperv1 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/v1"
 )
 
 // NewUpgrade constructor

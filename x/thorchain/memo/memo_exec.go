@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 type ExecMemo struct {

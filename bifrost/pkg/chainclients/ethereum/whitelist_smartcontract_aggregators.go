@@ -1,8 +1,8 @@
 package ethereum
 
 import (
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/aggregators"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/aggregators"
 )
 
 func LatestAggregatorContracts() []common.Address {

@@ -8,8 +8,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	_ "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	_ "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -27,8 +27,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type THORNameAlias struct {
-	Chain   gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,1,opt,name=chain,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Chain" json:"chain,omitempty"`
-	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=address,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"address,omitempty"`
+	Chain   gitlab_com_thorchain_thornode_v3_common.Chain   `protobuf:"bytes,1,opt,name=chain,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Chain" json:"chain,omitempty"`
+	Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"address,omitempty"`
 }
 
 func (m *THORNameAlias) Reset()         { *m = THORNameAlias{} }
@@ -82,7 +82,7 @@ type THORName struct {
 	Name              string                                        `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	ExpireBlockHeight int64                                         `protobuf:"varint,2,opt,name=expire_block_height,json=expireBlockHeight,proto3" json:"expire_block_height,omitempty"`
 	Owner             github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,3,opt,name=owner,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"owner,omitempty"`
-	PreferredAsset    gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,4,opt,name=preferred_asset,json=preferredAsset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"preferred_asset"`
+	PreferredAsset    gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,4,opt,name=preferred_asset,json=preferredAsset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"preferred_asset"`
 	Aliases           []THORNameAlias                               `protobuf:"bytes,5,rep,name=aliases,proto3" json:"aliases"`
 }
 

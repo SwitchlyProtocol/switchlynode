@@ -4,9 +4,9 @@ import (
 	"gopkg.in/check.v1"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
 )
 
 type TxOutStoreVCURSuite struct{}

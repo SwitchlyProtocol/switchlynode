@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	proto "github.com/cosmos/gogoproto/proto"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 var _ proto.Message = &Loan{}

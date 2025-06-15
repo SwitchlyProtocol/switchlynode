@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"gitlab.com/thorchain/thornode/v3/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
 )
 
 func (s *KeeperTestSuite) TestMsgServerCreateDenom() {

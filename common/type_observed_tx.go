@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // ObservedTxs a list of ObservedTx

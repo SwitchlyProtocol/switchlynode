@@ -3,7 +3,7 @@ package common
 import (
 	"testing"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 	. "gopkg.in/check.v1"
 )
 

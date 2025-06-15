@@ -3,7 +3,7 @@ package types
 import (
 	"strings"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 func (m NodeMimirs) Has(key string, acc cosmos.AccAddress) bool {

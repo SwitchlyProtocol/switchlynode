@@ -8,7 +8,7 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -78,7 +78,7 @@ func (m *NodeTssTime) GetTssTime() int64 {
 }
 
 type TssKeygenMetric struct {
-	PubKey       gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"pub_key,omitempty"`
+	PubKey       gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pub_key,omitempty"`
 	NodeTssTimes []NodeTssTime                                  `protobuf:"bytes,2,rep,name=node_tss_times,json=nodeTssTimes,proto3" json:"node_tss_times"`
 }
 
@@ -130,7 +130,7 @@ func (m *TssKeygenMetric) GetNodeTssTimes() []NodeTssTime {
 }
 
 type TssKeysignMetric struct {
-	TxID         gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID         gitlab_com_thorchain_thornode_v3_common.TxID `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	NodeTssTimes []NodeTssTime                                `protobuf:"bytes,2,rep,name=node_tss_times,json=nodeTssTimes,proto3" json:"node_tss_times"`
 }
 

@@ -9,8 +9,8 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -32,8 +32,8 @@ type MsgTssKeysignFail struct {
 	Height int64                                          `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 	Blame  Blame                                          `protobuf:"bytes,3,opt,name=blame,proto3" json:"blame"`
 	Memo   string                                         `protobuf:"bytes,4,opt,name=memo,proto3" json:"memo,omitempty"`
-	Coins  gitlab_com_thorchain_thornode_v3_common.Coins  `protobuf:"bytes,5,rep,name=coins,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.Coins" json:"coins"`
-	PubKey gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,6,opt,name=pub_key,json=pubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"pub_key,omitempty"`
+	Coins  gitlab_com_thorchain_thornode_v3_common.Coins  `protobuf:"bytes,5,rep,name=coins,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Coins" json:"coins"`
+	PubKey gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,6,opt,name=pub_key,json=pubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pub_key,omitempty"`
 	Signer github_com_cosmos_cosmos_sdk_types.AccAddress  `protobuf:"bytes,7,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }
 

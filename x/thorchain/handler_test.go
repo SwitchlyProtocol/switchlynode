@@ -28,14 +28,14 @@ import (
 	"github.com/rs/zerolog/log"
 	. "gopkg.in/check.v1"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	thorlog "gitlab.com/thorchain/thornode/v3/log"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	thorlog "github.com/switchlyprotocol/switchlynode/v1/log"
 
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
-	kv1 "gitlab.com/thorchain/thornode/v3/x/thorchain/keeper/v1"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	kv1 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/v1"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"

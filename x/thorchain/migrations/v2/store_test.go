@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 	modtestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/migrations/v2"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/migrations/v2"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 
 	. "gopkg.in/check.v1"
 )

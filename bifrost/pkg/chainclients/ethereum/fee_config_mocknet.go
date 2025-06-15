@@ -3,7 +3,7 @@
 
 package ethereum
 
-import "gitlab.com/thorchain/thornode/v3/common"
+import "github.com/switchlyprotocol/switchlynode/v1/common"
 
 const (
 	// initialGasPrice overrides the initial gas price in mocknet to force a reported fee.

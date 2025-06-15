@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 
-	thorchaintypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	thorchaintypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.

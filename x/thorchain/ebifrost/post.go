@@ -2,7 +2,7 @@ package ebifrost
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 type EnshrinedBifrostPostDecorator struct {

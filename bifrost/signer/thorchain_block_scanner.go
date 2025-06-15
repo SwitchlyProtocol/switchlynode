@@ -9,14 +9,14 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/blockscanner"
-	btypes "gitlab.com/thorchain/thornode/v3/bifrost/blockscanner/types"
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/bifrost/pubkeymanager"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient/types"
-	"gitlab.com/thorchain/thornode/v3/config"
-	ttypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
+	btypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pubkeymanager"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	ttypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 type ThorchainBlockScan struct {

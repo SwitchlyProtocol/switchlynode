@@ -1,7 +1,7 @@
 package thorchain
 
 import (
-	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // DummyEventMgr used for test purpose , and it implement EventManager interface

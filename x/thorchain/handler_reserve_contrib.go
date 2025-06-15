@@ -5,7 +5,7 @@ import (
 
 	"github.com/blang/semver"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // ReserveContributorHandler is handler to process MsgReserveContributor

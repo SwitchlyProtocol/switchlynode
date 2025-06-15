@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/blang/semver"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/tokenlist"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist"
 )
 
 // -------------------------------------------------------------------------------------

@@ -3,7 +3,7 @@ package thorchain
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 type RefundMemo struct {

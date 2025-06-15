@@ -6,7 +6,7 @@ import (
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/pkg/chainclients/xrp/keymanager/secp256k1"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/xrp/keymanager/secp256k1"
 )
 
 type KeyManager struct {

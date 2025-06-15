@@ -9,8 +9,8 @@ import (
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -29,7 +29,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgSecuredAssetDeposit struct {
 	Tx      common.Tx                                     `protobuf:"bytes,1,opt,name=tx,proto3" json:"tx"`
-	Asset   gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,2,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	Asset   gitlab_com_thorchain_thornode_v3_common.Asset `protobuf:"bytes,2,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	Amount  cosmossdk_io_math.Uint                        `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 	Address github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,4,opt,name=address,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"address,omitempty"`
 	Signer  github_com_cosmos_cosmos_sdk_types.AccAddress `protobuf:"bytes,5,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
@@ -91,9 +91,9 @@ func (m *MsgSecuredAssetDeposit) GetSigner() github_com_cosmos_cosmos_sdk_types.
 
 type MsgSecuredAssetWithdraw struct {
 	Tx           common.Tx                                       `protobuf:"bytes,1,opt,name=tx,proto3" json:"tx"`
-	Asset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
+	Asset        gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,2,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
 	Amount       cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
-	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=asset_address,json=assetAddress,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"asset_address,omitempty"`
+	AssetAddress gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,4,opt,name=asset_address,json=assetAddress,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"asset_address,omitempty"`
 	Signer       github_com_cosmos_cosmos_sdk_types.AccAddress   `protobuf:"bytes,5,opt,name=signer,proto3,casttype=github.com/cosmos/cosmos-sdk/types.AccAddress" json:"signer,omitempty"`
 }
 

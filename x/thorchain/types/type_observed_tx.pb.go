@@ -7,8 +7,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -26,12 +26,12 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type ObservedTxVoter struct {
-	TxID            gitlab_com_thorchain_thornode_v3_common.TxID        `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.TxID" json:"tx_id,omitempty"`
+	TxID            gitlab_com_thorchain_thornode_v3_common.TxID        `protobuf:"bytes,1,opt,name=tx_id,json=txId,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.TxID" json:"tx_id,omitempty"`
 	Tx              common.ObservedTx                                   `protobuf:"bytes,2,opt,name=tx,proto3" json:"tx"`
 	Height          int64                                               `protobuf:"varint,3,opt,name=height,proto3" json:"height,omitempty"`
-	Txs             gitlab_com_thorchain_thornode_v3_common.ObservedTxs `protobuf:"bytes,4,rep,name=txs,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.ObservedTxs" json:"txs"`
+	Txs             gitlab_com_thorchain_thornode_v3_common.ObservedTxs `protobuf:"bytes,4,rep,name=txs,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.ObservedTxs" json:"txs"`
 	Actions         []TxOutItem                                         `protobuf:"bytes,5,rep,name=actions,proto3" json:"actions"`
-	OutTxs          gitlab_com_thorchain_thornode_v3_common.Txs         `protobuf:"bytes,6,rep,name=out_txs,json=outTxs,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.Txs" json:"out_txs"`
+	OutTxs          gitlab_com_thorchain_thornode_v3_common.Txs         `protobuf:"bytes,6,rep,name=out_txs,json=outTxs,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Txs" json:"out_txs"`
 	FinalisedHeight int64                                               `protobuf:"varint,7,opt,name=finalised_height,json=finalisedHeight,proto3" json:"finalised_height,omitempty"`
 	UpdatedVault    bool                                                `protobuf:"varint,8,opt,name=updated_vault,json=updatedVault,proto3" json:"updated_vault,omitempty"`
 	Reverted        bool                                                `protobuf:"varint,9,opt,name=reverted,proto3" json:"reverted,omitempty"`

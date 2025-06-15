@@ -1,7 +1,7 @@
 package common
 
 import (
-	cosmos "gitlab.com/thorchain/thornode/v3/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 	. "gopkg.in/check.v1"
 )
 

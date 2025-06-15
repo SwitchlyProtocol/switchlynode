@@ -7,10 +7,10 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/blang/semver"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/keeper"
-	thorchaintypes "gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	thorchaintypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 func QuoUint(num, denom sdkmath.Uint) sdkmath.LegacyDec {

@@ -3,7 +3,7 @@
 
 package evm
 
-import "gitlab.com/thorchain/thornode/v3/common"
+import "github.com/switchlyprotocol/switchlynode/v1/common"
 
 // GetHeight returns the current block height.
 func (e *EVMScanner) GetHeight() (int64, error) {

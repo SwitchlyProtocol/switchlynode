@@ -7,8 +7,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -83,8 +83,8 @@ func (VaultStatus) EnumDescriptor() ([]byte, []int) {
 
 type Vault struct {
 	BlockHeight           int64                                          `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	PubKey                gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,2,opt,name=pub_key,json=pubKey,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.PubKey" json:"pub_key,omitempty"`
-	Coins                 gitlab_com_thorchain_thornode_v3_common.Coins  `protobuf:"bytes,3,rep,name=coins,proto3,castrepeated=gitlab.com/thorchain/thornode/v3/common.Coins" json:"coins"`
+	PubKey                gitlab_com_thorchain_thornode_v3_common.PubKey `protobuf:"bytes,2,opt,name=pub_key,json=pubKey,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.PubKey" json:"pub_key,omitempty"`
+	Coins                 gitlab_com_thorchain_thornode_v3_common.Coins  `protobuf:"bytes,3,rep,name=coins,proto3,castrepeated=github.com/switchlyprotocol/switchlynode/v1/common.Coins" json:"coins"`
 	Type                  VaultType                                      `protobuf:"varint,4,opt,name=type,proto3,enum=types.VaultType" json:"type,omitempty"`
 	Status                VaultStatus                                    `protobuf:"varint,5,opt,name=status,proto3,enum=types.VaultStatus" json:"status,omitempty"`
 	StatusSince           int64                                          `protobuf:"varint,6,opt,name=status_since,json=statusSince,proto3" json:"status_since,omitempty"`

@@ -1,7 +1,7 @@
 package types
 
 import (
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 func NewRUNEProvider(addr cosmos.AccAddress) RUNEProvider {

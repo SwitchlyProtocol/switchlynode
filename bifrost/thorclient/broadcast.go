@@ -11,8 +11,8 @@ import (
 
 	stypes "github.com/cosmos/cosmos-sdk/types"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/metrics"
-	"gitlab.com/thorchain/thornode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
 // Broadcast Broadcasts tx to thorchain

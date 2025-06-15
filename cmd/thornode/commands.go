@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/syndtr/goleveldb/leveldb/util"
-	"gitlab.com/thorchain/thornode/v3/app"
+	"github.com/switchlyprotocol/switchlynode/v1/app"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
@@ -46,12 +46,12 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	"gitlab.com/thorchain/thornode/v3/cmd/thornode/cmd"
-	"gitlab.com/thorchain/thornode/v3/config"
-	thorlog "gitlab.com/thorchain/thornode/v3/log"
+	"github.com/switchlyprotocol/switchlynode/v1/cmd/thornode/cmd"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
+	thorlog "github.com/switchlyprotocol/switchlynode/v1/log"
 
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/client/cli"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/client/cli"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"

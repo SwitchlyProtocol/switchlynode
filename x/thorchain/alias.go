@@ -3,10 +3,10 @@ package thorchain
 import (
 	proto "github.com/cosmos/gogoproto/proto"
 
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/aggregators"
-	mem "gitlab.com/thorchain/thornode/v3/x/thorchain/memo"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/aggregators"
+	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 const (

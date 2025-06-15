@@ -5,7 +5,7 @@ import (
 
 	sdklog "cosmossdk.io/log"
 	"github.com/rs/zerolog"
-	"gitlab.com/thorchain/thornode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 var _ sdklog.Logger = (*SdkLogWrapper)(nil)

@@ -8,8 +8,8 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	_ "gitlab.com/thorchain/thornode/v3/common"
-	gitlab_com_thorchain_thornode_v3_common "gitlab.com/thorchain/thornode/v3/common"
+	_ "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -27,8 +27,8 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type TCYClaimer struct {
-	Asset     gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=asset,proto3,customtype=gitlab.com/thorchain/thornode/v3/common.Asset" json:"asset"`
-	L1Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=l1_address,json=l1Address,proto3,casttype=gitlab.com/thorchain/thornode/v3/common.Address" json:"l1_address,omitempty"`
+	Asset     gitlab_com_thorchain_thornode_v3_common.Asset   `protobuf:"bytes,1,opt,name=asset,proto3,customtype=github.com/switchlyprotocol/switchlynode/v1/common.Asset" json:"asset"`
+	L1Address gitlab_com_thorchain_thornode_v3_common.Address `protobuf:"bytes,2,opt,name=l1_address,json=l1Address,proto3,casttype=github.com/switchlyprotocol/switchlynode/v1/common.Address" json:"l1_address,omitempty"`
 	Amount    cosmossdk_io_math.Uint                          `protobuf:"bytes,3,opt,name=amount,proto3,customtype=cosmossdk.io/math.Uint" json:"amount"`
 }
 

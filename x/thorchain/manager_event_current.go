@@ -3,7 +3,7 @@ package thorchain
 import (
 	"fmt"
 
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
 // EmitEventItem define the method all event need to implement

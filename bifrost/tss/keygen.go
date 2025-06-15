@@ -10,14 +10,14 @@ import (
 	"github.com/blang/semver"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/keygen"
-	"gitlab.com/thorchain/thornode/v3/bifrost/tss/go-tss/tss"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
 
-	"gitlab.com/thorchain/thornode/v3/bifrost/thorclient"
-	"gitlab.com/thorchain/thornode/v3/common"
-	"gitlab.com/thorchain/thornode/v3/common/cosmos"
-	"gitlab.com/thorchain/thornode/v3/constants"
-	"gitlab.com/thorchain/thornode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 // KeyGen is
