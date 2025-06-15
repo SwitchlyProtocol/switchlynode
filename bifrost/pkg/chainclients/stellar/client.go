@@ -27,6 +27,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common"
 	"github.com/switchlyprotocol/switchlynode/v1/config"
 	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
 )
 
 // Client is a structure to sign and broadcast tx to Stellar chain used by signer mostly
@@ -173,9 +174,12 @@ func (c *Client) RollbackBlockScanner() error {
 
 // GetLatestTxForVault returns the latest transaction for a vault
 func (c *Client) GetLatestTxForVault(vault string) (string, string, error) {
-	// Implementation would query Stellar for the latest transaction
-	// For now, return empty values
-	return "", "", nil
+	lastObserved, err := c.signerCacheManager.GetLatestRecordedTx(stypes.InboundCacheKey(vault, c.GetChain().String()))
+	if err != nil {
+		return "", "", err
+	}
+	lastBroadCasted, err := c.signerCacheManager.GetLatestRecordedTx(stypes.BroadcastCacheKey(vault, c.GetChain().String()))
+	return lastObserved, lastBroadCasted, err
 }
 
 // GetAddress returns the Stellar address for the given public key
@@ -420,14 +424,35 @@ func (c *Client) BroadcastTx(tx stypes.TxOutItem, txBytes []byte) (string, error
 
 // ConfirmationCountReady returns true if the confirmation count is ready
 func (c *Client) ConfirmationCountReady(txIn stypes.TxIn) bool {
-	return c.GetConfirmationCount(txIn) >= c.cfg.BlockScanner.ObservationFlexibilityBlocks
+	return true
 }
 
-// GetConfirmationCount returns the confirmation count for a transaction
+// GetConfirmationCount returns the confirmation count for the given transaction
 func (c *Client) GetConfirmationCount(txIn stypes.TxIn) int64 {
-	// For Stellar, we can consider transactions final after a few ledgers
-	// This is a simplified implementation
-	return 1
+	// if there are no txs, nothing will be reported
+	if len(txIn.TxArray) == 0 {
+		return 0
+	}
+
+	// Get current height
+	currentHeight, err := c.GetHeight()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("fail to get current height")
+		return 0
+	}
+
+	// Calculate confirmations based on block height difference
+	blockHeight := txIn.TxArray[0].BlockHeight
+	if blockHeight == 0 {
+		return 0
+	}
+
+	confirmations := currentHeight - blockHeight + 1
+	if confirmations < 0 {
+		return 0
+	}
+
+	return confirmations
 }
 
 // ReportSolvency reports solvency to THORChain
@@ -482,10 +507,27 @@ func (c *Client) ShouldReportSolvency(height int64) bool {
 
 // OnObservedTxIn is called when a new observed tx is received
 func (c *Client) OnObservedTxIn(txIn stypes.TxInItem, blockHeight int64) {
-	// Implementation for handling observed transactions
-	// This would typically update internal state or caches
-	c.logger.Debug().
-		Str("tx_hash", txIn.Tx).
-		Int64("block_height", blockHeight).
-		Msg("observed tx in")
+	// Parse memo to determine if outbound
+	m, err := mem.ParseMemo(common.LatestVersion, txIn.Memo)
+	if err != nil {
+		// Debug log only as ParseMemo error is expected for THORName inbounds.
+		c.logger.Debug().Err(err).Msgf("fail to parse memo: %s", txIn.Memo)
+		return
+	}
+
+	// Handle outbound transaction caching
+	if !m.IsOutbound() {
+		return
+	}
+	if m.GetTxID().IsEmpty() {
+		return
+	}
+
+	if err = c.signerCacheManager.SetSigned(
+		txIn.CacheHash(c.GetChain(), m.GetTxID().String()),
+		txIn.CacheVault(c.GetChain()),
+		txIn.Tx,
+	); err != nil {
+		c.logger.Err(err).Msg("fail to update signer cache")
+	}
 }

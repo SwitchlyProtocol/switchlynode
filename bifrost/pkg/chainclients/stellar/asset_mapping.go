@@ -28,12 +28,13 @@ var StellarAssetMappings = []StellarAssetMapping{
 		StellarDecimals:    7, // XLM uses 7 decimal places (stroops)
 		THORChainAsset:     common.XLMAsset,
 	},
+	// USDC - Circle's official issuer
 	{
 		StellarAssetType:   "credit_alphanum4",
 		StellarAssetCode:   "USDC",
 		StellarAssetIssuer: "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
 		StellarDecimals:    7, // USDC on Stellar uses 7 decimal places
-		THORChainAsset:     common.Asset{Chain: common.StellarChain, Symbol: "USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN", Ticker: "USDC"},
+		THORChainAsset:     common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"},
 	},
 }
 
