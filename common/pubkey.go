@@ -1,6 +1,7 @@
 package common
 
 import (
+	"crypto/ed25519"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -214,10 +215,12 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 		if err != nil {
 			return NoAddress, err
 		}
-		// Stellar uses Ed25519 public keys, encode using strkey format
-		addr, err := strkey.Encode(strkey.VersionByteAccountID, pk.Bytes())
+		// Convert the public key to Stellar's ed25519 format
+		stellarPubKey := ed25519.PublicKey(pk.Bytes())
+		// Encode the public key into a Stellar address using strkey format
+		addr, err := strkey.Encode(strkey.VersionByteAccountID, stellarPubKey)
 		if err != nil {
-			return NoAddress, fmt.Errorf("fail to encode Stellar address: %w", err)
+			return NoAddress, fmt.Errorf("failed to encode Stellar address: %w", err)
 		}
 		addressString = addr
 	default:
