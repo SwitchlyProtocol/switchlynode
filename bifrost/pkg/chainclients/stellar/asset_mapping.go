@@ -2,6 +2,7 @@ package stellar
 
 import (
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/stellar/go/txnbuild"
@@ -103,7 +104,27 @@ func FromStellarAsset(asset txnbuild.Asset) (StellarAssetMapping, error) {
 
 // ConvertToTHORChainAmount converts a Stellar amount to THORChain amount (1e8 decimals)
 func (s StellarAssetMapping) ConvertToTHORChainAmount(stellarAmount string) (common.Coin, error) {
-	amount := cosmos.NewUintFromString(stellarAmount)
+	// Parse the decimal amount from Stellar
+	// Stellar amounts come as strings like "1000.0000000"
+	stellarFloat, ok := new(big.Float).SetString(stellarAmount)
+	if !ok {
+		return common.Coin{}, fmt.Errorf("invalid stellar amount: %s", stellarAmount)
+	}
+
+	// Convert to integer by multiplying by 10^StellarDecimals
+	stellarDecimalMultiplier := new(big.Float).SetFloat64(1)
+	for i := int64(0); i < s.StellarDecimals; i++ {
+		stellarDecimalMultiplier.Mul(stellarDecimalMultiplier, big.NewFloat(10))
+	}
+
+	// Convert to integer amount in smallest stellar unit
+	stellarFloat.Mul(stellarFloat, stellarDecimalMultiplier)
+
+	// Convert to big.Int
+	stellarInt, _ := stellarFloat.Int(nil)
+
+	// Create cosmos.Uint from the integer
+	amount := cosmos.NewUintFromBigInt(stellarInt)
 
 	// Convert from Stellar decimals to THORChain decimals (1e8)
 	if s.StellarDecimals != common.THORChainDecimals {

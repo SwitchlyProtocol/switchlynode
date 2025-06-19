@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
 	"sync"
 	"time"
 
@@ -72,11 +73,23 @@ func NewClient(
 		networkPassphrase = network.TestNetworkPassphrase
 	}
 
-	// Create Horizon client
+	// Create Horizon client with custom HTTP client for rate limiting
 	horizonClient := horizonclient.DefaultPublicNetClient
 	if cfg.RPCHost != "" {
+		// Create custom HTTP client with longer timeouts and rate limiting
+		httpClient := &http.Client{
+			Timeout: time.Duration(cfg.BlockScanner.HTTPRequestTimeout),
+			Transport: &http.Transport{
+				MaxIdleConns:        10,
+				MaxIdleConnsPerHost: 5,
+				IdleConnTimeout:     30 * time.Second,
+				DisableKeepAlives:   false,
+			},
+		}
+
 		horizonClient = &horizonclient.Client{
 			HorizonURL: cfg.RPCHost,
+			HTTP:       httpClient,
 		}
 	}
 
