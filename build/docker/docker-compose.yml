@@ -116,6 +116,7 @@ services:
       BASE_HOST: ${BASE_HOST:-http://base:8545}
       BSC_HOST: ${BSC_HOST:-http://binance-smart:8545}
       XRP_HOST: ${XRP_HOST:-http://xrp:5005}
+      XLM_HOST: ${XLM_HOST:-http://stellar:8000}
     ports:
       - 26657:26657
       - 26656:26656
@@ -195,17 +196,29 @@ services:
       BIFROST_CHAINS_BASE_BLOCK_SCANNER_MAX_GAS_LIMIT: 80000
 
       # enable bsc
-      BIFROST_CHAINS_BSC_DISABLED: "false"
+      BIFROST_CHAINS_BSC_DISABLED: "true"
       BIFROST_CHAINS_BSC_RPC_HOST: ${BSC_HOST:-http://binance-smart:8545}
 
       # enable base
-      BIFROST_CHAINS_BASE_DISABLED: "false"
+      BIFROST_CHAINS_BASE_DISABLED: "true"
       BIFROST_CHAINS_BASE_RPC_HOST: http://base:8545
 
       # enable xrp
-      BIFROST_CHAINS_XRP_DISABLED: "false"
+      BIFROST_CHAINS_XRP_DISABLED: "true"
       BIFROST_CHAINS_XRP_RPC_HOST: http://xrp:5005
       BIFROST_CHAINS_XRP_CHAIN_NETWORK: "1234"
+
+      # enable xlm
+      BIFROST_CHAINS_XLM_DISABLED: "false"
+      BIFROST_CHAINS_XLM_RPC_HOST: http://stellar:8000
+      BIFROST_CHAINS_XLM_CHAIN_NETWORK: "testnet"
+      
+      # xlm rate limiting configurations - more conservative for Horizon API
+      BIFROST_CHAINS_XLM_BLOCK_SCANNER_BLOCK_HEIGHT_DISCOVER_BACK_OFF: 15s
+      BIFROST_CHAINS_XLM_BLOCK_SCANNER_BLOCK_RETRY_INTERVAL: 30s
+      BIFROST_CHAINS_XLM_BLOCK_SCANNER_HTTP_REQUEST_TIMEOUT: 90s
+      BIFROST_CHAINS_XLM_BLOCK_SCANNER_MAX_HTTP_REQUEST_RETRY: 7
+      BIFROST_CHAINS_XLM_BLOCK_SCANNER_OBSERVATION_FLEXIBILITY_BLOCKS: 10
 
       # set fixed gas rate for evm chains
       BIFROST_CHAINS_ETH_BLOCK_SCANNER_FIXED_GAS_RATE: 20_000_000_000 # 20 gwei
