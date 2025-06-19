@@ -1,6 +1,8 @@
 package common
 
 import (
+	"crypto/ed25519"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -214,10 +216,24 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 		if err != nil {
 			return NoAddress, err
 		}
-		// Stellar uses Ed25519 public keys, encode using strkey format
-		addr, err := strkey.Encode(strkey.VersionByteAccountID, pk.Bytes())
+		// Stellar uses ed25519, but we have secp256k1 from THORChain
+		// We need to derive an ed25519 key deterministically from the secp256k1 key
+		// Use SHA-256 hash of the secp256k1 public key as the ed25519 private key seed
+		secp256k1PubKey := pk.Bytes()
+
+		// Hash the secp256k1 public key to get a 32-byte seed for ed25519
+		hasher := sha256.New()
+		hasher.Write(secp256k1PubKey)
+		ed25519Seed := hasher.Sum(nil)
+
+		// Generate ed25519 key pair from the seed
+		ed25519PrivKey := ed25519.NewKeyFromSeed(ed25519Seed)
+		ed25519PubKey := ed25519PrivKey.Public().(ed25519.PublicKey)
+
+		// Encode the ed25519 public key into a Stellar address using strkey format
+		addr, err := strkey.Encode(strkey.VersionByteAccountID, ed25519PubKey)
 		if err != nil {
-			return NoAddress, fmt.Errorf("fail to encode Stellar address: %w", err)
+			return NoAddress, fmt.Errorf("failed to encode Stellar address: %w", err)
 		}
 		addressString = addr
 	default:

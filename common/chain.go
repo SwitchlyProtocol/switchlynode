@@ -142,7 +142,8 @@ func (c Chain) String() string {
 
 // GetSigningAlgo get the signing algorithm for the given chain
 func (c Chain) GetSigningAlgo() SigningAlgo {
-	// Only SigningAlgoSecp256k1 is supported for now
+	// TSS only supports secp256k1 for now, but we can derive ed25519 addresses
+	// from secp256k1 keys for chains that need them (like Stellar)
 	return SigningAlgoSecp256k1
 }
 

@@ -185,6 +185,10 @@ func Init() {
 		"BCH_START_BLOCK_HEIGHT",
 	))
 	assert(viper.BindEnv(
+		"bifrost.chains.XLM.rpc_host",
+		"XLM_HOST",
+	))
+	assert(viper.BindEnv(
 		"bifrost.chains.GAIA.cosmos_grpc_host",
 		"GAIA_GRPC_HOST",
 	))

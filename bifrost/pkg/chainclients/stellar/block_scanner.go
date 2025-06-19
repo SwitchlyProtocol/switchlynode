@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	sdkmath "cosmossdk.io/math"
 
@@ -87,14 +89,36 @@ func NewStellarBlockScanner(rpcHost string,
 	}, nil
 }
 
-// GetHeight returns the latest ledger sequence number
+// GetHeight returns the latest ledger sequence number with retry logic for rate limits
 func (c *StellarBlockScanner) GetHeight() (int64, error) {
-	ledger, err := c.horizonClient.Root()
-	if err != nil {
-		return 0, fmt.Errorf("fail to get root info: %w", err)
+	maxRetries := c.cfg.MaxHTTPRequestRetry
+	baseDelay := c.cfg.BlockHeightDiscoverBackoff
+
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		ledger, err := c.horizonClient.Root()
+		if err != nil {
+			// Check if it's a rate limit error
+			if strings.Contains(err.Error(), "Rate Limit Exceeded") ||
+				strings.Contains(err.Error(), "429") {
+				if attempt < maxRetries {
+					// Exponential backoff for rate limits: 2^attempt * baseDelay
+					delay := time.Duration(1<<uint(attempt)) * baseDelay
+					c.logger.Warn().
+						Int("attempt", attempt+1).
+						Int("max_retries", maxRetries+1).
+						Dur("delay", delay).
+						Msg("rate limit hit, retrying after delay")
+					time.Sleep(delay)
+					continue
+				}
+			}
+			return 0, fmt.Errorf("fail to get root info: %w", err)
+		}
+
+		return int64(ledger.HorizonSequence), nil
 	}
 
-	return int64(ledger.HorizonSequence), nil
+	return 0, fmt.Errorf("max retries exceeded for getting chain height")
 }
 
 // FetchMemPool returns nothing since we are only concerned about finalized transactions in Stellar
@@ -180,9 +204,14 @@ func (c *StellarBlockScanner) processTxs(height int64, txs []horizon.Transaction
 			continue
 		}
 
-		// Process each operation in the transaction
-		operationsPage, err := c.horizonClient.Operations(horizonclient.OperationRequest{
-			ForTransaction: tx.Hash,
+		// Process each operation in the transaction with retry logic
+		var operationsPage operations.OperationsPage
+		err := c.retryHorizonCall("operations", func() error {
+			var err error
+			operationsPage, err = c.horizonClient.Operations(horizonclient.OperationRequest{
+				ForTransaction: tx.Hash,
+			})
+			return err
 		})
 		if err != nil {
 			c.logger.Error().Err(err).Str("tx_hash", tx.Hash).Msg("fail to get operations for transaction")
@@ -273,6 +302,38 @@ func (c *StellarBlockScanner) processOperation(tx horizon.Transaction, op operat
 	return txInItem, nil
 }
 
+// retryHorizonCall executes a function with exponential backoff retry logic for rate limits
+func (c *StellarBlockScanner) retryHorizonCall(operation string, fn func() error) error {
+	maxRetries := c.cfg.MaxHTTPRequestRetry
+	baseDelay := c.cfg.BlockHeightDiscoverBackoff
+
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		err := fn()
+		if err != nil {
+			// Check if it's a rate limit error
+			if strings.Contains(err.Error(), "Rate Limit Exceeded") ||
+				strings.Contains(err.Error(), "429") {
+				if attempt < maxRetries {
+					// Exponential backoff for rate limits: 2^attempt * baseDelay
+					delay := time.Duration(1<<uint(attempt)) * baseDelay
+					c.logger.Warn().
+						Str("operation", operation).
+						Int("attempt", attempt+1).
+						Int("max_retries", maxRetries+1).
+						Dur("delay", delay).
+						Msg("rate limit hit, retrying after delay")
+					time.Sleep(delay)
+					continue
+				}
+			}
+			return err
+		}
+		return nil
+	}
+
+	return fmt.Errorf("max retries exceeded for operation: %s", operation)
+}
+
 // FetchTxs retrieves transactions for a given block height
 func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
 	txIn := types.TxIn{
@@ -280,19 +341,27 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 		TxArray: nil,
 	}
 
-	// Get ledger information (just to verify it exists)
-	_, err := c.horizonClient.LedgerDetail(uint32(height))
+	// Get ledger information (just to verify it exists) with retry logic
+	err := c.retryHorizonCall("ledger_detail", func() error {
+		_, err := c.horizonClient.LedgerDetail(uint32(height))
+		return err
+	})
 	if err != nil {
 		return txIn, fmt.Errorf("fail to get ledger %d: %w", height, err)
 	}
 
-	// Get transactions for this ledger
-	txRequest := horizonclient.TransactionRequest{
-		ForLedger: uint(height),
-		Limit:     200, // Maximum allowed by Horizon
-	}
+	// Get transactions for this ledger with retry logic
+	var txPage horizon.TransactionsPage
+	err = c.retryHorizonCall("transactions", func() error {
+		txRequest := horizonclient.TransactionRequest{
+			ForLedger: uint(height),
+			Limit:     200, // Maximum allowed by Horizon
+		}
 
-	txPage, err := c.horizonClient.Transactions(txRequest)
+		var err error
+		txPage, err = c.horizonClient.Transactions(txRequest)
+		return err
+	})
 	if err != nil {
 		return txIn, fmt.Errorf("fail to get transactions for ledger %d: %w", height, err)
 	}
@@ -301,14 +370,18 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 	var allTxs []horizon.Transaction
 	allTxs = append(allTxs, txPage.Embedded.Records...)
 
-	// Handle pagination if there are more transactions
+	// Handle pagination if there are more transactions with retry logic
 	for len(txPage.Embedded.Records) == 200 {
-		nextPage, err := c.horizonClient.NextTransactionsPage(txPage)
+		err = c.retryHorizonCall("next_transactions_page", func() error {
+			var err error
+			txPage, err = c.horizonClient.NextTransactionsPage(txPage)
+			return err
+		})
 		if err != nil {
+			c.logger.Warn().Err(err).Int64("height", height).Msg("failed to get next transactions page, continuing")
 			break // No more pages or error
 		}
-		allTxs = append(allTxs, nextPage.Embedded.Records...)
-		txPage = nextPage
+		allTxs = append(allTxs, txPage.Embedded.Records...)
 	}
 
 	// Process transactions
