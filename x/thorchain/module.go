@@ -156,10 +156,12 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), am.queryServer)
 	wasmtypes.RegisterQueryServer(cfg.QueryServer(), wasmkeeper.Querier(&am.mgr.wasmKeeper))
 
-	m := NewMigrator(am.mgr)
-	if err := cfg.RegisterMigration(types.ModuleName, 5, m.Migrate5to6); err != nil {
-		panic(fmt.Sprintf("failed to migrate x/thorchain from version 5 to 6: %v", err))
-	}
+	// Migration registrations would go here when needed
+	// Example:
+	// m := NewMigrator(am.mgr)
+	// if err := cfg.RegisterMigration(types.ModuleName, 5, m.Migrate5to6); err != nil {
+	//     panic(fmt.Sprintf("failed to migrate x/thorchain from version 5 to 6: %v", err))
+	// }
 }
 
 // BeginBlock called when a block get proposed

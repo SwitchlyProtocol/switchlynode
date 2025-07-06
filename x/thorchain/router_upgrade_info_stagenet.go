@@ -12,7 +12,7 @@ var (
 
 	// AVAX Router
 	avaxOldRouter = ``
-	// https://snowtrace.io/address/0xd6a6c0b3bb4150a98a379811934e440989209db6#code
+	// https://snowtrace.io/address/0xd6a6c0b3bb4150a98a379811934e440989209db6
 	avaxNewRouter = `0xd6a6c0b3bb4150a98a379811934e440989209db6`
 
 	// BSC Router
@@ -22,4 +22,9 @@ var (
 	// BASE Router
 	baseOldRouter = ``
 	baseNewRouter = `0xe36dcbf3c0284f756935811d9b9e80829d39bdc5`
+
+	// XLM Router - Stellar Contract IDs for testnet
+	xlmOldRouter = ``
+	// https://stellar.expert/explorer/testnet/contract/CAVLZEEZWWDBBROYGYLL7IXVUFTSLIXV5EOVU6KR467U43SOBZ36UZTY
+	xlmNewRouter = `CAVLZEEZWWDBBROYGYLL7IXVUFTSLIXV5EOVU6KR467U43SOBZ36UZTY`
 )

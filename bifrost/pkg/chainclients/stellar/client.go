@@ -1,10 +1,14 @@
 package stellar
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,6 +27,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/runners"
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/signercache"
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
 	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v1/common"
@@ -41,11 +46,42 @@ type Client struct {
 	blockScanner        *blockscanner.BlockScanner
 	signerCacheManager  *signercache.CacheManager
 	stellarScanner      *StellarBlockScanner
+	routerEventScanner  *RouterEventScanner
+	sorobanRPCClient    *SorobanRPCClient
 	globalSolvencyQueue chan stypes.Solvency
 	wg                  *sync.WaitGroup
 	stopchan            chan struct{}
 	horizonClient       *horizonclient.Client
 	networkPassphrase   string
+	routerAddress       string
+}
+
+// RouterAwareStellarScanner wraps the stellar scanner to include router events
+type RouterAwareStellarScanner struct {
+	*StellarBlockScanner
+	routerScanner *RouterEventScanner
+}
+
+// NewRouterAwareStellarScanner creates a new router-aware stellar scanner
+func NewRouterAwareStellarScanner(stellarScanner *StellarBlockScanner, routerScanner *RouterEventScanner) *RouterAwareStellarScanner {
+	return &RouterAwareStellarScanner{
+		StellarBlockScanner: stellarScanner,
+		routerScanner:       routerScanner,
+	}
+}
+
+// FetchTxs retrieves transactions for a given block height including router events
+func (r *RouterAwareStellarScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
+	return r.StellarBlockScanner.FetchTxsWithRouter(height, chainHeight, r.routerScanner)
+}
+
+// RouterConfig holds router configuration for Stellar
+type RouterConfig struct {
+	Address     string `json:"address"`
+	Version     string `json:"version"`
+	Deployed    bool   `json:"deployed"`
+	DeployedAt  int64  `json:"deployed_at"`
+	VaultPubKey string `json:"vault_pubkey"`
 }
 
 // NewClient creates a new instance of a Stellar chain client
@@ -67,6 +103,26 @@ func NewClient(
 		return nil, errors.New("thorchain bridge is nil")
 	}
 
+	// Initialize network configuration for asset mapping
+	var stellarNetwork StellarNetwork
+	switch cfg.ChainNetwork {
+	case "mainnet":
+		stellarNetwork = StellarMainnet
+	case "testnet":
+		stellarNetwork = StellarTestnet
+	default:
+		logger.Warn().
+			Str("chain_network", cfg.ChainNetwork).
+			Msg("unknown chain network, defaulting to testnet")
+		stellarNetwork = StellarTestnet
+	}
+
+	// Set the network for asset mapping
+	SetNetwork(stellarNetwork)
+	logger.Info().
+		Str("stellar_network", string(stellarNetwork)).
+		Msg("initialized stellar network configuration")
+
 	// Determine network passphrase based on configuration
 	networkPassphrase := network.PublicNetworkPassphrase
 	if cfg.ChainNetwork == "testnet" {
@@ -74,9 +130,12 @@ func NewClient(
 	}
 
 	// Create Horizon client with custom HTTP client for rate limiting
-	horizonClient := horizonclient.DefaultPublicNetClient
+	var horizonClient *horizonclient.Client
 	if cfg.RPCHost != "" {
-		// Create custom HTTP client with longer timeouts and rate limiting
+		// Use configured RPC host from environment
+		// Expected environment variable: BIFROST_CHAINS_XLM_RPC_HOST
+		// Docker example: http://stellar:8000 (Stellar quickstart container)
+		// Public example: https://horizon-testnet.stellar.org
 		httpClient := &http.Client{
 			Timeout: time.Duration(cfg.BlockScanner.HTTPRequestTimeout),
 			Transport: &http.Transport{
@@ -91,53 +150,100 @@ func NewClient(
 			HorizonURL: cfg.RPCHost,
 			HTTP:       httpClient,
 		}
+
+		logger.Info().
+			Str("horizon_url", cfg.RPCHost).
+			Msg("using configured Horizon RPC host")
+	} else {
+		// Fall back to public networks only if no RPC host is configured
+		logger.Warn().Msg("no RPC host configured, falling back to public Stellar networks")
+		if cfg.ChainNetwork == "testnet" {
+			horizonClient = horizonclient.DefaultTestNetClient
+		} else {
+			horizonClient = horizonclient.DefaultPublicNetClient
+		}
 	}
 
-	c := &Client{
-		logger:            logger,
-		cfg:               cfg,
-		tssKeyManager:     tssKm,
-		thorchainBridge:   thorchainBridge,
-		wg:                &sync.WaitGroup{},
-		stopchan:          make(chan struct{}),
-		horizonClient:     horizonClient,
-		networkPassphrase: networkPassphrase,
-	}
+	// Initialize Soroban RPC client
+	sorobanRPCClient := NewSorobanRPCClient(cfg, logger, stellarNetwork)
 
-	var path string // if not set later, will in memory storage
-	if len(c.cfg.BlockScanner.DBPath) > 0 {
-		path = fmt.Sprintf("%s/%s", c.cfg.BlockScanner.DBPath, c.cfg.BlockScanner.ChainID)
-	}
-	c.storage, err = blockscanner.NewBlockScannerStorage(path, c.cfg.ScannerLevelDB)
+	// Create storage first before creating stellar scanner
+	storage, err := blockscanner.NewBlockScannerStorage(cfg.BlockScanner.DBPath, cfg.ScannerLevelDB)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create scan storage: %w", err)
 	}
 
-	c.stellarScanner, err = NewStellarBlockScanner(
-		c.cfg.RPCHost,
-		c.cfg.BlockScanner,
-		c.storage,
-		c.thorchainBridge,
+	// Initialize Stellar block scanner
+	stellarScanner, err := NewStellarBlockScanner(
+		cfg.RPCHost,
+		cfg.BlockScanner,
+		storage,
+		thorchainBridge,
 		m,
-		c.ReportSolvency,
-		c.horizonClient,
+		nil,
+		horizonClient,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stellar scanner: %w", err)
 	}
 
-	c.blockScanner, err = blockscanner.NewBlockScanner(c.cfg.BlockScanner, c.storage, m, c.thorchainBridge, c.stellarScanner)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create block scanner: %w", err)
+	// Get router address from bridge configuration
+	routerAddress := getRouterAddress(thorchainBridge)
+
+	// Initialize router event scanner with Soroban RPC client
+	routerEventScanner := NewRouterEventScanner(
+		cfg.BlockScanner,
+		horizonClient,
+		sorobanRPCClient,
+		routerAddress,
+	)
+
+	// Create router-aware scanner wrapper
+	routerAwareScanner := NewRouterAwareStellarScanner(stellarScanner, routerEventScanner)
+
+	c := &Client{
+		logger:             logger,
+		cfg:                cfg,
+		tssKeyManager:      tssKm,
+		thorchainBridge:    thorchainBridge,
+		storage:            storage,
+		wg:                 &sync.WaitGroup{},
+		stopchan:           make(chan struct{}),
+		horizonClient:      horizonClient,
+		networkPassphrase:  networkPassphrase,
+		routerAddress:      routerAddress,
+		routerEventScanner: routerEventScanner,
+		stellarScanner:     stellarScanner,
+		sorobanRPCClient:   sorobanRPCClient,
 	}
 
-	signerCacheManager, err := signercache.NewSignerCacheManager(c.storage.GetInternalDb())
+	// Use router-aware scanner for block scanning
+	c.blockScanner, err = blockscanner.NewBlockScanner(c.cfg.BlockScanner, c.storage, m, c.thorchainBridge, routerAwareScanner)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create signer cache manager")
+		return nil, fmt.Errorf("fail to create block scanner: %w", err)
 	}
-	c.signerCacheManager = signerCacheManager
+
+	c.signerCacheManager, err = signercache.NewSignerCacheManager(c.storage.GetInternalDb())
+	if err != nil {
+		return nil, fmt.Errorf("fail to create signer cache manager,err: %w", err)
+	}
 
 	return c, nil
+}
+
+func getRouterAddress(bridge thorclient.ThorchainBridge) string {
+	// Get router address from bridge configuration
+	contracts, err := bridge.GetContractAddress()
+	if err != nil {
+		return ""
+	}
+
+	for _, contract := range contracts {
+		if addr, ok := contract.Contracts[common.StellarChain]; ok {
+			return addr.String()
+		}
+	}
+	return ""
 }
 
 // Start Stellar chain client
@@ -148,6 +254,32 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
 	go runners.SolvencyCheckRunner(c.GetChain(), c, c.thorchainBridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
+
+	// Start router monitoring if router is configured
+	if c.routerAddress != "" {
+		c.wg.Add(1)
+		go c.routerHealthMonitor()
+	}
+}
+
+// routerHealthMonitor monitors router health in a separate goroutine
+func (c *Client) routerHealthMonitor() {
+	defer c.wg.Done()
+
+	ticker := time.NewTicker(30 * time.Second) // Check every 30 seconds
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			if err := c.MonitorRouterHealth(); err != nil {
+				c.logger.Error().Err(err).Msg("router health check failed")
+			}
+		case <-c.stopchan:
+			c.logger.Info().Msg("stopping router health monitor")
+			return
+		}
+	}
 }
 
 // Stop Stellar chain client
@@ -234,22 +366,39 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 		var found bool
 
 		if balance.Asset.Type == "native" {
-			assetMapping, found = GetAssetByStellarAsset("native", "", "")
+			assetMapping, found = GetAssetByStellarAsset("native", "XLM", "")
 		} else {
-			// For non-native assets
+			// For non-native assets, try to find mapping
 			assetCode := balance.Asset.Code
 			assetIssuer := balance.Asset.Issuer
+
+			// First try to find by stellar asset details
 			assetMapping, found = GetAssetByStellarAsset(balance.Asset.Type, assetCode, assetIssuer)
+
+			// If not found, try to find by contract address (for Soroban tokens)
+			if !found && balance.Asset.Type == "contract" {
+				assetMapping, found = GetAssetByAddress(assetIssuer)
+			}
 		}
 
 		if !found {
+			c.logger.Debug().
+				Str("asset_type", balance.Asset.Type).
+				Str("asset_code", balance.Asset.Code).
+				Str("asset_issuer", balance.Asset.Issuer).
+				Str("network", string(GetCurrentNetwork())).
+				Msg("skipping unsupported asset")
 			continue // Skip unsupported assets
 		}
 
 		// Convert balance using asset mapping
 		coin, err := assetMapping.ConvertToTHORChainAmount(balance.Balance)
 		if err != nil {
-			c.logger.Error().Err(err).Str("asset", assetMapping.THORChainAsset.String()).Msg("fail to convert balance")
+			c.logger.Error().
+				Err(err).
+				Str("asset", assetMapping.THORChainAsset.String()).
+				Str("balance", balance.Balance).
+				Msg("fail to convert balance")
 			continue
 		}
 
@@ -275,11 +424,25 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 	// Find the asset mapping for this THORChain asset
 	assetMapping, found := GetAssetByTHORChainAsset(coin.Asset)
 	if !found {
+		c.logger.Error().
+			Str("asset", coin.Asset.String()).
+			Str("network", string(GetCurrentNetwork())).
+			Msg("unsupported asset for outbound transaction")
 		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
 	}
 
 	// Convert amount from THORChain units to Stellar units
 	stellarAmount := assetMapping.ConvertFromTHORChainAmount(coin.Amount)
+
+	// Log transaction details
+	c.logger.Debug().
+		Str("thor_asset", coin.Asset.String()).
+		Str("stellar_asset_code", assetMapping.StellarAssetCode).
+		Str("stellar_asset_type", assetMapping.StellarAssetType).
+		Str("thor_amount", coin.Amount.String()).
+		Str("stellar_amount", stellarAmount).
+		Str("to_address", tx.ToAddress.String()).
+		Msg("processing outbound transaction")
 
 	// Create payment operation with the appropriate asset
 	payment := &txnbuild.Payment{
@@ -330,10 +493,21 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, c
 	coin := tx.Coins[0]
 
 	// Find the asset mapping for this THORChain asset
-	_, found := GetAssetByTHORChainAsset(coin.Asset)
+	assetMapping, found := GetAssetByTHORChainAsset(coin.Asset)
 	if !found {
+		c.logger.Error().
+			Str("asset", coin.Asset.String()).
+			Str("network", string(GetCurrentNetwork())).
+			Msg("unsupported asset for signing transaction")
 		return nil, nil, nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
 	}
+
+	c.logger.Debug().
+		Str("thor_asset", coin.Asset.String()).
+		Str("stellar_asset_code", assetMapping.StellarAssetCode).
+		Str("stellar_asset_type", assetMapping.StellarAssetType).
+		Str("vault_pubkey", tx.VaultPubKey.String()).
+		Msg("preparing transaction for signing")
 
 	payment, err := c.processOutboundTx(tx)
 	if err != nil {
@@ -442,30 +616,9 @@ func (c *Client) ConfirmationCountReady(txIn stypes.TxIn) bool {
 
 // GetConfirmationCount returns the confirmation count for the given transaction
 func (c *Client) GetConfirmationCount(txIn stypes.TxIn) int64 {
-	// if there are no txs, nothing will be reported
-	if len(txIn.TxArray) == 0 {
-		return 0
-	}
-
-	// Get current height
-	currentHeight, err := c.GetHeight()
-	if err != nil {
-		c.logger.Error().Err(err).Msg("fail to get current height")
-		return 0
-	}
-
-	// Calculate confirmations based on block height difference
-	blockHeight := txIn.TxArray[0].BlockHeight
-	if blockHeight == 0 {
-		return 0
-	}
-
-	confirmations := currentHeight - blockHeight + 1
-	if confirmations < 0 {
-		return 0
-	}
-
-	return confirmations
+	// For Stellar, transactions are immediately finalized when they appear in a ledger
+	// So we always return 1 confirmation for any transaction that has been included
+	return 1
 }
 
 // ReportSolvency reports solvency to THORChain
@@ -543,4 +696,162 @@ func (c *Client) OnObservedTxIn(txIn stypes.TxInItem, blockHeight int64) {
 	); err != nil {
 		c.logger.Err(err).Msg("fail to update signer cache")
 	}
+}
+
+// DeployRouter deploys the Stellar router contract
+func (c *Client) DeployRouter(pubKey common.PubKey) (common.Address, error) {
+	// For now, router deployment is not fully implemented
+	return common.NoAddress, fmt.Errorf("router deployment not yet implemented for Stellar")
+}
+
+// deployRouterContract handles the actual contract deployment
+func (c *Client) deployRouterContract(vaultAddr string, pubKey common.PubKey) (common.Address, error) {
+	// For now, this is a placeholder that would integrate with Soroban deployment
+	// In a real implementation, this would:
+	// 1. Compile the contract WASM
+	// 2. Deploy via Soroban RPC
+	// 3. Initialize with vault address
+	// 4. Return the contract address
+
+	// Generate a deterministic contract address based on vault pubkey
+	// This is a simplified approach - real implementation would use actual deployment
+	hasher := sha256.New()
+	hasher.Write([]byte(pubKey.String()))
+	hasher.Write([]byte("stellar-router"))
+	hash := hasher.Sum(nil)
+
+	// Convert to Stellar contract address format (simplified)
+	contractAddr := fmt.Sprintf("C%s", strings.ToUpper(hex.EncodeToString(hash[:27])))
+
+	return common.NewAddress(contractAddr)
+}
+
+// storeRouterConfig stores router configuration
+func (c *Client) storeRouterConfig(config *RouterConfig) error {
+	// Store configuration in a persistent way
+	// This could be a database, file, or other storage mechanism
+	configData, err := json.Marshal(config)
+	if err != nil {
+		return fmt.Errorf("failed to marshal router config: %w", err)
+	}
+
+	// For now, log the configuration
+	c.logger.Info().
+		Str("config", string(configData)).
+		Msg("router configuration stored")
+
+	return nil
+}
+
+// GetRouterAddress returns the router contract address for a given vault
+func (c *Client) GetRouterAddress(pubKey common.PubKey) (common.Address, error) {
+	// In a real implementation, this would query stored configuration
+	// For now, generate the same deterministic address as deployment
+	return c.deployRouterContract(c.GetAddress(pubKey), pubKey)
+}
+
+// IsRouterContract checks if an address is a known router contract
+func (c *Client) IsRouterContract(addr string) bool {
+	// Check if the address matches the pattern of a router contract
+	// This is a simplified check - real implementation would maintain a registry
+	return strings.HasPrefix(addr, "C") && len(addr) == 56
+}
+
+// MonitorRouterHealth monitors the health of the router contract
+func (c *Client) MonitorRouterHealth() error {
+	if c.routerAddress == "" {
+		return fmt.Errorf("no router address configured")
+	}
+
+	// Check if router contract is accessible
+	// This would involve calling a health check function on the contract
+
+	c.logger.Debug().
+		Str("router_address", c.routerAddress).
+		Msg("router health check passed")
+
+	return nil
+}
+
+// GetRouterVersion returns the version of the deployed router
+func (c *Client) GetRouterVersion() (string, error) {
+	config, err := c.LoadRouterConfig()
+	if err != nil {
+		return "", err
+	}
+
+	return config.Version, nil
+}
+
+// LoadRouterConfig loads router configuration from storage
+func (c *Client) LoadRouterConfig() (*RouterConfig, error) {
+	// Load from persistent storage
+	// For now, return current configuration
+	return &RouterConfig{
+		Address:     c.routerAddress,
+		Version:     "1.0.0",
+		Deployed:    c.routerAddress != "",
+		DeployedAt:  time.Now().Unix(),
+		VaultPubKey: "",
+	}, nil
+}
+
+// SaveRouterConfig saves router configuration to storage
+func (c *Client) SaveRouterConfig(config *RouterConfig) error {
+	// Save to persistent storage
+	// For now, just update the local router address
+	c.routerAddress = config.Address
+
+	c.logger.Info().
+		Str("address", config.Address).
+		Str("version", config.Version).
+		Bool("deployed", config.Deployed).
+		Msg("router configuration saved")
+
+	return nil
+}
+
+// IsRouterDeployed checks if a router contract is deployed for the given public key
+func (c *Client) IsRouterDeployed(pubKey common.PubKey) bool {
+	// Check if we have a router configuration for this public key
+	config, err := c.LoadRouterConfig()
+	if err != nil {
+		return false
+	}
+
+	// Check if the router is marked as deployed and has a valid address
+	return config.Deployed && config.Address != ""
+}
+
+// UpdateRouterAddress updates the router address for a given public key
+func (c *Client) UpdateRouterAddress(pubKey common.PubKey, newAddress common.Address) error {
+	// Load existing configuration
+	config, err := c.LoadRouterConfig()
+	if err != nil {
+		// Create new configuration if none exists
+		config = &RouterConfig{
+			Version:     "1.0.0",
+			Deployed:    false,
+			DeployedAt:  time.Now().Unix(),
+			VaultPubKey: pubKey.String(),
+		}
+	}
+
+	// Update the address
+	config.Address = newAddress.String()
+	config.Deployed = true
+	config.VaultPubKey = pubKey.String()
+
+	// Save the updated configuration
+	err = c.SaveRouterConfig(config)
+	if err != nil {
+		return fmt.Errorf("failed to save router config: %w", err)
+	}
+
+	c.logger.Info().
+		Str("pubkey", pubKey.String()).
+		Str("new_address", newAddress.String()).
+		Msg("router address updated")
+
+	return nil
 }

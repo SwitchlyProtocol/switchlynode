@@ -185,3 +185,8 @@ set_base_contract() {
   jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.thornode/config/genesis.json
 }
+
+set_xlm_contract() {
+  jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts += [{"chain": "XLM", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+}

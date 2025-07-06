@@ -56,6 +56,9 @@ genesis_init() {
 
     # deploy evm contracts
     deploy_evm_contracts
+    
+    # deploy stellar contracts
+    deploy_stellar_contracts
   fi
 
   if [ "$NET" = "stagenet" ]; then
@@ -85,6 +88,10 @@ genesis_init() {
   if [ -n "${BASE_CONTRACT+x}" ]; then
     echo "BASE Contract Address: $BASE_CONTRACT"
     set_base_contract "$BASE_CONTRACT"
+  fi
+  if [ -n "${XLM_CONTRACT+x}" ]; then
+    echo "XLM Contract Address: $XLM_CONTRACT"
+    set_xlm_contract "$XLM_CONTRACT"
   fi
 
   echo "Genesis content"

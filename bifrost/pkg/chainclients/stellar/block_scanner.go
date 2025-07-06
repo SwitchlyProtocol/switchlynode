@@ -3,6 +3,7 @@ package stellar
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/stellar/go/clients/horizonclient"
 	"github.com/stellar/go/protocols/horizon"
+	"github.com/stellar/go/protocols/horizon/base"
 	"github.com/stellar/go/protocols/horizon/operations"
 
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
@@ -403,4 +405,256 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 		Msg("processed block")
 
 	return txIn, nil
+}
+
+// FetchTxsWithRouter fetches transactions using router contract addresses
+func (s *StellarBlockScanner) FetchTxsWithRouter(height, chainHeight int64, routerScanner *RouterEventScanner) (types.TxIn, error) {
+	s.logger.Debug().
+		Int64("height", height).
+		Int64("chain_height", chainHeight).
+		Msg("fetching transactions with router")
+
+	txIn := types.TxIn{
+		Chain:                  common.StellarChain,
+		TxArray:                nil,
+		Filtered:               false,
+		MemPool:                false,
+		ConfirmationRequired:   0,
+		AllowFutureObservation: false,
+	}
+
+	// First, get regular vault transactions (non-router)
+	regularTxIn, err := s.FetchTxs(height, chainHeight)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to fetch regular vault transactions")
+		// Continue with router events even if regular scanning fails
+	} else {
+		txIn.TxArray = append(txIn.TxArray, regularTxIn.TxArray...)
+	}
+
+	// Then, scan for router events using the router event scanner
+	if routerScanner != nil {
+		routerTxs, err := routerScanner.ScanRouterEvents(height)
+		if err != nil {
+			s.logger.Error().
+				Err(err).
+				Int64("height", height).
+				Msg("failed to scan router events")
+			// Don't return error - continue with regular transactions
+		} else {
+			// Add router transactions to the result
+			txIn.TxArray = append(txIn.TxArray, routerTxs...)
+
+			s.logger.Info().
+				Int64("height", height).
+				Int("regular_txs", len(regularTxIn.TxArray)).
+				Int("router_txs", len(routerTxs)).
+				Int("total_txs", len(txIn.TxArray)).
+				Msg("successfully fetched transactions with router events")
+		}
+	} else {
+		s.logger.Debug().Msg("no router scanner provided, skipping router event scanning")
+	}
+
+	return txIn, nil
+}
+
+// getRouterAddresses retrieves all active router addresses
+func (s *StellarBlockScanner) getRouterAddresses() ([]string, error) {
+	// Get router addresses from bridge configuration
+	contracts, err := s.bridge.GetContractAddress()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get contract addresses: %w", err)
+	}
+
+	var routerAddresses []string
+	for _, contract := range contracts {
+		if addr, ok := contract.Contracts[common.StellarChain]; ok && !addr.IsEmpty() {
+			routerAddresses = append(routerAddresses, addr.String())
+		}
+	}
+
+	return routerAddresses, nil
+}
+
+// fetchRouterTransactions fetches transactions for a specific router address
+func (s *StellarBlockScanner) fetchRouterTransactions(routerAddr string, height int64) ([]horizon.Transaction, error) {
+	// Use Horizon API to fetch transactions for the router address
+	txRequest := horizonclient.TransactionRequest{
+		ForAccount: routerAddr,
+		Limit:      200,
+		Order:      horizonclient.OrderDesc,
+	}
+
+	txPage, err := s.horizonClient.Transactions(txRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch transactions for router %s: %w", routerAddr, err)
+	}
+
+	var relevantTxs []horizon.Transaction
+	for _, tx := range txPage.Embedded.Records {
+		// Filter transactions by ledger height if needed
+		if height > 0 && int64(tx.Ledger) != height {
+			continue
+		}
+
+		// Only include transactions that interact with the router contract
+		if s.isRouterTransaction(tx, routerAddr) {
+			relevantTxs = append(relevantTxs, tx)
+		}
+	}
+
+	return relevantTxs, nil
+}
+
+// processRouterTransaction processes a router transaction and converts it to THORChain format
+func (s *StellarBlockScanner) processRouterTransaction(tx horizon.Transaction, routerAddr string) (*types.TxInItem, error) {
+	// Get transaction operations to understand what happened
+	opsRequest := horizonclient.OperationRequest{
+		ForTransaction: tx.ID,
+		Limit:          200,
+	}
+
+	opsPage, err := s.horizonClient.Operations(opsRequest)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get operations for tx %s: %w", tx.ID, err)
+	}
+
+	// Process each operation
+	for _, op := range opsPage.Embedded.Records {
+		switch operation := op.(type) {
+		case operations.Payment:
+			if operation.To == routerAddr {
+				// This is a deposit to the router
+				return s.processRouterDeposit(tx, operation, routerAddr)
+			}
+		case operations.InvokeHostFunction:
+			// This could be a router contract call
+			return s.processRouterContractCall(tx, operation, routerAddr)
+		}
+	}
+
+	return nil, nil
+}
+
+// processRouterDeposit processes a deposit transaction to the router
+func (s *StellarBlockScanner) processRouterDeposit(tx horizon.Transaction, payment operations.Payment, routerAddr string) (*types.TxInItem, error) {
+	// Convert Stellar payment to THORChain TxInItem
+	memo := tx.Memo
+	if memo == "" {
+		return nil, fmt.Errorf("deposit transaction missing memo")
+	}
+
+	// Parse amount
+	amount, err := s.parseAmount(payment.Amount, payment.Asset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse amount: %w", err)
+	}
+
+	// Create TxInItem
+	txInItem := &types.TxInItem{
+		BlockHeight: int64(tx.Ledger),
+		Tx:          tx.Hash,
+		Memo:        memo,
+		Sender:      payment.From,
+		To:          routerAddr,
+		Coins: common.Coins{
+			common.NewCoin(s.parseAsset(payment.Asset), amount),
+		},
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
+		},
+		ObservedVaultPubKey: s.getVaultPubKeyForRouter(routerAddr),
+	}
+
+	return txInItem, nil
+}
+
+// processRouterContractCall processes a router contract function call
+func (s *StellarBlockScanner) processRouterContractCall(tx horizon.Transaction, operation operations.InvokeHostFunction, routerAddr string) (*types.TxInItem, error) {
+	// Parse the contract call to understand the operation
+	// This would involve decoding the XDR data to understand what function was called
+
+	// For now, treat it as a generic router interaction
+	txInItem := &types.TxInItem{
+		BlockHeight: int64(tx.Ledger),
+		Tx:          tx.Hash,
+		Memo:        tx.Memo,
+		Sender:      tx.Account,
+		To:          routerAddr,
+		Coins:       common.Coins{}, // Would be populated based on contract call
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
+		},
+		ObservedVaultPubKey: s.getVaultPubKeyForRouter(routerAddr),
+	}
+
+	return txInItem, nil
+}
+
+// isRouterTransaction checks if a transaction is relevant to the router
+func (s *StellarBlockScanner) isRouterTransaction(tx horizon.Transaction, routerAddr string) bool {
+	// Check if transaction involves the router address
+	// This is a simplified check - in practice, you'd want to examine operations
+	return tx.Account == routerAddr ||
+		strings.Contains(tx.Memo, routerAddr) ||
+		s.transactionInvolvesRouter(tx, routerAddr)
+}
+
+// transactionInvolvesRouter checks if transaction operations involve the router
+func (s *StellarBlockScanner) transactionInvolvesRouter(tx horizon.Transaction, routerAddr string) bool {
+	// This would examine the transaction operations to see if any involve the router
+	// For now, return false as a placeholder
+	return false
+}
+
+// getVaultPubKeyForRouter returns the vault public key associated with a router address
+func (s *StellarBlockScanner) getVaultPubKeyForRouter(routerAddr string) common.PubKey {
+	// Get the vault public key from bridge configuration
+	contracts, err := s.bridge.GetContractAddress()
+	if err != nil {
+		return common.EmptyPubKey
+	}
+
+	for _, contract := range contracts {
+		if addr, ok := contract.Contracts[common.StellarChain]; ok && addr.String() == routerAddr {
+			return contract.PubKey
+		}
+	}
+
+	return common.EmptyPubKey
+}
+
+// parseAmount parses a Stellar amount string to cosmos.Uint
+func (s *StellarBlockScanner) parseAmount(amountStr string, asset base.Asset) (cosmos.Uint, error) {
+	// Convert Stellar amount (7 decimal places) to cosmos.Uint
+	stellarFloat, ok := new(big.Float).SetString(amountStr)
+	if !ok {
+		return cosmos.ZeroUint(), fmt.Errorf("invalid amount format: %s", amountStr)
+	}
+
+	// Convert to integer in smallest unit (stroops)
+	stellarInt := new(big.Int)
+	stellarFloat.Mul(stellarFloat, big.NewFloat(1e7)).Int(stellarInt)
+
+	return cosmos.NewUintFromBigInt(stellarInt), nil
+}
+
+// parseAsset converts a Stellar asset to THORChain asset format
+func (s *StellarBlockScanner) parseAsset(asset base.Asset) common.Asset {
+	if asset.Type == "native" {
+		return common.XLMAsset
+	}
+
+	// For issued assets, create asset identifier
+	assetCode := asset.Code
+	if assetCode == "" {
+		assetCode = "XLM"
+	}
+
+	return common.Asset{
+		Chain:  common.StellarChain,
+		Symbol: common.Symbol(assetCode),
+		Ticker: common.Ticker(assetCode),
+	}
 }

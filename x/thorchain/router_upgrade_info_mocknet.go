@@ -18,4 +18,9 @@ var (
 
 	baseOldRouter = ``
 	baseNewRouter = ``
+
+	// XLM Router - Stellar Contract IDs (not addresses)
+	xlmOldRouter = ``
+	// Deployed Stellar router contract
+	xlmNewRouter = `CAVLZEEZWWDBBROYGYLL7IXVUFTSLIXV5EOVU6KR467U43SOBZ36UZTY`
 )
