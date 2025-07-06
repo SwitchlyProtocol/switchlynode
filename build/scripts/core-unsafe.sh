@@ -28,6 +28,57 @@ deploy_evm_contracts() {
   wait
 }
 
+deploy_stellar_contracts() {
+  # Only add Stellar contracts if XLM_HOST is set
+  if [ -n "${XLM_HOST+x}" ]; then
+    echo "Setting up Stellar router contracts"
+    
+    # Get the router address from the router upgrade info (same as EVM approach for mainnet/stagenet)
+    # The router upgrade info files contain the actual deployed contract addresses
+    case "$NET" in
+      "mocknet")
+        # For mocknet, use the mocknet router address
+        CONTRACT="CAVLZEEZWWDBBROYGYLL7IXVUFTSLIXV5EOVU6KR467U43SOBZ36UZTY"
+        ;;
+      "stagenet")
+        # For stagenet, use the stagenet router address  
+        CONTRACT="CAVLZEEZWWDBBROYGYLL7IXVUFTSLIXV5EOVU6KR467U43SOBZ36UZTY"
+        ;;
+      "mainnet")
+        # For mainnet, router address would be set when deployed
+        # Currently empty in router_upgrade_info.go
+        CONTRACT=""
+        ;;
+      *)
+        echo "Unknown network: $NET"
+        CONTRACT=""
+        ;;
+    esac
+    
+    # Only add to genesis if we have a valid contract address
+    if [ -n "$CONTRACT" ]; then
+      echo "XLM Contract Address: $CONTRACT"
+      
+      (
+        flock -x 200
+        jq --arg CHAIN "XLM" --arg CONTRACT "$CONTRACT" \
+          '.app_state.thorchain.chain_contracts += [{"chain": $CHAIN, "router": $CONTRACT}]' \
+          ~/.thornode/config/genesis.json >/tmp/genesis-XLM.json
+        mv /tmp/genesis-XLM.json ~/.thornode/config/genesis.json
+      ) 200>/tmp/genesis.lock
+      
+      echo "Stellar router configuration complete"
+      echo "Using router: $CONTRACT"
+      echo "Network: $NET"
+    else
+      echo "No Stellar router contract configured for network: $NET"
+      echo "Skipping Stellar router setup"
+    fi
+  else
+    echo "XLM_HOST not set, skipping Stellar router setup"
+  fi
+}
+
 init_mocknet() {
   NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | thornode keys show "$SIGNER_NAME" -a --keyring-backend file)
 

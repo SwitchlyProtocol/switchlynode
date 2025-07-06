@@ -80,7 +80,24 @@ func IsValidXRPAddress(address string) bool {
 
 func IsValidXLMAddress(address string) bool {
 	// Validate Stellar address using strkey
-	return strkey.IsValidEd25519PublicKey(address)
+	// Account addresses start with 'G' and use Ed25519 public key format
+	if strkey.IsValidEd25519PublicKey(address) {
+		return true
+	}
+
+	// Contract IDs start with 'C' and are 56 characters long
+	// We'll do a basic validation since strkey doesn't have IsValidContract
+	if len(address) == 56 && strings.HasPrefix(address, "C") {
+		// Check if it's valid base32 encoding (A-Z, 2-7)
+		for _, char := range address[1:] {
+			if !((char >= 'A' && char <= 'Z') || (char >= '2' && char <= '7')) {
+				return false
+			}
+		}
+		return true
+	}
+
+	return false
 }
 
 // IsValidBCHAddress determinate whether the address is a valid new BCH address format

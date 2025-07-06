@@ -224,13 +224,13 @@ func (s *StellarClientTestSuite) TestProcessOutboundTx(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(payment, NotNil)
 	c.Assert(payment.Destination, Equals, "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM")
-	
+
 	// Check that it's a native asset
 	_, isNative := payment.Asset.(txnbuild.NativeAsset)
 	c.Assert(isNative, Equals, true)
 
 	// Test USDC transaction
-	usdcAsset := common.Asset{Chain: common.StellarChain, Symbol: "USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN", Ticker: "USDC"}
+	usdcAsset := common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"}
 	usdcCoin := common.NewCoin(usdcAsset, cosmos.NewUint(100000000)) // 1 USDC in THORChain units
 	usdcTxOutItem := stypes.TxOutItem{
 		Chain:       common.StellarChain,
@@ -244,12 +244,12 @@ func (s *StellarClientTestSuite) TestProcessOutboundTx(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(usdcPayment, NotNil)
 	c.Assert(usdcPayment.Destination, Equals, "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM")
-	
+
 	// Check that it's a credit asset
 	creditAsset, isCredit := usdcPayment.Asset.(txnbuild.CreditAsset)
 	c.Assert(isCredit, Equals, true)
 	c.Assert(creditAsset.Code, Equals, "USDC")
-	c.Assert(creditAsset.Issuer, Equals, "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN")
+	c.Assert(creditAsset.Issuer, Equals, "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA") // Testnet address
 
 	// Test unsupported asset
 	unsupportedAsset := common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"}

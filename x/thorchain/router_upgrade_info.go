@@ -20,4 +20,10 @@ var (
 	// BASE Router
 	baseOldRouter = ``
 	baseNewRouter = `0x68208d99746b805a1ae41421950a47b711e35681`
+
+	// XLM Router - Stellar Contract IDs for mainnet
+	xlmOldRouter = ``
+	// TODO: Update with actual deployed Stellar router contract ID after manual deployment
+	// Example: xlmNewRouter = `CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
+	xlmNewRouter = ``
 )

@@ -171,7 +171,7 @@ services:
       AVAX_HOST: ${AVAX_HOST:-http://avalanche:9650/ext/bc/C/rpc}
       GAIA_HOST: ${GAIA_HOST:-http://gaia:26657}
       GAIA_GRPC_HOST: ${GAIA_GRPC_HOST:-gaia:9090}
-      THOR_BLOCK_TIME: ${BLOCK_TIME:-1s}
+      XLM_HOST: ${XLM_HOST:-stellar:8000}
       BLOCK_SCANNER_BACKOFF: ${BLOCK_SCANNER_BACKOFF:-5s}
       PEER: ${PEER:-}
       BIFROST_METRICS_PPROF_ENABLED: "true"
