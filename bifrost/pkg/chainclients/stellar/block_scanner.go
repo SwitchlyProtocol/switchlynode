@@ -1,18 +1,15 @@
 package stellar
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"math/big"
 	"strconv"
 	"strings"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
-
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
 	"github.com/stellar/go/clients/horizonclient"
 	"github.com/stellar/go/protocols/horizon"
 	"github.com/stellar/go/protocols/horizon/base"
@@ -25,6 +22,8 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common"
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v1/config"
+
+	sdkmath "cosmossdk.io/math"
 )
 
 // SolvencyReporter is to report solvency info to THORNode
@@ -37,6 +36,15 @@ const (
 	// FeeCacheTransactions is the number of transactions over which we compute an average
 	// (mean) fee price to use for outbound transactions.
 	FeeCacheTransactions = 200
+
+	// defaultFeeMultiplier is the default multiplier for fee calculation
+	defaultFeeMultiplier = 1.5
+	// baseFeeStroops is the base fee in stroops (1 XLM = 10^7 stroops)
+	baseFeeStroops = 100
+	// maxRetries is the maximum number of retries for API calls
+	maxRetries = 3
+	// retryDelay is the delay between retries
+	retryDelay = time.Second * 2
 )
 
 var (
@@ -53,6 +61,7 @@ type StellarBlockScanner struct {
 	bridge           thorclient.ThorchainBridge
 	solvencyReporter SolvencyReporter
 	horizonClient    *horizonclient.Client
+	sorobanRPCClient *SorobanRPCClient
 
 	globalNetworkFeeQueue chan common.NetworkFee
 
@@ -69,12 +78,22 @@ func NewStellarBlockScanner(rpcHost string,
 	m *metrics.Metrics,
 	solvencyReporter SolvencyReporter,
 	horizonClient *horizonclient.Client,
+	sorobanRPCClient *SorobanRPCClient,
 ) (*StellarBlockScanner, error) {
 	if scanStorage == nil {
 		return nil, errors.New("scanStorage is nil")
 	}
 	if m == nil {
 		return nil, errors.New("metrics is nil")
+	}
+	if bridge == nil {
+		return nil, errors.New("bridge is nil")
+	}
+	if horizonClient == nil {
+		return nil, errors.New("horizon client is nil")
+	}
+	if sorobanRPCClient == nil {
+		return nil, errors.New("soroban RPC client is nil")
 	}
 
 	logger := log.Logger.With().Str("module", "blockscanner").Str("chain", cfg.ChainID.String()).Logger()
@@ -85,9 +104,10 @@ func NewStellarBlockScanner(rpcHost string,
 		db:               scanStorage,
 		horizonClient:    horizonClient,
 		feeCache:         make([]sdkmath.Uint, 0),
-		lastFee:          sdkmath.NewUint(100), // Default base fee in stroops
+		lastFee:          sdkmath.NewUint(baseFeeStroops),
 		bridge:           bridge,
 		solvencyReporter: solvencyReporter,
+		sorobanRPCClient: sorobanRPCClient,
 	}, nil
 }
 
@@ -153,7 +173,7 @@ func (c *StellarBlockScanner) updateFeeCache(fee common.Coin) {
 func (c *StellarBlockScanner) averageFee() sdkmath.Uint {
 	// avoid divide by zero
 	if len(c.feeCache) == 0 {
-		return sdkmath.NewUint(100) // Default base fee
+		return sdkmath.NewUint(baseFeeStroops)
 	}
 
 	// compute mean
@@ -241,242 +261,305 @@ func (c *StellarBlockScanner) processTxs(height int64, txs []horizon.Transaction
 }
 
 func (c *StellarBlockScanner) processOperation(tx horizon.Transaction, op operations.Operation, height int64) (*types.TxInItem, error) {
-	// Only process payment operations for now
-	payment, ok := op.(operations.Payment)
-	if !ok {
-		return nil, nil // Not a payment operation, skip
+	switch operation := op.(type) {
+	case operations.Payment:
+		return c.processPaymentOperation(tx, operation, height)
+	case operations.InvokeHostFunction:
+		return c.processInvokeHostFunctionOperation(tx, operation, height)
+	case operations.CreateAccount:
+		return c.processCreateAccountOperation(tx, operation, height)
+	default:
+		// Skip other operation types
+		return nil, nil
 	}
+}
 
-	// Determine asset type and find mapping
-	var assetMapping StellarAssetMapping
-	var found bool
+// processPaymentOperation processes payment operations
+func (c *StellarBlockScanner) processPaymentOperation(tx horizon.Transaction, payment operations.Payment, height int64) (*types.TxInItem, error) {
+	// Check if this is a payment to one of our vaults
+	// For now, we'll process all payments and let the observer filter them
+	// TODO: Add proper vault address checking when the bridge method is available
 
-	if payment.Asset.Type == "native" {
-		assetMapping, found = GetAssetByStellarAsset("native", "", "")
-	} else {
-		// For non-native assets, extract code and issuer
-		assetCode := payment.Asset.Code
-		assetIssuer := payment.Asset.Issuer
-		assetMapping, found = GetAssetByStellarAsset(payment.Asset.Type, assetCode, assetIssuer)
-	}
-
-	if !found {
-		return nil, nil // Asset not supported/whitelisted, skip
-	}
-
-	// Convert amount using the asset mapping
-	coin, err := assetMapping.ConvertToTHORChainAmount(payment.Amount)
+	// Parse the asset and amount
+	coin, err := c.parseAssetAndAmount(payment.Asset, payment.Amount)
 	if err != nil {
-		return nil, fmt.Errorf("fail to convert amount: %w", err)
+		return nil, fmt.Errorf("failed to parse asset and amount: %w", err)
 	}
 
-	if coin.Amount.IsZero() {
-		return nil, nil // Zero amount, skip
-	}
-
-	// Create addresses
-	fromAddr, err := common.NewAddress(payment.From)
-	if err != nil {
-		return nil, fmt.Errorf("fail to parse from address: %w", err)
-	}
-
-	toAddr, err := common.NewAddress(payment.To)
-	if err != nil {
-		return nil, fmt.Errorf("fail to parse to address: %w", err)
-	}
-
-	// Create coins
-	coins := common.Coins{coin}
-
-	// Extract memo
-	memo := tx.Memo
-
+	// Create TxInItem
 	txInItem := &types.TxInItem{
 		BlockHeight: height,
 		Tx:          tx.Hash,
-		Sender:      fromAddr.String(),
-		To:          toAddr.String(),
-		Coins:       coins,
-		Memo:        memo,
-		Gas:         common.Gas{coin},
+		Sender:      payment.From,
+		To:          payment.To,
+		Coins:       common.Coins{coin},
+		Memo:        tx.Memo,
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
+		},
 	}
 
 	return txInItem, nil
 }
 
-// retryHorizonCall executes a function with exponential backoff retry logic for rate limits
-func (c *StellarBlockScanner) retryHorizonCall(operation string, fn func() error) error {
-	maxRetries := c.cfg.MaxHTTPRequestRetry
-	baseDelay := c.cfg.BlockHeightDiscoverBackoff
-
-	for attempt := 0; attempt <= maxRetries; attempt++ {
-		err := fn()
-		if err != nil {
-			// Check if it's a rate limit error
-			if strings.Contains(err.Error(), "Rate Limit Exceeded") ||
-				strings.Contains(err.Error(), "429") {
-				if attempt < maxRetries {
-					// Exponential backoff for rate limits: 2^attempt * baseDelay
-					delay := time.Duration(1<<uint(attempt)) * baseDelay
-					c.logger.Warn().
-						Str("operation", operation).
-						Int("attempt", attempt+1).
-						Int("max_retries", maxRetries+1).
-						Dur("delay", delay).
-						Msg("rate limit hit, retrying after delay")
-					time.Sleep(delay)
-					continue
-				}
-			}
-			return err
-		}
-		return nil
+// processInvokeHostFunctionOperation processes smart contract calls (including router events)
+func (c *StellarBlockScanner) processInvokeHostFunctionOperation(tx horizon.Transaction, operation operations.InvokeHostFunction, height int64) (*types.TxInItem, error) {
+	// Check if this is a router contract call
+	routerAddresses, err := c.getRouterAddresses()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to get router addresses")
+		return nil, nil
 	}
 
-	return fmt.Errorf("max retries exceeded for operation: %s", operation)
+	// Check if this operation involves any router contract
+	isRouterCall := false
+	for _, routerAddr := range routerAddresses {
+		if c.isRouterOperation(operation, routerAddr) {
+			isRouterCall = true
+			break
+		}
+	}
+
+	if !isRouterCall {
+		return nil, nil
+	}
+
+	// Get router events from Soroban RPC
+	routerEvents, err := c.sorobanRPCClient.GetRouterEvents(context.Background(), uint32(height), routerAddresses)
+	if err != nil {
+		c.logger.Error().
+			Err(err).
+			Int64("height", height).
+			Str("tx_hash", tx.Hash).
+			Msg("failed to get router events from Soroban RPC")
+		return nil, nil
+	}
+
+	// Process router events for this transaction
+	for _, event := range routerEvents {
+		if event.TransactionHash == tx.Hash {
+			return c.processRouterEvent(event, height)
+		}
+	}
+
+	return nil, nil
 }
 
-// FetchTxs retrieves transactions for a given block height
-func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
-	txIn := types.TxIn{
-		Chain:   c.cfg.ChainID,
-		TxArray: nil,
-	}
+// processCreateAccountOperation processes account creation operations
+func (c *StellarBlockScanner) processCreateAccountOperation(tx horizon.Transaction, operation operations.CreateAccount, height int64) (*types.TxInItem, error) {
+	// Check if this is creating an account for one of our vaults
+	// For now, we'll process all account creations and let the observer filter them
+	// TODO: Add proper vault address checking when the bridge method is available
 
-	// Get ledger information (just to verify it exists) with retry logic
-	err := c.retryHorizonCall("ledger_detail", func() error {
-		_, err := c.horizonClient.LedgerDetail(uint32(height))
-		return err
-	})
+	// Parse the starting balance
+	startingBalance, err := strconv.ParseFloat(operation.StartingBalance, 64)
 	if err != nil {
-		// Check if the error is due to requesting data before recorded history
-		if strings.Contains(err.Error(), "Data Requested Is Before Recorded History") {
-			c.logger.Debug().
-				Int64("height", height).
-				Msg("ledger is before recorded history, returning empty results")
-			return txIn, nil // Return empty results for very old heights
-		}
-		return txIn, fmt.Errorf("fail to get ledger %d: %w", height, err)
+		return nil, fmt.Errorf("failed to parse starting balance: %w", err)
 	}
 
-	// Get transactions for this ledger with retry logic
-	var txPage horizon.TransactionsPage
-	err = c.retryHorizonCall("transactions", func() error {
-		txRequest := horizonclient.TransactionRequest{
-			ForLedger: uint(height),
-			Limit:     200, // Maximum allowed by Horizon
-		}
+	// Create TxInItem for account creation
+	txInItem := &types.TxInItem{
+		BlockHeight: height,
+		Tx:          tx.Hash,
+		Sender:      operation.Funder,
+		To:          operation.Account,
+		Coins: common.Coins{
+			common.NewCoin(common.XLMAsset, cosmos.NewUint(uint64(startingBalance*10000000))), // Convert XLM to stroops
+		},
+		Memo: tx.Memo,
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
+		},
+	}
 
-		var err error
-		txPage, err = c.horizonClient.Transactions(txRequest)
-		return err
-	})
+	return txInItem, nil
+}
+
+// processRouterEvent processes a router event and converts it to TxInItem
+func (c *StellarBlockScanner) processRouterEvent(event *RouterEvent, height int64) (*types.TxInItem, error) {
+	eventType := strings.ToLower(event.Type)
+
+	switch eventType {
+	case "deposit", "router_deposit":
+		return c.processRouterDepositEvent(event, height)
+	case "transfer_out", "router_transfer_out", "transferout":
+		return c.processRouterTransferOutEvent(event, height)
+	case "deposit_with_expiry", "depositwithexpiry":
+		return c.processRouterDepositEvent(event, height) // Handle as regular deposit
+	case "transfer_allowance", "transferallowance":
+		return c.processRouterTransferAllowanceEvent(event, height)
+	case "return_vault_assets", "returnvaultassets":
+		return c.processRouterReturnVaultAssetsEvent(event, height)
+	default:
+		c.logger.Debug().
+			Str("event_type", eventType).
+			Str("tx_hash", event.TransactionHash).
+			Msg("unknown router event type - skipping")
+		return nil, nil
+	}
+}
+
+// processRouterDepositEvent processes router deposit events
+func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, height int64) (*types.TxInItem, error) {
+	// Find the asset mapping
+	mapping, found := GetAssetByAddress(event.Asset)
+	if !found {
+		c.logger.Warn().
+			Str("asset_address", event.Asset).
+			Msg("unsupported asset in router deposit event")
+		return nil, nil
+	}
+
+	// Convert amount
+	coin, err := mapping.ConvertToTHORChainAmount(event.Amount)
 	if err != nil {
-		// Check if the error is due to requesting data before recorded history
-		if strings.Contains(err.Error(), "Data Requested Is Before Recorded History") {
-			c.logger.Debug().
-				Int64("height", height).
-				Msg("transactions are before recorded history, returning empty results")
-			return txIn, nil // Return empty results for very old heights
-		}
-		return txIn, fmt.Errorf("fail to get transactions for ledger %d: %w", height, err)
+		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
 
-	// Process all transactions
-	var allTxs []horizon.Transaction
-	allTxs = append(allTxs, txPage.Embedded.Records...)
+	// Create TxInItem
+	txInItem := &types.TxInItem{
+		BlockHeight: height,
+		Tx:          event.TransactionHash,
+		Sender:      event.FromAddress,
+		To:          event.ToAddress,
+		Coins:       common.Coins{coin},
+		Memo:        event.Memo,
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(baseFeeStroops)},
+		},
+	}
 
-	// Handle pagination if there are more transactions with retry logic
-	for len(txPage.Embedded.Records) == 200 {
-		err = c.retryHorizonCall("next_transactions_page", func() error {
-			var err error
-			txPage, err = c.horizonClient.NextTransactionsPage(txPage)
-			return err
+	c.logger.Debug().
+		Str("tx_hash", event.TransactionHash).
+		Str("from", event.FromAddress).
+		Str("to", event.ToAddress).
+		Str("asset", mapping.THORChainAsset.String()).
+		Str("amount", coin.Amount.String()).
+		Str("memo", event.Memo).
+		Msg("processed router deposit event")
+
+	return txInItem, nil
+}
+
+// processRouterTransferOutEvent processes router transfer out events
+func (c *StellarBlockScanner) processRouterTransferOutEvent(event *RouterEvent, height int64) (*types.TxInItem, error) {
+	// Transfer out events are outbound transactions, not inbound
+	// We don't generate TxInItems for these, but we log them for monitoring
+	c.logger.Debug().
+		Str("tx_hash", event.TransactionHash).
+		Str("to", event.ToAddress).
+		Str("asset", event.Asset).
+		Str("amount", event.Amount).
+		Msg("router transfer out event detected")
+
+	return nil, nil
+}
+
+// processRouterTransferAllowanceEvent processes router transfer allowance events (vault rotation)
+func (c *StellarBlockScanner) processRouterTransferAllowanceEvent(event *RouterEvent, height int64) (*types.TxInItem, error) {
+	// Find the asset mapping
+	mapping, found := GetAssetByAddress(event.Asset)
+	if !found {
+		c.logger.Warn().
+			Str("asset_address", event.Asset).
+			Msg("unsupported asset in router transfer allowance event")
+		return nil, nil
+	}
+
+	// Convert amount
+	coin, err := mapping.ConvertToTHORChainAmount(event.Amount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert amount: %w", err)
+	}
+
+	// Create TxInItem for vault rotation
+	txInItem := &types.TxInItem{
+		BlockHeight: height,
+		Tx:          event.TransactionHash,
+		Sender:      event.FromAddress, // Old vault
+		To:          event.ToAddress,   // New vault
+		Coins:       common.Coins{coin},
+		Memo:        event.Memo,
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(baseFeeStroops)},
+		},
+	}
+
+	c.logger.Debug().
+		Str("tx_hash", event.TransactionHash).
+		Str("old_vault", event.FromAddress).
+		Str("new_vault", event.ToAddress).
+		Str("asset", mapping.THORChainAsset.String()).
+		Str("amount", coin.Amount.String()).
+		Msg("processed router transfer allowance event")
+
+	return txInItem, nil
+}
+
+// processRouterReturnVaultAssetsEvent processes router return vault assets events
+func (c *StellarBlockScanner) processRouterReturnVaultAssetsEvent(event *RouterEvent, height int64) (*types.TxInItem, error) {
+	// Find the asset mapping
+	mapping, found := GetAssetByAddress(event.Asset)
+	if !found {
+		c.logger.Warn().
+			Str("asset_address", event.Asset).
+			Msg("unsupported asset in router return vault assets event")
+		return nil, nil
+	}
+
+	// Convert amount
+	coin, err := mapping.ConvertToTHORChainAmount(event.Amount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert amount: %w", err)
+	}
+
+	// Create TxInItem for vault asset return
+	txInItem := &types.TxInItem{
+		BlockHeight: height,
+		Tx:          event.TransactionHash,
+		Sender:      event.FromAddress, // Old vault
+		To:          event.ToAddress,   // New vault
+		Coins:       common.Coins{coin},
+		Memo:        event.Memo,
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(baseFeeStroops)},
+		},
+	}
+
+	c.logger.Debug().
+		Str("tx_hash", event.TransactionHash).
+		Str("from_vault", event.FromAddress).
+		Str("to_vault", event.ToAddress).
+		Str("asset", mapping.THORChainAsset.String()).
+		Str("amount", coin.Amount.String()).
+		Msg("processed router return vault assets event")
+
+	return txInItem, nil
+}
+
+// getOperationsForTransaction gets all operations for a transaction
+func (c *StellarBlockScanner) getOperationsForTransaction(txHash string) ([]operations.Operation, error) {
+	var allOps []operations.Operation
+
+	err := c.retryHorizonCall("get_operations", func() error {
+		opsPage, err := c.horizonClient.Operations(horizonclient.OperationRequest{
+			ForTransaction: txHash,
+			Limit:          200,
 		})
 		if err != nil {
-			c.logger.Warn().Err(err).Int64("height", height).Msg("failed to get next transactions page, continuing")
-			break // No more pages or error
+			return err
 		}
-		allTxs = append(allTxs, txPage.Embedded.Records...)
-	}
 
-	// Process transactions
-	txInItems, err := c.processTxs(height, allTxs)
-	if err != nil {
-		return txIn, fmt.Errorf("fail to process transactions: %w", err)
-	}
+		allOps = opsPage.Embedded.Records
+		return nil
+	})
 
-	// Update fees
-	if err := c.updateFees(height); err != nil {
-		c.logger.Error().Err(err).Int64("height", height).Msg("fail to update fees")
-	}
-
-	txIn.TxArray = txInItems
-
-	c.logger.Info().
-		Int64("height", height).
-		Int("tx_count", len(txInItems)).
-		Msg("processed block")
-
-	return txIn, nil
+	return allOps, err
 }
 
-// FetchTxsWithRouter fetches transactions using router contract addresses
-func (s *StellarBlockScanner) FetchTxsWithRouter(height, chainHeight int64, routerScanner *RouterEventScanner) (types.TxIn, error) {
-	s.logger.Debug().
-		Int64("height", height).
-		Int64("chain_height", chainHeight).
-		Msg("fetching transactions with router")
-
-	txIn := types.TxIn{
-		Chain:                  common.StellarChain,
-		TxArray:                nil,
-		Filtered:               false,
-		MemPool:                false,
-		ConfirmationRequired:   0,
-		AllowFutureObservation: false,
-	}
-
-	// First, get regular vault transactions (non-router)
-	regularTxIn, err := s.FetchTxs(height, chainHeight)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("failed to fetch regular vault transactions")
-		// Continue with router events even if regular scanning fails
-	} else {
-		txIn.TxArray = append(txIn.TxArray, regularTxIn.TxArray...)
-	}
-
-	// Then, scan for router events using the router event scanner
-	if routerScanner != nil {
-		routerTxs, err := routerScanner.ScanRouterEvents(height)
-		if err != nil {
-			s.logger.Error().
-				Err(err).
-				Int64("height", height).
-				Msg("failed to scan router events")
-			// Don't return error - continue with regular transactions
-		} else {
-			// Add router transactions to the result
-			txIn.TxArray = append(txIn.TxArray, routerTxs...)
-
-			s.logger.Info().
-				Int64("height", height).
-				Int("regular_txs", len(regularTxIn.TxArray)).
-				Int("router_txs", len(routerTxs)).
-				Int("total_txs", len(txIn.TxArray)).
-				Msg("successfully fetched transactions with router events")
-		}
-	} else {
-		s.logger.Debug().Msg("no router scanner provided, skipping router event scanning")
-	}
-
-	return txIn, nil
-}
-
-// getRouterAddresses retrieves all active router addresses
-func (s *StellarBlockScanner) getRouterAddresses() ([]string, error) {
-	// Get router addresses from bridge configuration
-	contracts, err := s.bridge.GetContractAddress()
+// getRouterAddresses gets all router contract addresses
+func (c *StellarBlockScanner) getRouterAddresses() ([]string, error) {
+	contracts, err := c.bridge.GetContractAddress()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get contract addresses: %w", err)
 	}
@@ -491,184 +574,153 @@ func (s *StellarBlockScanner) getRouterAddresses() ([]string, error) {
 	return routerAddresses, nil
 }
 
-// fetchRouterTransactions fetches transactions for a specific router address
-func (s *StellarBlockScanner) fetchRouterTransactions(routerAddr string, height int64) ([]horizon.Transaction, error) {
-	// Use Horizon API to fetch transactions for the router address
-	txRequest := horizonclient.TransactionRequest{
-		ForAccount: routerAddr,
-		Limit:      200,
-		Order:      horizonclient.OrderDesc,
-	}
-
-	txPage, err := s.horizonClient.Transactions(txRequest)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch transactions for router %s: %w", routerAddr, err)
-	}
-
-	var relevantTxs []horizon.Transaction
-	for _, tx := range txPage.Embedded.Records {
-		// Filter transactions by ledger height if needed
-		if height > 0 && int64(tx.Ledger) != height {
-			continue
-		}
-
-		// Only include transactions that interact with the router contract
-		if s.isRouterTransaction(tx, routerAddr) {
-			relevantTxs = append(relevantTxs, tx)
-		}
-	}
-
-	return relevantTxs, nil
+// isRouterOperation checks if an operation involves a router contract
+func (c *StellarBlockScanner) isRouterOperation(op operations.InvokeHostFunction, routerAddr string) bool {
+	// Parse the operation to check if it involves the router contract
+	// This is a simplified check - in practice, you'd parse the XDR to get the contract address
+	return strings.Contains(op.Function, routerAddr)
 }
 
-// processRouterTransaction processes a router transaction and converts it to THORChain format
-func (s *StellarBlockScanner) processRouterTransaction(tx horizon.Transaction, routerAddr string) (*types.TxInItem, error) {
-	// Get transaction operations to understand what happened
-	opsRequest := horizonclient.OperationRequest{
-		ForTransaction: tx.ID,
-		Limit:          200,
-	}
-
-	opsPage, err := s.horizonClient.Operations(opsRequest)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get operations for tx %s: %w", tx.ID, err)
-	}
-
-	// Process each operation
-	for _, op := range opsPage.Embedded.Records {
-		switch operation := op.(type) {
-		case operations.Payment:
-			if operation.To == routerAddr {
-				// This is a deposit to the router
-				return s.processRouterDeposit(tx, operation, routerAddr)
-			}
-		case operations.InvokeHostFunction:
-			// This could be a router contract call
-			return s.processRouterContractCall(tx, operation, routerAddr)
-		}
-	}
-
-	return nil, nil
-}
-
-// processRouterDeposit processes a deposit transaction to the router
-func (s *StellarBlockScanner) processRouterDeposit(tx horizon.Transaction, payment operations.Payment, routerAddr string) (*types.TxInItem, error) {
-	// Convert Stellar payment to THORChain TxInItem
-	memo := tx.Memo
-	if memo == "" {
-		return nil, fmt.Errorf("deposit transaction missing memo")
-	}
-
+// parseAssetAndAmount parses a Stellar asset and amount into a THORChain coin
+func (c *StellarBlockScanner) parseAssetAndAmount(asset base.Asset, amountStr string) (common.Coin, error) {
 	// Parse amount
-	amount, err := s.parseAmount(payment.Amount, payment.Asset)
+	amount, err := strconv.ParseFloat(amountStr, 64)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse amount: %w", err)
+		return common.Coin{}, fmt.Errorf("failed to parse amount: %w", err)
 	}
 
-	// Create TxInItem
-	txInItem := &types.TxInItem{
-		BlockHeight: int64(tx.Ledger),
-		Tx:          tx.Hash,
-		Memo:        memo,
-		Sender:      payment.From,
-		To:          routerAddr,
-		Coins: common.Coins{
-			common.NewCoin(s.parseAsset(payment.Asset), amount),
-		},
-		Gas: common.Gas{
-			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
-		},
-		ObservedVaultPubKey: s.getVaultPubKeyForRouter(routerAddr),
-	}
+	// Convert to stroops (1 XLM = 10^7 stroops)
+	amountStroops := uint64(amount * 10000000)
 
-	return txInItem, nil
-}
-
-// processRouterContractCall processes a router contract function call
-func (s *StellarBlockScanner) processRouterContractCall(tx horizon.Transaction, operation operations.InvokeHostFunction, routerAddr string) (*types.TxInItem, error) {
-	// Parse the contract call to understand the operation
-	// This would involve decoding the XDR data to understand what function was called
-
-	// For now, treat it as a generic router interaction
-	txInItem := &types.TxInItem{
-		BlockHeight: int64(tx.Ledger),
-		Tx:          tx.Hash,
-		Memo:        tx.Memo,
-		Sender:      tx.Account,
-		To:          routerAddr,
-		Coins:       common.Coins{}, // Would be populated based on contract call
-		Gas: common.Gas{
-			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
-		},
-		ObservedVaultPubKey: s.getVaultPubKeyForRouter(routerAddr),
-	}
-
-	return txInItem, nil
-}
-
-// isRouterTransaction checks if a transaction is relevant to the router
-func (s *StellarBlockScanner) isRouterTransaction(tx horizon.Transaction, routerAddr string) bool {
-	// Check if transaction involves the router address
-	// This is a simplified check - in practice, you'd want to examine operations
-	return tx.Account == routerAddr ||
-		strings.Contains(tx.Memo, routerAddr) ||
-		s.transactionInvolvesRouter(tx, routerAddr)
-}
-
-// transactionInvolvesRouter checks if transaction operations involve the router
-func (s *StellarBlockScanner) transactionInvolvesRouter(tx horizon.Transaction, routerAddr string) bool {
-	// This would examine the transaction operations to see if any involve the router
-	// For now, return false as a placeholder
-	return false
-}
-
-// getVaultPubKeyForRouter returns the vault public key associated with a router address
-func (s *StellarBlockScanner) getVaultPubKeyForRouter(routerAddr string) common.PubKey {
-	// Get the vault public key from bridge configuration
-	contracts, err := s.bridge.GetContractAddress()
-	if err != nil {
-		return common.EmptyPubKey
-	}
-
-	for _, contract := range contracts {
-		if addr, ok := contract.Contracts[common.StellarChain]; ok && addr.String() == routerAddr {
-			return contract.PubKey
+	// Determine asset
+	var thorAsset common.Asset
+	if asset.Type == "native" {
+		thorAsset = common.XLMAsset
+	} else {
+		// Handle other assets
+		thorAsset = common.Asset{
+			Chain:  common.StellarChain,
+			Symbol: common.Symbol(asset.Code),
+			Ticker: common.Ticker(asset.Code),
 		}
 	}
 
-	return common.EmptyPubKey
+	return common.NewCoin(thorAsset, cosmos.NewUint(amountStroops)), nil
 }
 
-// parseAmount parses a Stellar amount string to cosmos.Uint
-func (s *StellarBlockScanner) parseAmount(amountStr string, asset base.Asset) (cosmos.Uint, error) {
-	// Convert Stellar amount (7 decimal places) to cosmos.Uint
-	stellarFloat, ok := new(big.Float).SetString(amountStr)
-	if !ok {
-		return cosmos.ZeroUint(), fmt.Errorf("invalid amount format: %s", amountStr)
+// FetchTxs fetches transactions for a given block height
+func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
+	c.logger.Debug().
+		Int64("height", height).
+		Int64("chain_height", chainHeight).
+		Msg("fetching transactions")
+
+	txIn := types.TxIn{
+		Chain:                  common.StellarChain,
+		TxArray:                nil,
+		Filtered:               false,
+		MemPool:                false,
+		ConfirmationRequired:   0,
+		AllowFutureObservation: false,
 	}
 
-	// Convert to integer in smallest unit (stroops)
-	stellarInt := new(big.Int)
-	stellarFloat.Mul(stellarFloat, big.NewFloat(1e7)).Int(stellarInt)
+	// Get transactions for this ledger
+	txs, err := c.getTransactionsForLedger(height)
+	if err != nil {
+		return txIn, fmt.Errorf("failed to get transactions for ledger %d: %w", height, err)
+	}
 
-	return cosmos.NewUintFromBigInt(stellarInt), nil
+	// Process each transaction
+	txInItems, err := c.processTxs(height, txs)
+	if err != nil {
+		return txIn, fmt.Errorf("failed to process transactions: %w", err)
+	}
+
+	txIn.TxArray = txInItems
+
+	// Update fees if we're close to the chain tip
+	if chainHeight-height <= c.cfg.ObservationFlexibilityBlocks {
+		if err := c.updateFees(height); err != nil {
+			c.logger.Error().Err(err).Msg("failed to update fees")
+		}
+	}
+
+	c.logger.Debug().
+		Int64("height", height).
+		Int("tx_count", len(txInItems)).
+		Msg("successfully fetched transactions")
+
+	return txIn, nil
 }
 
-// parseAsset converts a Stellar asset to THORChain asset format
-func (s *StellarBlockScanner) parseAsset(asset base.Asset) common.Asset {
-	if asset.Type == "native" {
-		return common.XLMAsset
+// getTransactionsForLedger gets all transactions for a specific ledger
+func (c *StellarBlockScanner) getTransactionsForLedger(height int64) ([]horizon.Transaction, error) {
+	var allTxs []horizon.Transaction
+
+	// Get transactions from Horizon
+	txRequest := horizonclient.TransactionRequest{
+		ForLedger: uint(height),
+		Limit:     200,
+		Order:     horizonclient.OrderAsc,
 	}
 
-	// For issued assets, create asset identifier
-	assetCode := asset.Code
-	if assetCode == "" {
-		assetCode = "XLM"
+	err := c.retryHorizonCall("get_transactions", func() error {
+		txPage, err := c.horizonClient.Transactions(txRequest)
+		if err != nil {
+			return err
+		}
+
+		allTxs = append(allTxs, txPage.Embedded.Records...)
+
+		// Handle pagination
+		for len(txPage.Embedded.Records) == 200 {
+			txRequest.Cursor = txPage.Embedded.Records[len(txPage.Embedded.Records)-1].ID
+			txPage, err = c.horizonClient.Transactions(txRequest)
+			if err != nil {
+				return err
+			}
+			allTxs = append(allTxs, txPage.Embedded.Records...)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get transactions for ledger %d: %w", height, err)
 	}
 
-	return common.Asset{
-		Chain:  common.StellarChain,
-		Symbol: common.Symbol(assetCode),
-		Ticker: common.Ticker(assetCode),
+	return allTxs, nil
+}
+
+// retryHorizonCall executes a function with exponential backoff retry logic for rate limits
+func (c *StellarBlockScanner) retryHorizonCall(operation string, fn func() error) error {
+	var err error
+	for i := 0; i <= maxRetries; i++ {
+		err = fn()
+		if err == nil {
+			return nil
+		}
+
+		// Check if it's a rate limit error
+		if strings.Contains(err.Error(), "Rate Limit Exceeded") ||
+			strings.Contains(err.Error(), "429") {
+			if i < maxRetries {
+				// Exponential backoff for rate limits: 2^attempt * baseDelay
+				delay := time.Duration(1<<uint(i)) * retryDelay
+				c.logger.Warn().
+					Str("operation", operation).
+					Int("attempt", i+1).
+					Int("max_retries", maxRetries+1).
+					Dur("delay", delay).
+					Msg("rate limit hit, retrying after delay")
+				time.Sleep(delay)
+				continue
+			}
+		}
+
+		// For other errors, don't retry
+		break
 	}
+
+	return fmt.Errorf("failed %s after %d retries: %w", operation, maxRetries, err)
 }
