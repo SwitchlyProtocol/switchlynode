@@ -72,7 +72,7 @@ func NewRouterAwareStellarScanner(stellarScanner *StellarBlockScanner, routerSca
 
 // FetchTxs retrieves transactions for a given block height including router events
 func (r *RouterAwareStellarScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
-	return r.StellarBlockScanner.FetchTxsWithRouter(height, chainHeight, r.routerScanner)
+	return r.StellarBlockScanner.FetchTxs(height, chainHeight)
 }
 
 // RouterConfig holds router configuration for Stellar
@@ -186,6 +186,7 @@ func NewClient(
 		m,
 		nil,
 		horizonClient,
+		sorobanRPCClient,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stellar scanner: %w", err)

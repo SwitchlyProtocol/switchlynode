@@ -52,6 +52,7 @@ func (s *StellarBlockScannerTestSuite) SetUpSuite(c *C) {
 		s.m,
 		func(int64) error { return nil }, // mock solvency reporter
 		horizonClient,
+		&SorobanRPCClient{}, // mock soroban client
 	)
 	c.Assert(err, IsNil)
 }
