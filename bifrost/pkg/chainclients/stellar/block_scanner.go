@@ -349,6 +349,13 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 		return err
 	})
 	if err != nil {
+		// Check if the error is due to requesting data before recorded history
+		if strings.Contains(err.Error(), "Data Requested Is Before Recorded History") {
+			c.logger.Debug().
+				Int64("height", height).
+				Msg("ledger is before recorded history, returning empty results")
+			return txIn, nil // Return empty results for very old heights
+		}
 		return txIn, fmt.Errorf("fail to get ledger %d: %w", height, err)
 	}
 
@@ -365,6 +372,13 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 		return err
 	})
 	if err != nil {
+		// Check if the error is due to requesting data before recorded history
+		if strings.Contains(err.Error(), "Data Requested Is Before Recorded History") {
+			c.logger.Debug().
+				Int64("height", height).
+				Msg("transactions are before recorded history, returning empty results")
+			return txIn, nil // Return empty results for very old heights
+		}
 		return txIn, fmt.Errorf("fail to get transactions for ledger %d: %w", height, err)
 	}
 
