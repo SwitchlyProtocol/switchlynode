@@ -100,6 +100,12 @@ func GetEVMChains() []Chain {
 	return []Chain{ETHChain, AVAXChain, BSCChain, BASEChain}
 }
 
+// GetRouterChains returns all chains that have router smart contracts
+// This includes EVM chains and other chains like Stellar that use router contracts
+func GetRouterChains() []Chain {
+	return []Chain{ETHChain, AVAXChain, BSCChain, BASEChain, StellarChain}
+}
+
 // GetUTXOChains returns all "UTXO" chains connected to THORChain.
 func GetUTXOChains() []Chain {
 	return []Chain{BTCChain, LTCChain, BCHChain, DOGEChain}
@@ -112,6 +118,18 @@ func (c Chain) IsEVM() bool {
 	evmChains := GetEVMChains()
 	for _, evm := range evmChains {
 		if c.Equals(evm) {
+			return true
+		}
+	}
+	return false
+}
+
+// HasRouter returns true if the chain has a router smart contract
+// This includes EVM chains and other chains like Stellar
+func (c Chain) HasRouter() bool {
+	routerChains := GetRouterChains()
+	for _, chain := range routerChains {
+		if c.Equals(chain) {
 			return true
 		}
 	}
