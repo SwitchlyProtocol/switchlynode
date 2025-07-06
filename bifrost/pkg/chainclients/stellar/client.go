@@ -168,7 +168,11 @@ func NewClient(
 	sorobanRPCClient := NewSorobanRPCClient(cfg, logger, stellarNetwork)
 
 	// Create storage first before creating stellar scanner
-	storage, err := blockscanner.NewBlockScannerStorage(cfg.BlockScanner.DBPath, cfg.ScannerLevelDB)
+	var path string // if not set later, will in memory storage
+	if len(cfg.BlockScanner.DBPath) > 0 {
+		path = fmt.Sprintf("%s/%s", cfg.BlockScanner.DBPath, cfg.BlockScanner.ChainID)
+	}
+	storage, err := blockscanner.NewBlockScannerStorage(path, cfg.ScannerLevelDB)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create scan storage: %w", err)
 	}
