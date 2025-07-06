@@ -92,9 +92,10 @@ func NewStellarBlockScanner(rpcHost string,
 	if horizonClient == nil {
 		return nil, errors.New("horizon client is nil")
 	}
-	if sorobanRPCClient == nil {
-		return nil, errors.New("soroban RPC client is nil")
-	}
+	// sorobanRPCClient is optional for backward compatibility
+	// if sorobanRPCClient == nil {
+	// 	return nil, errors.New("soroban RPC client is nil")
+	// }
 
 	logger := log.Logger.With().Str("module", "blockscanner").Str("chain", cfg.ChainID.String()).Logger()
 
@@ -324,7 +325,12 @@ func (c *StellarBlockScanner) processInvokeHostFunctionOperation(tx horizon.Tran
 		return nil, nil
 	}
 
-	// Get router events from Soroban RPC
+	// Get router events from Soroban RPC (if available)
+	if c.sorobanRPCClient == nil {
+		c.logger.Debug().Msg("soroban RPC client not available, skipping router event processing")
+		return nil, nil
+	}
+
 	routerEvents, err := c.sorobanRPCClient.GetRouterEvents(context.Background(), uint32(height), routerAddresses)
 	if err != nil {
 		c.logger.Error().
