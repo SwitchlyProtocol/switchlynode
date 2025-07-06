@@ -362,7 +362,7 @@ func quoteInboundInfo(ctx cosmos.Context, mgr *Mgrs, amount sdkmath.Uint, chain 
 		}
 
 		router = common.NoAddress
-		if chain.IsEVM() {
+		if chain.HasRouter() {
 			router = vault.GetContract(chain).Router
 		}
 	}
