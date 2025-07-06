@@ -223,7 +223,6 @@ func (s *SorobanRPCClient) GetLatestLedger(ctx context.Context) (uint32, error) 
 		JSONRpc: "2.0",
 		ID:      1,
 		Method:  "getLatestLedger",
-		Params:  struct{}{},
 	}
 
 	var response struct {

@@ -98,6 +98,14 @@ func (r *RouterEventScanner) ScanRouterEvents(height int64) ([]*types.TxInItem, 
 		ctx := context.Background()
 		routerEvents, err := r.sorobanRPCClient.GetRouterEvents(ctx, uint32(height), []string{r.routerAddress})
 		if err != nil {
+			// Check if the error is due to the height being too old
+			if strings.Contains(err.Error(), "startLedger must be within the ledger range") {
+				r.logger.Debug().
+					Int64("height", height).
+					Msg("height is outside available ledger range, skipping router event scan")
+				return txInItems, nil // Return empty results for old heights
+			}
+
 			r.logger.Error().Err(err).Int64("height", height).Msg("failed to get router events from Soroban RPC")
 			// Fall back to Horizon API
 			return r.scanRouterEventsFromHorizon(height)
