@@ -9,7 +9,6 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v1/common/relay"
 	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 type ver struct {
@@ -23,24 +22,20 @@ func (v ver) String() string {
 }
 
 func GetQueryCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      "Querying commands for the THORChain module",
+	return &cobra.Command{
+		Use:                        "thorchain",
+		Short:                      "Querying commands for the Switchly module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
-
-	cmd.AddCommand(GetCmdGetVersion())
-	cmd.AddCommand(GetCmdGetNORelay())
-	return cmd
 }
 
 // GetCmdGetVersion queries current version
 func GetCmdGetVersion() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "version",
-		Short: "Gets the THORChain version and build information",
+		Short: "Gets the Switchly version and build information",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

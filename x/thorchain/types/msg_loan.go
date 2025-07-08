@@ -64,8 +64,8 @@ func (m *MsgLoanOpen) ValidateBasic() error {
 	if m.AffiliateAddress.IsEmpty() && !m.AffiliateBasisPoints.IsZero() {
 		return cosmos.ErrUnknownRequest("affiliate address is empty while affiliate basis points is non-zero")
 	}
-	if !m.AffiliateAddress.IsEmpty() && !m.AffiliateAddress.IsChain(common.THORChain) {
-		return cosmos.ErrUnknownRequest("swap affiliate address must be a THOR address")
+	if !m.AffiliateAddress.IsEmpty() && !m.AffiliateAddress.IsChain(common.SWITCHLYChain) {
+		return cosmos.ErrUnknownRequest("swap affiliate address must be a SWITCHLY address")
 	}
 	if m.Signer.Empty() {
 		return cosmos.ErrInvalidAddress("empty signer address")

@@ -4,10 +4,10 @@
 package cmd
 
 const (
-	Bech32PrefixAccAddr  = "tthor"
-	Bech32PrefixAccPub   = "tthorpub"
-	Bech32PrefixValAddr  = "tthorv"
-	Bech32PrefixValPub   = "tthorvpub"
-	Bech32PrefixConsAddr = "tthorc"
-	Bech32PrefixConsPub  = "tthorcpub"
+	Bech32PrefixAccAddr  = "tswtc"
+	Bech32PrefixAccPub   = "tswtcpub"
+	Bech32PrefixValAddr  = "tswtcv"
+	Bech32PrefixValPub   = "tswtcvpub"
+	Bech32PrefixConsAddr = "tswtcc"
+	Bech32PrefixConsPub  = "tswtccpub"
 )

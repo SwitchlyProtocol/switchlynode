@@ -61,7 +61,7 @@ func (s *SolvencyTestSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := ckeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(cfg.SignerName, ckeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(cfg.SignerName, ckeys.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.cfg = cfg
 	s.keys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)

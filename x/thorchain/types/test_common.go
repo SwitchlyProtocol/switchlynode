@@ -175,6 +175,13 @@ func GetRandomBCHAddress() common.Address {
 	return addr
 }
 
+// GetRandomBNBAddress get a random BNB address for test purpose
+func GetRandomBNBAddress() common.Address {
+	pKey := GetRandomPubKey()
+	addr, _ := pKey.GetAddress(common.BSCChain)
+	return addr
+}
+
 // GetRandomTxHash create a random txHash used for test purpose
 func GetRandomTxHash() common.TxID {
 	txHash, _ := common.NewTxID(common.RandHexString(64))
@@ -204,8 +211,8 @@ func SetupConfigForTest() {
 	config.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(cmd.Bech32PrefixValAddr, cmd.Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
-	config.SetCoinType(cmd.THORChainCoinType)
-	config.SetPurpose(cmd.THORChainCoinPurpose)
+	config.SetCoinType(cmd.SwitchlyProtocolCoinType)
+	config.SetPurpose(cmd.SwitchlyProtocolCoinPurpose)
 }
 
 // GetCurrentVersion - intended for unit tests, fetches the current version of

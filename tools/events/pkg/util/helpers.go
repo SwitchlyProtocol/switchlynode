@@ -304,7 +304,7 @@ func Clout(height int64, address string) common.Coin {
 		cloutScore = cosmos.NewUintFromString(*clout.Score)
 	}
 
-	return common.NewCoin(common.RuneNative, cloutScore)
+	return common.NewCoin(common.SWTCNative, cloutScore)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

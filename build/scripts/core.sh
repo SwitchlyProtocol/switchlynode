@@ -2,7 +2,15 @@
 
 set -o pipefail
 
-# default ulimit is set too low for thornode in some environments
+export SIGNER_NAME="${SIGNER_NAME:=switchlyprotocol}"
+export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
+export SIGNER_SEED_PHRASE="${SIGNER_SEED_PHRASE:=dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil}"
+
+# set chain defaults
+export CHAIN_ID="${CHAIN_ID:=switchlynode}"
+export CHAIN_HOME_FOLDER="${CHAIN_HOME_FOLDER:=.switchlynode}"
+
+# default ulimit is set too low for switchlyprotocol in some environments
 ulimit -n 65535
 
 PORT_P2P=26656
@@ -31,51 +39,46 @@ add_node_account() {
   NODE_PUB_KEY_ED25519=$6
   IP_ADDRESS=$7
   MEMBERSHIP=$8
-  jq --arg IP_ADDRESS "$IP_ADDRESS" --arg VERSION "$VERSION" --arg BOND_ADDRESS "$BOND_ADDRESS" --arg VALIDATOR "$VALIDATOR" --arg NODE_ADDRESS "$NODE_ADDRESS" --arg NODE_PUB_KEY "$NODE_PUB_KEY" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.thorchain.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address":$BOND_ADDRESS, "signer_membership": [], "validator_cons_pub_key":$VALIDATOR, "pub_key_set":{"secp256k1":$NODE_PUB_KEY,"ed25519":$NODE_PUB_KEY_ED25519}}]' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  jq --arg IP_ADDRESS "$IP_ADDRESS" --arg VERSION "$VERSION" --arg BOND_ADDRESS "$BOND_ADDRESS" --arg VALIDATOR "$VALIDATOR" --arg NODE_ADDRESS "$NODE_ADDRESS" --arg NODE_PUB_KEY "$NODE_PUB_KEY" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.switchlyprotocol.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address":$BOND_ADDRESS, "signer_membership": [], "validator_cons_pub_key":$VALIDATOR, "pub_key_set":{"secp256k1":$NODE_PUB_KEY,"ed25519":$NODE_PUB_KEY_ED25519}}]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
   if [ -n "$MEMBERSHIP" ]; then
-    jq --arg MEMBERSHIP "$MEMBERSHIP" '.app_state.thorchain.node_accounts[-1].signer_membership += [$MEMBERSHIP]' ~/.thornode/config/genesis.json >/tmp/genesis.json
-    mv /tmp/genesis.json ~/.thornode/config/genesis.json
+    jq --arg MEMBERSHIP "$MEMBERSHIP" '.app_state.switchlyprotocol.node_accounts[-1].signer_membership += [$MEMBERSHIP]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+    mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
   fi
 }
 
 add_account() {
-  jq --arg ADDRESS "$1" --arg ASSET "$2" --arg AMOUNT "$3" '.app_state.auth.accounts += [{
-        "@type": "/cosmos.auth.v1beta1.BaseAccount",
-        "address": $ADDRESS,
-        "pub_key": null,
-        "account_number": "0",
-        "sequence": "0"
-    }]' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
-
-  jq --arg ADDRESS "$1" --arg ASSET "$2" --arg AMOUNT "$3" '.app_state.bank.balances += [{
-        "address": $ADDRESS,
-        "coins": [ { "denom": $ASSET, "amount": $AMOUNT } ],
-    }]' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  ADDRESS=${1:=swtc1z63f3mzwv3g75az80xwmhrawdqcjpaek5l3xv6}
+  AMOUNT=${2:=100000000000000000000}
+  echo "Adding account: $ADDRESS with $AMOUNT swtc"
+  switchlynode add-genesis-account "$ADDRESS" "$AMOUNT"swtc
 }
 
 reserve() {
-  jq --arg RESERVE "$1" '.app_state.thorchain.reserve = $RESERVE' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  RESERVE_AMOUNT=${1:=22000000000000000}
+  
+  echo "Reserving $RESERVE_AMOUNT swtc..."
+  switchlynode tx bank send "$SIGNER_NAME" swtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt "$RESERVE_AMOUNT"swtc \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
 }
 
 disable_bank_send() {
-  jq '.app_state.bank.params.default_send_enabled = false' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
-
-  jq '.app_state.transfer.params.send_enabled = false' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  echo "Disabling bank send..."
+  switchlynode tx bank disable-send \
+    --from "$SIGNER_NAME" \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
 }
 
-# inits a thorchain with the provided list of genesis accounts
+# inits a switchlyprotocol with the provided list of genesis accounts
 init_chain() {
-  IFS=","
-
-  echo "Init chain"
-  thornode init local --chain-id "$CHAIN_ID"
-  echo "$SIGNER_PASSWD" | thornode keys list --keyring-backend file
+  echo "switchlynode init"
+  switchlynode init local --chain-id "$CHAIN_ID" --default-denom swtc 2>&1 | grep -v "already initialized"
+  echo "switchlynode render-config"
+  switchlynode render-config
 }
 
 fetch_node_id() {
@@ -86,55 +89,75 @@ fetch_node_id() {
 }
 
 set_node_keys() {
-  SIGNER_NAME="$1"
-  SIGNER_PASSWD="$2"
-  PEER="$3"
-  NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | thornode keys show thorchain --pubkey --keyring-backend file | thornode pubkey)"
-  NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | thornode ed25519)"
-  VALIDATOR="$(thornode tendermint show-validator | thornode pubkey --bech cons)"
-  echo "Setting THORNode keys"
-  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | thornode tx thorchain set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
+  echo "Setting node keys..."
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys add switchlyprotocol --keyring-backend file --recover <<< "$SIGNER_SEED_PHRASE"
 }
 
 set_ip_address() {
-  SIGNER_NAME="$1"
-  SIGNER_PASSWD="$2"
-  PEER="$3"
-  NODE_IP_ADDRESS="${4:-$(curl -s http://whatismyip.akamai.com)}"
-  echo "Setting THORNode IP address $NODE_IP_ADDRESS"
-  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | thornode tx thorchain set-ip-address "$NODE_IP_ADDRESS" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
+  echo "Setting IP address..."
+  switchlynode tx switchlynode set-ip-address $(curl -s http://whatismyip.akamai.com) \
+    --from "$SIGNER_NAME" \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
 }
 
-fetch_version() {
-  thornode query thorchain version --output json | jq -r .version
+set_node_account() {
+  echo "Setting node account..."
+  NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
+  NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -p --keyring-backend file)
+  VALIDATOR=$(switchlynode tendermint show-validator)
+  
+  switchlynode tx switchlynode set-node-account "$NODE_ADDRESS" "$NODE_PUB_KEY" "$VALIDATOR" \
+    --from "$SIGNER_NAME" \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
+}
+
+set_asgard_address() {
+  POOL_ADDRESS=${1:=swtc1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2}
+  echo "Setting asgard address: $POOL_ADDRESS"
+  switchlynode tx switchlynode set-asgard-address "$POOL_ADDRESS" \
+    --from "$SIGNER_NAME" \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
+}
+
+ban_address() {
+  BAN_ADDRESS=${1:=swtc1wz78qmrkplrdhy37tw0tnvn0tkm5pqd6zdp257}
+  echo "Banning address: $BAN_ADDRESS"
+  switchlynode tx switchlynode ban "$BAN_ADDRESS" \
+    --from "$SIGNER_NAME" \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
+}
+
+set_version() {
+  echo "Setting version..."
+  switchlynode tx switchlynode set-version \
+    --from "$SIGNER_NAME" \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
 }
 
 create_thor_user() {
-  SIGNER_NAME="$1"
-  SIGNER_PASSWD="$2"
-  SIGNER_SEED_PHRASE="$3"
-
-  echo "Checking if THORNode Thor '$SIGNER_NAME' account exists"
-  echo "$SIGNER_PASSWD" | thornode keys show "$SIGNER_NAME" --keyring-backend file 1>/dev/null 2>&1
-  # shellcheck disable=SC2181
-  if [ $? -ne 0 ]; then
-    echo "Creating THORNode Thor '$SIGNER_NAME' account"
-    if [ -n "$SIGNER_SEED_PHRASE" ]; then
-      printf "%s\n%s\n%s\n" "$SIGNER_SEED_PHRASE" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | thornode keys --keyring-backend file add "$SIGNER_NAME" --recover
-    else
-      sig_pw=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD")
-      RESULT=$(echo "$sig_pw" | thornode keys --keyring-backend file add "$SIGNER_NAME" --output json 2>&1)
-      SIGNER_SEED_PHRASE=$(echo "$RESULT" | jq -r '.mnemonic')
-    fi
-  fi
-  NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | thornode ed25519)
+  USER=${1:=$SIGNER_NAME}
+  PASS=${2:=$SIGNER_PASSWD}
+  SEED_PHRASE=${3:=$SIGNER_SEED_PHRASE}
+  
+  echo "Creating user: $USER"
+  printf "%s\n%s\n" "$PASS" "$PASS" | switchlynode keys add "$USER" --keyring-backend file --recover <<< "$SEED_PHRASE" 2>&1 | grep -v "already exists"
 }
 
 set_bond_module() {
   if [ "$NET" = "mocknet" ]; then
-    BOND_MODULE_ADDR="tthor17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff"
+    BOND_MODULE_ADDR="swtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff"
   elif [ "$NET" = "stagenet" ]; then
-    BOND_MODULE_ADDR="sthor17gw75axcnr8747pkanye45pnrwk7p9c3ve0wxj"
+    BOND_MODULE_ADDR="sswtc17gw75axcnr8747pkanye45pnrwk7p9c3ve0wxj"
   else
     echo "Unsupported NET: $NET"
     exit 1
@@ -153,40 +176,54 @@ set_bond_module() {
       "name": "bond",
       "permissions": []
     }
-  ]' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  ]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 
   jq --arg BOND_MODULE_ADDR "$BOND_MODULE_ADDR" \
     '.app_state.bank.balances += [
     {
       "address": $BOND_MODULE_ADDR,
-      "coins": [ { "denom": "rune", "amount": "30000000000000" } ]
+      "coins": [ { "denom": "swtc", "amount": "30000000000000" } ]
     }
-  ]' <~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  ]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_eth_contract() {
-  jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts += [{"chain": "ETH", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "ETH", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_avax_contract() {
-  jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts += [{"chain": "AVAX", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "AVAX", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_bsc_contract() {
-  jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts += [{"chain": "BSC", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "BSC", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_base_contract() {
-  jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_xlm_contract() {
-  jq --arg CONTRACT "$1" '.app_state.thorchain.chain_contracts += [{"chain": "XLM", "router": $CONTRACT}]' ~/.thornode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.thornode/config/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "XLM", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
+
+set_gas_config() {
+  echo "Setting gas config..."
+  switchlynode tx switchlynode set-gas-config \
+    --from "$SIGNER_NAME" \
+    --keyring-backend file \
+    --chain-id "$CHAIN_ID" \
+    --yes
+}
+
+if [ "$NET" = "mocknet" ]; then
+  echo "Loading unsafe init for mocknet..."
+  . "$(dirname "$0")/core-unsafe.sh"
+fi

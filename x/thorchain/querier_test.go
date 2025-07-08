@@ -89,7 +89,7 @@ func (s *QuerierSuite) SetUpTest(c *C) {
 	username := "thorchain"
 	password := "password"
 
-	_, _, err := kb.NewMnemonic(username, ckeys.English, cmd.THORChainHDPath, password, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(username, ckeys.English, cmd.SwitchlyProtocolHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.kb = cosmos.KeybaseStore{
 		SignerName:   username,
@@ -1197,7 +1197,7 @@ func (s *QuerierSuite) TestQueryVersion(c *C) {
 
 func (s *QuerierSuite) TestPeerIDFromPubKey(c *C) {
 	// Success example, secp256k1 pubkey from Mocknet node tthor1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k
-	var mocknetPubKey common.PubKey = "tthorpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z"
+	var mocknetPubKey common.PubKey = "swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z"
 	c.Assert(getPeerIDFromPubKey(mocknetPubKey), Equals, "16Uiu2HAm9LeTqHJWSa67eHNZzSz3yKb64dbj7A4V1Ckv9hXyDkQR")
 
 	// Failure example.
@@ -1291,7 +1291,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 
 	if common.CurrentChainNetwork == common.MockNet {
 		addressBTC = "bcrt1qg2px54as9vgzaarkr0zy95hacg3lg4kqz4rrwf"
-		addressTHOR = "tthor12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr"
+		addressTHOR = "swtc12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr"
 		values = []string{
 			// "=:r:tthor12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr/bcrt1qg2px54as9vgzaarkr0zy95ha^"
 			"3d3a723a7474686f723132787867327365766d3335713534766a68737371686c66376c7138643278686d75356b3067722f62637274317167327078353461733976677a6161726b72307a79393568615e",
@@ -1319,7 +1319,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 
 	request := types.QueryQuoteSwapRequest{
 		FromAsset:         common.BTCAsset.String(),
-		ToAsset:           common.RuneNative.String(),
+		ToAsset:           common.SWTCNative.String(),
 		Amount:            "10000000",
 		StreamingInterval: "1",
 		StreamingQuantity: "5",
@@ -1383,8 +1383,8 @@ func (s *QuerierSuite) TestQueryCodes(c *C) {
 	c.Assert(code.Code, Equals, "a8f1a38aa518864169e30ab482ea86558a817982a030b8888ea6dfa0cd700128")
 	c.Assert(code.Origin, Equals, "https://thorchain.org")
 	c.Assert(len(code.Deployers), Equals, 2)
-	c.Assert(code.Deployers[0], Equals, "tthor1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k")
-	c.Assert(code.Deployers[1], Equals, "tthor1khtl8ch2zgay00c47ukvulam3a4faw2500g7lu")
+	c.Assert(code.Deployers[0], Equals, "swtc1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k")
+	c.Assert(code.Deployers[1], Equals, "swtc1khtl8ch2zgay00c47ukvulam3a4faw2500g7lu")
 }
 
 func (s *QuerierSuite) TestNetwork(c *C) {

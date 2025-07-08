@@ -246,7 +246,7 @@ func (p *parser) ParseSwapMemoV3_0_0() (SwapMemo, error) {
 	// Set a affiliate address (even though it is not used) - to pass validation
 	affAddr := common.NoAddress
 	if !totalAffBps.IsZero() && len(affiliates) > 0 {
-		affAddr = p.getAddressFromString(affiliates[0], common.THORChain, false)
+		affAddr = p.getAddressWithKeeper(4, false, common.NoAddress, common.SWITCHLYChain)
 	}
 
 	// Set affiliate thorname when there is only one, this is used in handler_swap to
@@ -296,7 +296,7 @@ func ParseSwapMemoV1(ctx cosmos.Context, keeper keeper.Keeper, asset common.Asse
 		if keeper == nil {
 			affAddr, err = common.NewAddress(parts[4])
 		} else {
-			affAddr, err = FetchAddress(ctx, keeper, parts[4], common.THORChain)
+			affAddr, err = FetchAddress(ctx, keeper, parts[4], common.SWITCHLYChain)
 		}
 		if err != nil {
 			return SwapMemo{}, err

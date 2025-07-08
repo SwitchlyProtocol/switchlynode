@@ -14,8 +14,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/syndtr/goleveldb/leveldb/util"
 	"github.com/switchlyprotocol/switchlynode/v1/app"
+	"github.com/syndtr/goleveldb/leveldb/util"
 
 	"cosmossdk.io/log"
 	"cosmossdk.io/store"
@@ -181,7 +181,7 @@ func renderConfigCommand() *cobra.Command {
 		SuggestionsMinimumDistance: 2,
 		Run: func(cmd *cobra.Command, args []string) {
 			config.Init()
-			config.InitThornode(cmd.Context())
+			config.InitSwitchlynode(cmd.Context())
 		},
 	}
 }
@@ -292,7 +292,7 @@ func appExport(
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	var chainApp *app.THORChainApp
+	var chainApp *app.SwitchlyProtocolApp
 	// this check is necessary as we use the flag in x/upgrade.
 	// we can exit more gracefully by checking the flag here.
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)

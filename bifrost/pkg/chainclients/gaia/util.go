@@ -70,7 +70,7 @@ func (c *CosmosBlockScanner) fromCosmosToThorchain(coin cosmos.Coin) (common.Coi
 		return common.NoCoin, fmt.Errorf("asset does not exist / not whitelisted by client")
 	}
 
-	thorAsset, err := common.NewAsset(fmt.Sprintf("%s.%s", common.GAIAChain.String(), cosmosAsset.THORChainSymbol))
+	thorchainAsset, err := common.NewAsset(fmt.Sprintf("GAIA.%s", cosmosAsset.SwitchlyProtocolSymbol))
 	if err != nil {
 		return common.NoCoin, fmt.Errorf("invalid thorchain asset: %w", err)
 	}
@@ -88,7 +88,7 @@ func (c *CosmosBlockScanner) fromCosmosToThorchain(coin cosmos.Coin) (common.Coi
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
 	return common.Coin{
-		Asset:    thorAsset,
+		Asset:    thorchainAsset,
 		Amount:   sdkmath.NewUintFromBigInt(amount),
 		Decimals: int64(decimals),
 	}, nil

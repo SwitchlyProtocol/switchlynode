@@ -258,8 +258,8 @@ func (p *parser) getThorAddress(idx int, required bool, def common.Address) comm
 		return def
 	}
 
-	if !value.IsChain(common.THORChain) && required {
-		p.addErr(fmt.Errorf("cannot parse '%s' as a THOR Address: %w", p.get(idx), err))
+	if !value.IsChain(common.SWITCHLYChain) && required {
+		p.addErr(fmt.Errorf("cannot parse '%s' as a SWITCHLY Address: %w", p.get(idx), err))
 		return def
 	}
 	return value

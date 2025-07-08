@@ -303,7 +303,7 @@ func LargeStreamingSwaps(block *thorscan.BlockResponse) {
 				}
 			}
 			if quantity > 0 && interval > 0 {
-				ms := quantity * interval * int(common.THORChain.ApproximateBlockMilliseconds())
+				ms := quantity * interval * int(common.SWITCHLYChain.ApproximateBlockMilliseconds())
 				swapDuration := time.Duration(ms) * time.Millisecond
 				fields.Set("Interval", fmt.Sprintf("%d blocks", interval))
 				fields.Set("Expected Swap Time", util.FormatDuration(swapDuration))
@@ -404,7 +404,7 @@ func rescheduledOutbounds(height int64, event map[string]string) bool {
 
 		// skip if older than the max reschedule age
 		blockAge := status.Stages.OutboundSigned.GetBlocksSinceScheduled()
-		ageDuration := time.Duration(blockAge*common.THORChain.ApproximateBlockMilliseconds()) * time.Millisecond
+		ageDuration := time.Duration(blockAge*common.SWITCHLYChain.ApproximateBlockMilliseconds()) * time.Millisecond
 		if ageDuration > config.Get().Thresholds.MaxRescheduledAge {
 			return true
 		}
@@ -497,9 +497,8 @@ func scheduledOutbound(height int64, events []map[string]string) {
 		cloutFields.Set(
 			fmt.Sprintf("Clout (%s)", addr),
 			fmt.Sprintf(
-				"%f RUNE (%s)",
-				float64(clout.Amount.Uint64())/common.One,
-				util.FormatUSD(cloutUSD),
+				"%f %s (%s)",
+				float64(clout.Amount.Uint64())/common.One, common.SWTCNative.Ticker, util.FormatUSD(cloutUSD),
 			),
 		)
 	}
@@ -547,9 +546,8 @@ func scheduledOutbound(height int64, events []map[string]string) {
 		cloutFields.Set(
 			fmt.Sprintf("Clout (%s)", *status.Tx.FromAddress),
 			fmt.Sprintf(
-				"%f RUNE (%s)",
-				float64(clout.Amount.Uint64())/common.One,
-				util.FormatUSD(cloutUSD),
+				"%f %s (%s)",
+				float64(clout.Amount.Uint64())/common.One, common.SWTCNative.Ticker, util.FormatUSD(cloutUSD),
 			),
 		)
 	}
@@ -636,7 +634,7 @@ func scheduledOutbound(height int64, events []map[string]string) {
 
 			interval := lastStatus.Stages.SwapStatus.Streaming.Interval
 			quantity := lastStatus.Stages.SwapStatus.Streaming.Quantity
-			ms := quantity * interval * common.THORChain.ApproximateBlockMilliseconds()
+			ms := quantity * interval * common.SWITCHLYChain.ApproximateBlockMilliseconds()
 			swapDuration := time.Duration(ms) * time.Millisecond
 			fields.Set("Stream Duration", util.FormatDuration(swapDuration))
 
@@ -803,7 +801,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 			title := fmt.Sprintf(
 				"Large Transfer >> %s RUNE (%s)",
 				util.FormatLocale(amount/common.One),
-				util.USDValueString(block.Header.Height, common.NewCoin(common.RuneAsset(), cosmos.NewUint(amount))),
+				util.USDValueString(block.Header.Height, common.NewCoin(common.SWTCNative, cosmos.NewUint(amount))),
 			)
 
 			// use known address labels in alert
@@ -976,7 +974,7 @@ func NewNode(block *thorscan.BlockResponse) {
 				switch msg := msg.(type) {
 				case *thorchain.MsgDeposit:
 					for _, coin := range msg.Coins {
-						if coin.Asset.Equals(common.RuneAsset()) {
+						if coin.Asset.Equals(common.SWTCNative) {
 							amount = coin.Amount.Uint64()
 						}
 					}
@@ -1045,7 +1043,7 @@ txs:
 				switch msg := msg.(type) {
 				case *thorchain.MsgDeposit:
 					for _, coin := range msg.Coins {
-						if coin.Asset.Equals(common.RuneAsset()) {
+						if coin.Asset.Equals(common.SWTCNative) {
 							amount = coin.Amount.Uint64()
 						}
 					}

@@ -11,7 +11,7 @@ pub struct DepositEvent {
     pub from: Address,       // User making the deposit
     pub asset: Address,      // Asset being deposited
     pub amount: i128,        // Amount being deposited
-    pub memo: String,        // THORChain memo
+    pub memo: String,        // SwitchlyProtocol memo
 }
 
 #[contracttype]
@@ -21,7 +21,7 @@ pub struct TransferOutEvent {
     pub to: Address,         // Recipient address
     pub asset: Address,      // Asset being transferred
     pub amount: i128,        // Amount being transferred
-    pub memo: String,        // THORChain memo
+    pub memo: String,        // SwitchlyProtocol memo
 }
 
 #[contracttype]
@@ -31,7 +31,7 @@ pub struct TransferAllowanceEvent {
     pub new_vault: Address,  // New vault address
     pub asset: Address,      // Asset being transferred
     pub amount: i128,        // Amount being transferred
-    pub memo: String,        // THORChain memo
+    pub memo: String,        // SwitchlyProtocol memo
 }
 
 #[contracttype]
@@ -41,7 +41,7 @@ pub struct VaultReturnEvent {
     pub new_vault: Address,  // New vault address
     pub assets: Vec<Address>, // Assets being returned
     pub amounts: Vec<i128>,  // Amounts being returned
-    pub memo: String,        // THORChain memo
+    pub memo: String,        // SwitchlyProtocol memo
 }
 
 // Switchly Router Contract - Stellar Implementation

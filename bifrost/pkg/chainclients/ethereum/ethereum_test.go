@@ -214,7 +214,7 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, s.thorKeys)
@@ -336,7 +336,7 @@ func (s *EthereumSuite) TestClient(c *C) {
     "height": 1,
     "tx_array": [
         {
-            "vault_pub_key": "tthorpub1addwnpepq2mza4j4vplyjw295pkq8j2dan627lz6vufeu22pjx5vnnyjted5vwq3e3d",
+            "vault_pub_key": "swtcpub1addwnpepq2mza4j4vplyjw295pkq8j2dan627lz6vufeu22pjx5vnnyjted5vwqyq7n5d",
             "chain": "ETH",
 			"from_address":"0xa7d9ddbe1f17865597fbd27ec712455208b6b76d",
             "to_address": "0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",

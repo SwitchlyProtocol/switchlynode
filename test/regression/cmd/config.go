@@ -41,9 +41,11 @@ var (
 func init() {
 	// initialize the bech32 prefix for mocknet
 	config := cosmos.GetConfig()
-	config.SetBech32PrefixForAccount("tthor", "tthorpub")
-	config.SetBech32PrefixForValidator("tthorv", "tthorvpub")
-	config.SetBech32PrefixForConsensusNode("tthorc", "tthorcpub")
+	config.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(cmd.Bech32PrefixValAddr, cmd.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
+	config.SetCoinType(cmd.SwitchlyProtocolCoinType)
+	config.SetFullFundraiserPath(cmd.SwitchlyProtocolHDPath)
 	config.Seal()
 
 	// initialize the codec
@@ -234,7 +236,7 @@ func init() {
 		name := strings.Split(m, " ")[0]
 
 		// create pubkey for mnemonic
-		derivedPriv, err := hd.Secp256k1.Derive()(m, "", cmd.THORChainHDPath)
+		derivedPriv, err := hd.Secp256k1.Derive()(m, "", cmd.SwitchlyProtocolHDPath)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to derive private key")
 		}
@@ -255,7 +257,7 @@ func init() {
 		}
 
 		// add key to keyring
-		_, err = keyRing.NewAccount(name, m, "", cmd.THORChainHDPath, hd.Secp256k1)
+		_, err = keyRing.NewAccount(name, m, "", cmd.SwitchlyProtocolHDPath, hd.Secp256k1)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to add account to keyring")
 		}
@@ -274,7 +276,7 @@ func init() {
 			addressToName[addr.String()] = name
 
 			// register pubkey for thorchain
-			if chain == common.THORChain {
+			if chain == common.SWITCHLYChain {
 				templatePubKey[fmt.Sprintf("pubkey_%s", name)] = ecdsaPubKey
 				templateConsPubKey[fmt.Sprintf("cons_pubkey_%s", name)] = edd2519ConsPubKey
 				templatePubKey[fmt.Sprintf("pubkey_%s_eddsa", name)] = ed25519PubKey

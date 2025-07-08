@@ -19,11 +19,11 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/x/evidence"
 	"cosmossdk.io/x/upgrade"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -52,29 +52,40 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
+	"github.com/cosmos/cosmos-sdk/x/crisis"
+	distr "github.com/cosmos/cosmos-sdk/x/distribution"
+	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/mint"
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/gogoproto/proto"
+	"github.com/cosmos/ibc-go/modules/capability"
 	"github.com/spf13/cast"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	appparams "github.com/switchlyprotocol/switchlynode/v1/app/params"
+	"github.com/switchlyprotocol/switchlynode/v1/app/upgrades"
 	"github.com/switchlyprotocol/switchlynode/v1/openapi"
 	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
 	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
@@ -86,48 +97,91 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/x/denom"
 	denomkeeper "github.com/switchlyprotocol/switchlynode/v1/x/denom/keeper"
 	denomtypes "github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
+
+	feegrantmodule "cosmossdk.io/x/feegrant/module"
+
+	"github.com/switchlyprotocol/switchlynode/v1/app/upgrades/standard"
 )
 
 const (
-	appName = "thornode"
-	NodeDir = ".thornode"
+	appName = "switchlynode"
+	NodeDir = ".switchlynode"
 )
 
 // These constants are derived from the above variables.
 // These are the ones we will want to use in the code, based on
 // any overrides above
 var (
-	// DefaultNodeHome default home directories for appd
-	DefaultNodeHome = os.ExpandEnv("$HOME/") + NodeDir
+	// DefaultNodeHome default home directories for switchlynode
+	DefaultNodeHome string
+
+	// ModuleBasics defines the module BasicManager is in charge of setting up basic,
+	// non-dependant module elements, such as codec registration
+	// and genesis verification.
+	ModuleBasics = module.NewBasicManager(
+		auth.AppModuleBasic{},
+		genutil.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		capability.AppModuleBasic{},
+		staking.AppModuleBasic{},
+		mint.AppModuleBasic{},
+		distr.AppModuleBasic{},
+		gov.NewAppModuleBasic([]govclient.ProposalHandler{}),
+		params.AppModuleBasic{},
+		crisis.AppModuleBasic{},
+		slashing.AppModuleBasic{},
+		feegrantmodule.AppModuleBasic{},
+		upgrade.AppModuleBasic{},
+		evidence.AppModuleBasic{},
+		vesting.AppModuleBasic{},
+		thorchain.AppModuleBasic{},
+	)
+
+	// module account permissions
+	maccPerms = map[string][]string{
+		authtypes.FeeCollectorName:       nil,
+		distrtypes.ModuleName:            nil,
+		minttypes.ModuleName:             {authtypes.Minter},
+		stakingtypes.BondedPoolName:      {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName:   {authtypes.Burner, authtypes.Staking},
+		govtypes.ModuleName:              {authtypes.Burner},
+		thorchain.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		thorchain.AsgardName:             {},
+		thorchain.BondName:               {},
+		thorchain.ReserveName:            {},
+		thorchain.LendingName:            {},
+		thorchain.AffiliateCollectorName: {},
+		thorchain.TreasuryName:           {},
+	}
+
+	// module accounts that are allowed to receive tokens
+	allowedReceivingModAcc = map[string]bool{
+		distrtypes.ModuleName:            true,
+		thorchain.AsgardName:             true,
+		thorchain.BondName:               true,
+		thorchain.ReserveName:            true,
+		thorchain.LendingName:            true,
+		thorchain.AffiliateCollectorName: true,
+		thorchain.TreasuryName:           true,
+	}
 )
 
-// module account permissions
-var maccPerms = map[string][]string{
-	authtypes.FeeCollectorName:       nil,
-	minttypes.ModuleName:             {authtypes.Minter},
-	stakingtypes.BondedPoolName:      {authtypes.Burner, authtypes.Staking},
-	stakingtypes.NotBondedPoolName:   {authtypes.Burner, authtypes.Staking},
-	thorchain.ModuleName:             {authtypes.Minter, authtypes.Burner},
-	thorchain.AsgardName:             {},
-	thorchain.BondName:               {},
-	thorchain.ReserveName:            {},
-	thorchain.LendingName:            {},
-	thorchain.AffiliateCollectorName: {},
-	thorchain.TreasuryName:           {},
-	thorchain.RUNEPoolName:           {},
-	wasmtypes.ModuleName:             {authtypes.Burner},
-	denomtypes.ModuleName:            {authtypes.Minter, authtypes.Burner},
-	thorchain.TCYClaimingName:        {},
-	thorchain.TCYStakeName:           {},
+func init() {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
+	DefaultNodeHome = filepath.Join(userHomeDir, ".switchlynode")
 }
 
 var (
-	_ runtime.AppI            = (*THORChainApp)(nil)
-	_ servertypes.Application = (*THORChainApp)(nil)
+	_ runtime.AppI            = (*SwitchlyProtocolApp)(nil)
+	_ servertypes.Application = (*SwitchlyProtocolApp)(nil)
 )
 
 // ChainApp extended ABCI application
-type THORChainApp struct {
+type SwitchlyProtocolApp struct {
 	*baseapp.BaseApp
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
@@ -147,8 +201,8 @@ type THORChainApp struct {
 	ParamsKeeper          paramskeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	ThorchainKeeper  thorchainkeeper.Keeper
-	EnshrinedBifrost *ebifrost.EnshrinedBifrost
+	SwitchlyprotocolKeeper thorchainkeeper.Keeper
+	EnshrinedBifrost       *ebifrost.EnshrinedBifrost
 
 	DenomKeeper      denomkeeper.Keeper
 	msgServiceRouter *MsgServiceRouter // router for redirecting Msg service messages
@@ -175,7 +229,7 @@ func NewChainApp(
 	appOpts servertypes.AppOptions,
 	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) *THORChainApp {
+) *SwitchlyProtocolApp {
 	ebifrostConfig, err := ebifrost.ReadEBifrostConfig(appOpts)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading ebifrost config: %s", err))
@@ -247,7 +301,7 @@ func NewChainApp(
 		panic(err)
 	}
 
-	app := &THORChainApp{
+	app := &SwitchlyProtocolApp{
 		BaseApp:           bApp,
 		legacyAmino:       ec.Amino,
 		appCodec:          ec.Codec,
@@ -341,7 +395,7 @@ func NewChainApp(
 		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
 	)
 
-	app.ThorchainKeeper = thorchainkeeperv1.NewKeeper(
+	app.SwitchlyprotocolKeeper = thorchainkeeperv1.NewKeeper(
 		app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, keys[thorchaintypes.StoreKey],
 	)
 
@@ -392,7 +446,7 @@ func NewChainApp(
 	telemetryEnabled := cast.ToBool(appOpts.Get("telemetry.enabled"))
 	testApp := cast.ToBool(appOpts.Get(TestApp))
 
-	mgrs := thorchain.NewManagers(app.ThorchainKeeper, app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, app.WasmKeeper, keys[thorchaintypes.StoreKey])
+	mgrs := thorchain.NewManagers(app.SwitchlyprotocolKeeper, app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, app.WasmKeeper, keys[thorchaintypes.StoreKey])
 	app.msgServiceRouter.AddCustomRoute("cosmos.bank.v1beta1.Msg", thorchain.NewBankSendHandler(thorchain.NewSendHandler(mgrs)))
 
 	thorchainModule := thorchain.NewAppModule(mgrs, telemetryEnabled, testApp)
@@ -401,7 +455,7 @@ func NewChainApp(
 
 	defaultProposalHandler := baseapp.NewDefaultProposalHandler(bApp.Mempool(), bApp)
 	eBifrostProposalHandler := thorchainkeeperabci.NewProposalHandler(
-		&app.ThorchainKeeper,
+		&app.SwitchlyprotocolKeeper,
 		app.EnshrinedBifrost,
 		defaultProposalHandler.PrepareProposalHandler(),
 		defaultProposalHandler.ProcessProposalHandler(),
@@ -558,7 +612,7 @@ func NewChainApp(
 				SignModeHandler: txConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			THORChainKeeper:       app.ThorchainKeeper,
+			THORChainKeeper:       app.SwitchlyprotocolKeeper,
 			WasmConfig:            &wasmConfig,
 			WasmKeeper:            &app.WasmKeeper,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -611,7 +665,7 @@ func NewChainApp(
 			panic(fmt.Errorf("error loading last version: %w", err))
 		}
 
-		ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+		ctx := app.NewContext(true)
 		_ = ctx
 
 		// Initialize pinned codes in wasmvm as they are not persisted there
@@ -623,11 +677,11 @@ func NewChainApp(
 	return app
 }
 
-func (app *THORChainApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
+func (app *SwitchlyProtocolApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
 	// when skipping sdk 47 for sdk 50, the upgrade handler is called too late in BaseApp
 	// this is a hack to ensure that the migration is executed when needed and not panics
 	app.once.Do(func() {
-		ctx := app.NewUncachedContext(false, tmproto.Header{})
+		ctx := app.NewContext(false)
 		if _, err := app.ConsensusParamsKeeper.Params(ctx, &consensusparamtypes.QueryParamsRequest{}); err != nil {
 			// prevents panic: consensus key is nil: collections: not found: key 'no_key' of type github.com/cosmos/gogoproto/tendermint.types.ConsensusParams
 			// sdk 47:
@@ -644,24 +698,24 @@ func (app *THORChainApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.Re
 	return app.BaseApp.FinalizeBlock(req)
 }
 
-func (app *THORChainApp) setPostHandler() {
+func (app *SwitchlyProtocolApp) setPostHandler() {
 	app.SetPostHandler(sdk.ChainPostDecorators(ebifrost.NewEnshrineBifrostPostDecorator(app.EnshrinedBifrost)))
 }
 
 // Name returns the name of the App
-func (app *THORChainApp) Name() string { return app.BaseApp.Name() }
+func (app *SwitchlyProtocolApp) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
-func (app *THORChainApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+func (app *SwitchlyProtocolApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
 	return app.ModuleManager.PreBlock(ctx)
 }
 
-func (a *THORChainApp) Configurator() module.Configurator {
+func (a *SwitchlyProtocolApp) Configurator() module.Configurator {
 	return a.configurator
 }
 
 // InitChainer application update at chain initialization
-func (app *THORChainApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+func (app *SwitchlyProtocolApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
@@ -675,7 +729,7 @@ func (app *THORChainApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain
 }
 
 // LoadHeight loads a particular height
-func (app *THORChainApp) LoadHeight(height int64) error {
+func (app *SwitchlyProtocolApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height)
 }
 
@@ -683,7 +737,7 @@ func (app *THORChainApp) LoadHeight(height int64) error {
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *THORChainApp) LegacyAmino() *codec.LegacyAmino {
+func (app *SwitchlyProtocolApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
@@ -691,22 +745,22 @@ func (app *THORChainApp) LegacyAmino() *codec.LegacyAmino {
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *THORChainApp) AppCodec() codec.Codec {
+func (app *SwitchlyProtocolApp) AppCodec() codec.Codec {
 	return app.appCodec
 }
 
 // InterfaceRegistry returns ChainApp's InterfaceRegistry
-func (app *THORChainApp) InterfaceRegistry() types.InterfaceRegistry {
+func (app *SwitchlyProtocolApp) InterfaceRegistry() types.InterfaceRegistry {
 	return app.interfaceRegistry
 }
 
 // TxConfig returns ChainApp's TxConfig
-func (app *THORChainApp) TxConfig() client.TxConfig {
+func (app *SwitchlyProtocolApp) TxConfig() client.TxConfig {
 	return app.txConfig
 }
 
 // AutoCliOpts returns the autocli options for the app.
-func (app *THORChainApp) AutoCliOpts() autocli.AppOptions {
+func (app *SwitchlyProtocolApp) AutoCliOpts() autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule, 0)
 	for _, m := range app.ModuleManager.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
@@ -727,19 +781,19 @@ func (app *THORChainApp) AutoCliOpts() autocli.AppOptions {
 }
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
-func (a *THORChainApp) DefaultGenesis() map[string]json.RawMessage {
+func (a *SwitchlyProtocolApp) DefaultGenesis() map[string]json.RawMessage {
 	return a.BasicModuleManager.DefaultGenesis(a.appCodec)
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *THORChainApp) GetKey(storeKey string) *storetypes.KVStoreKey {
+func (app *SwitchlyProtocolApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	return app.keys[storeKey]
 }
 
 // GetStoreKeys returns all the stored store keys.
-func (app *THORChainApp) GetStoreKeys() []storetypes.StoreKey {
+func (app *SwitchlyProtocolApp) GetStoreKeys() []storetypes.StoreKey {
 	keys := make([]storetypes.StoreKey, 0, len(app.keys))
 	for _, key := range app.keys {
 		keys = append(keys, key)
@@ -753,26 +807,26 @@ func (app *THORChainApp) GetStoreKeys() []storetypes.StoreKey {
 // GetTKey returns the TransientStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *THORChainApp) GetTKey(storeKey string) *storetypes.TransientStoreKey {
+func (app *SwitchlyProtocolApp) GetTKey(storeKey string) *storetypes.TransientStoreKey {
 	return app.tkeys[storeKey]
 }
 
 // GetSubspace returns a param subspace for a given module name.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *THORChainApp) GetSubspace(moduleName string) paramstypes.Subspace {
+func (app *SwitchlyProtocolApp) GetSubspace(moduleName string) paramstypes.Subspace {
 	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
 	return subspace
 }
 
 // SimulationManager implements the SimulationApp interface
-func (app *THORChainApp) SimulationManager() *module.SimulationManager {
+func (app *SwitchlyProtocolApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
 // API server.
-func (app *THORChainApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+func (app *SwitchlyProtocolApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiSvr.ClientCtx
 
 	// Must call this before registering any GRPC gateway routes
@@ -825,12 +879,12 @@ func RegisterSwaggerAPI(rtr *mux.Router, swaggerEnabled bool) error {
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
-func (app *THORChainApp) RegisterTxService(clientCtx client.Context) {
+func (app *SwitchlyProtocolApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
-func (app *THORChainApp) RegisterTendermintService(clientCtx client.Context) {
+func (app *SwitchlyProtocolApp) RegisterTendermintService(clientCtx client.Context) {
 	cmtApp := server.NewCometABCIWrapper(app)
 	cmtservice.RegisterTendermintService(
 		clientCtx,
@@ -840,7 +894,7 @@ func (app *THORChainApp) RegisterTendermintService(clientCtx client.Context) {
 	)
 }
 
-func (app *THORChainApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
+func (app *SwitchlyProtocolApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 
 	if err := app.EnshrinedBifrost.Start(); err != nil && !errors.Is(err, ebifrost.ErrAlreadyStarted) {
@@ -848,7 +902,7 @@ func (app *THORChainApp) RegisterNodeService(clientCtx client.Context, cfg confi
 	}
 }
 
-func (app *THORChainApp) Close() error {
+func (app *SwitchlyProtocolApp) Close() error {
 	app.EnshrinedBifrost.Stop()
 
 	return app.BaseApp.Close()
@@ -881,12 +935,12 @@ func BlockedAddresses() map[string]bool {
 }
 
 // MsgServiceRouter returns the MsgServiceRouter.
-func (app *THORChainApp) MsgServiceRouter() *MsgServiceRouter {
+func (app *SwitchlyProtocolApp) MsgServiceRouter() *MsgServiceRouter {
 	return app.msgServiceRouter
 }
 
 // SetInterfaceRegistry sets the InterfaceRegistry.
-func (app *THORChainApp) SetInterfaceRegistry(registry types.InterfaceRegistry) {
+func (app *SwitchlyProtocolApp) SetInterfaceRegistry(registry types.InterfaceRegistry) {
 	app.interfaceRegistry = registry
 	app.msgServiceRouter.SetInterfaceRegistry(registry)
 	app.BaseApp.SetInterfaceRegistry(registry)
@@ -905,4 +959,102 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 
 	return paramsKeeper
+}
+
+// BeginBlocker application updates every begin block
+func (app *SwitchlyProtocolApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+	return app.ModuleManager.BeginBlock(ctx)
+}
+
+// EndBlocker application updates every end block
+func (app *SwitchlyProtocolApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+	return app.ModuleManager.EndBlock(ctx)
+}
+
+// RegisterUpgradeHandlers registers the chain upgrade handlers
+func (app *SwitchlyProtocolApp) RegisterUpgradeHandlers() {
+	// setupLegacyKeyTables(&app.ParamsKeeper)
+	if len(Upgrades) == 0 {
+		// always have a unique upgrade registered for the current version to test in system tests
+		Upgrades = append(Upgrades, standard.NewUpgrade(app.Version()))
+	}
+
+	keepers := upgrades.AppKeepers{
+		SwitchlyprotocolKeeper: app.SwitchlyprotocolKeeper,
+		AccountKeeper:          &app.AccountKeeper,
+		ParamsKeeper:           &app.ParamsKeeper,
+		ConsensusParamsKeeper:  &app.ConsensusParamsKeeper,
+		Codec:                  app.appCodec,
+		GetStoreKey:            app.GetKey,
+	}
+	// register all upgrade handlers
+	for _, upgrade := range Upgrades {
+		app.UpgradeKeeper.SetUpgradeHandler(
+			upgrade.UpgradeName,
+			upgrade.CreateUpgradeHandler(
+				app.ModuleManager,
+				app.configurator,
+				&keepers,
+			),
+		)
+	}
+
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(fmt.Sprintf("failed to read upgrade info from disk %s", err))
+	}
+
+	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		return
+	}
+
+	// register store loader for current upgrade
+	for _, upgrade := range Upgrades {
+		if upgradeInfo.Name == upgrade.UpgradeName {
+			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &upgrade.StoreUpgrades)) // nolint:gosec
+			break
+		}
+	}
+}
+
+// ExportAppStateAndValidators exports the state of the application for a genesis file.
+func (app *SwitchlyProtocolApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs, modulesToExport []string) (servertypes.ExportedApp, error) {
+	// as if they could withdraw from the start of the next block
+	ctx := app.NewContext(true)
+
+	// We export at last height + 1, because that's the height at which
+	// Tendermint will start InitChain.
+	height := app.LastBlockHeight() + 1
+	if forZeroHeight {
+		height = 0
+		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
+	}
+
+	genState, err := app.ModuleManager.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
+	appState, err := json.MarshalIndent(genState, "", "  ")
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
+
+	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
+	return servertypes.ExportedApp{
+		AppState:        appState,
+		Validators:      validators,
+		Height:          height,
+		ConsensusParams: app.BaseApp.GetConsensusParams(ctx),
+	}, err
+}
+
+// prepForZeroHeightGenesis prepares the application for a zero-height genesis.
+func (app *SwitchlyProtocolApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
+	// Implementation for zero height genesis preparation
+}
+
+// Upgrades list of chain upgrades
+var Upgrades = []upgrades.Upgrade{
+	// register non-standard upgrades here
 }

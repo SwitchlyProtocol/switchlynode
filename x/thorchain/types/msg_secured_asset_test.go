@@ -22,7 +22,7 @@ func (MsgSecuredAssetSuite) TestDeposit(c *C) {
 	m = NewMsgSecuredAssetDeposit(common.EmptyAsset, amt, signer, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
-	m = NewMsgSecuredAssetDeposit(common.RuneAsset(), amt, signer, signer, dummyTx)
+	m = NewMsgSecuredAssetDeposit(common.SWTCNative, amt, signer, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
 	m = NewMsgSecuredAssetDeposit(asset, cosmos.ZeroUint(), signer, signer, dummyTx)
@@ -42,12 +42,48 @@ func (MsgSecuredAssetSuite) TestWithdraw(c *C) {
 	m = NewMsgSecuredAssetWithdraw(common.EmptyAsset, amt, ethAddr, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
-	m = NewMsgSecuredAssetWithdraw(common.RuneAsset(), amt, ethAddr, signer, dummyTx)
+	m = NewMsgSecuredAssetWithdraw(common.SWTCNative, amt, ethAddr, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
 	m = NewMsgSecuredAssetWithdraw(asset, cosmos.ZeroUint(), ethAddr, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
 	m = NewMsgSecuredAssetWithdraw(asset, cosmos.ZeroUint(), GetRandomTHORAddress(), signer, dummyTx)
+	c.Check(m.ValidateBasic(), NotNil)
+}
+
+func (s *MsgSecuredAssetSuite) TestMsgSecuredAssetDeposit(c *C) {
+	signer := GetRandomBech32Addr()
+	dummyTx := GetRandomTx()
+	amt := cosmos.NewUint(100 * common.One)
+	m := NewMsgSecuredAssetDeposit(common.ETHAsset, amt, signer, signer, dummyTx)
+	EnsureMsgBasicCorrect(m, c)
+
+	m1 := NewMsgSecuredAssetDeposit(common.ETHAsset, amt, signer, signer, dummyTx)
+	// Basic validation test
+	c.Check(m.ValidateBasic(), IsNil)
+	c.Check(m1.ValidateBasic(), IsNil)
+
+	// ensure we can set the signer
+	m.Signer = GetRandomBech32Addr()
+	c.Check(m.Signer.Equals(m1.Signer), Equals, false)
+}
+
+func (s *MsgSecuredAssetSuite) TestMsgSecuredAssetWithdraw(c *C) {
+	signer := GetRandomBech32Addr()
+	ethAddr := GetRandomETHAddress()
+	dummyTx := GetRandomTx()
+	amt := cosmos.NewUint(100 * common.One)
+	securedAsset := common.ETHAsset.GetSecuredAsset()
+	m := NewMsgSecuredAssetWithdraw(securedAsset, amt, ethAddr, signer, dummyTx)
+	EnsureMsgBasicCorrect(m, c)
+
+	m = NewMsgSecuredAssetWithdraw(securedAsset, amt, ethAddr, signer, dummyTx)
+	c.Check(m.ValidateBasic(), IsNil)
+
+	m = NewMsgSecuredAssetWithdraw(securedAsset, cosmos.ZeroUint(), ethAddr, signer, dummyTx)
+	c.Check(m.ValidateBasic(), NotNil)
+
+	m = NewMsgSecuredAssetWithdraw(securedAsset, cosmos.ZeroUint(), GetRandomTHORAddress(), signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 }

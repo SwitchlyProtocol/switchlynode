@@ -21,7 +21,7 @@ var (
 
 func init() {
 	config.Init()
-	if config.GetThornode().Telemetry.SlashPoints {
+	if config.GetSwitchlynode().Telemetry.SlashPoints {
 		stackBuf = make([]byte, 4096)
 		path := os.ExpandEnv("${HOME}/.thornode/slash_telemetry.json")
 		file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)

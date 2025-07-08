@@ -82,9 +82,9 @@ func (c Coin) Valid() error {
 	return nil
 }
 
-// IsNative check whether the coin is native on THORChain
+// IsNative check whether the coin is native on SwitchlyProtocol
 func (c Coin) IsNative() bool {
-	return c.Asset.GetChain().Equals(THORChain)
+	return c.Asset.GetChain().Equals(SWITCHLYChain)
 }
 
 // IsRune checks whether the coin's Asset is RUNE.
@@ -100,7 +100,7 @@ func (c Coin) IsTCY() bool {
 // Native create a new instance of cosmos.Coin
 func (c Coin) Native() (cosmos.Coin, error) {
 	if !c.IsNative() {
-		return cosmos.Coin{}, errors.New("coin is not on thorchain")
+		return cosmos.Coin{}, errors.New("coin is not on switchlyprotocol")
 	}
 	return cosmos.NewCoin(
 		c.Asset.Native(),

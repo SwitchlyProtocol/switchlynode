@@ -36,7 +36,7 @@ func CreateUpgradeHandler(
 		// This is a THORChain specific upgrade step that should be
 		// done in every upgrade handler and before any thorchain module migrations.
 		ctx := sdk.UnwrapSDKContext(goCtx)
-		if err := keeperv1.UpdateActiveValidatorVersions(ctx, ak.ThorchainKeeper, plan.Name); err != nil {
+		if err := keeperv1.UpdateActiveValidatorVersions(ctx, ak.SwitchlyprotocolKeeper, plan.Name); err != nil {
 			return nil, fmt.Errorf("failed to update active validator versions: %w", err)
 		}
 

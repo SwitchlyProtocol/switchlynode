@@ -82,7 +82,7 @@ func (a *DualLPActor) acquireUser(config *OpConfig) OpResult {
 			user.Release()
 			continue
 		}
-		if thorBalances.GetCoin(common.RuneAsset()).Amount.IsZero() {
+		if thorBalances.GetCoin(common.SWTCNative).Amount.IsZero() {
 			a.Log().Error().Msg("user has no RUNE balance")
 			user.Release()
 			continue
@@ -112,11 +112,11 @@ func (a *DualLPActor) acquireUser(config *OpConfig) OpResult {
 		}
 
 		// find the user with the most RUNE balance
-		if thorBalances.GetCoin(common.RuneAsset()).Amount.LTE(userMaxRune) {
+		if thorBalances.GetCoin(common.SWTCNative).Amount.LTE(userMaxRune) {
 			user.Release()
 			continue
 		}
-		userMaxRune = thorBalances.GetCoin(common.RuneAsset()).Amount
+		userMaxRune = thorBalances.GetCoin(common.SWTCNative).Amount
 
 		// set acquired account and amounts in state context
 		a.Log().Info().
@@ -125,7 +125,7 @@ func (a *DualLPActor) acquireUser(config *OpConfig) OpResult {
 			Msg("acquired user")
 		a.thorAddress = thorAddress
 		a.l1Address = l1Address
-		a.runeAmount = thorBalances.GetCoin(common.RuneAsset()).Amount.QuoUint64(5)
+		a.runeAmount = thorBalances.GetCoin(common.SWTCNative).Amount.QuoUint64(5)
 		a.l1Amount = l1Acct.Coins.GetCoin(a.asset).Amount.QuoUint64(5)
 		a.account = user
 	}
@@ -180,7 +180,7 @@ func (a *DualLPActor) depositRune(config *OpConfig) OpResult {
 		}
 	}
 	deposit := types.NewMsgDeposit(
-		common.NewCoins(common.NewCoin(common.RuneAsset(), a.runeAmount)),
+		common.NewCoins(common.NewCoin(common.SWTCNative, a.runeAmount)),
 		memo,
 		accAddr,
 	)

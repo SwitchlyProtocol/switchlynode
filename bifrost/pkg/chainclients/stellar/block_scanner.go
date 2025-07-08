@@ -213,7 +213,7 @@ func (c *StellarBlockScanner) updateFees(height int64) error {
 		c.logger.Info().
 			Uint64("fee", avgFee.Uint64()).
 			Int64("height", height).
-			Msg("sent network fee to THORChain")
+			Msg("sent network fee to SwitchlyProtocol")
 	}
 
 	return nil
@@ -417,7 +417,7 @@ func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, heig
 	}
 
 	// Convert amount
-	coin, err := mapping.ConvertToTHORChainAmount(event.Amount)
+	coin, err := mapping.ConvertToSwitchlyProtocolAmount(event.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -439,7 +439,7 @@ func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, heig
 		Str("tx_hash", event.TransactionHash).
 		Str("from", event.FromAddress).
 		Str("to", event.ToAddress).
-		Str("asset", mapping.THORChainAsset.String()).
+		Str("asset", mapping.SwitchlyProtocolAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Str("memo", event.Memo).
 		Msg("processed router deposit event")
@@ -473,7 +473,7 @@ func (c *StellarBlockScanner) processRouterTransferAllowanceEvent(event *RouterE
 	}
 
 	// Convert amount
-	coin, err := mapping.ConvertToTHORChainAmount(event.Amount)
+	coin, err := mapping.ConvertToSwitchlyProtocolAmount(event.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -495,7 +495,7 @@ func (c *StellarBlockScanner) processRouterTransferAllowanceEvent(event *RouterE
 		Str("tx_hash", event.TransactionHash).
 		Str("old_vault", event.FromAddress).
 		Str("new_vault", event.ToAddress).
-		Str("asset", mapping.THORChainAsset.String()).
+		Str("asset", mapping.SwitchlyProtocolAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Msg("processed router transfer allowance event")
 
@@ -514,7 +514,7 @@ func (c *StellarBlockScanner) processRouterReturnVaultAssetsEvent(event *RouterE
 	}
 
 	// Convert amount
-	coin, err := mapping.ConvertToTHORChainAmount(event.Amount)
+	coin, err := mapping.ConvertToSwitchlyProtocolAmount(event.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -536,7 +536,7 @@ func (c *StellarBlockScanner) processRouterReturnVaultAssetsEvent(event *RouterE
 		Str("tx_hash", event.TransactionHash).
 		Str("from_vault", event.FromAddress).
 		Str("to_vault", event.ToAddress).
-		Str("asset", mapping.THORChainAsset.String()).
+		Str("asset", mapping.SwitchlyProtocolAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Msg("processed router return vault assets event")
 
@@ -587,7 +587,7 @@ func (c *StellarBlockScanner) isRouterOperation(op operations.InvokeHostFunction
 	return strings.Contains(op.Function, routerAddr)
 }
 
-// parseAssetAndAmount parses a Stellar asset and amount into a THORChain coin
+// parseAssetAndAmount parses a Stellar asset and amount into a SwitchlyProtocol coin
 func (c *StellarBlockScanner) parseAssetAndAmount(asset base.Asset, amountStr string) (common.Coin, error) {
 	// Parse amount
 	amount, err := strconv.ParseFloat(amountStr, 64)

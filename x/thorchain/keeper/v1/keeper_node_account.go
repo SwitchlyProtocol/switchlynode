@@ -115,7 +115,7 @@ func (k KVStore) RemoveLowBondValidatorAccounts(ctx cosmos.Context) error {
 
 			// No bond providers
 			if len(bps.Providers) == 0 {
-				coin := common.NewCoin(common.RuneAsset(), na.Bond)
+				coin := common.NewCoin(common.SWTCAsset(), na.Bond)
 				if err = k.SendFromModuleToAccount(ctx, BondName, to, common.NewCoins(coin)); err != nil {
 					ctx.Logger().Error("failed to return bond pool coins", "error", err)
 					continue
@@ -135,7 +135,7 @@ func (k KVStore) RemoveLowBondValidatorAccounts(ctx cosmos.Context) error {
 				if provider.Bond.IsZero() || provider.BondAddress.Empty() {
 					continue
 				}
-				coin := common.NewCoin(common.RuneAsset(), provider.Bond)
+				coin := common.NewCoin(common.SWTCAsset(), provider.Bond)
 				if err = k.SendFromModuleToAccount(ctx, BondName, provider.BondAddress, common.NewCoins(coin)); err != nil {
 					ctx.Logger().Error("failed to return bond pool coins", "error", err)
 					continue
@@ -372,7 +372,7 @@ func (k KVStore) IncNodeAccountSlashPoints(ctx cosmos.Context, addr cosmos.AccAd
 		),
 	)
 
-	if config.GetThornode().Telemetry.SlashPoints {
+	if config.GetSwitchlynode().Telemetry.SlashPoints {
 		slashTelemetry(ctx, pts, addr, "IncSlashPoints")
 	}
 
@@ -403,7 +403,7 @@ func (k KVStore) DecNodeAccountSlashPoints(ctx cosmos.Context, addr cosmos.AccAd
 		),
 	)
 
-	if config.GetThornode().Telemetry.SlashPoints {
+	if config.GetSwitchlynode().Telemetry.SlashPoints {
 		slashTelemetry(ctx, -pts, addr, "DecSlashPoints")
 	}
 
@@ -525,7 +525,7 @@ func (k KVStore) DeductNativeTxFeeFromBond(ctx cosmos.Context, nodeAddr cosmos.A
 	}
 
 	// transfer fee from bond module to reserve
-	coins := common.NewCoins(common.NewCoin(common.RuneAsset(), fee))
+	coins := common.NewCoins(common.NewCoin(common.SWTCAsset(), fee))
 	if err = k.SendFromModuleToModule(ctx, BondName, ReserveName, coins); err != nil {
 		return err
 	}

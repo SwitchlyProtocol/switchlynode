@@ -37,12 +37,12 @@ var (
 	XRPAsset = Asset{Chain: XRPChain, Symbol: "XRP", Ticker: "XRP", Synth: false}
 	// XLMAsset XLM
 	XLMAsset = Asset{Chain: StellarChain, Symbol: "XLM", Ticker: "XLM", Synth: false}
-	// RuneNative RUNE on thorchain
-	RuneNative = Asset{Chain: THORChain, Symbol: "RUNE", Ticker: "RUNE", Synth: false}
-	RUJI       = Asset{Chain: THORChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
-	TCY        = Asset{Chain: THORChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
-	TOR        = Asset{Chain: THORChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
-	THORBTC    = Asset{Chain: THORChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
+	// SWTCNative SWTC on switchlyprotocol
+	SWTCNative  = Asset{Chain: SWITCHLYChain, Symbol: "SWTC", Ticker: "SWTC", Synth: false}
+	RUJI        = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
+	TCY         = Asset{Chain: SWITCHLYChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
+	TOR         = Asset{Chain: SWITCHLYChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
+	SWITCHLYBTC = Asset{Chain: SWITCHLYChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
 )
 
 var _ sdk.CustomProtobufType = (*Asset)(nil)
@@ -73,7 +73,7 @@ func NewAsset(input string) (Asset, error) {
 		parts = []string{input}
 	}
 	if len(parts) == 1 {
-		asset.Chain = THORChain
+		asset.Chain = SWITCHLYChain
 		sym = parts[0]
 	} else {
 		asset.Chain, err = NewChain(parts[0])
@@ -112,7 +112,7 @@ func NewAssetWithShortCodesV3_1_0(input string) (Asset, error) {
 	shorts[DOGEAsset.ShortCode()] = DOGEAsset.String()
 	shorts[ETHAsset.ShortCode()] = ETHAsset.String()
 	shorts[LTCAsset.ShortCode()] = LTCAsset.String()
-	shorts[RuneNative.ShortCode()] = RuneNative.String()
+	shorts[SWTCNative.ShortCode()] = SWTCNative.String()
 	shorts[BaseETHAsset.ShortCode()] = BaseETHAsset.String()
 	shorts[XRPAsset.ShortCode()] = XRPAsset.String()
 	shorts[XLMAsset.ShortCode()] = XLMAsset.String()
@@ -135,14 +135,14 @@ func (a Asset) Valid() error {
 	if (a.Synth && a.Trade) || (a.Trade && a.Secured) || (a.Secured && a.Synth) {
 		return fmt.Errorf("assets can only be one of trade, synth or secured")
 	}
-	if a.Synth && a.Chain.IsTHORChain() {
-		return fmt.Errorf("synth asset cannot have chain THOR: %s", a)
+	if a.Synth && a.Chain.IsSWITCHLYChain() {
+		return fmt.Errorf("synth asset cannot have chain SWITCHLY: %s", a)
 	}
-	if a.Trade && a.Chain.IsTHORChain() {
-		return fmt.Errorf("trade asset cannot have chain THOR: %s", a)
+	if a.Trade && a.Chain.IsSWITCHLYChain() {
+		return fmt.Errorf("trade asset cannot have chain SWITCHLY: %s", a)
 	}
-	if a.Secured && a.Chain.IsTHORChain() {
-		return fmt.Errorf("secured asset cannot have chain THOR: %s", a)
+	if a.Secured && a.Chain.IsSWITCHLYChain() {
+		return fmt.Errorf("secured asset cannot have chain SWITCHLY: %s", a)
 	}
 	return nil
 }
@@ -154,7 +154,7 @@ func (a Asset) Equals(a2 Asset) bool {
 
 func (a Asset) GetChain() Chain {
 	if a.Synth || a.Trade || a.Secured {
-		return THORChain
+		return SWITCHLYChain
 	}
 	return a.Chain
 }
@@ -216,7 +216,7 @@ func (a Asset) GetSecuredAsset() Asset {
 // Get derived asset of asset
 func (a Asset) GetDerivedAsset() Asset {
 	return Asset{
-		Chain:  THORChain,
+		Chain:  SWITCHLYChain,
 		Symbol: a.Symbol,
 		Ticker: a.Ticker,
 		Synth:  false,
@@ -242,10 +242,10 @@ func (a Asset) IsVaultAsset() bool {
 
 // Check if asset is a derived asset
 func (a Asset) IsDerivedAsset() bool {
-	return !a.Synth && !a.Trade && !a.Secured && a.GetChain().IsTHORChain() && !a.IsRune() && !a.IsTCY() && !a.IsRUJI()
+	return !a.Synth && !a.Trade && !a.Secured && a.GetChain().IsSWITCHLYChain() && !a.IsRune() && !a.IsTCY() && !a.IsRUJI()
 }
 
-// Native return native asset, only relevant on THORChain
+// Native return native asset, only relevant on SWITCHLYChain
 func (a Asset) Native() string {
 	switch {
 	case a.IsRune():
@@ -284,12 +284,8 @@ func (a Asset) String() string {
 // ShortCode returns the short code for the asset.
 func (a Asset) ShortCode() string {
 	switch a.String() {
-	case "THOR.RUNE":
-		return "r"
-	case "BTC.BTC":
-		return "b"
-	case "ETH.ETH":
-		return "e"
+	case "SWITCHLY.SWTC":
+		return "s"
 	case "GAIA.ATOM":
 		return "g"
 	case "DOGE.DOGE":
@@ -300,8 +296,10 @@ func (a Asset) ShortCode() string {
 		return "c"
 	case "AVAX.AVAX":
 		return "a"
+	case "BTC.BTC":
+		return "b"
 	case "BSC.BNB":
-		return "s"
+		return "n"
 	case "BASE.ETH":
 		return "f"
 	case "XRP.XRP":
@@ -322,12 +320,22 @@ func (a Asset) IsGasAsset() bool {
 	return a.Equals(gasAsset)
 }
 
-// IsRune is a helper function ,return true only when the asset represent RUNE
-func (a Asset) IsRune() bool {
-	return RuneAsset().Equals(a)
+// SWTCAsset is the SWTC asset
+func SWTCAsset() Asset {
+	return Asset{
+		Chain:  SWITCHLYChain,
+		Symbol: "SWTC",
+		Ticker: "SWTC",
+		Synth:  false,
+	}
 }
 
-// IsTCY is a helper function ,return true only when the asset represent RUNE
+// IsRune check whether asset is RUNE
+func (a Asset) IsRune() bool {
+	return a.Equals(SWTCNative)
+}
+
+// IsTCY is a helper function ,return true only when the asset represent TCY
 func (a Asset) IsTCY() bool {
 	return TCY.Equals(a)
 }
@@ -337,9 +345,9 @@ func (a Asset) IsRUJI() bool {
 }
 
 // IsNative is a helper function, returns true when the asset is a native
-// asset to THORChain (ie rune, a synth, etc)
+// asset to SWITCHLYChain (ie rune, a synth, etc)
 func (a Asset) IsNative() bool {
-	return a.GetChain().IsTHORChain()
+	return a.GetChain().IsSWITCHLYChain()
 }
 
 // MarshalJSON implement Marshaler interface
@@ -372,12 +380,11 @@ func (a *Asset) UnmarshalJSONPB(unmarshal *jsonpb.Unmarshaler, content []byte) e
 	return a.UnmarshalJSON(content)
 }
 
-// RuneAsset return RUNE Asset depends on different environment
-func RuneAsset() Asset {
-	return RuneNative
-}
-
 // Replace pool name "." with a "-" for Mimir key checking.
 func (a Asset) MimirString() string {
 	return a.Chain.String() + "-" + a.Symbol.String()
+}
+
+func (a Asset) IsSWTC() bool {
+	return a.Equals(SWTCNative)
 }

@@ -16,6 +16,7 @@ import (
 	coskey "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32 "github.com/cosmos/cosmos-sdk/types/bech32/legacybech32"
+	"github.com/switchlyprotocol/switchlynode/v1/cmd"
 )
 
 type (
@@ -46,9 +47,9 @@ func getTssSecretFile(file string) (KeygenLocalState, error) {
 func setupBech32Prefix() {
 	config := sdk.GetConfig()
 	// thorchain will import go-tss as a library , thus this is not needed, we copy the prefix here to avoid go-tss to import thorchain
-	config.SetBech32PrefixForAccount("thor", "thorpub")
-	config.SetBech32PrefixForValidator("thorv", "thorvpub")
-	config.SetBech32PrefixForConsensusNode("thorc", "thorcpub")
+	config.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(cmd.Bech32PrefixValAddr, cmd.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
 }
 
 func getTssPubKey(x, y *big.Int) (string, sdk.AccAddress, error) {

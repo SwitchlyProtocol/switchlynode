@@ -6,10 +6,10 @@
 
 volumes:
   cli:
-  thornode:
-  thornode-cat:
-  thornode-fox:
-  thornode-pig:
+  switchlyprotocol:
+  switchlyprotocol-cat:
+  switchlyprotocol-fox:
+  switchlyprotocol-pig:
   bifrost:
   bifrost-cat:
   bifrost-fox:
@@ -20,21 +20,20 @@ volumes:
 ########################################################################################
 
 services:
-  _thorchain: &thorchain-defaults
+  _switchlyprotocol: &switchlyprotocol-defaults
     profiles:
       - _
     restart: unless-stopped
-    # image: registry.gitlab.com/thorchain/thornode:mocknet
     build:
       context: ../..
       dockerfile: ./build/docker/Dockerfile
       args:
         TAG: mocknet
-    environment: &thorchain-environment
-      CHAIN_ID: thorchain
-      SIGNER_NAME: thorchain
+    environment: &switchlyprotocol-environment
+      CHAIN_ID: switchlyprotocol
+      SIGNER_NAME: switchlyprotocol
       SIGNER_PASSWD: password
-      THORNODE_GRPC_ENABLE: true
+      SWITCHLYPROTOCOL_GRPC_ENABLE: true
     logging: &logging
       driver: "json-file"
       options:
@@ -42,7 +41,7 @@ services:
         max-file: "3"
 
   ######################################################################################
-  # THORChain
+  # SwitchlyProtocol
   ######################################################################################
 
   # ------------------------------ cli ------------------------------
@@ -54,7 +53,7 @@ services:
       context: ../..
       dockerfile: ./build/docker/cli/Dockerfile
     environment:
-      <<: *thorchain-environment
+      <<: *switchlyprotocol-environment
     entrypoint: /bin/bash
     command:
       - --init-file
@@ -74,7 +73,7 @@ services:
         TAG: mocknet
     environment:
       CONSOLE: 1
-      ENDPOINTS_THORNODE: http://thornode:1317
+      ENDPOINTS_SWITCHLYPROTOCOL: http://switchlyprotocol:1317
       ENDPOINTS_MIDGARD: http://midgard:8080
       NETWORK: mocknet
       SCAN_START: 1
@@ -85,13 +84,13 @@ services:
       THRESHOLDS_DELTA_USD_VALUE: 0
       THRESHOLDS_DELTA_PERCENT: 0
 
-  # ------------------------------ thornode ------------------------------
+  # ------------------------------ switchlyprotocol ------------------------------
 
-  thornode: &thornode
-    <<: *thorchain-defaults
-    hostname: thornode # required for genesis.sh
+  switchlyprotocol: &switchlyprotocol
+    <<: *switchlyprotocol-defaults
+    hostname: switchlyprotocol # required for genesis.sh
     profiles:
-      - thornode
+      - switchlyprotocol
       - mocknet
       - mocknet-cluster
     depends_on:
@@ -100,12 +99,12 @@ services:
       # - avalanche
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    environment: &thornode-environment
-      <<: *thorchain-environment
-      SEED: thornode
+    environment: &switchlyprotocol-environment
+      <<: *switchlyprotocol-environment
+      SEED: switchlyprotocol
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
-      THOR_BLOCK_TIME: ${BLOCK_TIME:-1s}
-      THOR_COSMOS_EBIFROST_ADDRESS: 0.0.0.0:50051
+      SWITCHLYPROTOCOL_BLOCK_TIME: ${BLOCK_TIME:-1s}
+      SWITCHLYPROTOCOL_COSMOS_EBIFROST_ADDRESS: 0.0.0.0:50051
       HARDFORK_BLOCK_HEIGHT: ${HARDFORK_BLOCK_HEIGHT:-}
       NEW_GENESIS_TIME: ${NEW_GENESIS_TIME:-}
       CHURN_MIGRATE_ROUNDS: 2
@@ -126,10 +125,10 @@ services:
       - 9090:9090
     volumes:
       - "../scripts:/docker/scripts"
-      - thornode:/root/.thornode
+      - switchlyprotocol:/root/.switchlyprotocol
     entrypoint: /docker/scripts/genesis.sh
     command:
-      - thornode
+      - switchlyprotocol
       - start
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:26657/health"]
@@ -141,7 +140,7 @@ services:
   # ------------------------------ bifrost ------------------------------
 
   bifrost: &bifrost
-    <<: *thorchain-defaults
+    <<: *switchlyprotocol-defaults
     profiles:
       - mocknet
       - mocknet-cluster
@@ -153,16 +152,16 @@ services:
       # - dogecoin
       # - gaia
       # - litecoin
-      - thornode
+      - switchlyprotocol
       - stellar
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment: &bifrost-environment
-      <<: *thorchain-environment
+      <<: *switchlyprotocol-environment
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
-      CHAIN_API: thornode:1317
-      CHAIN_RPC: thornode:26657
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: thornode:50051
+      CHAIN_API: switchlyprotocol:1317
+      CHAIN_RPC: switchlyprotocol:26657
+      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlyprotocol:50051
       BTC_HOST: ${BTC_HOST:-bitcoin:18443}
       DOGE_HOST: ${DOGE_HOST:-dogecoin:18332}
       BCH_HOST: ${BCH_HOST:-bitcoin-cash:28443}
@@ -243,7 +242,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost:/var/data/bifrost
-      - thornode:/root/.thornode
+      - switchlyprotocol:/root/.switchlyprotocol
     command: ["bifrost", "-p"]
 
   # ------------------------------ midgard ------------------------------
@@ -253,12 +252,12 @@ services:
       - midgard
     depends_on:
       - midgard-db
-      - thornode
+      - switchlyprotocol
     image: registry.gitlab.com/thorchain/midgard:develop
     restart: unless-stopped
     environment:
-      MIDGARD_THORCHAIN_THOR_NODE_URL: http://thornode:1317/thorchain
-      MIDGARD_THORCHAIN_TENDERMINT_URL: http://thornode:26657/websocket
+      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlyprotocol:1317/thorchain
+      MIDGARD_THORCHAIN_TENDERMINT_URL: http://switchlyprotocol:26657/websocket
       MIDGARD_TIMESCALE_HOST: midgard-db
       MIDGARD_THORCHAIN_LAST_CHAIN_BACKOFF: ${THOR_BLOCK_TIME:-2s}
     ports:
@@ -277,69 +276,69 @@ services:
     logging: *logging
 
   ######################################################################################
-  # THORChain Cluster
+  # SwitchlyProtocol Cluster
   ######################################################################################
 
-  # ------------------------------ thornodes ------------------------------
+  # ------------------------------ switchlyprotocol nodes ------------------------------
 
-  thornode-cat:
-    <<: *thornode
+  switchlyprotocol-cat:
+    <<: *switchlyprotocol
     profiles:
       - mocknet-cluster
     depends_on:
-      thornode:
+      switchlyprotocol:
         condition: service_healthy
     ports: []
-    hostname: thornode-cat
+    hostname: switchlyprotocol-cat
     environment:
-      <<: *thornode-environment
-      PEER: thornode
-      SEED: thornode-cat
-      SEEDS: thornode,thornode-fox,thornode-pig
+      <<: *switchlyprotocol-environment
+      PEER: switchlyprotocol
+      SEED: switchlyprotocol-cat
+      SEEDS: switchlyprotocol,switchlyprotocol-fox,switchlyprotocol-pig
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     volumes:
       - "../scripts:/docker/scripts"
-      - thornode-cat:/root/.thornode
+      - switchlyprotocol-cat:/root/.switchlyprotocol
     entrypoint: /docker/scripts/validator.sh
 
-  thornode-fox:
-    <<: *thornode
+  switchlyprotocol-fox:
+    <<: *switchlyprotocol
     profiles:
       - mocknet-cluster
     depends_on:
-      thornode:
+      switchlyprotocol:
         condition: service_healthy
     ports: []
-    hostname: thornode-fox
+    hostname: switchlyprotocol-fox
     environment:
-      <<: *thornode-environment
-      PEER: thornode
-      SEED: thornode-fox
-      SEEDS: thornode,thornode-cat,thornode-pig
+      <<: *switchlyprotocol-environment
+      PEER: switchlyprotocol
+      SEED: switchlyprotocol-fox
+      SEEDS: switchlyprotocol,switchlyprotocol-cat,switchlyprotocol-pig
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     volumes:
       - "../scripts:/docker/scripts"
-      - thornode-fox:/root/.thornode
+      - switchlyprotocol-fox:/root/.switchlyprotocol
     entrypoint: /docker/scripts/validator.sh
 
-  thornode-pig:
-    <<: *thornode
+  switchlyprotocol-pig:
+    <<: *switchlyprotocol
     profiles:
       - mocknet-cluster
     depends_on:
-      thornode:
+      switchlyprotocol:
         condition: service_healthy
     ports: []
-    hostname: thornode-pig
+    hostname: switchlyprotocol-pig
     environment:
-      <<: *thornode-environment
-      PEER: thornode
-      SEED: thornode-pig
-      SEEDS: thornode,thornode-cat,thornode-fox
+      <<: *switchlyprotocol-environment
+      PEER: switchlyprotocol
+      SEED: switchlyprotocol-pig
+      SEEDS: switchlyprotocol,switchlyprotocol-cat,switchlyprotocol-fox
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     volumes:
       - "../scripts:/docker/scripts"
-      - thornode-pig:/root/.thornode
+      - switchlyprotocol-pig:/root/.switchlyprotocol
     entrypoint: /docker/scripts/validator.sh
 
   # ------------------------------ bifrosts ------------------------------
@@ -349,14 +348,14 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      thornode:
+      switchlyprotocol:
         condition: service_healthy
     environment:
       <<: *bifrost-environment
       PEER: bifrost
-      CHAIN_API: thornode-cat:1317
-      CHAIN_RPC: thornode-cat:26657
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: thornode-cat:50051
+      CHAIN_API: switchlyprotocol-cat:1317
+      CHAIN_RPC: switchlyprotocol-cat:26657
+      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlyprotocol-cat:50051
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     ports:
       - 5040
@@ -364,7 +363,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-cat:/var/data/bifrost
-      - thornode-cat:/root/.thornode
+      - switchlyprotocol-cat:/root/.switchlyprotocol
     command: ["bifrost"]
 
   bifrost-fox:
@@ -372,14 +371,14 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      thornode:
+      switchlyprotocol:
         condition: service_healthy
     environment:
       <<: *bifrost-environment
       PEER: bifrost
-      CHAIN_API: thornode-fox:1317
-      CHAIN_RPC: thornode-fox:26657
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: thornode-fox:50051
+      CHAIN_API: switchlyprotocol-fox:1317
+      CHAIN_RPC: switchlyprotocol-fox:26657
+      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlyprotocol-fox:50051
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     ports:
       - 5040
@@ -387,7 +386,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-fox:/var/data/bifrost
-      - thornode-fox:/root/.thornode
+      - switchlyprotocol-fox:/root/.switchlyprotocol
     command: ["bifrost"]
 
   bifrost-pig:
@@ -395,14 +394,14 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      thornode:
+      switchlyprotocol:
         condition: service_healthy
     environment:
       <<: *bifrost-environment
       PEER: bifrost
-      CHAIN_API: thornode-pig:1317
-      CHAIN_RPC: thornode-pig:26657
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: thornode-pig:50051
+      CHAIN_API: switchlyprotocol-pig:1317
+      CHAIN_RPC: switchlyprotocol-pig:26657
+      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlyprotocol-pig:50051
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     ports:
       - 5040
@@ -410,7 +409,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-pig:/var/data/bifrost
-      - thornode-pig:/root/.thornode
+      - switchlyprotocol-pig:/root/.switchlyprotocol
     command: ["bifrost"]
 
   ######################################################################################

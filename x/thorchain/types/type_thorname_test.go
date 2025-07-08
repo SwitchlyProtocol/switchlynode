@@ -12,7 +12,7 @@ var _ = Suite(&THORNameSuite{})
 
 func (THORNameSuite) TestTHORName(c *C) {
 	// happy path
-	n := NewTHORName("iamthewalrus", 0, []THORNameAlias{{Chain: common.THORChain, Address: GetRandomTHORAddress()}})
+	n := NewTHORName("iamthewalrus", 0, []THORNameAlias{{Chain: common.SWITCHLYChain, Address: GetRandomTHORAddress()}})
 	c.Check(n.Valid(), IsNil)
 
 	// unhappy path
@@ -20,7 +20,7 @@ func (THORNameSuite) TestTHORName(c *C) {
 	c.Check(n1.Valid(), NotNil)
 	n2 := NewTHORName("hello", 0, []THORNameAlias{{Chain: common.EmptyChain, Address: GetRandomTHORAddress()}})
 	c.Check(n2.Valid(), NotNil)
-	n3 := NewTHORName("hello", 0, []THORNameAlias{{Chain: common.THORChain, Address: common.Address("")}})
+	n3 := NewTHORName("hello", 0, []THORNameAlias{{Chain: common.SWITCHLYChain, Address: common.Address("")}})
 	c.Check(n3.Valid(), NotNil)
 
 	// set/get alias

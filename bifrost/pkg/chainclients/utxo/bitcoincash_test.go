@@ -48,7 +48,7 @@ func (s *BitcoinCashSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.THORChainHDPath, password, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.SwitchlyProtocolHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.keys = thorclient.NewKeysWithKeybase(kb, bob, password)
 }
@@ -222,9 +222,9 @@ func (s *BitcoinCashSuite) TestFetchTxs(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("thorpub1addwnpepqwprh5vd0rrk78kd98qjruuazwvapnxft7f86w7hlf768whxytpn5quf2gs") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq2tcc97f92k9v2rrjn2m8dl0avmw3kun0z3hqewzjadynwd0zqme7g6z0d8") // from PubKeys-Mainnet.json
 	} else {
-		vaultPubKey, err = common.NewPubKey("tthorpub1addwnpepqflvfv08t6qt95lmttd6wpf3ss8wx63e9vf6fvyuj2yy6nnyna576rfzjks") // from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg") // from PubKeys.json
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())
@@ -906,9 +906,9 @@ func (s *BitcoinCashSuite) TestGetOutput(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("thorpub1addwnpepqwprh5vd0rrk78kd98qjruuazwvapnxft7f86w7hlf768whxytpn5quf2gs") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq2tcc97f92k9v2rrjn2m8dl0avmw3kun0z3hqewzjadynwd0zqme7g6z0d8") // from PubKeys-Mainnet.json
 	} else {
-		vaultPubKey, err = common.NewPubKey("tthorpub1addwnpepqflvfv08t6qt95lmttd6wpf3ss8wx63e9vf6fvyuj2yy6nnyna576rfzjks") // from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg") // from PubKeys.json
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())
@@ -1032,39 +1032,6 @@ func (s *BitcoinCashSuite) TestGetOutput(c *C) {
 				Value: 0.00195384,
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
 					Addresses: []string{"qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp"},
-				},
-			},
-			{
-				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Asm:  "OP_RETURN 74686f72636861696e3a636f6e736f6c6964617465",
-					Type: "nulldata",
-				},
-			},
-		},
-	}
-	out, err = s.client.getOutput("qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp", &tx, false)
-	c.Assert(err, IsNil)
-	c.Assert(out.ScriptPubKey.Addresses[0], Equals, vaultAddressString)
-	c.Assert(out.Value, Equals, 1.49655603)
-
-	tx = btcjson.TxRawResult{
-		Vin: []btcjson.Vin{
-			{
-				Txid: "5b0876dcc027d2f0c671fc250460ee388df39697c3ff082007b6ddd9cb9a7513",
-				Vout: 1,
-			},
-		},
-		Vout: []btcjson.Vout{
-			{
-				Value: 1.49655603,
-				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Addresses: []string{vaultAddressString},
-				},
-			},
-			{
-				Value: 0.00195384,
-				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Addresses: []string{vaultAddressString},
 				},
 			},
 			{

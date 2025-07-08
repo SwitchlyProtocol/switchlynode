@@ -3,6 +3,8 @@ package types
 import (
 	. "gopkg.in/check.v1"
 
+	"fmt"
+
 	"github.com/switchlyprotocol/switchlynode/v1/common"
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
@@ -47,7 +49,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 	}{
 		{
 			requestTxHash: common.TxID(""),
-			source:        common.RuneAsset(),
+			source:        common.SWTCNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -77,7 +79,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.RuneAsset(),
+			source:        common.SWTCNative,
 			target:        common.Asset{},
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -87,7 +89,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.RuneAsset(),
+			source:        common.SWTCNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.ZeroUint(),
 			requester:     ethAddress,
@@ -97,7 +99,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.RuneAsset(),
+			source:        common.SWTCNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     common.NoAddress,
@@ -107,7 +109,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.RuneAsset(),
+			source:        common.SWTCNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -117,7 +119,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.RuneAsset(),
+			source:        common.SWTCNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -160,4 +162,77 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 	// affiliate fee basis point larger than 1000 should be rejected
 	m = NewMsgSwap(tx, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), GetRandomTHORAddress(), cosmos.NewUint(1024), "", "", nil, 0, 0, 0, addr)
 	c.Assert(m.ValidateBasic(), NotNil)
+
+	// Define test addresses
+	bnbAddr := GetRandomBNBAddress()
+	thorAddr := GetRandomTHORAddress()
+
+	for name, tc := range map[string]struct {
+		source        common.Asset
+		dest          common.Asset
+		destAddr      common.Address
+		tradeTarget   cosmos.Uint
+		expectedError error
+	}{
+		"swap RUNE for BNB": {
+			source:        common.SWTCNative,
+			dest:          common.BNBBEP20Asset,
+			destAddr:      bnbAddr,
+			tradeTarget:   cosmos.ZeroUint(),
+			expectedError: nil,
+		},
+		"swap BNB for RUNE": {
+			source:        common.BNBBEP20Asset,
+			dest:          common.SWTCNative,
+			destAddr:      thorAddr,
+			tradeTarget:   cosmos.ZeroUint(),
+			expectedError: nil,
+		},
+		"swap RUNE for RUNE": {
+			source:        common.SWTCNative,
+			dest:          common.SWTCNative,
+			destAddr:      thorAddr,
+			tradeTarget:   cosmos.ZeroUint(),
+			expectedError: fmt.Errorf("invalid message"),
+		},
+		"swap RUNE for BNB with trade target": {
+			source:        common.SWTCNative,
+			dest:          common.BNBBEP20Asset,
+			destAddr:      bnbAddr,
+			tradeTarget:   cosmos.NewUint(100),
+			expectedError: nil,
+		},
+		"swap BNB for RUNE with trade target": {
+			source:        common.BNBBEP20Asset,
+			dest:          common.SWTCNative,
+			destAddr:      thorAddr,
+			tradeTarget:   cosmos.NewUint(100),
+			expectedError: nil,
+		},
+		"swap RUNE for RUNE with trade target": {
+			source:        common.SWTCNative,
+			dest:          common.SWTCNative,
+			destAddr:      thorAddr,
+			tradeTarget:   cosmos.NewUint(100),
+			expectedError: fmt.Errorf("invalid message"),
+		},
+	} {
+		c.Logf("test case: %s", name)
+		tx := common.NewTx(
+			GetRandomTxHash(),
+			GetRandomTHORAddress(),
+			GetRandomTHORAddress(),
+			common.Coins{
+				common.NewCoin(tc.source, cosmos.NewUint(common.One)),
+			},
+			common.Gas{common.NewCoin(common.ETHAsset, cosmos.NewUint(common.One))},
+			fmt.Sprintf("SWAP:%s:%s", tc.dest.String(), tc.destAddr.String()),
+		)
+		m := NewMsgSwap(tx, tc.dest, tc.destAddr, tc.tradeTarget, common.NoAddress, cosmos.ZeroUint(), "", "", nil, 0, 0, 0, addr)
+		if tc.expectedError != nil {
+			c.Check(m.ValidateBasic(), NotNil)
+		} else {
+			c.Check(m.ValidateBasic(), IsNil)
+		}
+	}
 }

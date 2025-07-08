@@ -52,8 +52,8 @@ func (s *KeygenSuite) TestGetKeygen(c *C) {
 	// GENERATE SIGNATURE
 	// block := types.NewKeygenBlock(1718)
 	// members := []string{
-	// 	"tthorpub1addwnpepq2kdyjkm6y9aa3kxl8wfaverka6pvkek2ygrmhx6sj3ec6h0fegws6fcmjl",
-	// 	"tthorpub1addwnpepqt7qug8vk9r3saw8n4r803ydj2g3dqwx0mvq5akhnze86fc536xcycgtrnv",
+	// 	"swtcpub1addwnpepq2kdyjkm6y9aa3kxl8wfaverka6pvkek2ygrmhx6sj3ec6h0fegws6fnxjkl",
+	// 	"swtcpub1addwnpepqt7qug8vk9r3saw8n4r803ydj2g3dqwx0mvq5akhnze86fc536xcyc6nxl7k",
 	// }
 	// keygen, err := types.NewKeygen(1718, members, types.KeygenType_AsgardKeygen)
 	// keygen.ID = common.TxID("FEDA8BEDB84117C3EF6BEDA1A2639C11D73724AD0E85268E86CADEA13089E400")
@@ -68,7 +68,7 @@ func (s *KeygenSuite) TestGetKeygen(c *C) {
 	// fmt.Printf("KEYGEN1: %+v\n", block)
 
 	pk := types.GetRandomPubKey()
-	expectedKey, err := common.NewPubKey("tthorpub1addwnpepq2kdyjkm6y9aa3kxl8wfaverka6pvkek2ygrmhx6sj3ec6h0fegws6fcmjl")
+	expectedKey, err := common.NewPubKey("swtcpub1addwnpepq2kdyjkm6y9aa3kxl8wfaverka6pvkek2ygrmhx6sj3ec6h0fegws6fnxjkl")
 	c.Assert(err, IsNil)
 	keygenBlock, err := s.bridge.GetKeygenBlock(1718, pk.String())
 	c.Assert(err, IsNil)

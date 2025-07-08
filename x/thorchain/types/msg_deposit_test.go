@@ -19,7 +19,7 @@ func (MsgDepositSuite) TestMsgDepositSuite(c *C) {
 	c.Assert(acc1.Empty(), Equals, false)
 
 	coins := common.Coins{
-		common.NewCoin(common.RuneNative, cosmos.NewUint(12*common.One)),
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
 	}
 	memo := "hello"
 	msg := NewMsgDeposit(coins, memo, acc1)
@@ -47,9 +47,48 @@ func (MsgDepositSuite) TestMsgDepositSuite(c *C) {
 	c.Assert(errors.Is(err2, se.ErrUnknownRequest), Equals, true)
 
 	msg3 := NewMsgDeposit(common.Coins{
-		common.NewCoin(common.RuneNative, cosmos.NewUint(12*common.One)),
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
 	}, "asdfsdkljadslfasfaqcvbncvncvbncvbncvbncvbncvbncvbncvbncvbncvbnsdfasdfasfasdfkjqwerqlkwerqlerqwlkerjqlwkerjqwlkerjqwlkerjqlkwerjklqwerjqwlkerjqlwkerjwqelrasdfsdkljadslfasfaqcvbncvncvbncvbncvbncvbncvbncvbncvbncvbncvbnsdfasdfasfasdfkjqwerqlkwerqlerqwlkerjqlwkerjqwlkerjqwlkerjqlkwerjklqwerjqwlkerjqlwkerjwqelr", acc1)
 	err3 := msg3.ValidateBasic()
 	c.Assert(err3, NotNil)
 	c.Assert(errors.Is(err3, se.ErrUnknownRequest), Equals, true)
+}
+
+func (s *MsgDepositSuite) TestMsgDeposit(c *C) {
+	acc1 := GetRandomBech32Addr()
+	coins := common.NewCoins(
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
+	)
+	memo := "hello"
+
+	m := NewMsgDeposit(coins, memo, acc1)
+	EnsureMsgBasicCorrect(m, c)
+
+	m1 := NewMsgDeposit(coins, memo, acc1)
+	c.Check(m.Coins.EqualsEx(m1.Coins), Equals, true)
+	c.Check(m.Memo, Equals, m1.Memo)
+	c.Check(m.Signer.Equals(m1.Signer), Equals, true)
+
+	// ensure we can set the signer
+	m.Signer = GetRandomBech32Addr()
+	c.Check(m.Signer.Equals(m1.Signer), Equals, false)
+}
+
+func (s *MsgDepositSuite) TestMsgDepositValidation(c *C) {
+	acc1 := GetRandomBech32Addr()
+	coins := common.NewCoins(
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
+	)
+	memo := "hello"
+
+	m := NewMsgDeposit(coins, memo, acc1)
+	c.Check(m.ValidateBasic(), IsNil)
+
+	// test with empty coins
+	m = NewMsgDeposit(common.NewCoins(), memo, acc1)
+	c.Check(m.ValidateBasic(), NotNil)
+
+	// test with empty signer
+	m = NewMsgDeposit(coins, memo, cosmos.AccAddress{})
+	c.Check(m.ValidateBasic(), NotNil)
 }

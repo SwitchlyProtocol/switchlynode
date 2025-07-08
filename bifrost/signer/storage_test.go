@@ -38,7 +38,7 @@ func (s *StorageSuite) TestStorage(c *C) {
 	c.Assert(store.Remove(item), IsNil)
 	c.Check(store.Has(item.Key()), Equals, false)
 
-	pk := common.PubKey("tthorpub1addwnpepqfup3y8p0egd7ml7vrnlxgl3wvnp89mpn0tjpj0p2nm2gh0n9hlrvrtylay")
+	pk := common.PubKey("swtcpub1addwnpepqfup3y8p0egd7ml7vrnlxgl3wvnp89mpn0tjpj0p2nm2gh0n9hlrvr2jn3wt")
 
 	spent := NewTxOutStoreItem(10, types.TxOutItem{Chain: common.ETHChain, VaultPubKey: pk, Memo: "spent"}, 0)
 	spent.Status = TxSpent

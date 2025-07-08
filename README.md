@@ -4,30 +4,97 @@
 [![coverage report](https://gitlab.com/thorchain/thornode/badges/develop/coverage.svg)](https://gitlab.com/thorchain/thornode/-/commits/develop)
 [![Go Report Card](https://goreportcard.com/badge/gitlab.com/thorchain/thornode)](https://goreportcard.com/report/gitlab.com/thorchain/thornode)
 
-# THORChain
+# SwitchlyProtocol
 
-THORChain is a decentralised liquidity network built with [CosmosSDK](https://cosmos.network) and [TSS-lib](https://github.com/bnb-chain/tss-lib)
-
-## THORNodes
-
-Learn how to be a Node Operator:
-https://docs.thorchain.org/thornodes/overview
+SwitchlyProtocol is a decentralized cross-chain automated market maker (AMM) protocol built on the Cosmos SDK. It enables users to swap native assets across different blockchains without the need for wrapped tokens or pegged assets.
 
 ## Features
 
-THORChain offers various features that wallets, exchanges, services and individuals can interact with.
-There is no frontend to THORChain; THORChain responds only to layer-1 transactions posted to the following addresses, which churn regularly:
-https://thornode.ninerealms.com/thorchain/inbound_addresses
+- **Cross-chain swaps**: Swap native assets across different blockchains
+- **Continuous liquidity pools**: Provide liquidity and earn yield
+- **Decentralized**: No centralized authorities or intermediaries
+- **Secure**: Built on proven cryptographic primitives and consensus mechanisms
 
-## Integrations
+## Installation
 
-Learn how to integrate THORChain here:
-https://dev.thorchain.org/
+### Prerequisites
 
-## Ecosystem
+- Go 1.21 or higher
+- Git
 
-Learn about the ecosystem here:
-https://thorchain.org/ecosystem
+### Build from source
+
+```bash
+git clone https://gitlab.com/switchlyprotocol/switchlynode.git
+cd switchlynode
+make install
+```
+
+## Usage
+
+### Running a node
+
+```bash
+# Initialize node
+switchlynode init <node-name> --chain-id switchlyprotocol-mainnet-v1
+
+# Start node
+switchlynode start
+```
+
+### Command line interface
+
+```bash
+# Get help
+switchlynode help
+
+# Query commands
+switchlynode query help
+
+# Transaction commands  
+switchlynode tx help
+```
+
+## Development
+
+### Running tests
+
+```bash
+make test
+```
+
+### Building Docker image
+
+```bash
+make docker-build
+```
+
+### Running local network
+
+```bash
+make run-mocknet
+```
+
+## Documentation
+
+- [API Documentation](https://switchlyprotocol.com/docs/api)
+- [Developer Guide](https://switchlyprotocol.com/docs/dev)
+- [Node Operation Guide](https://switchlyprotocol.com/docs/node)
+
+## Contributing
+
+Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Community
+
+- [Discord](https://discord.gg/switchlyprotocol)
+- [Telegram](https://t.me/switchlyprotocol)
+- [Twitter](https://twitter.com/switchlyprotocol)
+- [Reddit](https://reddit.com/r/switchlyprotocol)
 
 ======================================
 

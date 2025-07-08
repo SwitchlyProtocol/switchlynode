@@ -33,7 +33,7 @@ func (s *BitcoinSuite) TestGetAddressesFromScriptPubKeyResult(c *C) {
 }
 
 func (s *BitcoinSuite) TestGetAccount(c *C) {
-	acct, err := s.client.GetAccount("tthorpub1addwnpepqt7qug8vk9r3saw8n4r803ydj2g3dqwx0mvq5akhnze86fc536xcycgtrnv", nil)
+	acct, err := s.client.GetAccount("swtcpub1addwnpepqvvj6ln6xq4afle87jxhs5nzrcxnewrr5mwk0h2yuqc55fdr42rxs4208u9", nil)
 	c.Assert(err, IsNil)
 	c.Assert(acct.AccountNumber, Equals, int64(0))
 	c.Assert(acct.Sequence, Equals, int64(0))

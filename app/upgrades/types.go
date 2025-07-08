@@ -14,13 +14,14 @@ import (
 	thorchainKeeper "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
 )
 
+// AppKeepers contains references to all keepers required for upgrades
 type AppKeepers struct {
-	AccountKeeper         *authkeeper.AccountKeeper
-	ParamsKeeper          *paramskeeper.Keeper
-	ConsensusParamsKeeper *consensusparamkeeper.Keeper
-	ThorchainKeeper       thorchainKeeper.Keeper
-	Codec                 codec.Codec
-	GetStoreKey           func(storeKey string) *storetypes.KVStoreKey
+	SwitchlyprotocolKeeper thorchainKeeper.Keeper
+	AccountKeeper          *authkeeper.AccountKeeper
+	ParamsKeeper           *paramskeeper.Keeper
+	ConsensusParamsKeeper  *consensusparamkeeper.Keeper
+	Codec                  codec.BinaryCodec
+	GetStoreKey            func(string) *storetypes.KVStoreKey
 }
 
 type ModuleManager interface {

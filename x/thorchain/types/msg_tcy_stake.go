@@ -23,8 +23,8 @@ func NewMsgTCYStake(tx common.Tx, signer sdk.AccAddress) *MsgTCYStake {
 
 // ValidateBasic runs stateless checks on the message
 func (m *MsgTCYStake) ValidateBasic() error {
-	if !m.Tx.Chain.Equals(common.THORChain) {
-		return cosmos.ErrUnauthorized("chain must be THORChain")
+	if !m.Tx.Chain.Equals(common.SWITCHLYChain) {
+		return cosmos.ErrUnauthorized("chain must be SWITCHLYChain")
 	}
 	if len(m.Tx.Coins) != 1 {
 		return cosmos.ErrInvalidCoins("coins must be length 1 (TCY)")

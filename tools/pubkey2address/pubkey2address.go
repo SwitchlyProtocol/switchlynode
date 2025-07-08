@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	raw := flag.String("p", "", "thor bech32 pubkey")
+	raw := flag.String("p", "", "switchly bech32 pubkey")
 	flag.Parse()
 
 	if len(*raw) == 0 {
@@ -20,18 +20,18 @@ func main() {
 	nw := common.CurrentChainNetwork
 	switch nw {
 	case common.MockNet:
-		fmt.Println("THORChain mocknet:")
+		fmt.Println("SwitchlyProtocol mocknet:")
 		config := cosmos.GetConfig()
-		config.SetBech32PrefixForAccount("tthor", "tthorpub")
-		config.SetBech32PrefixForValidator("tthorv", "tthorvpub")
-		config.SetBech32PrefixForConsensusNode("tthorc", "tthorcpub")
+		config.SetBech32PrefixForAccount("tswtc", "tswtcpub")
+		config.SetBech32PrefixForValidator("tswtcv", "tswtcvpub")
+		config.SetBech32PrefixForConsensusNode("tswtcc", "tswtccpub")
 		config.Seal()
 	case common.MainNet:
-		fmt.Println("THORChain mainnet:")
+		fmt.Println("SwitchlyProtocol mainnet:")
 		config := cosmos.GetConfig()
-		config.SetBech32PrefixForAccount("thor", "thorpub")
-		config.SetBech32PrefixForValidator("thorv", "thorvpub")
-		config.SetBech32PrefixForConsensusNode("thorc", "thorcpub")
+		config.SetBech32PrefixForAccount("swtc", "swtcpub")
+		config.SetBech32PrefixForValidator("swtcv", "swtcvpub")
+		config.SetBech32PrefixForConsensusNode("swtcc", "swtccpub")
 		config.Seal()
 	}
 

@@ -12,20 +12,20 @@ type AssetSuite struct{}
 var _ = Suite(&AssetSuite{})
 
 func (s AssetSuite) TestAsset(c *C) {
-	asset, err := NewAsset("thor.rune")
+	asset, err := NewAsset("switchly.swtc")
 	c.Assert(err, IsNil)
 	c.Check(asset.Valid(), IsNil)
-	c.Check(asset.Equals(RuneNative), Equals, true)
+	c.Check(asset.Equals(SWTCNative), Equals, true)
 	c.Check(asset.IsRune(), Equals, true)
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.Synth, Equals, false)
-	c.Check(asset.String(), Equals, "THOR.RUNE")
+	c.Check(asset.String(), Equals, "SWITCHLY.SWTC")
 
-	asset, err = NewAsset("thor/rune")
+	asset, err = NewAsset("switchly/swtc")
 	c.Assert(err, IsNil)
 	err = asset.Valid()
 	c.Check(err, NotNil)
-	c.Check(err.Error(), Equals, "synth asset cannot have chain THOR: THOR/RUNE")
+	c.Check(err.Error(), Equals, "synth asset cannot have chain SWITCHLY: SWITCHLY/SWTC")
 
 	asset, err = NewAsset("ETH.SWIPE.B-DC0")
 	c.Assert(err, IsNil)
@@ -36,10 +36,10 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.Ticker.Equals(Ticker("SWIPE.B")), Equals, true)
 
 	// parse without chain
-	asset, err = NewAsset("rune")
+	asset, err = NewAsset("swtc")
 	c.Assert(err, IsNil)
 	c.Check(asset.Valid(), IsNil)
-	c.Check(asset.Equals(RuneNative), Equals, true)
+	c.Check(asset.Equals(SWTCNative), Equals, true)
 
 	// ETH test
 	asset, err = NewAsset("eth.knc")
@@ -99,11 +99,11 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "BTC~BTC")
 
-	asset, err = NewAsset("thor~rune")
+	asset, err = NewAsset("switchly~swtc")
 	c.Assert(err, IsNil)
 	err = asset.Valid()
 	c.Check(err, NotNil)
-	c.Check(err.Error(), Equals, "trade asset cannot have chain THOR: THOR~RUNE")
+	c.Check(err.Error(), Equals, "trade asset cannot have chain SWITCHLY: SWITCHLY~SWTC")
 
 	// btc~btc with invalid synth flag
 	asset.Synth = true

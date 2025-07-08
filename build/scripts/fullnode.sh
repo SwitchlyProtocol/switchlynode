@@ -1,18 +1,18 @@
 #!/bin/bash
 
-set -o pipefail
+set -euo pipefail
 
-export SIGNER_NAME="${SIGNER_NAME:=thorchain}"
-export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
+# set node CLI configuration
+switchlynode config chain-id "$CHAIN_ID"
+switchlynode config keyring-backend file
 
-. "$(dirname "$0")/core.sh"
-
-if [ ! -f ~/.thornode/config/genesis.json ]; then
-  init_chain
-  rm -rf ~/.thornode/config/genesis.json # set in thornode render-config
+# set defaults
+PEER="${PEER:=none}"
+if [[ "$PEER" == "none" ]]; then
+    echo "Missing PEER"
+    exit 1
 fi
 
-# render tendermint and cosmos configuration files
-thornode render-config
+switchlynode render-config
 
-exec thornode start
+exec switchlynode start

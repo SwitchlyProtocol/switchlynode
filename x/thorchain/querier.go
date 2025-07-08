@@ -44,7 +44,7 @@ var (
 
 func initTendermint() {
 	// get tendermint port from config
-	portSplit := strings.Split(config.GetThornode().Tendermint.RPC.ListenAddress, ":")
+	portSplit := strings.Split(config.GetSwitchlynode().Tendermint.RPC.ListenAddress, ":")
 	port := portSplit[len(portSplit)-1]
 
 	// setup tendermint client
@@ -204,7 +204,7 @@ func (qs queryServer) queryAsgardVaults(ctx cosmos.Context, _ *types.QueryAsgard
 
 func getVaultChainAddresses(ctx cosmos.Context, vault Vault) []*types.VaultAddress {
 	var result []*types.VaultAddress
-	allChains := append(vault.GetChains(), common.THORChain)
+	allChains := append(vault.GetChains(), common.SWITCHLYChain)
 	for _, c := range allChains.Distinct() {
 		addr, err := vault.PubKey.GetAddress(c)
 		if err != nil {
@@ -230,7 +230,7 @@ func (qs queryServer) queryVaultsPubkeys(ctx cosmos.Context, _ *types.QueryVault
 	if err != nil {
 		return nil, err
 	}
-	cutOffAge := ctx.BlockHeight() - config.GetThornode().VaultPubkeysCutoffBlocks
+	cutOffAge := ctx.BlockHeight() - config.GetSwitchlynode().VaultPubkeysCutoffBlocks
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		var vault Vault
@@ -500,14 +500,14 @@ func (qs queryServer) queryInboundAddresses(ctx cosmos.Context, _ *types.QueryIn
 	chains := vault.GetChains()
 
 	if len(chains) == 0 {
-		chains = common.Chains{common.RuneAsset().Chain}
+		chains = common.Chains{common.SWTCAsset().Chain}
 	}
 
 	isGlobalTradingPaused := k.IsGlobalTradingHalted(ctx)
 
 	for _, chain := range chains {
 		// tx send to thorchain doesn't need an address , thus here skip it
-		if chain == common.THORChain {
+		if chain == common.SWITCHLYChain {
 			continue
 		}
 
@@ -1755,7 +1755,7 @@ func (qs queryServer) queryTradeUnits(ctx cosmos.Context, _ *types.QueryTradeUni
 	units := make([]*types.QueryTradeUnitResponse, 0)
 	for _, pool := range pools {
 		// skip non-layer1 pools
-		if pool.Asset.GetChain().IsTHORChain() {
+		if pool.Asset.GetChain().IsSWITCHLYChain() {
 			continue
 		}
 		asset := pool.Asset.GetTradeAsset()
@@ -2065,7 +2065,7 @@ func newTxStagesResponse(ctx cosmos.Context, voter ObservedTxVoter, isSwap, isPe
 
 			estConfMs := voter.Tx.Tx.Chain.ApproximateBlockMilliseconds() * (extConfDelayHeight - extObsHeight)
 			if currentHeight > countStartHeight {
-				estConfMs -= (currentHeight - countStartHeight) * common.THORChain.ApproximateBlockMilliseconds()
+				estConfMs -= (currentHeight - countStartHeight) * common.SWITCHLYChain.ApproximateBlockMilliseconds()
 			}
 			estConfSec := estConfMs / 1000
 			// Floor at 0.
@@ -2126,7 +2126,7 @@ func newTxStagesResponse(ctx cosmos.Context, voter ObservedTxVoter, isSwap, isPe
 			remainBlocks := voter.OutboundHeight - currentHeight
 			outDelay.RemainingDelayBlocks = remainBlocks
 
-			remainSec := remainBlocks * common.THORChain.ApproximateBlockMilliseconds() / 1000
+			remainSec := remainBlocks * common.SWITCHLYChain.ApproximateBlockMilliseconds() / 1000
 			outDelay.RemainingDelaySeconds = remainSec
 		}
 
@@ -2475,7 +2475,7 @@ func (qs queryServer) queryLastBlockHeights(ctx cosmos.Context, chain string) (*
 	}
 	var result []*types.ChainsLastBlock
 	for _, c := range chains {
-		if c == common.THORChain {
+		if c == common.SWITCHLYChain {
 			continue
 		}
 		chainHeight, err := qs.mgr.Keeper().GetLastChainHeight(ctx, c)
@@ -2851,7 +2851,7 @@ func (qs queryServer) queryOutboundFees(ctx cosmos.Context, asset string) (*type
 	} else {
 		// By default display the outbound fees of RUNE and all external-chain Layer 1 assets.
 		// Even Staged pool Assets can incur outbound fees (from withdraw outbounds).
-		assets = []common.Asset{common.RuneAsset()}
+		assets = []common.Asset{common.SWTCAsset()}
 		iterator := qs.mgr.Keeper().GetPoolIterator(ctx)
 		for ; iterator.Valid(); iterator.Next() {
 			var pool Pool

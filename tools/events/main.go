@@ -40,28 +40,28 @@ func InitNetwork() {
 
 	switch config.Get().Network {
 	case "mainnet":
-		bech32PrefixAccAddr = "thor"
-		bech32PrefixAccPub = "thorpub"
-		bech32PrefixValAddr = "thorv"
-		bech32PrefixValPub = "thorvpub"
-		bech32PrefixConsAddr = "thorc"
-		bech32PrefixConsPub = "thorcpub"
+		bech32PrefixAccAddr = "swtc"
+		bech32PrefixAccPub = "swtcpub"
+		bech32PrefixValAddr = "swtcv"
+		bech32PrefixValPub = "swtcvpub"
+		bech32PrefixConsAddr = "swtcc"
+		bech32PrefixConsPub = "swtccpub"
 
 	case "stagenet":
-		bech32PrefixAccAddr = "sthor"
-		bech32PrefixAccPub = "sthorpub"
-		bech32PrefixValAddr = "sthorv"
-		bech32PrefixValPub = "sthorvpub"
-		bech32PrefixConsAddr = "sthorc"
-		bech32PrefixConsPub = "sthorcpub"
+		bech32PrefixAccAddr = "sswtc"
+		bech32PrefixAccPub = "sswtcpub"
+		bech32PrefixValAddr = "sswtcv"
+		bech32PrefixValPub = "sswtcvpub"
+		bech32PrefixConsAddr = "sswtcc"
+		bech32PrefixConsPub = "sswtccpub"
 
 	case "mocknet":
-		bech32PrefixAccAddr = "tthor"
-		bech32PrefixAccPub = "tthorpub"
-		bech32PrefixValAddr = "tthorv"
-		bech32PrefixValPub = "tthorvpub"
-		bech32PrefixConsAddr = "tthorc"
-		bech32PrefixConsPub = "tthorcpub"
+		bech32PrefixAccAddr = "tswtc"
+		bech32PrefixAccPub = "tswtcpub"
+		bech32PrefixValAddr = "tswtcv"
+		bech32PrefixValPub = "tswtcvpub"
+		bech32PrefixConsAddr = "tswtcc"
+		bech32PrefixConsPub = "tswtccpub"
 
 	default:
 		log.Fatal().Str("network", config.Get().Network).Msg("unknown network")
@@ -72,8 +72,8 @@ func InitNetwork() {
 	cfg.SetBech32PrefixForAccount(bech32PrefixAccAddr, bech32PrefixAccPub)
 	cfg.SetBech32PrefixForValidator(bech32PrefixValAddr, bech32PrefixValPub)
 	cfg.SetBech32PrefixForConsensusNode(bech32PrefixConsAddr, bech32PrefixConsPub)
-	cfg.SetCoinType(cmd.THORChainCoinType)
-	cfg.SetPurpose(cmd.THORChainCoinPurpose)
+	cfg.SetCoinType(cmd.SwitchlyProtocolCoinType)
+	cfg.SetPurpose(cmd.SwitchlyProtocolCoinPurpose)
 	cfg.Seal()
 }
 
