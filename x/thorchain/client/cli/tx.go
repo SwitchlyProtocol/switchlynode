@@ -23,8 +23,9 @@ import (
 
 func GetTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:                        types.ModuleName,
-		Short:                      "THORChain transaction subcommands",
+		Use:                        "thorchain",
+		Short:                      "Switchly transaction subcommands",
+		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
@@ -518,7 +519,7 @@ func observeTxs(outbound bool) func(cmd *cobra.Command, args []string) error {
 // broadcast for the provided transaction ID.
 func findLackingObservation(txid, address, thornodeAPI string) (*common.ObservedTx, error) {
 	// get tx details from thornode API
-	url := fmt.Sprintf("%s/thorchain/tx/details/%s", thornodeAPI, txid)
+	url := fmt.Sprintf("%s/switchly/tx/details/%s", thornodeAPI, txid)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tx details: %w", err)

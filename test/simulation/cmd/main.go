@@ -63,8 +63,8 @@ func init() {
 	ccfg.SetBech32PrefixForAccount(prefix.Bech32PrefixAccAddr, prefix.Bech32PrefixAccPub)
 	ccfg.SetBech32PrefixForValidator(prefix.Bech32PrefixValAddr, prefix.Bech32PrefixValPub)
 	ccfg.SetBech32PrefixForConsensusNode(prefix.Bech32PrefixConsAddr, prefix.Bech32PrefixConsPub)
-	ccfg.SetCoinType(prefix.THORChainCoinType)
-	ccfg.SetPurpose(prefix.THORChainCoinPurpose)
+	ccfg.SetCoinType(prefix.SwitchlyProtocolCoinType)
+	ccfg.SetPurpose(prefix.SwitchlyProtocolCoinPurpose)
 	ccfg.Seal()
 }
 

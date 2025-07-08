@@ -99,12 +99,12 @@ func (p *parser) ParseLoanOpenMemo() (LoanOpenMemo, error) {
 	targetAsset := p.getAsset(1, true, common.EmptyAsset)
 	targetAddress := p.getAddressWithKeeper(2, true, common.NoAddress, targetAsset.GetChain())
 	minOut := p.getUintWithScientificNotation(3, false, 0)
-	affAddr := p.getAddressWithKeeper(4, false, common.NoAddress, common.THORChain)
-	tn := p.getTHORName(4, false, types.NewTHORName("", 0, nil), -1)
-	affPts := p.getUintWithMaxValue(5, false, 0, constants.MaxBasisPts)
-	dexAgg := p.get(6)
-	dexTargetAddr := p.get(7)
-	dexTargetLimit := p.getUint(8, false, 0)
+	affAddr := p.getAddressWithKeeper(4, false, common.NoAddress, common.SWITCHLYChain)
+	tn := p.getTHORName(5, false, types.NewTHORName("", 0, nil), -1)
+	affPts := p.getUintWithMaxValue(6, false, 0, constants.MaxBasisPts)
+	dexAgg := p.get(7)
+	dexTargetAddr := p.get(8)
+	dexTargetLimit := p.getUint(9, false, 0)
 	return NewLoanOpenMemo(targetAsset, targetAddress, minOut, affAddr, affPts, dexAgg, dexTargetAddr, dexTargetLimit, tn), p.Error()
 }
 

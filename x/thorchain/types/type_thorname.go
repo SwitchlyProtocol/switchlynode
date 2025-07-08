@@ -71,7 +71,7 @@ func (m *THORName) CanReceiveAffiliateFee() bool {
 	}
 	if m.PreferredAsset.IsEmpty() {
 		// If no preferred asset set, must have a rune alias to receive rune fees
-		return !m.GetAlias(common.THORChain).IsEmpty()
+		return !m.GetAlias(common.SWITCHLYChain).IsEmpty()
 	}
 
 	// If preferred asset set, must have an alias for the preferred asset chain

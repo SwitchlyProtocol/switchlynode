@@ -33,7 +33,7 @@ func (s *AssetMappingTestSuite) TestGetAssetByStellarAsset(c *C) {
 	c.Assert(mapping.StellarAssetCode, Equals, "XLM")
 	c.Assert(mapping.StellarAssetIssuer, Equals, "")
 	c.Assert(mapping.StellarDecimals, Equals, 7)
-	c.Assert(string(mapping.THORChainAsset.Symbol), Equals, "XLM")
+	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "XLM")
 
 	// Test Soroban USDC token - should use testnet address after network setup
 	SetNetwork(StellarTestnet)
@@ -43,7 +43,7 @@ func (s *AssetMappingTestSuite) TestGetAssetByStellarAsset(c *C) {
 	c.Assert(mapping.StellarAssetCode, Equals, "USDC")
 	c.Assert(mapping.StellarAssetIssuer, Equals, "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA")
 	c.Assert(mapping.StellarDecimals, Equals, 7)
-	c.Assert(string(mapping.THORChainAsset.Symbol), Equals, "USDC")
+	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "USDC")
 
 	// Test unknown asset
 	_, found = GetAssetByStellarAsset("contract", "UNKNOWN", "UNKNOWN_ISSUER")
@@ -52,20 +52,20 @@ func (s *AssetMappingTestSuite) TestGetAssetByStellarAsset(c *C) {
 
 func (s *AssetMappingTestSuite) TestGetAssetByTHORChainAsset(c *C) {
 	// Test native XLM
-	mapping, found := GetAssetByTHORChainAsset(common.Asset{Chain: common.StellarChain, Symbol: "XLM", Ticker: "XLM"})
+	mapping, found := GetAssetBySwitchlyProtocolAsset(common.Asset{Chain: common.StellarChain, Symbol: "XLM", Ticker: "XLM"})
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "native")
 
 	// Test Soroban USDC with network-agnostic symbol
 	usdcAsset := common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"}
-	mapping, found = GetAssetByTHORChainAsset(usdcAsset)
+	mapping, found = GetAssetBySwitchlyProtocolAsset(usdcAsset)
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "contract")
 	c.Assert(mapping.StellarAssetCode, Equals, "USDC")
 
 	// Test unknown asset
 	unknownAsset := common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"}
-	mapping, found = GetAssetByTHORChainAsset(unknownAsset)
+	mapping, found = GetAssetBySwitchlyProtocolAsset(unknownAsset)
 	c.Assert(found, Equals, false)
 }
 
@@ -75,7 +75,7 @@ func (s *AssetMappingTestSuite) TestGetAssetByAddress(c *C) {
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "native")
 	c.Assert(mapping.StellarAssetCode, Equals, "XLM")
-	c.Assert(string(mapping.THORChainAsset.Symbol), Equals, "XLM")
+	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "XLM")
 
 	// Test Soroban USDC by testnet contract address
 	SetNetwork(StellarTestnet)
@@ -83,7 +83,7 @@ func (s *AssetMappingTestSuite) TestGetAssetByAddress(c *C) {
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "contract")
 	c.Assert(mapping.StellarAssetCode, Equals, "USDC")
-	c.Assert(string(mapping.THORChainAsset.Symbol), Equals, "USDC")
+	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "USDC")
 
 	// Test unknown address
 	_, found = GetAssetByAddress("UNKNOWN_ADDRESS")
@@ -211,14 +211,14 @@ func (s *AssetMappingTestSuite) TestFromStellarAsset(c *C) {
 func (s *AssetMappingTestSuite) TestConvertToTHORChainAmount(c *C) {
 	// Test XLM conversion (7 decimals to 8 decimals)
 	mapping, _ := GetAssetByStellarAsset("native", "XLM", "")
-	coin, err := mapping.ConvertToTHORChainAmount("10000000") // 1 XLM in stroops
+	coin, err := mapping.ConvertToSwitchlyProtocolAmount("10000000") // 1 XLM in stroops
 	c.Assert(err, IsNil)
 	c.Assert(coin.Amount.Uint64(), Equals, uint64(100000000)) // 1 XLM in THORChain units (1e8)
 
 	// Test USDC conversion (7 decimals to 8 decimals) - use testnet address
 	SetNetwork(StellarTestnet)
 	mapping, _ = GetAssetByStellarAsset("contract", "USDC", "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA")
-	coin, err = mapping.ConvertToTHORChainAmount("10000000") // 1 USDC in 7-decimal format
+	coin, err = mapping.ConvertToSwitchlyProtocolAmount("10000000") // 1 USDC in 7-decimal format
 	c.Assert(err, IsNil)
 	c.Assert(coin.Amount.Uint64(), Equals, uint64(100000000)) // 1 USDC in THORChain units (1e8)
 }
@@ -226,13 +226,13 @@ func (s *AssetMappingTestSuite) TestConvertToTHORChainAmount(c *C) {
 func (s *AssetMappingTestSuite) TestConvertFromTHORChainAmount(c *C) {
 	// Test XLM conversion (8 decimals to 7 decimals)
 	mapping, _ := GetAssetByStellarAsset("native", "XLM", "")
-	amount := mapping.ConvertFromTHORChainAmount(cosmos.NewUint(100000000)) // 1 XLM in THORChain units
+	amount := mapping.ConvertFromSwitchlyProtocolAmount(cosmos.NewUint(100000000)) // 1 XLM in THORChain units
 	c.Assert(amount, Equals, "10000000")                                    // 1 XLM in stroops
 
 	// Test USDC conversion (8 decimals to 7 decimals) - use testnet address
 	SetNetwork(StellarTestnet)
 	mapping, _ = GetAssetByStellarAsset("contract", "USDC", "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA")
-	amount = mapping.ConvertFromTHORChainAmount(cosmos.NewUint(100000000)) // 1 USDC in THORChain units
+	amount = mapping.ConvertFromSwitchlyProtocolAmount(cosmos.NewUint(100000000)) // 1 USDC in THORChain units
 	c.Assert(amount, Equals, "10000000")                                   // 1 USDC in 7-decimal format
 }
 

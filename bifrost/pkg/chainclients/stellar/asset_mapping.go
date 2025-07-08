@@ -1,3 +1,4 @@
+// Package stellar provides Stellar blockchain client functionality
 package stellar
 
 import (
@@ -10,7 +11,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
-// StellarNetwork represents the network type
+// StellarNetwork represents different Stellar networks
 type StellarNetwork string
 
 const (
@@ -18,7 +19,7 @@ const (
 	StellarTestnet StellarNetwork = "testnet"
 )
 
-// StellarAssetMapping maps Stellar assets to THORChain assets
+// StellarAssetMapping maps Stellar assets to SwitchlyProtocol assets
 type StellarAssetMapping struct {
 	// Stellar asset identification
 	StellarAssetType   string // "native", "credit_alphanum4", "credit_alphanum12", "contract"
@@ -29,11 +30,11 @@ type StellarAssetMapping struct {
 	// Network-specific contract addresses for Soroban tokens
 	ContractAddresses map[StellarNetwork]string // Network -> Contract Address mapping
 
-	// THORChain asset representation
-	THORChainAsset common.Asset
+	// SwitchlyProtocol asset representation
+	SwitchlyProtocolAsset common.Asset
 }
 
-// stellarAssetMappings contains the mapping of known Stellar assets to THORChain assets
+// stellarAssetMappings contains the mapping of known Stellar assets to SwitchlyProtocol assets
 var stellarAssetMappings = []StellarAssetMapping{
 
 	// XLM SEP-41 Token
@@ -46,7 +47,7 @@ var stellarAssetMappings = []StellarAssetMapping{
 			StellarMainnet: "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA",
 			StellarTestnet: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
 		},
-		THORChainAsset: common.Asset{Chain: common.StellarChain, Symbol: "XLM", Ticker: "XLM"},
+		SwitchlyProtocolAsset: common.Asset{Chain: common.StellarChain, Symbol: "XLM", Ticker: "XLM"},
 	},
 
 	// USDC SEP-41 Token
@@ -59,7 +60,7 @@ var stellarAssetMappings = []StellarAssetMapping{
 			StellarMainnet: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
 			StellarTestnet: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
 		},
-		THORChainAsset: common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"},
+		SwitchlyProtocolAsset: common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"},
 	},
 }
 
@@ -102,10 +103,10 @@ func GetAssetByStellarAsset(assetType, assetCode, assetIssuer string) (StellarAs
 	return StellarAssetMapping{}, false
 }
 
-// GetAssetByTHORChainAsset finds the asset mapping by THORChain asset
-func GetAssetByTHORChainAsset(thorAsset common.Asset) (StellarAssetMapping, bool) {
+// GetAssetBySwitchlyProtocolAsset finds the asset mapping by SwitchlyProtocol asset
+func GetAssetBySwitchlyProtocolAsset(switchlyAsset common.Asset) (StellarAssetMapping, bool) {
 	for _, mapping := range stellarAssetMappings {
-		if mapping.THORChainAsset.Equals(thorAsset) {
+		if mapping.SwitchlyProtocolAsset.Equals(switchlyAsset) {
 			return mapping, true
 		}
 	}
@@ -303,7 +304,7 @@ func GetTokenContractAddress(mapping StellarAssetMapping) string {
 	return ""
 }
 
-// ToStellarAsset converts a THORChain asset to a Stellar txnbuild.Asset
+// ToStellarAsset converts a SwitchlyProtocol asset to a Stellar txnbuild.Asset
 func (s StellarAssetMapping) ToStellarAsset() txnbuild.Asset {
 	if s.StellarAssetType == "native" {
 		return txnbuild.NativeAsset{}
@@ -345,63 +346,62 @@ func FromStellarAsset(asset txnbuild.Asset) (StellarAssetMapping, error) {
 	}
 }
 
-// ConvertToTHORChainAmount converts a Stellar amount to THORChain amount
-func (s StellarAssetMapping) ConvertToTHORChainAmount(stellarAmount string) (common.Coin, error) {
+// ConvertToSwitchlyProtocolAmount converts a Stellar amount to SwitchlyProtocol amount
+func (s StellarAssetMapping) ConvertToSwitchlyProtocolAmount(stellarAmount string) (common.Coin, error) {
 	// Parse the stellar amount
 	stellarAmountBig, ok := new(big.Int).SetString(stellarAmount, 10)
 	if !ok {
 		return common.Coin{}, fmt.Errorf("invalid stellar amount: %s", stellarAmount)
 	}
 
-	// Convert based on decimal difference
-	// THORChain uses 8 decimals, Stellar assets can have different decimals
-	thorchainDecimals := 8
-	decimalDiff := thorchainDecimals - s.StellarDecimals
+	// SwitchlyProtocol uses 8 decimals, Stellar assets can have different decimals
+	switchlyProtocolDecimals := 8
+	decimalDiff := switchlyProtocolDecimals - s.StellarDecimals
 
-	var thorchainAmount *big.Int
+	var switchlyProtocolAmount *big.Int
 	if decimalDiff > 0 {
-		// THORChain has more decimals, multiply
+		// SwitchlyProtocol has more decimals, multiply
 		multiplier := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimalDiff)), nil)
-		thorchainAmount = new(big.Int).Mul(stellarAmountBig, multiplier)
+		switchlyProtocolAmount = new(big.Int).Mul(stellarAmountBig, multiplier)
 	} else if decimalDiff < 0 {
-		// THORChain has fewer decimals, divide
+		// SwitchlyProtocol has fewer decimals, divide
 		divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(-decimalDiff)), nil)
-		thorchainAmount = new(big.Int).Div(stellarAmountBig, divisor)
+		switchlyProtocolAmount = new(big.Int).Div(stellarAmountBig, divisor)
 	} else {
-		// Same decimals, no conversion needed
-		thorchainAmount = stellarAmountBig
+		// Same decimals
+		switchlyProtocolAmount = stellarAmountBig
 	}
 
 	// Convert to cosmos.Uint
-	thorchainAmountCosmos := cosmos.NewUintFromString(thorchainAmount.String())
+	switchlyProtocolAmountCosmos := cosmos.NewUintFromString(switchlyProtocolAmount.String())
 
 	return common.Coin{
-		Asset:  s.THORChainAsset,
-		Amount: thorchainAmountCosmos,
+		Asset:  s.SwitchlyProtocolAsset,
+		Amount: switchlyProtocolAmountCosmos,
 	}, nil
 }
 
-// ConvertFromTHORChainAmount converts a THORChain amount to Stellar amount
-func (s StellarAssetMapping) ConvertFromTHORChainAmount(thorchainAmount cosmos.Uint) string {
-	// Convert based on decimal difference
-	// THORChain uses 8 decimals, Stellar assets can have different decimals
-	thorchainDecimals := 8
-	decimalDiff := thorchainDecimals - s.StellarDecimals
+// ConvertFromSwitchlyProtocolAmount converts a SwitchlyProtocol amount to Stellar amount
+func (s StellarAssetMapping) ConvertFromSwitchlyProtocolAmount(switchlyProtocolAmount cosmos.Uint) string {
+	// Convert to big.Int for easier manipulation
+	// SwitchlyProtocol uses 8 decimals, Stellar assets can have different decimals
+	switchlyProtocolDecimals := 8
+	decimalDiff := switchlyProtocolDecimals - s.StellarDecimals
 
-	thorchainAmountBig := thorchainAmount.BigInt()
+	switchlyProtocolAmountBig := switchlyProtocolAmount.BigInt()
+
 	var stellarAmount *big.Int
-
 	if decimalDiff > 0 {
-		// THORChain has more decimals, divide
+		// SwitchlyProtocol has more decimals, divide
 		divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimalDiff)), nil)
-		stellarAmount = new(big.Int).Div(thorchainAmountBig, divisor)
+		stellarAmount = new(big.Int).Div(switchlyProtocolAmountBig, divisor)
 	} else if decimalDiff < 0 {
-		// THORChain has fewer decimals, multiply
+		// SwitchlyProtocol has fewer decimals, multiply
 		multiplier := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(-decimalDiff)), nil)
-		stellarAmount = new(big.Int).Mul(thorchainAmountBig, multiplier)
+		stellarAmount = new(big.Int).Mul(switchlyProtocolAmountBig, multiplier)
 	} else {
-		// Same decimals, no conversion needed
-		stellarAmount = thorchainAmountBig
+		// Same decimals
+		stellarAmount = switchlyProtocolAmountBig
 	}
 
 	return stellarAmount.String()

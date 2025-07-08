@@ -366,7 +366,7 @@ func (b *BlockScanner) scanBlocks() {
 func (b *BlockScanner) updateStaleNetworkFee(currentBlock int64) {
 	// Only broadcast MsgNetworkFee if the chain isn't THORChain
 	// and the scanner is healthy.
-	if b.cfg.ChainID.Equals(common.THORChain) || !b.healthy.Load() {
+	if b.cfg.ChainID.Equals(common.SWITCHLYChain) || !b.healthy.Load() {
 		return
 	}
 
@@ -418,7 +418,7 @@ func (b *BlockScanner) FetchLastHeight() (int64, error) {
 
 	if b.thorchainBridge != nil {
 		var height int64
-		if b.cfg.ChainID.Equals(common.THORChain) {
+		if b.cfg.ChainID.Equals(common.SWITCHLYChain) {
 			height, _ = b.thorchainBridge.GetBlockHeight()
 		} else {
 			height, _ = b.thorchainBridge.GetLastObservedInHeight(b.cfg.ChainID)

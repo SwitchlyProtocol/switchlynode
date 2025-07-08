@@ -59,16 +59,16 @@ var (
 )
 
 type Config struct {
-	Thornode Thornode `mapstructure:"thor"`
-	Bifrost  Bifrost  `mapstructure:"bifrost"`
+	Switchlynode Switchlynode `mapstructure:"switchly"`
+	Bifrost      Bifrost      `mapstructure:"bifrost"`
 }
 
-// GetThornode returns the global thornode configuration.
-func GetThornode() Thornode {
-	return config.Thornode
+// GetSwitchlynode returns the global switchlynode configuration.
+func GetSwitchlynode() Switchlynode {
+	return config.Switchlynode
 }
 
-// GetBifrost returns the global thornode configuration.
+// GetBifrost returns the global switchlynode configuration.
 func GetBifrost() Bifrost {
 	return config.Bifrost
 }
@@ -91,7 +91,7 @@ func Init() {
 	// TODO: The following can be cleaned once all deployments are updated to use
 	// explicit keys for the new configuration package. In the meantime we will preserve
 	// mappings from historical environment for backwards compatibility.
-	assert(viper.BindEnv("bifrost.thorchain.signer_name", "SIGNER_NAME"))
+	assert(viper.BindEnv("bifrost.switchlyprotocol.signer_name", "SIGNER_NAME"))
 	assert(viper.BindEnv(
 		"bifrost.chains.btc.block_scanner.block_height_discover_back_off",
 		"BLOCK_SCANNER_BACKOFF",
@@ -117,15 +117,27 @@ func Init() {
 		"THOR_BLOCK_TIME",
 	))
 	assert(viper.BindEnv(
-		"thor.tendermint.consensus.timeout_commit",
-		"THOR_BLOCK_TIME",
+		"switchly.tendermint.consensus.timeout_propose_delta",
+		"SWITCHLY_BLOCK_TIME",
+	))
+	assert(viper.BindEnv(
+		"switchly.tendermint.consensus.timeout_prevote_delta",
+		"SWITCHLY_BLOCK_TIME",
+	))
+	assert(viper.BindEnv(
+		"switchly.tendermint.consensus.timeout_precommit_delta",
+		"SWITCHLY_BLOCK_TIME",
+	))
+	assert(viper.BindEnv(
+		"switchly.tendermint.consensus.timeout_commit",
+		"SWITCHLY_BLOCK_TIME",
 	))
 	assert(viper.BindEnv("bifrost.tss.bootstrap_peers", "PEER"))
 	assert(viper.BindEnv("bifrost.tss.external_ip", "EXTERNAL_IP"))
-	assert(viper.BindEnv("bifrost.thorchain.chain_id", "CHAIN_ID"))
-	assert(viper.BindEnv("bifrost.thorchain.chain_host", "CHAIN_API"))
+	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_id", "CHAIN_ID"))
+	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_host", "CHAIN_API"))
 	assert(viper.BindEnv(
-		"bifrost.thorchain.chain_rpc",
+		"bifrost.switchlyprotocol.chain_rpc",
 		"CHAIN_RPC",
 	))
 	assert(viper.BindEnv(
@@ -209,7 +221,7 @@ func Init() {
 	assert(viper.BindEnv("bifrost.chains.LTC.disabled", "LTC_DISABLED"))
 	assert(viper.BindEnv("bifrost.chains.AVAX.disabled", "AVAX_DISABLED"))
 	assert(viper.BindEnv("bifrost.chains.AVAX.block_scanner.gas_cache_size", "AVAX_GAS_CACHE_SIZE"))
-	assert(viper.BindEnv("thor.cosmos.halt_height", "HARDFORK_BLOCK_HEIGHT"))
+	assert(viper.BindEnv("switchly.cosmos.halt_height", "HARDFORK_BLOCK_HEIGHT"))
 
 	// always override from environment
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
@@ -229,14 +241,14 @@ func Init() {
 	viper.SetConfigType("toml")
 
 	// dynamically set rpc listen address
-	if config.Thornode.Tendermint.RPC.ListenAddress == "" {
-		config.Thornode.Tendermint.RPC.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", rpcPort)
+	if config.Switchlynode.Tendermint.RPC.ListenAddress == "" {
+		config.Switchlynode.Tendermint.RPC.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", rpcPort)
 	}
-	if config.Thornode.Tendermint.P2P.ListenAddress == "" {
-		config.Thornode.Tendermint.P2P.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", p2pPort)
+	if config.Switchlynode.Tendermint.P2P.ListenAddress == "" {
+		config.Switchlynode.Tendermint.P2P.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", p2pPort)
 	}
-	if config.Thornode.Cosmos.EBifrost.Address == "" {
-		config.Thornode.Cosmos.EBifrost.Address = fmt.Sprintf("0.0.0.0:%d", ebifrostPort)
+	if config.Switchlynode.Cosmos.EBifrost.Address == "" {
+		config.Switchlynode.Cosmos.EBifrost.Address = fmt.Sprintf("0.0.0.0:%d", ebifrostPort)
 	}
 }
 
@@ -272,7 +284,7 @@ func InitBifrost() {
 	}
 
 	// set signer password explicitly from environment variable
-	config.Bifrost.Thorchain.SignerPasswd = os.Getenv("SIGNER_PASSWD")
+	config.Bifrost.Switchlyprotocol.SignerPasswd = os.Getenv("SIGNER_PASSWD")
 
 	// set bootstrap peers from seeds endpoint if unset
 	if len(config.Bifrost.TSS.BootstrapPeers) == 0 {
@@ -280,32 +292,32 @@ func InitBifrost() {
 	}
 }
 
-func InitThornode(ctx context.Context) {
-	// Environment variables prefixed with `THORNODE` will be read by viper in cosmos-sdk
+func InitSwitchlynode(ctx context.Context) {
+	// Environment variables prefixed with `SWITCHLYNODE` will be read by viper in cosmos-sdk
 	// initialization and overwrite configuration we apply in this package.
 	for _, env := range os.Environ() {
 		envKey := strings.Split(env, "=")[0]
-		if strings.HasPrefix(envKey, "THORNODE_") {
+		if strings.HasPrefix(envKey, "SWITCHLYNODE_") {
 			log.Warn().Msgf("environment variable %s could overwrite config", env)
 		}
 	}
 
 	// if auto statesync enable, find latest snapshot height and hash that should exist
-	if config.Thornode.AutoStateSync.Enabled {
-		thornodeAutoStateSync(ctx)
+	if config.Switchlynode.AutoStateSync.Enabled {
+		switchlynodeAutoStateSync(ctx)
 	}
 
 	// dynamically set seeds
-	seedAddrs, tmSeeds := thornodeSeeds()
-	config.Thornode.Tendermint.P2P.Seeds = strings.Join(tmSeeds, ",")
+	seedAddrs, tmSeeds := switchlynodeSeeds()
+	config.Switchlynode.Tendermint.P2P.Seeds = strings.Join(tmSeeds, ",")
 
 	// set the Tendermint external address
 	if os.Getenv("EXTERNAL_IP") != "" {
-		config.Thornode.Tendermint.P2P.ExternalAddress = fmt.Sprintf("%s:%d", os.Getenv("EXTERNAL_IP"), p2pPort)
+		config.Switchlynode.Tendermint.P2P.ExternalAddress = fmt.Sprintf("%s:%d", os.Getenv("EXTERNAL_IP"), p2pPort)
 	}
 
 	// set paths
-	home := os.ExpandEnv("$HOME/.thornode")
+	home := os.ExpandEnv("$HOME/.switchlynode")
 	tendermintPath := filepath.Join(home, "config", "config.toml")
 	cosmosPath := filepath.Join(home, "config", "app.toml")
 
@@ -315,7 +327,7 @@ func InitThornode(ctx context.Context) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open config.toml")
 	}
-	err = t.ExecuteTemplate(tendermintFile, "config.toml.tmpl", config.Thornode.Tendermint)
+	err = t.ExecuteTemplate(tendermintFile, "config.toml.tmpl", config.Switchlynode.Tendermint)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to render config.toml")
 	}
@@ -325,24 +337,24 @@ func InitThornode(ctx context.Context) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open app.toml")
 	}
-	err = t.ExecuteTemplate(cosmosFile, "app.toml.tmpl", config.Thornode.Cosmos)
+	err = t.ExecuteTemplate(cosmosFile, "app.toml.tmpl", config.Switchlynode.Cosmos)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to render app.toml")
 	}
 
 	// fetch genesis
 	if len(seedAddrs) > 0 {
-		thornodeFetchGenesis(seedAddrs)
+		switchlynodeFetchGenesis(seedAddrs)
 	} else {
 		log.Warn().Msg("no seeds, skipping genesis fetch")
 	}
 }
 
 // -------------------------------------------------------------------------------------
-// Thornode
+// Switchlynode
 // -------------------------------------------------------------------------------------
 
-type Thornode struct {
+type Switchlynode struct {
 	// NodeRelayURL is the URL of the node relay service.
 	NodeRelayURL string `mapstructure:"node_relay_url"`
 
@@ -351,7 +363,7 @@ type Thornode struct {
 	// observed by bifrost.
 	VaultPubkeysCutoffBlocks int64 `mapstructure:"vault_pubkeys_cutoff_blocks"`
 
-	// SeedNodesEndpoint is the full URL to a /thorchain/nodes endpoint for finding active
+	// SeedNodesEndpoint is the full URL to a /switchlyprotocol/nodes endpoint for finding active
 	// validators to seed genesis and peers.
 	SeedNodesEndpoint string `mapstructure:"seed_nodes_endpoint"`
 
@@ -361,7 +373,7 @@ type Thornode struct {
 	// consensus failure on sync from genesis.
 	StagenetAdminAddresses []string `mapstructure:"stagenet_admin_addresses"`
 
-	// Telemetry contains THORnode-specific telemetry configuration.
+	// Telemetry contains SwitchlyNode-specific telemetry configuration.
 	Telemetry struct {
 		// SlashPoints enables slash point telemetry. This creates a file in the node home
 		// directory with JSON events for all slash increments and decrements. This feature
@@ -482,7 +494,7 @@ type Thornode struct {
 
 type Bifrost struct {
 	Signer            BifrostSignerConfiguration     `mapstructure:"signer"`
-	Thorchain         BifrostClientConfiguration     `mapstructure:"thorchain"`
+	Switchlyprotocol  BifrostClientConfiguration     `mapstructure:"switchlyprotocol"`
 	AttestationGossip BifrostAttestationGossipConfig `mapstructure:"attestation_gossip"`
 	Metrics           BifrostMetricsConfiguration    `mapstructure:"metrics"`
 	Chains            struct {
@@ -594,7 +606,7 @@ type BifrostAttestationGossipConfig struct {
 	// If chain halts for longer than this, validators will need to restart their bifrosts to re-share their attestations.
 	NonQuorumTimeout time.Duration `mapstructure:"non_quorum_timeout"`
 
-	// minTimeBetweenAttestations is the minimum time between sending batches of attestations for a quorum tx to thornode.
+	// minTimeBetweenAttestations is the minimum time between sending batches of attestations for a quorum tx to switchlynode.
 	MinTimeBetweenAttestations time.Duration `mapstructure:"min_time_between_attestations"`
 
 	// how many random peers to ask for their attestation state on startup.
@@ -603,10 +615,10 @@ type BifrostAttestationGossipConfig struct {
 	// delay before asking peers for their attestation state on startup.
 	AskPeersDelay time.Duration `mapstructure:"ask_peers_delay"`
 
-	// how many attestations to batch together before sending to thornode.
+	// how many attestations to batch together before sending to switchlynode.
 	MaxBatchSize int64 `mapstructure:"max_batch_size"`
 
-	// how often to send batches of attestations to thornode.
+	// how often to send batches of attestations to switchlynode.
 	BatchInterval time.Duration `mapstructure:"batch_interval"`
 
 	// how long to wait when sending a single attestation to a peer before giving up.
@@ -759,7 +771,7 @@ type BifrostBlockScannerConfiguration struct {
 	CosmosGRPCTLS bool `mapstructure:"cosmos_grpc_tls"`
 
 	// GasCacheBlocks is the number of blocks worth of gas price data cached to determine
-	// the gas price reported to Thorchain.
+	// the gas price reported to SwitchlyProtocol.
 	GasCacheBlocks int `mapstructure:"gas_cache_blocks"`
 
 	// Concurrency is the number of goroutines used for RPC requests on data within a
@@ -858,9 +870,9 @@ func (c BifrostTSSConfiguration) GetExternalIP() string {
 }
 
 type WhitelistCosmosAsset struct {
-	Denom           string `mapstructure:"denom"`
-	Decimals        int    `mapstructure:"decimals"`
-	THORChainSymbol string `mapstructure:"symbol"`
+	Denom                  string `mapstructure:"denom"`
+	Decimals               int    `mapstructure:"decimals"`
+	SwitchlyProtocolSymbol string `mapstructure:"symbol"`
 }
 
 // GetBootstrapPeers return the internal bootstrap peers in a slice of maddr.Multiaddr
@@ -935,7 +947,7 @@ func resolveAddrs(addrs []string) []string {
 	return resolvedAddrs
 }
 
-func thornodeSeeds() (seedAddrs, tmSeeds []string) {
+func switchlynodeSeeds() (seedAddrs, tmSeeds []string) {
 	// use environment variable if set
 	seeds := os.Getenv("SEEDS")
 	if seeds != "" {
@@ -1017,15 +1029,15 @@ func thornodeSeeds() (seedAddrs, tmSeeds []string) {
 	return
 }
 
-func thornodeAutoStateSync(ctx context.Context) {
+func switchlynodeAutoStateSync(ctx context.Context) {
 	// if we already have a state assume we have a snapshot and skip
-	dataDir := os.ExpandEnv("$HOME/.thornode/data/state.db")
+	dataDir := os.ExpandEnv("$HOME/.switchlynode/data/state.db")
 	if _, err := os.Stat(dataDir); err == nil {
 		log.Info().Msg("data directory detected, skipping auto statesync configuration")
 		return
 	}
 
-	for _, host := range strings.Split(config.Thornode.Tendermint.StateSync.RPCServers, ",") {
+	for _, host := range strings.Split(config.Switchlynode.Tendermint.StateSync.RPCServers, ",") {
 		log.Info().Msgf("auto statesync enabled, determining trust height via %s", host)
 
 		client, err := tmhttp.New(host, "")
@@ -1040,7 +1052,7 @@ func thornodeAutoStateSync(ctx context.Context) {
 			log.Err(err).Str("host", host).Msg("failed to get status")
 			continue
 		}
-		height := status.SyncInfo.LatestBlockHeight - config.Thornode.AutoStateSync.BlockBuffer
+		height := status.SyncInfo.LatestBlockHeight - config.Switchlynode.AutoStateSync.BlockBuffer
 
 		// get the hash of the trust block
 		block, err := client.Block(ctx, &height)
@@ -1052,12 +1064,12 @@ func thornodeAutoStateSync(ctx context.Context) {
 
 		// set the trusted hash and height in tendermint
 		log.Info().Int64("height", height).Str("hash", hash).Msg("setting automatic statesync trust")
-		config.Thornode.Tendermint.StateSync.Enable = true
-		config.Thornode.Tendermint.StateSync.TrustHeight = height
-		config.Thornode.Tendermint.StateSync.TrustHash = hash
+		config.Switchlynode.Tendermint.StateSync.Enable = true
+		config.Switchlynode.Tendermint.StateSync.TrustHeight = height
+		config.Switchlynode.Tendermint.StateSync.TrustHash = hash
 
 		// set the persistent peers in tendermint to the known auto statesync peers
-		config.Thornode.Tendermint.P2P.PersistentPeers = strings.Join(config.Thornode.AutoStateSync.Peers, ",")
+		config.Switchlynode.Tendermint.P2P.PersistentPeers = strings.Join(config.Switchlynode.AutoStateSync.Peers, ",")
 
 		// success
 		return
@@ -1066,8 +1078,8 @@ func thornodeAutoStateSync(ctx context.Context) {
 	log.Fatal().Msg("failed to determine statesync trust height from any rpc host")
 }
 
-func thornodeFetchGenesis(seeds []string) {
-	home := os.ExpandEnv("$HOME/.thornode")
+func switchlynodeFetchGenesis(seeds []string) {
+	home := os.ExpandEnv("$HOME/.switchlynode")
 	genesisPath := filepath.Join(home, "config", "genesis.json")
 
 	// check to see if we already have a genesis file

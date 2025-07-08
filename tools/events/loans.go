@@ -179,7 +179,7 @@ func LoanRepayment(block *thorscan.BlockResponse) {
 			util.FormatUSD(float64(borrowerDebtRepaid.Uint64())/common.One),
 			util.FormatUSD(float64(borrowerDebtCurrent.Uint64())/common.One),
 		))
-		ageDuration := time.Duration(blockAge*common.THORChain.ApproximateBlockMilliseconds()) * time.Millisecond
+		ageDuration := time.Duration(blockAge*common.SWITCHLYChain.ApproximateBlockMilliseconds()) * time.Millisecond
 		fields.Set("Age", fmt.Sprintf("%d blocks (%s)", blockAge, util.FormatDuration(ageDuration)))
 
 		// collect swap fees from midgard
@@ -204,7 +204,7 @@ func LoanRepayment(block *thorscan.BlockResponse) {
 
 func setMidgardLoanFees(height int64, fields *util.OrderedMap, txid string) {
 	// sleep to reduce race before collecting fees from midgard
-	time.Sleep(time.Duration(common.THORChain.ApproximateBlockMilliseconds()) * time.Millisecond)
+	time.Sleep(time.Duration(common.SWITCHLYChain.ApproximateBlockMilliseconds()) * time.Millisecond)
 
 	// get actions
 	actions := util.MidgardActionsResponse{}

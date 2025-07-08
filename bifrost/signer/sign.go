@@ -101,7 +101,7 @@ func NewSigner(cfg config.Bifrost,
 	}
 	pubkeyMgr.AddNodePubKey(na.PubKeySet.Secp256k1)
 
-	cfg.Signer.BlockScanner.ChainID = common.THORChain // hard code to thorchain
+	cfg.Signer.BlockScanner.ChainID = common.SWITCHLYChain // hard code to thorchain
 
 	// Create pubkey manager and add our private key
 	thorchainBlockScanner, err := NewThorchainBlockScan(cfg.Signer.BlockScanner, storage, thorchainBridge, m, pubkeyMgr)
@@ -453,7 +453,7 @@ func (s *Signer) secp256k1VerificationSignature(pk common.PubKey) []byte {
 func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, secp256k1Signature []byte, blame ttypes.Blame, input common.PubKeys, keygenType ttypes.KeygenType, keygenTime int64) error {
 	// collect supported chains in the configuration
 	chains := common.Chains{
-		common.THORChain,
+		common.SWITCHLYChain,
 	}
 	for chain, chainCfg := range s.cfg.GetChains() {
 		if !chainCfg.OptToRetire && !chainCfg.Disabled {

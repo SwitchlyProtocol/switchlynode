@@ -32,7 +32,7 @@ func (m *MsgTCYUnstake) ValidateBasic() error {
 	if m.BasisPoints.IsZero() || m.BasisPoints.GT(cosmos.NewUint(constants.MaxBasisPts)) {
 		return cosmos.ErrUnknownRequest("invalid basis points")
 	}
-	if !m.Tx.FromAddress.IsChain(common.THORChain) {
+	if !m.Tx.FromAddress.IsChain(common.SWITCHLYChain) {
 		return cosmos.ErrInvalidAddress("address should be rune address")
 	}
 	if !m.Tx.Coins.IsEmpty() {

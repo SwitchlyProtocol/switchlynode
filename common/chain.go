@@ -14,19 +14,19 @@ import (
 )
 
 const (
-	EmptyChain   = Chain("")
-	BSCChain     = Chain("BSC")
-	ETHChain     = Chain("ETH")
-	BTCChain     = Chain("BTC")
-	LTCChain     = Chain("LTC")
-	BCHChain     = Chain("BCH")
-	DOGEChain    = Chain("DOGE")
-	THORChain    = Chain("THOR")
-	GAIAChain    = Chain("GAIA")
-	AVAXChain    = Chain("AVAX")
-	BASEChain    = Chain("BASE")
-	XRPChain     = Chain("XRP")
-	StellarChain = Chain("XLM")
+	EmptyChain    = Chain("")
+	BSCChain      = Chain("BSC")
+	ETHChain      = Chain("ETH")
+	BTCChain      = Chain("BTC")
+	LTCChain      = Chain("LTC")
+	BCHChain      = Chain("BCH")
+	DOGEChain     = Chain("DOGE")
+	SWITCHLYChain = Chain("SWITCHLY")
+	GAIAChain     = Chain("GAIA")
+	AVAXChain     = Chain("AVAX")
+	BASEChain     = Chain("BASE")
+	XRPChain      = Chain("XRP")
+	StellarChain  = Chain("XLM")
 
 	SigningAlgoSecp256k1 = SigningAlgo("secp256k1")
 	SigningAlgoEd25519   = SigningAlgo("ed25519")
@@ -39,7 +39,7 @@ var AllChains = [...]Chain{
 	LTCChain,
 	BCHChain,
 	DOGEChain,
-	THORChain,
+	SWITCHLYChain,
 	GAIAChain,
 	AVAXChain,
 	BASEChain,
@@ -84,15 +84,15 @@ func (c Chain) Equals(c2 Chain) bool {
 	return strings.EqualFold(c.String(), c2.String())
 }
 
-func (c Chain) IsTHORChain() bool {
-	return c.Equals(THORChain)
+func (c Chain) IsSWITCHLYChain() bool {
+	return c.Equals(SWITCHLYChain)
 }
 
 func (c Chain) IsBSCChain() bool {
 	return c.Equals(BSCChain)
 }
 
-// GetEVMChains returns all "EVM" chains connected to THORChain
+// GetEVMChains returns all "EVM" chains connected to SWITCHLYChain
 // "EVM" is defined, in thornode's context, as a chain that:
 // - uses 0x as an address prefix
 // - has a "Router" Smart Contract
@@ -106,7 +106,7 @@ func GetRouterChains() []Chain {
 	return []Chain{ETHChain, AVAXChain, BSCChain, BASEChain, StellarChain}
 }
 
-// GetUTXOChains returns all "UTXO" chains connected to THORChain.
+// GetUTXOChains returns all "UTXO" chains connected to SWITCHLYChain.
 func GetUTXOChains() []Chain {
 	return []Chain{BTCChain, LTCChain, BCHChain, DOGEChain}
 }
@@ -168,8 +168,8 @@ func (c Chain) GetSigningAlgo() SigningAlgo {
 // GetGasAsset chain's base asset
 func (c Chain) GetGasAsset() Asset {
 	switch c {
-	case THORChain:
-		return RuneNative
+	case SWITCHLYChain:
+		return SWTCNative
 	case BSCChain:
 		return BNBBEP20Asset
 	case BTCChain:
@@ -257,7 +257,7 @@ func (c Chain) AddressPrefix(cn ChainNetwork) string {
 		switch c {
 		case GAIAChain:
 			return "cosmos"
-		case THORChain:
+		case SWITCHLYChain:
 			// TODO update this to use mocknet address prefix
 			return types.GetConfig().GetBech32AccountAddrPrefix()
 		case BTCChain:
@@ -271,7 +271,7 @@ func (c Chain) AddressPrefix(cn ChainNetwork) string {
 		switch c {
 		case GAIAChain:
 			return "cosmos"
-		case THORChain:
+		case SWITCHLYChain:
 			return types.GetConfig().GetBech32AccountAddrPrefix()
 		case BTCChain:
 			return chaincfg.MainNetParams.Bech32HRPSegwit
@@ -367,7 +367,7 @@ func (c Chain) ApproximateBlockMilliseconds() int64 {
 		return 1_500
 	case GAIAChain:
 		return 6_000
-	case THORChain:
+	case SWITCHLYChain:
 		return 6_000
 	case BASEChain:
 		return 2_000
@@ -388,8 +388,8 @@ func (c Chain) InboundNotes() string {
 		return "Base Asset: Send the inbound_address the asset with the memo encoded in hex in the data field. Tokens: First approve router to spend tokens from user: asset.approve(router, amount). Then call router.depositWithExpiry(inbound_address, asset, amount, memo, expiry). Asset is the token contract address. Amount should be in native asset decimals (eg 1e18 for most tokens). Do not swap to smart contract addresses."
 	case GAIAChain:
 		return "Transfer the inbound_address the asset with the memo. Do not use multi-in, multi-out transactions."
-	case THORChain:
-		return "Broadcast a MsgDeposit to the THORChain network with the appropriate memo. Do not use multi-in, multi-out transactions."
+	case SWITCHLYChain:
+		return "Broadcast a MsgDeposit to the SwitchlyProtocol network with the appropriate memo. Do not use multi-in, multi-out transactions."
 	case XRPChain:
 		return "Transfer the inbound_address the asset with the memo. Only a single memo is supported and only MemoData is used."
 	case StellarChain:

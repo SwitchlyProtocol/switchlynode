@@ -175,7 +175,7 @@ func (ThorchainSuite) TestNewThorchainBridge(c *C) {
 		cryptocodec.RegisterInterfaces(registry)
 		cdc := codec.NewProtoCodec(registry)
 		kb := keyring.NewInMemory(cdc)
-		_, _, err := kb.NewMnemonic(cfg.SignerName, keyring.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
+		_, _, err := kb.NewMnemonic(cfg.SignerName, keyring.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
 		c.Assert(err, IsNil)
 		sb, err := NewThorchainBridge(cfg, m, NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd))
 		c.Assert(err, errChecker)
@@ -316,6 +316,6 @@ func (s *ThorchainSuite) TestTHORName(c *C) {
 	c.Assert(result.Name, Equals, "test1")
 	c.Assert(result.ExpireBlockHeight, Equals, int64(10000))
 	c.Assert(result.Aliases, HasLen, 1)
-	c.Assert(result.Aliases[0].Chain, Equals, common.THORChain)
+	c.Assert(result.Aliases[0].Chain, Equals, common.SWITCHLYChain)
 	c.Assert(result.Aliases[0].Address, Equals, common.Address("tthor1tdfqy34uptx207scymqsy4k5uzfmry5sf7z3dw"))
 }

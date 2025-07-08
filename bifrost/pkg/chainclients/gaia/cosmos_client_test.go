@@ -83,7 +83,7 @@ func (s *CosmosTestSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 	c.Assert(err, IsNil)
@@ -104,7 +104,7 @@ func (s *CosmosTestSuite) TestGetAddress(c *C) {
 
 	cfg := config.BifrostBlockScannerConfiguration{
 		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-			{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+			{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
 		},
 	}
 
@@ -158,7 +158,7 @@ func (s *CosmosTestSuite) TestProcessOutboundTx(c *C) {
 			CosmosGRPCHost:   fakeGRPCHost,
 			StartBlockHeight: 1, // avoids querying thorchain for block height
 			WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-				{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+				{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
 			},
 		},
 	}, nil, s.bridge, s.m)

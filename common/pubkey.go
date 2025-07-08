@@ -32,9 +32,8 @@ import (
 )
 
 // PubKey used in thorchain, it should be bech32 encoded string
-// thus it will be something like
-// tthorpub1addwnpepqt7qug8vk9r3saw8n4r803ydj2g3dqwx0mvq5akhnze86fc536xcycgtrnv
-// tthorpub1addwnpepqdqvd4r84lq9m54m5kk9sf4k6kdgavvch723pcgadulxd6ey9u70k6zq8qe
+// swtcpub1addwnpepqt7qug8vk9r3saw8n4r803ydj2g3dqwx0mvq5akhnze86fc536xcyc6nxl7k
+// swtcpub1addwnpepqdqvd4r84lq9m54m5kk9sf4k6kdgavvch723pcgadulxd6ey9u70k6z3xqjz
 type (
 	PubKey  string
 	PubKeys []PubKey
@@ -133,7 +132,7 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 			return NoAddress, fmt.Errorf("get pub key secp256k1, %w", err)
 		}
 		addressString = xrpkm.MasterPubKeyToAccountID(pk.SerializeCompressed())
-	case GAIAChain, THORChain:
+	case GAIAChain, SWITCHLYChain:
 		pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
 		if err != nil {
 			return NoAddress, err
@@ -216,7 +215,7 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 		if err != nil {
 			return NoAddress, err
 		}
-		// Stellar uses ed25519, but we have secp256k1 from THORChain
+		// Stellar uses ed25519, but we have secp256k1 from SwitchlyProtocol
 		// We need to derive an ed25519 key deterministically from the secp256k1 key
 		// Use SHA-256 hash of the secp256k1 public key as the ed25519 private key seed
 		secp256k1PubKey := pk.Bytes()
@@ -257,7 +256,7 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 }
 
 func (p PubKey) GetThorAddress() (cosmos.AccAddress, error) {
-	addr, err := p.GetAddress(THORChain)
+	addr, err := p.GetAddress(SWITCHLYChain)
 	if err != nil {
 		return nil, err
 	}

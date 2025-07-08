@@ -66,7 +66,7 @@ func (s *TypeTssSuite) TestChainConsensus(c *C) {
 			common.BTCChain.String(),
 			common.GAIAChain.String(), // 2 GAIA chains
 			common.GAIAChain.String(),
-			common.THORChain.String(), // 1 THOR chain and partridge in a pear tree
+			common.SWITCHLYChain.String(), // 1 SWITCHLY chain and partridge in a pear tree
 		},
 	}
 

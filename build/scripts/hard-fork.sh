@@ -1,31 +1,27 @@
 #!/bin/bash
 
-set -ex
+set -o pipefail
 
-HARDFORK_BLOCK_HEIGHT="${HARDFORK_BLOCK_HEIGHT:--1}"
-CHAIN_ID="${CHAIN_ID-}"
-NEW_GENESIS_TIME="${NEW_GENESIS_TIME-}"
-if [ -z "$CHAIN_ID" ]; then
-  echo "CHAIN_ID is empty"
-  exit 1
-fi
-if [ -z "$NEW_GENESIS_TIME" ]; then
-  echo "NEW_GENESIS_TIME is empty"
-  exit 1
-fi
-DATE=$(date +%s)
-echo "new chain id: $CHAIN_ID , genesis_time:$NEW_GENESIS_TIME"
+export SIGNER_NAME="${SIGNER_NAME:=switchlyprotocol}"
+export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
 
-# backup first
-cp -r ~/.thornode/config ~/.thornode/config."$DATE".bak
+. "$(dirname "$0")/core.sh"
 
-# export genesis file
-thornode export --height "$HARDFORK_BLOCK_HEIGHT" >thorchain_genesis_export."$DATE".json
+# set defaults
+FORK_HEIGHT="${FORK_HEIGHT:=1}"
+EXPORT_HEIGHT="${EXPORT_HEIGHT:=$((FORK_HEIGHT - 1))}"
 
-# reset the database
-thornode unsafe-reset-all
+echo "Exporting state at height $EXPORT_HEIGHT"
+switchlynode export --height "$EXPORT_HEIGHT" --for-zero-height --jail-allowed-addrs "" > ~/.switchlynode/config/exported_genesis.json
 
-# update chain id
-jq --arg CHAIN_ID "$CHAIN_ID" --arg NEW_GENESIS_TIME "$NEW_GENESIS_TIME" '.chain_id=$CHAIN_ID | .genesis_time=$NEW_GENESIS_TIME' thorchain_genesis_export."$DATE".json >temp.json
-# copied exported genesis file to the config directory
-cp temp.json ~/.thornode/config/genesis.json
+echo "Resetting state"
+switchlynode tendermint unsafe-reset-all
+
+echo "Copying exported genesis to genesis.json"
+cp ~/.switchlynode/config/exported_genesis.json ~/.switchlynode/config/genesis.json
+
+echo "Validating genesis"
+switchlynode genesis validate --trace
+
+echo "Starting node"
+exec switchlynode start

@@ -48,8 +48,8 @@ func (s *HandlerLoanSuite) TestLoanValidate(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.RuneAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.RuneAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SWTCAsset(), bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SWTCAsset())
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-ETH", 1)
@@ -107,8 +107,8 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.RuneAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.RuneAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SWTCAsset(), bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SWTCAsset())
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 
@@ -124,7 +124,7 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 	// happy path
 	txid, _ := common.NewTxID("29FC8D032CF17380AA1DC86F85A479CA9433E85887A9317C5D70D87EF56EAFAA")
 	receiver, _ := common.NewAddress("bcrt1qdn665723epwlg8u2mk7rg4yp7n72mzwqzuv9ye")
-	signer, _ := cosmos.AccAddressFromBech32("tthor1qxcgl07dm3vvewwxag7u0q7nq2uk984v60xpl0")
+	signer, _ := cosmos.AccAddressFromBech32("swtc1qxcgl07dm3vvewwxag7u0q7nq2uk984v60xpl0")
 	msg := NewMsgLoanOpen(owner, common.BTCAsset, cosmos.NewUint(1e8), receiver, common.BTCAsset, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", cosmos.ZeroUint(), signer, txid)
 	c.Assert(handler.handle(ctx.WithValue(constants.CtxLoanTxID, txid), *msg), IsNil)
 	c.Assert(mgr.SwapQ().EndBlock(ctx, mgr), IsNil)
@@ -180,8 +180,8 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToTOR(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.RuneAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.RuneAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SWTCAsset(), bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SWTCAsset())
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 
@@ -195,7 +195,7 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToTOR(c *C) {
 	// happy path
 	txid, _ := common.NewTxID("29FC8D032CF17380AA1DC86F85A479CA9433E85887A9317C5D70D87EF56EAFAA")
 	receiver := GetRandomTHORAddress()
-	signer, _ := cosmos.AccAddressFromBech32("tthor1qxcgl07dm3vvewwxag7u0q7nq2uk984v60xpl0")
+	signer, _ := cosmos.AccAddressFromBech32("swtc1qxcgl07dm3vvewwxag7u0q7nq2uk984v60xpl0")
 	msg := NewMsgLoanOpen(owner, common.BTCAsset, cosmos.NewUint(1e8), receiver, common.TOR, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", cosmos.ZeroUint(), signer, txid)
 	c.Assert(handler.handle(ctx.WithValue(constants.CtxLoanTxID, txid), *msg), IsNil)
 	c.Assert(mgr.SwapQ().EndBlock(ctx, mgr), IsNil)
@@ -259,7 +259,7 @@ func (s *HandlerLoanSuite) TestLoanSwapFails(c *C) {
 	// unhappy path
 	txid, _ := common.NewTxID("29FC8D032CF17380AA1DC86F85A479CA9433E85887A9317C5D70D87EF56EAFAA")
 	receiver, _ := common.NewAddress("bcrt1qdn665723epwlg8u2mk7rg4yp7n72mzwqzuv9ye")
-	signer, _ := cosmos.AccAddressFromBech32("tthor1qxcgl07dm3vvewwxag7u0q7nq2uk984v60xpl0")
+	signer, _ := cosmos.AccAddressFromBech32("swtc1qxcgl07dm3vvewwxag7u0q7nq2uk984v60xpl0")
 	msg := NewMsgLoanOpen(owner, common.BTCAsset, cosmos.NewUint(1e8), receiver, common.BTCAsset, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", cosmos.ZeroUint(), signer, txid)
 	c.Assert(handler.handle(ctx.WithValue(constants.CtxLoanTxID, txid), *msg), IsNil)
 	c.Assert(mgr.SwapQ().EndBlock(ctx, mgr), IsNil)

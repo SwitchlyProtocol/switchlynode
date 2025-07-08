@@ -20,14 +20,14 @@ func (s *BitcoinSignerSuite) TestGetChainCfg(c *C) {
 }
 
 func (s *BitcoinSignerSuite) TestSignTxWithTSS(c *C) {
-	pubkey, err := common.NewPubKey("tthorpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5rql6vn")
+	pubkey, err := common.NewPubKey("swtcpub1addwnpepqd7myf7hp9xwy9wr5r6hux7vwvj4rl34r72zf9r3jdzk0c84msdlwe8dyrr")
 	c.Assert(err, IsNil)
 	addr, err := pubkey.GetAddress(common.BTCChain)
 	c.Assert(err, IsNil)
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.BTCChain,
 		ToAddress:   addr,
-		VaultPubKey: "tthorpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5rql6vn",
+		VaultPubKey: "swtcpub1addwnpepqd7myf7hp9xwy9wr5r6hux7vwvj4rl34r72zf9r3jdzk0c84msdlwe8dyrr",
 		Coins: common.Coins{
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(10)),
 		},

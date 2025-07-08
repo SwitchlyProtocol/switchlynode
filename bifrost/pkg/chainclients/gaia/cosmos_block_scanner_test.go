@@ -90,7 +90,7 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.THORChainHDPath, cfg.SignerPasswd, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 	c.Assert(err, IsNil)
@@ -104,7 +104,7 @@ func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
 		ChainID:            common.GAIAChain,
 		GasPriceResolution: 100_000,
 		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-			{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+			{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
 		},
 	}
 	blockScanner := CosmosBlockScanner{cfg: cfg}
@@ -199,7 +199,7 @@ func (s *BlockScannerTestSuite) TestProcessTxs(c *C) {
 	cfg := config.BifrostBlockScannerConfiguration{
 		ChainID: common.GAIAChain,
 		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-			{Denom: "uatom", Decimals: 6, THORChainSymbol: "ATOM"},
+			{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
 		},
 	}
 	registry := s.bridge.GetContext().InterfaceRegistry

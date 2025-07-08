@@ -397,16 +397,17 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 		}
 
 		// Convert balance using asset mapping
-		coin, err := assetMapping.ConvertToTHORChainAmount(balance.Balance)
+		coin, err := assetMapping.ConvertToSwitchlyProtocolAmount(balance.Balance)
 		if err != nil {
-			c.logger.Error().
-				Err(err).
-				Str("asset", assetMapping.THORChainAsset.String()).
-				Str("balance", balance.Balance).
-				Msg("fail to convert balance")
+			c.logger.Err(err).Msg("fail to convert balance to coin")
 			continue
 		}
+		c.logger.Debug().
+			Str("asset", assetMapping.SwitchlyProtocolAsset.String()).
+			Str("amount", coin.Amount.String()).
+			Msg("balance converted")
 
+		// Only include non-zero balances
 		if !coin.Amount.IsZero() {
 			coins = append(coins, coin)
 		}
@@ -426,8 +427,8 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 	// Support single coin transactions
 	coin := tx.Coins[0]
 
-	// Find the asset mapping for this THORChain asset
-	assetMapping, found := GetAssetByTHORChainAsset(coin.Asset)
+	// Find the asset mapping for this SwitchlyProtocol asset
+	assetMapping, found := GetAssetBySwitchlyProtocolAsset(coin.Asset)
 	if !found {
 		c.logger.Error().
 			Str("asset", coin.Asset.String()).
@@ -436,8 +437,8 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
 	}
 
-	// Convert amount from THORChain units to Stellar units
-	stellarAmount := assetMapping.ConvertFromTHORChainAmount(coin.Amount)
+	// Convert amount from SwitchlyProtocol units to Stellar units
+	stellarAmount := assetMapping.ConvertFromSwitchlyProtocolAmount(coin.Amount)
 
 	// Log transaction details
 	c.logger.Debug().
@@ -462,25 +463,8 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 // SignTx signs a transaction
 func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
 	defer func() {
-		if err != nil {
-			var keysignError tss.KeysignError
-			if errors.As(err, &keysignError) {
-				if len(keysignError.Blame.BlameNodes) == 0 {
-					c.logger.Err(err).Msg("TSS doesn't know which node to blame")
-					return
-				}
-
-				// key sign error forward the keysign blame to thorchain
-				var txID common.TxID
-				txID, err = c.thorchainBridge.PostKeysignFailure(keysignError.Blame, thorchainHeight, tx.Memo, tx.Coins, tx.VaultPubKey)
-				if err != nil {
-					c.logger.Err(err).Msg("fail to post keysign failure to THORChain")
-					return
-				}
-				c.logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to thorchain")
-			}
-			c.logger.Err(err).Msg("failed to sign tx")
-			return
+		if err != nil && !strings.Contains(err.Error(), "fail to broadcast") {
+			c.logger.Err(err).Msg("fail to sign tx")
 		}
 	}()
 
@@ -497,8 +481,8 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, c
 	// Support single coin transactions
 	coin := tx.Coins[0]
 
-	// Find the asset mapping for this THORChain asset
-	assetMapping, found := GetAssetByTHORChainAsset(coin.Asset)
+	// Find the asset mapping for this SwitchlyProtocol asset
+	assetMapping, found := GetAssetBySwitchlyProtocolAsset(coin.Asset)
 	if !found {
 		c.logger.Error().
 			Str("asset", coin.Asset.String()).
@@ -619,11 +603,9 @@ func (c *Client) ConfirmationCountReady(txIn stypes.TxIn) bool {
 	return true
 }
 
-// GetConfirmationCount returns the confirmation count for the given transaction
+// GetConfirmationCount returns the number of confirmations for a given tx
 func (c *Client) GetConfirmationCount(txIn stypes.TxIn) int64 {
-	// For Stellar, transactions are immediately finalized when they appear in a ledger
-	// So we always return 1 confirmation for any transaction that has been included
-	return 1
+	return 0
 }
 
 // ReportSolvency reports solvency to THORChain
@@ -859,4 +841,17 @@ func (c *Client) UpdateRouterAddress(pubKey common.PubKey, newAddress common.Add
 		Msg("router address updated")
 
 	return nil
+}
+
+// SendTx sends a transaction to the Stellar network
+func (c *Client) SendTx(tx stypes.TxOutItem) (string, error) {
+	signedTx, _, _, err := c.SignTx(tx, tx.Height)
+	if err != nil {
+		return "", err
+	}
+	if signedTx == nil {
+		return "", fmt.Errorf("no signed transaction returned")
+	}
+
+	return c.BroadcastTx(tx, signedTx)
 }

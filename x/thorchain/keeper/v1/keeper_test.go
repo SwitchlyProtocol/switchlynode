@@ -33,7 +33,7 @@ import (
 func TestPackage(t *testing.T) { TestingT(t) }
 
 func FundModule(c *C, ctx cosmos.Context, k KVStore, name string, amt uint64) {
-	coin := common.NewCoin(common.RuneNative, cosmos.NewUint(amt))
+	coin := common.NewCoin(common.SWTCNative, cosmos.NewUint(amt))
 	err := k.MintToModule(ctx, ModuleName, coin)
 	c.Assert(err, IsNil)
 	err = k.SendFromModuleToModule(ctx, ModuleName, name, common.NewCoins(coin))
@@ -75,7 +75,7 @@ func setupKeeperForTest(c *C) (cosmos.Context, KVStore) {
 		ReserveName:                    {},
 		AsgardName:                     {},
 		TreasuryName:                   {},
-		RUNEPoolName:                   {},
+		SWTCPoolName:                   {},
 		BondName:                       {authtypes.Staking},
 	}
 	ak := authkeeper.NewAccountKeeper(
@@ -121,7 +121,7 @@ func (KeeperTestSuit) TestKeeperVersion(c *C) {
 	ctx, k := setupKeeperForTest(c)
 
 	c.Check(k.GetRuneBalanceOfModule(ctx, AsgardName).Equal(cosmos.NewUint(100000000*common.One)), Equals, true)
-	coinsToSend := common.NewCoins(common.NewCoin(common.RuneNative, cosmos.NewUint(1*common.One)))
+	coinsToSend := common.NewCoins(common.NewCoin(common.SWTCNative, cosmos.NewUint(1*common.One)))
 	c.Check(k.SendFromModuleToModule(ctx, AsgardName, BondName, coinsToSend), IsNil)
 
 	acct := GetRandomBech32Addr()
@@ -143,17 +143,17 @@ func (KeeperTestSuit) TestMaxMint(c *C) {
 
 	max := int64(200000000_00000000)
 	k.SetMimir(ctx, "MaxRuneSupply", max)
-	maxCoin := common.NewCoin(common.RuneAsset(), cosmos.NewUint(uint64(max)))
+	maxCoin := common.NewCoin(common.SWTCAsset(), cosmos.NewUint(uint64(max)))
 
 	// ship asgard rune to reserve
-	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ReserveName, common.NewCoins(common.NewCoin(common.RuneAsset(), cosmos.NewUint(10000000000000000)))), IsNil)
+	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ReserveName, common.NewCoins(common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000000000000000)))), IsNil)
 	// mint more rune into reserve to max the supply
-	mintAmt := common.NewCoin(common.RuneAsset(), cosmos.NewUint(uint64(max)-10000000000000000))
+	mintAmt := common.NewCoin(common.SWTCAsset(), cosmos.NewUint(uint64(max)-10000000000000000))
 	c.Assert(k.MintToModule(ctx, ModuleName, mintAmt), IsNil)
 	c.Assert(k.SendFromModuleToModule(ctx, ModuleName, ReserveName, common.NewCoins(mintAmt)), IsNil)
 
 	// mint more rune into another module
-	moreCoin := common.NewCoin(common.RuneAsset(), cosmos.NewUint(uint64(max/4)))
+	moreCoin := common.NewCoin(common.SWTCAsset(), cosmos.NewUint(uint64(max/4)))
 	c.Assert(k.MintToModule(ctx, ModuleName, moreCoin), IsNil)
 
 	// fetch module balances

@@ -72,7 +72,7 @@ func NewRunePoolWithdrawMemo(basisPoints cosmos.Uint, affAddr common.Address, af
 
 func (p *parser) ParseRunePoolWithdrawMemo() (RunePoolWithdrawMemo, error) {
 	basisPoints := p.getUint(1, true, cosmos.ZeroInt().Uint64())
-	affiliateAddress := p.getAddressWithKeeper(2, false, common.NoAddress, common.THORChain)
+	affiliateAddress := p.getAddressWithKeeper(2, false, common.NoAddress, common.SWITCHLYChain)
 	tn := p.getTHORName(2, false, types.NewTHORName("", 0, nil), -1)
 	affiliateBasisPoints := p.getUintWithMaxValue(3, false, 0, constants.MaxBasisPts)
 	return NewRunePoolWithdrawMemo(basisPoints, affiliateAddress, affiliateBasisPoints, tn), p.Error()

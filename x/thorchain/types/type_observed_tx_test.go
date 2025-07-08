@@ -153,7 +153,7 @@ func (s TypeObservedTxSuite) TestVoter(c *C) {
 	c.Check(voter.String() == txID.String(), Equals, true)
 
 	thorchainCoins := common.Coins{
-		common.NewCoin(common.RuneAsset(), cosmos.NewUint(100)),
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(100)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100)),
 	}
 	inputs := []struct {
@@ -215,7 +215,7 @@ func (s TypeObservedTxSuite) TestVoter(c *C) {
 	}
 }
 
-func (TypeObservedTxSuite) TestSetTxToComplete(c *C) {
+func (s TypeObservedTxSuite) TestSetTxToComplete(c *C) {
 	activeNodes := NodeAccounts{
 		GetRandomValidatorNode(NodeStatus_Active),
 		GetRandomValidatorNode(NodeStatus_Active),
@@ -276,7 +276,7 @@ func (TypeObservedTxSuite) TestSetTxToComplete(c *C) {
 	c.Assert(voter.GetTx(activeNodes).Equals(voter.Tx), Equals, true)
 }
 
-func (TypeObservedTxSuite) TestAddOutTx(c *C) {
+func (s TypeObservedTxSuite) TestAddOutTx(c *C) {
 	activeNodes := NodeAccounts{
 		GetRandomValidatorNode(NodeStatus_Active),
 		GetRandomValidatorNode(NodeStatus_Active),
@@ -343,21 +343,21 @@ func (TypeObservedTxSuite) TestAddOutTx(c *C) {
 	c.Assert(voter.GetTx(activeNodes).Equals(voter.Tx), Equals, true)
 }
 
-func (TypeObservedTxSuite) TestObservedTxEquals(c *C) {
+func (s TypeObservedTxSuite) TestObservedTxEquals(c *C) {
 	coins1 := common.Coins{
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100*common.One)),
-		common.NewCoin(common.RuneAsset(), cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
 	}
 	coins2 := common.Coins{
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100*common.One)),
 	}
 	coins3 := common.Coins{
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(200*common.One)),
-		common.NewCoin(common.RuneAsset(), cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
 	}
 	coins4 := common.Coins{
-		common.NewCoin(common.RuneAsset(), cosmos.NewUint(100*common.One)),
-		common.NewCoin(common.RuneAsset(), cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
 	}
 	eth, err := common.NewAddress("0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Assert(err, IsNil)
@@ -442,7 +442,7 @@ func (TypeObservedTxSuite) TestObservedTxEquals(c *C) {
 	c.Assert(tx1.Equals(tx2), Equals, true)
 }
 
-func (TypeObservedTxSuite) TestObservedTxVote(c *C) {
+func (s TypeObservedTxSuite) TestObservedTxVote(c *C) {
 	tx := GetRandomTx()
 	voter := NewObservedTxVoter("", []common.ObservedTx{common.NewObservedTx(tx, 1, GetRandomPubKey(), 1)})
 	c.Check(voter.Valid(), NotNil)
@@ -466,7 +466,7 @@ func (TypeObservedTxSuite) TestObservedTxVote(c *C) {
 	c.Check(observedTx1.IsDone(2), Equals, false)
 }
 
-func (TypeObservedTxSuite) TestObservedTxGetConsensus(c *C) {
+func (s TypeObservedTxSuite) TestObservedTxGetConsensus(c *C) {
 	txID := GetRandomTxHash()
 	acc1 := GetRandomBech32Addr()
 	acc2 := GetRandomBech32Addr()
@@ -565,7 +565,7 @@ func (TypeObservedTxSuite) TestObservedTxGetConsensus(c *C) {
 	c.Assert(tx.Equals(obTx1), Equals, true)
 }
 
-func (TypeObservedTxSuite) TestNewGetConsensusTx(c *C) {
+func (s TypeObservedTxSuite) TestNewGetConsensusTx(c *C) {
 	txID := GetRandomTxHash()
 	acc1 := GetRandomBech32Addr()
 	acc2 := GetRandomBech32Addr()

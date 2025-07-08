@@ -1,204 +1,205 @@
-# CLAUDE.md
+# SwitchlyProtocol Development Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Building and Installation
-
-### Prerequisites
-
-- Go (as specified in go.mod)
-- Make
-- Docker and Docker Compose V2
-- Protobuf compiler
-
-### Installation
+## Quick Start
 
 ```bash
 # Clone the repository
-git clone https://gitlab.com/thorchain/thornode.git
-cd thornode
+git clone https://gitlab.com/switchlyprotocol/switchlynode.git
+cd switchlynode
 
-# Install thornode
-make go-generate openapi proto-gen install
-
-# Verify installation
-thornode help
-```
-
-### Common Development Commands
-
-```bash
-# Build the project
-make build
-
-# Install binaries
+# Install switchlynode
 make install
 
-# Format code
-make format
-
-# Run linter
-make lint
-
-# Generate protocol buffers, openapi, etc.
-make generate
+# Check installation
+switchlynode help
 ```
 
-## Testing
+## Project Structure
+
+```
+switchlynode/
+├── app/                    # Cosmos SDK application setup
+├── bifrost/               # External chain bridge
+├── build/                 # Build scripts and Docker files
+├── chain/                 # Chain-specific implementations
+├── cmd/                   # Command-line interface
+├── common/                # Shared utilities and types
+├── config/                # Configuration management
+├── constants/             # Protocol constants
+├── openapi/               # API documentation
+├── proto/                 # Protocol buffer definitions
+├── scripts/               # Development scripts
+├── tools/                 # Development tools
+├── x/                     # Cosmos SDK modules
+└── Makefile              # Build automation
+```
+
+## Development Workflow
+
+### 1. Local Development
 
 ```bash
-# Run standard tests (excluding computationally-expensive tests like go-tss)
+# Start local development environment
+make run-mocknet
+
+# Run tests
 make test
 
-# Run all tests (including computationally-expensive ones)
-make test-all
+# Build binary
+make build
 
-# Run only go-tss tests
-make test-go-tss
+# Install binary
+make install
+```
 
-# Run tests with race detector
-make test-race
+### 2. Docker Development
+
+```bash
+# Build Docker image
+make docker-build
+
+# Run with Docker Compose
+make run-docker
+
+# Clean Docker environment
+make docker-clean
+```
+
+### 3. Testing
+
+```bash
+# Run unit tests
+make test
+
+# Run integration tests
+make test-integration
 
 # Run regression tests
 make test-regression
 
 # Run simulation tests
 make test-simulation
-
-# Create test coverage report
-make test-coverage
-make coverage-report   # HTML report
-```
-
-### Testing Guidelines
-
-- To run tests, use `make test`
-- To run regression tests, use `make test-regression`
-- To test a specific suite or regression test, utilize RUN as an environment variable
-- Do not edit generated files such as `pulsar.go` and `pb.go`, and no files in ./openai/gen or ./test/regression/mnt
-- When building, use `make build`
-- After editing any Go file, use `goimports -w` to ensure proper formatting
-- After editing any protobuf files (ie ".proto") or any yaml files in ./openapi, run `make generate`
-- For Markdown files, use `trunk` to format
-- For JSON files, format using `jq` or `trunk`
-
-## Local Development Environment
-
-```bash
-# Start a local mocknet for development
-make run-mocknet
-
-# Stop mocknet and remove volumes
-make stop-mocknet
-
-# Reset mocknet (stop and restart)
-make reset-mocknet
-
-# Run CLI in mocknet container
-make cli-mocknet
-
-# View logs
-make logs-mocknet
-
-# Bootstrap mocknet with liquidity
-make bootstrap-mocknet
 ```
 
 ## Architecture Overview
 
-THORChain is a decentralized liquidity network built with Cosmos SDK and TSS-lib. The architecture consists of several key components:
+SwitchlyProtocol is a decentralized liquidity network built with Cosmos SDK and TSS-lib. The architecture consists of several key components:
 
 ### Core Components
 
-1. **THORNode**: The main blockchain node
+1. **SwitchlyNode**: The main blockchain node
+   - Built on Cosmos SDK
+   - Implements the SwitchlyProtocol state machine logic
+   - Handles consensus and transaction processing
 
-   - Implements the THORChain state machine logic
-   - Handles transactions, consensus, and the core protocol
-   - Built on Cosmos SDK and Tendermint (CometBFT)
+2. **Bifrost**: Bridge component connecting external chains to SwitchlyProtocol
+   - Observes external chain transactions
+   - Signs outbound transactions using TSS
+   - Manages chain-specific logic
+   - Communicates with SwitchlyNode via gRPC
 
-2. **Bifrost**: Bridge component connecting external chains to THORChain
+### Transaction Flow
 
-   - Consists of observers and signers
-   - Monitors external chains and processes transactions
-   - Communicates with THORNode via gRPC
+1. **Inbound**: External chains → Bifrost → SwitchlyNode
+   - Bifrost observes external chain transactions
+   - Validates and processes inbound transactions
+   - Communicates with SwitchlyNode via gRPC
 
-3. **TSS (Threshold Signature Scheme)**: Cryptographic system for secure multi-party signing
-   - Implements threshold cryptography for key management
-   - Allows nodes to collectively sign transactions without revealing private keys
-
-### Data Flow
-
-1. **Inbound**: External chains → Bifrost → THORNode
-
-   - Bifrost observes transactions on external chains
-   - Communicates with THORNode via gRPC
-
-2. **Outbound**: THORNode → Bifrost → External chains
-   - THORNode processes swaps, adds liquidity, etc.
+2. **Outbound**: SwitchlyNode → Bifrost → External chains
+   - SwitchlyNode processes swaps, adds liquidity, etc.
    - Creates outbound transactions
    - Bifrost signs and broadcasts to external chains
 
 ### Key Modules
 
-- **x/thorchain**: Main module implementing THORChain-specific logic
-
-  - Handlers for various transaction types (swap, add/withdraw liquidity, etc.)
-  - Managers for different aspects (pools, network, etc.)
-  - Keepers for state management
-
-- **bifrost/chainclients**: Clients for different blockchains
-
-  - Support for UTXO chains (BTC, LTC, BCH, DOGE)
-  - Support for EVM chains (ETH, BSC, AVAX)
-  - Support for Cosmos-based chains
-
-- **bifrost/observer**: Monitors external chains for inbound transactions
-- **bifrost/signer**: Signs outbound transactions for external chains
+- **x/switchlyprotocol**: Main module implementing SwitchlyProtocol-specific logic
+  - Pool management
+  - Liquidity provision
+  - Swapping logic
+  - Node management
+  - Governance
 
 ### Network Types
 
-THORChain supports multiple network types, each with specific configurations:
+SwitchlyProtocol supports multiple network types, each with specific configurations:
 
-- **Mainnet**: Production network
-- **Stagenet**: Testing environment
-- **Mocknet**: Local development environment
-
-### Testing Infrastructure
-
-1. **Unit Tests**: Standard Go tests throughout the codebase
-2. **Regression Tests**: YAML-defined test suites testing specific functionality
-3. **Simulation Tests**: End-to-end tests simulating real-world scenarios
-4. **Mocknet**: Local development environment for testing
+1. **Mocknet**: Local development network
+2. **Testnet**: Public testing network  
+3. **Stagenet**: Pre-production network
+4. **Mainnet**: Production network
 
 ## Development Guidelines
 
-1. When adding a new feature, ensure you implement:
+### Code Style
 
-   - Handler logic in `/x/thorchain/handler_*.go`
-   - Unit tests for all new code
-   - Updates to regression and simulation tests if needed
+- Follow standard Go conventions
+- Use meaningful variable names
+- Add comprehensive comments
+- Write unit tests for new functionality
 
-2. Follow the ADR (Architecture Decision Record) process for significant changes:
+### Testing Strategy
 
-   - Document design decisions in `/docs/architecture/`
-   - Provide rationale and implementation details
+- Unit tests for individual functions
+- Integration tests for module interactions
+- Regression tests for bug fixes
+- Simulation tests for complex scenarios
 
-3. For cross-chain functionality:
+### Pull Request Process
 
-   - Understand the bifrost observer/signer workflow
-   - Test with mocknet to ensure proper integration
+1. Create feature branch from `develop`
+2. Implement changes with tests
+3. Update documentation if needed
+4. Submit PR with clear description
+5. Address review feedback
+6. Merge after approval
 
-4. When making chain-specific changes:
+### Key Development Areas
 
-   - Test on the appropriate network type (mainnet, stagenet, mocknet)
-   - Consider chain-specific configurations in files like `*_mainnet.go`, `*_stagenet.go`, etc.
+- Handler logic in `/x/switchlyprotocol/handler_*.go`
+- Keeper functions in `/x/switchlyprotocol/keeper/`
+- Message types in `/x/switchlyprotocol/types/`
+- Chain clients in `/bifrost/pkg/chainclients/`
+- Protocol constants in `/constants/`
 
-5. For protocol upgrades:
-   - The network generally soft-forks monthly and hard-forks annually
-   - Ensure backward compatibility where appropriate
-   - Test thoroughly with regression and simulation tests
+## Common Tasks
 
-## Memories
+### Adding New Chain Support
 
-- When you want to generate go files or the api, please use "make generate"
-- this code repository is a gitlab repository, so remember to use the GitLab CLI ('glab') for all GitLab-related tasks
+1. Create chain client in `/bifrost/pkg/chainclients/`
+2. Implement required interfaces
+3. Add chain configuration
+4. Update genesis parameters
+5. Add comprehensive tests
+
+### Modifying Protocol Logic
+
+1. Update handler functions
+2. Modify keeper methods
+3. Update message types if needed
+4. Add migration logic if required
+5. Test thoroughly with regression and simulation tests
+
+## Debugging
+
+### Local Debugging
+
+```bash
+# Enable debug logging
+export LOG_LEVEL=debug
+
+# Run with race detection
+make test-race
+
+# Profile CPU usage
+make profile-cpu
+
+# Profile memory usage
+make profile-mem
+```
+
+### Common Issues
+
+1. **Genesis state issues**: Check genesis.json format
+2. **Network connectivity**: Verify port configurations
+3. **TSS issues**: Check key generation and signing
+4. **Chain sync issues**: Verify external chain connections

@@ -12,9 +12,10 @@ import (
 )
 
 func (s *LitecoinSuite) TestGetAddress(c *C) {
-	pubkey := common.PubKey("thorpub1addwnpepqt7qug8vk9r3saw8n4r803ydj2g3dqwx0mvq5akhnze86fc536xcy2cr8a2")
+	ttypes.SetupConfigForTest()
+	pubkey := common.PubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg")
 	addr := s.client.GetAddress(pubkey)
-	c.Assert(addr, Equals, "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz")
+	c.Assert(addr, Equals, "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l")
 }
 
 func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
@@ -31,7 +32,7 @@ func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz",
+				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
@@ -50,7 +51,7 @@ func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz",
+				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
@@ -70,7 +71,7 @@ func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz",
+				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(12345600000)),
@@ -102,7 +103,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz",
+				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
@@ -122,7 +123,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz",
+				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
@@ -162,7 +163,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz",
+				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(22345600)),
@@ -182,7 +183,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mursyaz",
+				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456000)),

@@ -59,8 +59,11 @@ func (p *parser) ParseAddLiquidityMemo() (AddLiquidityMemo, error) {
 	}
 
 	asset := p.getAsset(1, true, common.EmptyAsset)
+	if asset.Chain.Equals(common.SWITCHLYChain) {
+		return AddLiquidityMemo{}, cosmos.ErrUnknownRequest("cannot add liquidity with SWITCHLY chain")
+	}
 	addr := p.getAddressWithKeeper(2, false, common.NoAddress, asset.Chain)
-	affChain := common.THORChain
+	affChain := common.SWITCHLYChain
 	if asset.IsSyntheticAsset() {
 		// For a Savers add, an Affiliate THORName must be resolved
 		// to an address for the Layer 1 Chain of the synth to succeed.
@@ -91,7 +94,7 @@ func ParseAddLiquidityMemoV1(ctx cosmos.Context, keeper keeper.Keeper, asset com
 		if keeper == nil {
 			affAddr, err = common.NewAddress(parts[3])
 		} else {
-			affAddr, err = FetchAddress(ctx, keeper, parts[3], common.THORChain)
+			affAddr, err = FetchAddress(ctx, keeper, parts[3], common.SWITCHLYChain)
 		}
 		if err != nil {
 			return AddLiquidityMemo{}, err

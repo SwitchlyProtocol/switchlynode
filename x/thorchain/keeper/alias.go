@@ -9,7 +9,7 @@ const (
 	ReserveName  = types.ReserveName
 	AsgardName   = types.AsgardName
 	TreasuryName = types.TreasuryName
-	RUNEPoolName = types.RUNEPoolName
+	SWTCPoolName = types.SWTCPoolName
 	BondName     = types.BondName
 	StoreKey     = types.StoreKey
 

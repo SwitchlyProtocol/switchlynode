@@ -315,7 +315,7 @@ func (r *RouterEventScanner) processDepositEvent(tx horizon.Transaction, event S
 	}
 
 	// Convert amount
-	coin, err := mapping.ConvertToTHORChainAmount(depositEvent.Amount)
+	coin, err := mapping.ConvertToSwitchlyProtocolAmount(depositEvent.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -490,11 +490,11 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		if len(assetAddress) == 56 && strings.HasPrefix(assetAddress, "C") {
 			// This looks like a Soroban contract address
 			mapping = StellarAssetMapping{
-				StellarAssetType:   "contract",
-				StellarAssetCode:   "UNKNOWN",
-				StellarAssetIssuer: assetAddress,
-				StellarDecimals:    7, // Default to 7 decimals
-				THORChainAsset:     common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"},
+				StellarAssetType:      "contract",
+				StellarAssetCode:      "UNKNOWN",
+				StellarAssetIssuer:    assetAddress,
+				StellarDecimals:       7, // Default to 7 decimals
+				SwitchlyProtocolAsset: common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"},
 			}
 			r.logger.Info().
 				Str("asset_address", assetAddress).
@@ -505,7 +505,7 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 	}
 
 	// Convert amount
-	coin, err := mapping.ConvertToTHORChainAmount(event.Amount)
+	coin, err := mapping.ConvertToSwitchlyProtocolAmount(event.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -545,7 +545,7 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		Str("tx_hash", event.TransactionHash).
 		Str("from", fromAddr.String()).
 		Str("to", toAddr.String()).
-		Str("asset", mapping.THORChainAsset.String()).
+		Str("asset", mapping.SwitchlyProtocolAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Str("memo", event.Memo).
 		Msg("processed deposit event from Soroban RPC")

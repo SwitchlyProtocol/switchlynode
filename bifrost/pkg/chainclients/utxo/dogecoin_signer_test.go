@@ -56,7 +56,7 @@ func (s *DogecoinSignerSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.THORChainHDPath, password, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.SwitchlyProtocolHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.keys = thorclient.NewKeysWithKeybase(kb, bob, password)
 }
@@ -86,7 +86,7 @@ func (s *DogecoinSignerSuite) SetUpTest(c *C) {
 	}
 
 	s.server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.RequestURI == "/thorchain/vaults/tthorpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5rql6vn/signers" { // nolint
+		if req.RequestURI == "/switchly/vaults/swtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cce/signers" { // nolint
 			_, err := rw.Write([]byte("[]"))
 			c.Assert(err, IsNil)
 		} else if strings.HasPrefix(req.RequestURI, "/thorchain/vaults") && strings.HasSuffix(req.RequestURI, "/signers") {
@@ -218,7 +218,7 @@ func (s *DogecoinSignerSuite) TestSignTxHappyPathWithPrivateKey(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   addr,
-		VaultPubKey: "tthorpub1addwnpepqw2k68efthm08f0f5akhjs6fk5j2pze4wkwt4fmnymf9yd463puruhh0lyz",
+		VaultPubKey: "swtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cce",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},
@@ -255,7 +255,7 @@ func (s *DogecoinSignerSuite) TestSignTxWithoutPredefinedMaxGas(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   addr,
-		VaultPubKey: "tthorpub1addwnpepqw2k68efthm08f0f5akhjs6fk5j2pze4wkwt4fmnymf9yd463puruhh0lyz",
+		VaultPubKey: "swtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cce",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},
@@ -341,7 +341,7 @@ func (s *DogecoinSignerSuite) TestSignAddressPubKeyShouldFail(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   "04ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "tthorpub1addwnpepqw2k68efthm08f0f5akhjs6fk5j2pze4wkwt4fmnymf9yd463puruhh0lyz",
+		VaultPubKey: "swtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cce",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},
@@ -374,7 +374,7 @@ func (s *DogecoinSignerSuite) TestToAddressCanNotRoundTripShouldBlock(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   "05ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "tthorpub1addwnpepqw2k68efthm08f0f5akhjs6fk5j2pze4wkwt4fmnymf9yd463puruhh0lyz",
+		VaultPubKey: "swtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cce",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},

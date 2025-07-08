@@ -36,7 +36,7 @@ type User struct {
 // NewUser returns a new client using the private key from the given mnemonic.
 func NewUser(mnemonic string, constructors map[common.Chain]LiteChainClientConstructor) *User {
 	// create pubkey for mnemonic
-	derivedPriv, err := hd.Secp256k1.Derive()(mnemonic, "", cmd.THORChainHDPath)
+	derivedPriv, err := hd.Secp256k1.Derive()(mnemonic, "", cmd.SwitchlyProtocolHDPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to derive private key")
 	}
@@ -53,7 +53,7 @@ func NewUser(mnemonic string, constructors map[common.Chain]LiteChainClientConst
 	cdc := codec.NewProtoCodec(registry)
 	kr := keyring.NewInMemory(cdc)
 	name := strings.Split(mnemonic, " ")[0]
-	_, err = kr.NewAccount(name, mnemonic, "", cmd.THORChainHDPath, hd.Secp256k1)
+	_, err = kr.NewAccount(name, mnemonic, "", cmd.SwitchlyProtocolHDPath, hd.Secp256k1)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to add account to keyring")
 	}

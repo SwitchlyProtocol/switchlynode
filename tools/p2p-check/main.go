@@ -17,6 +17,7 @@ import (
 	peer "github.com/libp2p/go-libp2p-core/peer"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	ma "github.com/multiformats/go-multiaddr"
+	"github.com/switchlyprotocol/switchlynode/v1/cmd"
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
 	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
@@ -84,14 +85,18 @@ func getEnvOrDefault(key, defaultValue string) string {
 	return defaultValue
 }
 
+func setupBech32Prefix() {
+	config := cosmos.GetConfig()
+	config.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
+	config.SetBech32PrefixForValidator(cmd.Bech32PrefixValAddr, cmd.Bech32PrefixValPub)
+	config.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
+	config.Seal()
+}
+
 func main() {
 	var err error
 
-	config := cosmos.GetConfig()
-	config.SetBech32PrefixForAccount("thor", "thorpub")
-	config.SetBech32PrefixForValidator("thorv", "thorvpub")
-	config.SetBech32PrefixForConsensusNode("thorc", "thorcpub")
-	config.Seal()
+	setupBech32Prefix()
 
 	nodesByPeerID := make(map[string]string)
 	nodes := make([]openapi.Node, 0)

@@ -307,7 +307,7 @@ func CustomGRPCGatewayRouter(apiSvr *api.Server) {
 				}
 			}
 			// The following checked endpoint prefixes have the height query parameter extracted.
-			if strings.HasPrefix(req.URL.Path, "/thorchain/") ||
+			if strings.HasPrefix(req.URL.Path, "/switchly/") ||
 				strings.HasPrefix(req.URL.Path, "/cosmos/") ||
 				strings.HasPrefix(req.URL.Path, "/bank/balances/") ||
 				strings.HasPrefix(req.URL.Path, "/auth/accounts/") {

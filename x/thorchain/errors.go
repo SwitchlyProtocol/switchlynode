@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-// THORChain error code start at 99
+// Switchly error code start at 99
 const (
 	// CodeBadVersion error code for bad version
 	CodeInternalError     uint32 = 99

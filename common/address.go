@@ -184,9 +184,10 @@ func (addr Address) IsChain(chain Chain) bool {
 		// Note: Gaia does not use a special prefix for testnet
 		prefix, _, _ := bech32.Decode(addr.String())
 		return prefix == "cosmos"
-	case THORChain:
+	case SWITCHLYChain:
 		prefix, _, _ := bech32.Decode(addr.String())
-		return prefix == "thor" || prefix == "tthor" || prefix == "sthor"
+		return prefix == "swtc" || prefix == "sswtc" || prefix == "tswtc" ||
+			prefix == "swtcvaloper" || prefix == "sswtcvaloper" || prefix == "tswtcvaloper"
 	case BTCChain:
 		prefix, _, err := bech32.Decode(addr.String())
 		if err == nil && (prefix == "bc" || prefix == "tb") {
@@ -254,14 +255,15 @@ func (addr Address) IsChain(chain Chain) bool {
 		}
 		return false
 	default:
-		return true // if THORNode don't specifically check a chain yet, assume its ok.
+		return true // if SwitchlyNode don't specifically check a chain yet, assume its ok.
 	}
+	return false
 }
 
 // Note that this will always return ETHChain for an AVAXChain address,
 // so perhaps only use it when determining a network (e.g. mainnet/testnet).
 func (addr Address) GetChain() Chain {
-	for _, chain := range []Chain{ETHChain, THORChain, BTCChain, LTCChain, BCHChain, DOGEChain, GAIAChain, AVAXChain, XRPChain, StellarChain} {
+	for _, chain := range []Chain{ETHChain, SWITCHLYChain, BTCChain, LTCChain, BCHChain, DOGEChain, GAIAChain, AVAXChain, XRPChain, StellarChain} {
 		if addr.IsChain(chain) {
 			return chain
 		}
@@ -282,15 +284,15 @@ func (addr Address) GetNetwork(chain Chain) ChainNetwork {
 		return currentNetwork
 	}
 	switch chain {
-	case THORChain:
+	case SWITCHLYChain:
 		prefix, _, _ := bech32.Decode(addr.String())
-		if strings.EqualFold(prefix, "thor") {
+		if strings.EqualFold(prefix, "swtc") || strings.EqualFold(prefix, "swtcvaloper") {
 			return mainNetPredicate()
 		}
-		if strings.EqualFold(prefix, "tthor") {
+		if strings.EqualFold(prefix, "tswtc") || strings.EqualFold(prefix, "tswtcvaloper") {
 			return MockNet
 		}
-		if strings.EqualFold(prefix, "sthor") {
+		if strings.EqualFold(prefix, "sswtc") || strings.EqualFold(prefix, "sswtcvaloper") {
 			return StageNet
 		}
 	case BTCChain:
