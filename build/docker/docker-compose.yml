@@ -242,7 +242,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost:/var/data/bifrost
-      - switchlyprotocol:/root/.switchlyprotocol
+      - switchlynode:/root/.switchlynode
     command: ["bifrost", "-p"]
 
   # ------------------------------ midgard ------------------------------
