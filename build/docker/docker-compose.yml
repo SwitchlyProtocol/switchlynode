@@ -6,10 +6,10 @@
 
 volumes:
   cli:
-  switchlyprotocol:
-  switchlyprotocol-cat:
-  switchlyprotocol-fox:
-  switchlyprotocol-pig:
+  switchlynode:
+  switchlynode-cat:
+  switchlynode-fox:
+  switchlynode-pig:
   bifrost:
   bifrost-cat:
   bifrost-fox:
@@ -33,7 +33,7 @@ services:
       CHAIN_ID: switchlyprotocol
       SIGNER_NAME: switchlyprotocol
       SIGNER_PASSWD: password
-      SWITCHLYPROTOCOL_GRPC_ENABLE: true
+      SWITCHLYNODE_GRPC_ENABLE: true
     logging: &logging
       driver: "json-file"
       options:
@@ -73,7 +73,7 @@ services:
         TAG: mocknet
     environment:
       CONSOLE: 1
-      ENDPOINTS_SWITCHLYPROTOCOL: http://switchlyprotocol:1317
+      ENDPOINTS_SWITCHLYNODE: http://switchlynode:1317
       ENDPOINTS_MIDGARD: http://midgard:8080
       NETWORK: mocknet
       SCAN_START: 1
@@ -84,13 +84,13 @@ services:
       THRESHOLDS_DELTA_USD_VALUE: 0
       THRESHOLDS_DELTA_PERCENT: 0
 
-  # ------------------------------ switchlyprotocol ------------------------------
+  # ------------------------------ switchlynode ------------------------------
 
-  switchlyprotocol: &switchlyprotocol
-    <<: *switchlyprotocol-defaults
-    hostname: switchlyprotocol # required for genesis.sh
+  switchlynode: &switchlynode
+    <<: *switchlynode-defaults
+    hostname: switchlynode # required for genesis.sh
     profiles:
-      - switchlyprotocol
+      - switchlynode
       - mocknet
       - mocknet-cluster
     depends_on:
@@ -99,11 +99,11 @@ services:
       # - avalanche
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    environment: &switchlyprotocol-environment
-      <<: *switchlyprotocol-environment
-      SEED: switchlyprotocol
+    environment: &switchlynode-environment
+      <<: *switchlynode-environment
+      SEED: switchlynode
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
-      SWITCHLYPROTOCOL_BLOCK_TIME: ${BLOCK_TIME:-1s}
+      SWITCHLYNODE_BLOCK_TIME: ${BLOCK_TIME:-1s}
       SWITCHLYPROTOCOL_COSMOS_EBIFROST_ADDRESS: 0.0.0.0:50051
       HARDFORK_BLOCK_HEIGHT: ${HARDFORK_BLOCK_HEIGHT:-}
       NEW_GENESIS_TIME: ${NEW_GENESIS_TIME:-}
@@ -125,10 +125,10 @@ services:
       - 9090:9090
     volumes:
       - "../scripts:/docker/scripts"
-      - switchlyprotocol:/root/.switchlyprotocol
+      - switchlynode:/root/.switchlynode
     entrypoint: /docker/scripts/genesis.sh
     command:
-      - switchlyprotocol
+      - switchlynode
       - start
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:26657/health"]
@@ -140,7 +140,7 @@ services:
   # ------------------------------ bifrost ------------------------------
 
   bifrost: &bifrost
-    <<: *switchlyprotocol-defaults
+    <<: *switchlynode-defaults
     profiles:
       - mocknet
       - mocknet-cluster
@@ -152,7 +152,7 @@ services:
       # - dogecoin
       # - gaia
       # - litecoin
-      - switchlyprotocol
+      - switchlynode
       - stellar
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -252,14 +252,17 @@ services:
       - midgard
     depends_on:
       - midgard-db
-      - switchlyprotocol
+      - switchlynode
     image: registry.gitlab.com/thorchain/midgard:develop
     restart: unless-stopped
     environment:
-      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlyprotocol:1317/thorchain
-      MIDGARD_THORCHAIN_TENDERMINT_URL: http://switchlyprotocol:26657/websocket
+      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlynode:1317/thorchain
+      MIDGARD_THORCHAIN_TENDERMINT_URL: http://switchlynode:26657/websocket
+      MIDGARD_SWITCHLYPROTOCOL_THOR_NODE_URL: http://switchlynode:1317/switchlyprotocol
+      MIDGARD_SWITCHLYPROTOCOL_TENDERMINT_URL: http://switchlynode:26657/websocket
       MIDGARD_TIMESCALE_HOST: midgard-db
       MIDGARD_THORCHAIN_LAST_CHAIN_BACKOFF: ${THOR_BLOCK_TIME:-2s}
+      MIDGARD_SWITCHLYPROTOCOL_LAST_CHAIN_BACKOFF: ${SWITCHLY_BLOCK_TIME:-2s}
     ports:
       - 8080:8080
     logging: *logging
@@ -279,66 +282,66 @@ services:
   # SwitchlyProtocol Cluster
   ######################################################################################
 
-  # ------------------------------ switchlyprotocol nodes ------------------------------
+  # ------------------------------ switchlynodes ------------------------------
 
-  switchlyprotocol-cat:
-    <<: *switchlyprotocol
+  switchlynode-cat:
+    <<: *switchlynode
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlyprotocol:
+      switchlynode:
         condition: service_healthy
     ports: []
-    hostname: switchlyprotocol-cat
+    hostname: switchlynode-cat
     environment:
-      <<: *switchlyprotocol-environment
-      PEER: switchlyprotocol
-      SEED: switchlyprotocol-cat
-      SEEDS: switchlyprotocol,switchlyprotocol-fox,switchlyprotocol-pig
+      <<: *switchlynode-environment
+      PEER: switchlynode
+      SEED: switchlynode-cat
+      SEEDS: switchlynode,switchlynode-fox,switchlynode-pig
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     volumes:
       - "../scripts:/docker/scripts"
-      - switchlyprotocol-cat:/root/.switchlyprotocol
+      - switchlynode-cat:/root/.switchlynode
     entrypoint: /docker/scripts/validator.sh
 
-  switchlyprotocol-fox:
-    <<: *switchlyprotocol
+  switchlynode-fox:
+    <<: *switchlynode
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlyprotocol:
+      switchlynode:
         condition: service_healthy
     ports: []
-    hostname: switchlyprotocol-fox
+    hostname: switchlynode-fox
     environment:
-      <<: *switchlyprotocol-environment
-      PEER: switchlyprotocol
-      SEED: switchlyprotocol-fox
-      SEEDS: switchlyprotocol,switchlyprotocol-cat,switchlyprotocol-pig
+      <<: *switchlynode-environment
+      PEER: switchlynode
+      SEED: switchlynode-fox
+      SEEDS: switchlynode,switchlynode-cat,switchlynode-pig
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     volumes:
       - "../scripts:/docker/scripts"
-      - switchlyprotocol-fox:/root/.switchlyprotocol
+      - switchlynode-fox:/root/.switchlynode
     entrypoint: /docker/scripts/validator.sh
 
-  switchlyprotocol-pig:
-    <<: *switchlyprotocol
+  switchlynode-pig:
+    <<: *switchlynode
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlyprotocol:
+      switchlynode:
         condition: service_healthy
     ports: []
-    hostname: switchlyprotocol-pig
+    hostname: switchlynode-pig
     environment:
-      <<: *switchlyprotocol-environment
-      PEER: switchlyprotocol
-      SEED: switchlyprotocol-pig
-      SEEDS: switchlyprotocol,switchlyprotocol-cat,switchlyprotocol-fox
+      <<: *switchlynode-environment
+      PEER: switchlynode
+      SEED: switchlynode-pig
+      SEEDS: switchlynode,switchlynode-cat,switchlynode-fox
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     volumes:
       - "../scripts:/docker/scripts"
-      - switchlyprotocol-pig:/root/.switchlyprotocol
+      - switchlynode-pig:/root/.switchlynode
     entrypoint: /docker/scripts/validator.sh
 
   # ------------------------------ bifrosts ------------------------------
@@ -348,14 +351,14 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlyprotocol:
+      switchlynode:
         condition: service_healthy
     environment:
       <<: *bifrost-environment
       PEER: bifrost
-      CHAIN_API: switchlyprotocol-cat:1317
-      CHAIN_RPC: switchlyprotocol-cat:26657
-      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlyprotocol-cat:50051
+      CHAIN_API: switchlynode-cat:1317
+      CHAIN_RPC: switchlynode-cat:26657
+      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlynode-cat:50051
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     ports:
       - 5040
@@ -363,7 +366,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-cat:/var/data/bifrost
-      - switchlyprotocol-cat:/root/.switchlyprotocol
+      - switchlynode-cat:/root/.switchlynode
     command: ["bifrost"]
 
   bifrost-fox:
@@ -371,14 +374,14 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlyprotocol:
+      switchlynode:
         condition: service_healthy
     environment:
       <<: *bifrost-environment
       PEER: bifrost
-      CHAIN_API: switchlyprotocol-fox:1317
-      CHAIN_RPC: switchlyprotocol-fox:26657
-      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlyprotocol-fox:50051
+      CHAIN_API: switchlynode-fox:1317
+      CHAIN_RPC: switchlynode-fox:26657
+      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlynode-fox:50051
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     ports:
       - 5040
@@ -386,7 +389,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-fox:/var/data/bifrost
-      - switchlyprotocol-fox:/root/.switchlyprotocol
+      - switchlynode-fox:/root/.switchlynode
     command: ["bifrost"]
 
   bifrost-pig:
@@ -394,14 +397,14 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlyprotocol:
+      switchlynode:
         condition: service_healthy
     environment:
       <<: *bifrost-environment
       PEER: bifrost
-      CHAIN_API: switchlyprotocol-pig:1317
-      CHAIN_RPC: switchlyprotocol-pig:26657
-      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlyprotocol-pig:50051
+      CHAIN_API: switchlynode-pig:1317
+      CHAIN_RPC: switchlynode-pig:26657
+      BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST: switchlynode-pig:50051
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     ports:
       - 5040
@@ -409,7 +412,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-pig:/var/data/bifrost
-      - switchlyprotocol-pig:/root/.switchlyprotocol
+      - switchlynode-pig:/root/.switchlynode
     command: ["bifrost"]
 
   ######################################################################################

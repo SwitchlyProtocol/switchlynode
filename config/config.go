@@ -114,7 +114,7 @@ func Init() {
 	))
 	assert(viper.BindEnv(
 		"bifrost.signer.block_scanner.block_height_discover_back_off",
-		"THOR_BLOCK_TIME",
+		"SWITCHLY_BLOCK_TIME",
 	))
 	assert(viper.BindEnv(
 		"switchly.tendermint.consensus.timeout_propose_delta",
@@ -136,9 +136,18 @@ func Init() {
 	assert(viper.BindEnv("bifrost.tss.external_ip", "EXTERNAL_IP"))
 	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_id", "CHAIN_ID"))
 	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_host", "CHAIN_API"))
+	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_host", "BIFROST_SWITCHLYPROTOCOL_CHAIN_HOST"))
 	assert(viper.BindEnv(
 		"bifrost.switchlyprotocol.chain_rpc",
 		"CHAIN_RPC",
+	))
+	assert(viper.BindEnv(
+		"bifrost.switchlyprotocol.chain_rpc",
+		"BIFROST_SWITCHLYPROTOCOL_CHAIN_RPC",
+	))
+	assert(viper.BindEnv(
+		"bifrost.switchlyprotocol.chain_ebifrost",
+		"BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST",
 	))
 	assert(viper.BindEnv(
 		"bifrost.chains.BTC.rpc_host",
