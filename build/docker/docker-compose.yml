@@ -87,7 +87,7 @@ services:
   # ------------------------------ switchlynode ------------------------------
 
   switchlynode: &switchlynode
-    <<: *switchlynode-defaults
+    <<: *switchlyprotocol-defaults
     hostname: switchlynode # required for genesis.sh
     profiles:
       - switchlynode
@@ -100,7 +100,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment: &switchlynode-environment
-      <<: *switchlynode-environment
+      <<: *switchlyprotocol-environment
       SEED: switchlynode
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
       SWITCHLYNODE_BLOCK_TIME: ${BLOCK_TIME:-1s}
@@ -140,7 +140,7 @@ services:
   # ------------------------------ bifrost ------------------------------
 
   bifrost: &bifrost
-    <<: *switchlynode-defaults
+    <<: *switchlyprotocol-defaults
     profiles:
       - mocknet
       - mocknet-cluster
