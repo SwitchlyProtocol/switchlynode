@@ -89,9 +89,9 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 	sem := make(chan struct{}, 8)
 
 	// since we reuse the bifrost thorclient, load endpoints into config package
-	os.Setenv("BIFROST_THORCHAIN_CHAIN_HOST", "localhost:1317")
-	os.Setenv("BIFROST_THORCHAIN_CHAIN_RPC", "localhost:26657")
-	os.Setenv("BIFROST_THORCHAIN_CHAIN_EBIFROST", "localhost:50051")
+	os.Setenv("BIFROST_SWITCHLYPROTOCOL_CHAIN_HOST", "localhost:1317")
+	os.Setenv("BIFROST_SWITCHLYPROTOCOL_CHAIN_RPC", "localhost:26657")
+	os.Setenv("BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST", "localhost:50051")
 	config.Init()
 
 	// validators
@@ -351,7 +351,7 @@ func fundUserChainAccount(master, user *User, chain common.Chain, amount sdkmath
 			Str("account", user.Name()).
 			Stringer("asset", asset).
 			Stringer("address", addr).
-			Str("token", token.Address).
+			Stringer("token", token.Address).
 			Str("amount", fmt.Sprintf("%08f", amountFloat)).
 			Msg("token balance funded")
 	}
