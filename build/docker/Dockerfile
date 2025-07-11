@@ -40,7 +40,7 @@ RUN apt-get update && \
   pip3 install --no-cache-dir requests==2.32.3 web3==7.5.0 retry==0.9.2
 
 # Copy the compiled binaries over.
-COPY --from=build /go/bin/switchlyprotocol /go/bin/bifrost /go/bin/recover-keyshare-backup /usr/bin/
+COPY --from=build /go/bin/switchlynode /go/bin/bifrost /go/bin/recover-keyshare-backup /usr/bin/
 COPY --from=build /go/pkg/mod/github.com/!cosm!wasm/wasmvm/v2@v2.1.2/internal/api/libwasmvm.*.so /usr/lib
 
 COPY build/scripts /scripts
