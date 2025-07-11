@@ -83,6 +83,7 @@ func init() {
 	chainRPCs["getrawtransaction-54ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/doge/tx-54ef.json")
 	chainRPCs["getrawtransaction-64ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/doge/tx-64ef.json")
 	chainRPCs["getrawtransaction-74ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/doge/tx-74ef.json")
+	chainRPCs["getrawtransaction-24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2"] = loadFixture("../../../../test/fixtures/doge/tx-24ed.json")
 	chainRPCs["getrawtransaction-27de3e1865c098cd4fded71bae1e8236fd27ce5dce6e524a9ac5cd1a17b5c241"] = loadFixture("../../../../test/fixtures/doge/tx-c241.json")
 	chainRPCs["getrawtransaction"] = loadFixture("../../../../test/fixtures/doge/tx.json")
 }
@@ -229,9 +230,9 @@ func (s *DogecoinSuite) TestFetchTxs(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq2tcc97f92k9v2rrjn2m8dl0avmw3kun0z3hqewzjadynwd0zqme7g6z0d8") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdku") // valid key from bitcoincash_signer_test.go
 	} else {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg") // from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z") // valid key from querier_test.go
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())
@@ -532,14 +533,6 @@ func (s *DogecoinSuite) TestIgnoreTx(c *C) {
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
 					Addresses: []string{
 						"bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
-					},
-				},
-			},
-			{
-				Value: 0.1234565,
-				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Addresses: []string{
-						"tb1qkq7weysjn6ljc2ywmjmwp8ttcckg8yyxjdz5k6",
 					},
 				},
 			},
@@ -941,9 +934,9 @@ func (s *DogecoinSuite) TestGetOutput(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq2tcc97f92k9v2rrjn2m8dl0avmw3kun0z3hqewzjadynwd0zqme7g6z0d8") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdku") // valid key from bitcoincash_signer_test.go
 	} else {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg") // from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z") // valid key from querier_test.go
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())

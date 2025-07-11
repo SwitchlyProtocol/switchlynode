@@ -83,6 +83,7 @@ func init() {
 	ltcChainRPCs["getrawtransaction-54ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/ltc/tx-54ef.json")
 	ltcChainRPCs["getrawtransaction-64ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/ltc/tx-64ef.json")
 	ltcChainRPCs["getrawtransaction-74ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/ltc/tx-74ef.json")
+	ltcChainRPCs["getrawtransaction-24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2"] = loadFixture("../../../../test/fixtures/ltc/tx-24ed.json")
 	ltcChainRPCs["getrawtransaction-27de3e1865c098cd4fded71bae1e8236fd27ce5dce6e524a9ac5cd1a17b5c241"] = loadFixture("../../../../test/fixtures/ltc/tx-c241.json")
 	ltcChainRPCs["getrawtransaction"] = loadFixture("../../../../test/fixtures/ltc/tx.json")
 	ltcChainRPCs["createwallet"] = loadFixture("../../../../test/fixtures/ltc/createwallet.json")
@@ -223,9 +224,9 @@ func (s *LitecoinSuite) TestFetchTxs(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq2tcc97f92k9v2rrjn2m8dl0avmw3kun0z3hqewzjadynwd0zqme7g6z0d8") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d") // valid key from litecoin_signer_test.go
 	} else {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg") // from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z") // valid key from querier_test.go
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())
@@ -496,7 +497,7 @@ func (s *LitecoinSuite) TestIgnoreTx(c *C) {
 				Value: 0.1234565,
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
 					Addresses: []string{
-						"ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
+						"ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm",
 					},
 				},
 			},
@@ -604,7 +605,7 @@ func (s *LitecoinSuite) TestIgnoreTx(c *C) {
 				Value: 0.1234565,
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
 					Addresses: []string{
-						"ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
+						"ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm",
 					},
 				},
 			},
@@ -771,7 +772,7 @@ func (s *LitecoinSuite) TestOnObservedTxIn(c *C) {
 			{
 				BlockHeight: 1,
 				Tx:          "31f8699ce9028e9cd37f8a6d58a79e614a96e3fdd0f58be5fc36d2d95484716f",
-				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
+				Sender:      "ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456789)),
@@ -794,7 +795,7 @@ func (s *LitecoinSuite) TestOnObservedTxIn(c *C) {
 			{
 				BlockHeight: 2,
 				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
+				Sender:      "ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
@@ -817,7 +818,7 @@ func (s *LitecoinSuite) TestOnObservedTxIn(c *C) {
 			{
 				BlockHeight: 3,
 				Tx:          "44ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
+				Sender:      "ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(12345678)),
@@ -828,7 +829,7 @@ func (s *LitecoinSuite) TestOnObservedTxIn(c *C) {
 			{
 				BlockHeight: 3,
 				Tx:          "54ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
-				Sender:      "ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
+				Sender:      "ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm",
 				To:          "ltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfu8hg5j3",
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
@@ -899,9 +900,9 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq2tcc97f92k9v2rrjn2m8dl0avmw3kun0z3hqewzjadynwd0zqme7g6z0d8") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d") // valid key from litecoin_signer_test.go
 	} else {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg") // from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z") // valid key from querier_test.go
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())
@@ -919,7 +920,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 			{
 				Value: 0.00195384,
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Addresses: []string{"ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l"},
+					Addresses: []string{"ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm"},
 				},
 			},
 			{
@@ -936,7 +937,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 			},
 		},
 	}
-	out, err := s.client.getOutput("ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l", &tx, false)
+	out, err := s.client.getOutput("ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm", &tx, false)
 	c.Assert(err, IsNil, Commentf(vaultAddressString))
 	c.Assert(out.ScriptPubKey.Addresses[0], Equals, vaultAddressString)
 	c.Assert(out.Value, Equals, 1.49655603)
@@ -958,7 +959,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 			{
 				Value: 0.00195384,
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Addresses: []string{"ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l"},
+					Addresses: []string{"ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm"},
 				},
 			},
 			{
@@ -969,7 +970,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 			},
 		},
 	}
-	out, err = s.client.getOutput("ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l", &tx, false)
+	out, err = s.client.getOutput("ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm", &tx, false)
 	c.Assert(err, IsNil)
 	c.Assert(out.ScriptPubKey.Addresses[0], Equals, vaultAddressString)
 	c.Assert(out.Value, Equals, 1.49655603)
@@ -985,7 +986,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 			{
 				Value: 0.00195384,
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Addresses: []string{"ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l"},
+					Addresses: []string{"ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm"},
 				},
 			},
 			{
@@ -1002,7 +1003,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 			},
 		},
 	}
-	out, err = s.client.getOutput("ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l", &tx, false)
+	out, err = s.client.getOutput("ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm", &tx, false)
 	c.Assert(err, IsNil)
 	c.Assert(out.ScriptPubKey.Addresses[0], Equals, vaultAddressString)
 	c.Assert(out.Value, Equals, 1.49655603)
@@ -1024,7 +1025,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 			{
 				Value: 0.00195384,
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
-					Addresses: []string{"ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l"},
+					Addresses: []string{"ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm"},
 				},
 			},
 			{
@@ -1054,7 +1055,7 @@ func (s *LitecoinSuite) TestGetOutput(c *C) {
 				ScriptPubKey: btcjson.ScriptPubKeyResult{
 					Addresses: []string{
 						"tltc1qjw8h4l3dtz5xxc7uyh5ys70qkezspgfus9tapm",
-						"ltc1qjka8s34w5lqzmj0t5mc2q7lxcfgawdvk8fa64l",
+						"ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm",
 					},
 				},
 			},

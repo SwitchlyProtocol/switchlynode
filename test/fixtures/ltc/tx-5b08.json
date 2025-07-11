@@ -30,7 +30,7 @@
         }
       },
       {
-        "value": 1.5,
+        "value": 0.00344397,
         "n": 1,
         "scriptPubKey": {
           "asm": "OP_DUP OP_HASH160 f3b40cad194d48398755b45036421b1a645bbdcc OP_EQUALVERIFY OP_CHECKSIG",

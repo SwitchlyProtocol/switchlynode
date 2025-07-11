@@ -14,9 +14,9 @@ import (
 
 func (s *DogecoinSuite) TestGetAddress(c *C) {
 	ttypes.SetupConfigForTest()
-	pubkey := common.PubKey("swtcpub1addwnpepqfpgf05gts34mk3mdq3dc7qz5yjssydw9xy3237ny30jzkd6v78qs35ztdg")
+	pubkey := common.PubKey("swtcpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdku")
 	addr := s.client.GetAddress(pubkey)
-	c.Assert(addr, Equals, "DJnnbzVKhJbMjK1YjgxUC4Emf8CmkTpJA7")
+	c.Assert(addr, Equals, "DL1DNBPuS5ecYMnRL4Q7ZRnwTuGG6GTDUT")
 }
 
 func (s *DogecoinSuite) TestConfirmationCountReady(c *C) {
