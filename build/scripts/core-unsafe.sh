@@ -119,7 +119,7 @@ set_xlm_contract() {
 }
 
 # genesis on first init if we are the genesis node
-if [ "$SEED" = "switchlyprotocol" ]; then
+if [ "$SEED" = "switchlynode" ]; then
   if [ ! -f ~/.switchlynode/config/genesis.json ]; then
     init_chain
     create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
@@ -141,41 +141,6 @@ if [ "$SEED" = "switchlyprotocol" ]; then
 
     # render tendermint and cosmos configuration files
     switchlynode render-config
-  fi
-
-  # genesis on first init if we are the genesis node
-  if [ ! -f ~/.switchlynode/config/genesis.json ]; then
-    init_chain
-    create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
-
-    # get our node account
-    NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
-    printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol deposit 100000000000000 SWTC "bond:$NODE_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes
-
-    # wait for switchlynode to commit a block , otherwise it get the wrong sequence number
-    sleep 2 # wait for switchlynode to commit a block , otherwise it get the wrong sequence number
-
-    NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show switchlyprotocol --pubkey --keyring-backend=file | switchlynode pubkey)
-    VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
-    NODE_PUB_KEY_ED25519=$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)
-
-    until printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes; do
-      echo "Failed to set node keys, retrying in 3 seconds..."
-      sleep 3
-    done
-    sleep 2 # wait for switchlynode to commit a block
-
-    NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
-    until printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol set-ip-address "$NODE_IP_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes; do
-      echo "Failed to set IP address, retrying in 3 seconds..."
-      sleep 3
-    done
-    sleep 2 # wait for switchlynode to commit a block
-
-    until printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol set-version --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes; do
-      echo "Failed to set version, retrying in 3 seconds..."
-      sleep 3
-    done
   fi
 fi
 
