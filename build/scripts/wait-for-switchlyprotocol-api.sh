@@ -10,7 +10,7 @@ PORT="${PORT:=1317}"
 
 echo "Waiting for SwitchlyNode API to be ready..."
 
-until curl -s "$PEER:$PORT/switchlynode/ping" > /dev/null; do
+until curl -s "$PEER:$PORT/switchlyprotocol/ping" > /dev/null; do
   echo "SwitchlyNode API not ready, waiting..."
   sleep 5
 done

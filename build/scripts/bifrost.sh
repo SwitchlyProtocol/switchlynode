@@ -2,16 +2,17 @@
 
 set -o pipefail
 
-export SIGNER_NAME="${SIGNER_NAME:=switchlynode}"
-export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
-
-"$(dirname "$0")/wait-for-thorchain-api.sh" http://switchlynode:1317
+CHAIN_API="${CHAIN_API:=127.0.0.1:1317}"
 
 . "$(dirname "$0")/core.sh"
+"$(dirname "$0")/wait-for-switchlyprotocol-api.sh" "$CHAIN_API"
 
-# create the user if it doesn't exist
-create_thor_user
+create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
-# create the bifrost config file
-mkdir -p /var/data/bifrost
-exec bifrost -p
+# dynamically set external ip if mocknet and unset
+if [ "$NET" = "mocknet" ] && [ -z "$EXTERNAL_IP" ]; then
+  EXTERNAL_IP=$(hostname -i)
+fi
+
+export SIGNER_NAME SIGNER_PASSWD
+exec "$@"

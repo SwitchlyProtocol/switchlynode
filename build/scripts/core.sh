@@ -2,15 +2,7 @@
 
 set -o pipefail
 
-export SIGNER_NAME="${SIGNER_NAME:=switchlyprotocol}"
-export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
-export SIGNER_SEED_PHRASE="${SIGNER_SEED_PHRASE:=dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil}"
-
-# set chain defaults
-export CHAIN_ID="${CHAIN_ID:=switchlynode}"
-export CHAIN_HOME_FOLDER="${CHAIN_HOME_FOLDER:=.switchlynode}"
-
-# default ulimit is set too low for switchlyprotocol in some environments
+# default ulimit is set too low for switchlynode in some environments
 ulimit -n 65535
 
 PORT_P2P=26656
@@ -48,37 +40,42 @@ add_node_account() {
 }
 
 add_account() {
-  ADDRESS=${1:=swtc1z63f3mzwv3g75az80xwmhrawdqcjpaek5l3xv6}
-  AMOUNT=${2:=100000000000000000000}
-  echo "Adding account: $ADDRESS with $AMOUNT swtc"
-  switchlynode add-genesis-account "$ADDRESS" "$AMOUNT"swtc
+  jq --arg ADDRESS "$1" --arg ASSET "$2" --arg AMOUNT "$3" '.app_state.auth.accounts += [{
+        "@type": "/cosmos.auth.v1beta1.BaseAccount",
+        "address": $ADDRESS,
+        "pub_key": null,
+        "account_number": "0",
+        "sequence": "0"
+    }]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
+
+  jq --arg ADDRESS "$1" --arg ASSET "$2" --arg AMOUNT "$3" '.app_state.bank.balances += [{
+        "address": $ADDRESS,
+        "coins": [ { "denom": $ASSET, "amount": $AMOUNT } ],
+    }]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 reserve() {
-  RESERVE_AMOUNT=${1:=22000000000000000}
-  
-  echo "Reserving $RESERVE_AMOUNT swtc..."
-  switchlynode tx bank send "$SIGNER_NAME" swtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt "$RESERVE_AMOUNT"swtc \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
+  jq --arg RESERVE "$1" '.app_state.switchlyprotocol.reserve = $RESERVE' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 disable_bank_send() {
-  echo "Disabling bank send..."
-  switchlynode tx bank disable-send \
-    --from "$SIGNER_NAME" \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
+  jq '.app_state.bank.params.default_send_enabled = false' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
+
+  jq '.app_state.transfer.params.send_enabled = false' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 # inits a switchlyprotocol with the provided list of genesis accounts
 init_chain() {
-  echo "switchlynode init"
-  switchlynode init local --chain-id "$CHAIN_ID" --default-denom swtc 2>&1 | grep -v "already initialized"
-  echo "switchlynode render-config"
-  switchlynode render-config
+  IFS=","
+
+  echo "Init chain"
+  switchlynode init local --chain-id "$CHAIN_ID"
+  echo "$SIGNER_PASSWD" | switchlynode keys list --keyring-backend file
 }
 
 fetch_node_id() {
@@ -89,75 +86,55 @@ fetch_node_id() {
 }
 
 set_node_keys() {
-  echo "Setting node keys..."
-  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys add switchlyprotocol --keyring-backend file --recover <<< "$SIGNER_SEED_PHRASE"
+  SIGNER_NAME="$1"
+  SIGNER_PASSWD="$2"
+  PEER="$3"
+  NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | switchlynode keys show switchlyprotocol --pubkey --keyring-backend file | switchlynode pubkey)"
+  NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
+  VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
+  echo "Setting SwitchlyNode keys"
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
 }
 
 set_ip_address() {
-  echo "Setting IP address..."
-  switchlynode tx switchlynode set-ip-address $(curl -s http://whatismyip.akamai.com) \
-    --from "$SIGNER_NAME" \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
+  SIGNER_NAME="$1"
+  SIGNER_PASSWD="$2"
+  PEER="$3"
+  NODE_IP_ADDRESS="${4:-$(curl -s http://whatismyip.akamai.com)}"
+  echo "Setting SwitchlyNode IP address $NODE_IP_ADDRESS"
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol set-ip-address "$NODE_IP_ADDRESS" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
 }
 
-set_node_account() {
-  echo "Setting node account..."
-  NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
-  NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -p --keyring-backend file)
-  VALIDATOR=$(switchlynode tendermint show-validator)
-  
-  switchlynode tx switchlynode set-node-account "$NODE_ADDRESS" "$NODE_PUB_KEY" "$VALIDATOR" \
-    --from "$SIGNER_NAME" \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
+fetch_version() {
+  switchlynode query switchlyprotocol version --output json | jq -r .version
 }
 
-set_asgard_address() {
-  POOL_ADDRESS=${1:=swtc1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2}
-  echo "Setting asgard address: $POOL_ADDRESS"
-  switchlynode tx switchlynode set-asgard-address "$POOL_ADDRESS" \
-    --from "$SIGNER_NAME" \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
-}
+create_switchly_user() {
+  SIGNER_NAME="$1"
+  SIGNER_PASSWD="$2"
+  SIGNER_SEED_PHRASE="$3"
 
-ban_address() {
-  BAN_ADDRESS=${1:=swtc1wz78qmrkplrdhy37tw0tnvn0tkm5pqd6zdp257}
-  echo "Banning address: $BAN_ADDRESS"
-  switchlynode tx switchlynode ban "$BAN_ADDRESS" \
-    --from "$SIGNER_NAME" \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
-}
-
-set_version() {
-  echo "Setting version..."
-  switchlynode tx switchlynode set-version \
-    --from "$SIGNER_NAME" \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
-}
-
-create_thor_user() {
-  USER=${1:=$SIGNER_NAME}
-  PASS=${2:=$SIGNER_PASSWD}
-  SEED_PHRASE=${3:=$SIGNER_SEED_PHRASE}
-  
-  echo "Creating user: $USER"
-  printf "%s\n%s\n" "$PASS" "$PASS" | switchlynode keys add "$USER" --keyring-backend file --recover <<< "$SEED_PHRASE" 2>&1 | grep -v "already exists"
+  echo "Checking if SwitchlyNode Switchly '$SIGNER_NAME' account exists"
+  echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" --keyring-backend file 1>/dev/null 2>&1
+  # shellcheck disable=SC2181
+  if [ $? -ne 0 ]; then
+    echo "Creating SwitchlyNode Switchly '$SIGNER_NAME' account"
+    if [ -n "$SIGNER_SEED_PHRASE" ]; then
+      printf "%s\n%s\n%s\n" "$SIGNER_SEED_PHRASE" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --recover
+    else
+      sig_pw=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD")
+      RESULT=$(echo "$sig_pw" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --output json 2>&1)
+      SIGNER_SEED_PHRASE=$(echo "$RESULT" | jq -r '.mnemonic')
+    fi
+  fi
+  NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
 }
 
 set_bond_module() {
   if [ "$NET" = "mocknet" ]; then
-    BOND_MODULE_ADDR="swtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff"
+    BOND_MODULE_ADDR="tswtc17gw75axcnr8747pkanye45pnrwk7p9c3jrajtc"
   elif [ "$NET" = "stagenet" ]; then
-    BOND_MODULE_ADDR="sswtc17gw75axcnr8747pkanye45pnrwk7p9c3ve0wxj"
+    BOND_MODULE_ADDR="sswtc17gw75axcnr8747pkanye45pnrwk7p9c3zds5yr"
   else
     echo "Unsupported NET: $NET"
     exit 1
@@ -183,7 +160,7 @@ set_bond_module() {
     '.app_state.bank.balances += [
     {
       "address": $BOND_MODULE_ADDR,
-      "coins": [ { "denom": "swtc", "amount": "30000000000000" } ]
+      "coins": [ { "denom": "rune", "amount": "30000000000000" } ]
     }
   ]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
@@ -208,22 +185,3 @@ set_base_contract() {
   jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
-
-set_xlm_contract() {
-  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "XLM", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
-}
-
-set_gas_config() {
-  echo "Setting gas config..."
-  switchlynode tx switchlynode set-gas-config \
-    --from "$SIGNER_NAME" \
-    --keyring-backend file \
-    --chain-id "$CHAIN_ID" \
-    --yes
-}
-
-if [ "$NET" = "mocknet" ]; then
-  echo "Loading unsafe init for mocknet..."
-  . "$(dirname "$0")/core-unsafe.sh"
-fi

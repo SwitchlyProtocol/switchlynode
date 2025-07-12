@@ -18,7 +18,7 @@ fi
 
 genesis_init() {
   init_chain
-  create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
+  create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
   VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
   NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show switchlyprotocol -a --keyring-backend file)
@@ -104,7 +104,17 @@ genesis_init() {
 }
 
 fetch_version() {
-  switchlynode query switchlynode version --output json | jq -r .version
+  switchlynode query switchlyprotocol version --output json | jq -r .version
+}
+
+deploy_stellar_contracts() {
+  # Placeholder for stellar contract deployment
+  echo "Stellar contracts deployment not implemented yet"
+}
+
+set_xlm_contract() {
+  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "XLM", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 ########################################################################################
