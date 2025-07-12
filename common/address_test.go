@@ -26,7 +26,7 @@ func (s *AddressSuite) TestAddress(c *C) {
 
 	// thor tests
 	var addr Address
-	addr, err = NewAddress("thor1kljxxccrheghavaw97u78le6yy3sdj7h696nl4")
+	addr, err = NewAddress("swtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfc9ljcn")
 	c.Assert(err, IsNil)
 	c.Check(addr.IsChain(SWITCHLYChain), Equals, true)
 	c.Check(addr.IsChain(GAIAChain), Equals, false)
@@ -37,7 +37,7 @@ func (s *AddressSuite) TestAddress(c *C) {
 	c.Check(addr.IsChain(DOGEChain), Equals, false)
 	c.Check(addr.IsChain(XRPChain), Equals, false)
 	c.Check(addr.GetNetwork(SWITCHLYChain), Equals, MainNet)
-	addr, err = NewAddress("swtc1x6m28lezv00ugcahqv5w2eagrm9396j2gf6zjpd4auf9mv4h")
+	addr, err = NewAddress("tswtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk")
 	c.Assert(err, IsNil)
 	c.Check(addr.IsChain(SWITCHLYChain), Equals, true)
 	c.Check(addr.IsChain(GAIAChain), Equals, false)

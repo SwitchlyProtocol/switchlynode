@@ -63,7 +63,7 @@ func (m *THORName) Key() string {
 
 // CanReceiveAffiliateFee - returns true if the THORName can receive an affiliate fee.
 // Conditions: - Must have an owner
-//   - If no preferred asset, must have an alias for THORChain (since fee will be sent in RUNE)
+//   - If no preferred asset, must have an alias for SwitchlyProtocol (since fee will be sent in RUNE)
 //   - If preferred asset, can receive affiliate fee (since fee is collected in AC module)
 func (m *THORName) CanReceiveAffiliateFee() bool {
 	if m.Owner.Empty() {

@@ -54,7 +54,7 @@ func (h WasmExecuteContractHandler) validate(ctx cosmos.Context, msg wasmtypes.M
 func (h WasmExecuteContractHandler) handle(ctx cosmos.Context, msg wasmtypes.MsgExecuteContract) (*wasmtypes.MsgExecuteContractResponse, error) {
 	ctx.Logger().Info("receive MsgExecuteContract", "from", msg.Sender)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgExecuteContract while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgExecuteContract while SwitchlyProtocol is halted")
 	}
 
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -147,7 +147,7 @@ func checkTxFeeWithValidatorMinGasPrices(ctx sdk.Context, k keeper.Keeper, tx sd
 		dec := sdkmath.LegacyNewDecFromIntWithPrec(sdkmath.NewInt(clamped), 18)
 
 		minGasPrices := sdk.NewDecCoins(sdk.DecCoin{
-			Denom:  "rune",
+			Denom:  "switchcoin",
 			Amount: dec,
 		})
 

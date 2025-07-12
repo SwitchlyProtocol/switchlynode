@@ -114,7 +114,7 @@ func (s WasmManagerVCURSuite) TestMigrateCode(c *C) {
 	c.Assert(err, IsNil)
 
 	_, err = mgr.WasmManager().MigrateContract(ctx,
-		cosmos.MustAccAddressFromBech32("tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f"),
+		cosmos.MustAccAddressFromBech32("swtc14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f"),
 		admin,
 		2,
 		[]byte(`{}`),

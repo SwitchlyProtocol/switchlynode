@@ -135,10 +135,10 @@ func (s *PoolMgrVCURSuite) TestAbandonPool(c *C) {
 		"emit_asset":               "0",
 		"emit_rune":                "0",
 		"id":                       "0000000000000000000000000000000000000000000000000000000000000000",
-		"chain":                    "THOR",
+		"chain":                    "SWITCHLY",
 		"from":                     runeAddr.String(),
 		"to":                       "",
-		"coin":                     "0 THOR.RUNE",
+		"coin":                     "0 SWITCHLY.SWTC",
 		"memo":                     "",
 	}
 	for _, e := range em.Events() {

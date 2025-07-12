@@ -48,7 +48,7 @@ func (h WasmMigrateContractHandler) validate(ctx cosmos.Context, msg wasmtypes.M
 func (h WasmMigrateContractHandler) handle(ctx cosmos.Context, msg wasmtypes.MsgMigrateContract) (*wasmtypes.MsgMigrateContractResponse, error) {
 	ctx.Logger().Info("receive MsgMigrateContract", "from", msg.Sender)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgMigrateContract while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgMigrateContract while SwitchlyProtocol is halted")
 	}
 
 	senderAddr, err := cosmos.AccAddressFromBech32(msg.Sender)

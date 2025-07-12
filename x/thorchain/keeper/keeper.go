@@ -430,7 +430,7 @@ type KeeperSolvencyVoter interface {
 	GetSolvencyVoter(_ cosmos.Context, _ common.TxID, _ common.Chain) (SolvencyVoter, error)
 }
 
-// NewKeeper creates new instances of the thorchain Keeper
+// NewKeeper creates new instances of the switchlyprotocol Keeper
 type KeeperTHORName interface {
 	THORNameExists(ctx cosmos.Context, _ string) bool
 	GetTHORName(ctx cosmos.Context, _ string) (THORName, error)

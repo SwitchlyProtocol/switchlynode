@@ -1196,8 +1196,8 @@ func (s *QuerierSuite) TestQueryVersion(c *C) {
 }
 
 func (s *QuerierSuite) TestPeerIDFromPubKey(c *C) {
-	// Success example, secp256k1 pubkey from Mocknet node tthor1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k
-	var mocknetPubKey common.PubKey = "swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z"
+	// Success example, secp256k1 pubkey from Mocknet node tswtc1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k
+	var mocknetPubKey common.PubKey = "tswtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lw6wrkn"
 	c.Assert(getPeerIDFromPubKey(mocknetPubKey), Equals, "16Uiu2HAm9LeTqHJWSa67eHNZzSz3yKb64dbj7A4V1Ckv9hXyDkQR")
 
 	// Failure example.
@@ -1293,7 +1293,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 		addressBTC = "bcrt1qg2px54as9vgzaarkr0zy95hacg3lg4kqz4rrwf"
 		addressTHOR = "swtc12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr"
 		values = []string{
-			// "=:r:tthor12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr/bcrt1qg2px54as9vgzaarkr0zy95ha^"
+			// "=:r:tswtc12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr/bcrt1qg2px54as9vgzaarkr0zy95ha^"
 			"3d3a723a7474686f723132787867327365766d3335713534766a68737371686c66376c7138643278686d75356b3067722f62637274317167327078353461733976677a6161726b72307a79393568615e",
 			// 0014 6367336c67346b717a34727277663a3937303030
 			// "cg3lg4kqz4rrwf:97000"

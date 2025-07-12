@@ -11,7 +11,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
-// all event types support by THORChain
+// all event types support by SwitchlyProtocol
 const (
 	AddLiquidityEventType         = "add_liquidity"
 	BondEventType                 = "bond"

@@ -102,7 +102,7 @@ func (m *ObservedTxVoter) AddOutTx(in common.Tx) bool {
 	return true
 }
 
-// IsDone check whether THORChain finished process the tx, all outbound tx had
+// IsDone check whether SwitchlyProtocol finished process the tx, all outbound tx had
 // been sent and observed
 func (m *ObservedTxVoter) IsDone() bool {
 	return len(m.Actions) <= len(m.OutTxs)

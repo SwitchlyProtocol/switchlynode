@@ -102,7 +102,7 @@ func (gm *GasMgrVCUR) GetAssetOutboundFee(ctx cosmos.Context, asset common.Asset
 		return thorchainOutboundFee, nil
 	}
 
-	// Asset is on THORChain, but not RUNE, convert the fee to asset value.
+	// Asset is on SwitchlyProtocol, but not RUNE, convert the fee to asset value.
 	if asset.IsNative() {
 		if inRune {
 			return thorchainOutboundFee, nil

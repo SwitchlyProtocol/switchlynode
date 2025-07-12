@@ -207,7 +207,7 @@ func (vm *NetworkMgrVCUR) spawnDerivedAssets(ctx cosmos.Context, mgr Manager) er
 	// get assets to create derived pools
 	layer1Assets := []common.Asset{common.TOR}
 	for _, chain := range active[0].GetChains() {
-		// no derived asset for thorchain
+		// no derived asset for switchlyprotocol
 		if chain.IsSWITCHLYChain() {
 			continue
 		}
@@ -1598,7 +1598,7 @@ func (vm *NetworkMgrVCUR) UpdateNetwork(ctx cosmos.Context, constAccessor consta
 	if !systemIncomeBurnDeduct.IsZero() {
 		coin := common.NewCoin(common.SWTCNative, systemIncomeBurnDeduct)
 		// Burn system income
-		// Send to THORCHain module first, then burn
+		// Send to SwitchlyProtocol module first, then burn
 		if err := vm.k.SendFromModuleToModule(ctx, ReserveName, ModuleName, common.NewCoins(coin)); err != nil {
 			return fmt.Errorf("fail to transfer funds from reserve to devFundAddress: %w", err)
 		}

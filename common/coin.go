@@ -9,8 +9,8 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
-// THORChainDecimals indicate the number of decimal points used in THORChain
-const THORChainDecimals = 8
+// SwitchlyProtocolDecimals indicate the number of decimal points used in SwitchlyProtocol
+const SwitchlyProtocolDecimals = 8
 
 // NoCoin is empty Coin
 var NoCoin = Coin{

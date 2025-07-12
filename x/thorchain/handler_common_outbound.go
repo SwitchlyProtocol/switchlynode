@@ -155,7 +155,7 @@ func (h CommonOutboundTxHandler) handle(ctx cosmos.Context, tx ObservedTx, inTxI
 								}, false)
 							}
 						} else if maxGasAmt.LT(realGasAmt) {
-							// signer spend more than the maximum gas prescribed by THORChain , slash it
+							// signer spend more than the maximum gas prescribed by SwitchlyProtocol , slash it
 							ctx.Logger().Info("slash node", "max gas", maxGasAmt, "real gas spend", realGasAmt, "gap", common.SafeSub(realGasAmt, maxGasAmt).String())
 							matchCoin = false
 						}

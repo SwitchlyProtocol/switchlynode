@@ -108,7 +108,7 @@
                 "@type": "/types.MsgNetworkFee",
                 "block_height": "1",
                 "chain": "BTC",
-                "signer": "tthor1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
+                "signer": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
                 "transaction_fee_rate": "7",
                 "transaction_size": "3"
               }
@@ -126,7 +126,7 @@
           "gas_used": "73058",
           "events": [
             {
-              "acc_seq": "tthor1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m/0",
+              "acc_seq": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m/0",
               "type": "tx"
             },
             {
@@ -137,7 +137,7 @@
               "action": "/types.MsgNetworkFee",
               "module": "MsgNetworkFee",
               "msg_index": "0",
-              "sender": "tthor1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
+              "sender": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
               "type": "message"
             }
           ]

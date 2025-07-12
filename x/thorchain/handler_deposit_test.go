@@ -111,7 +111,7 @@ func (s *HandlerDepositSuite) TestDifferentValidation(c *C) {
 			},
 		},
 		{
-			name: "coin is not on THORChain should result in an error",
+			name: "coin is not on SwitchlyProtocol should result in an error",
 			messageProvider: func(c *C, ctx cosmos.Context, helper *HandlerDepositTestHelper) cosmos.Msg {
 				return NewMsgDeposit(common.Coins{
 					common.NewCoin(common.DOGEAsset, cosmos.NewUint(100)),

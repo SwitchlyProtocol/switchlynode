@@ -100,7 +100,7 @@ func NewClient(
 	}
 
 	if thorchainBridge == nil {
-		return nil, errors.New("thorchain bridge is nil")
+		return nil, errors.New("SwitchlyProtocol bridge is nil")
 	}
 
 	// Initialize network configuration for asset mapping
@@ -605,7 +605,8 @@ func (c *Client) ConfirmationCountReady(txIn stypes.TxIn) bool {
 
 // GetConfirmationCount returns the number of confirmations for a given tx
 func (c *Client) GetConfirmationCount(txIn stypes.TxIn) int64 {
-	return 0
+	// Stellar transactions are finalized immediately, so they have 1 confirmation
+	return 1
 }
 
 // ReportSolvency reports solvency to THORChain

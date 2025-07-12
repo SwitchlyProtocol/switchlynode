@@ -9,7 +9,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func TestPackage(t *testing.T) { TestingT(t) }
+func TestMocknetPackage(t *testing.T) { TestingT(t) }
 
 type ConstantsSuite struct{}
 

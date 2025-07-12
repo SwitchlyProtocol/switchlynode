@@ -11,8 +11,8 @@ import (
 )
 
 // LeaveHandler a handler to process leave request
-// if an operator of THORChain node would like to leave and get their bond back , they have to
-// send a Leave request through THORChain
+// if an operator of SwitchlyProtocol node would like to leave and get their bond back , they have to
+// send a Leave request through SwitchlyProtocol
 type LeaveHandler struct {
 	mgr Manager
 }

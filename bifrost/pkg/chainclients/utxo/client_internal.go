@@ -130,11 +130,22 @@ func (c *Client) reConfirmTx(height int64) ([]int64, error) {
 			return nil, fmt.Errorf("fail to get block meta %d from local storage: %w", i, err)
 		}
 
-		hash, err := c.rpc.GetBlockHash(blockMeta.Height)
-		if err != nil {
-			c.log.Err(err).Msgf("fail to get block verbose tx result: %d", blockMeta.Height)
+		// if blockMeta is nil, we don't have this block stored, so skip it
+		if blockMeta == nil {
+			continue
 		}
-		if strings.EqualFold(blockMeta.BlockHash, hash) {
+
+		hash, hashErr := c.rpc.GetBlockHash(blockMeta.Height)
+		hashMismatch := false
+		if hashErr != nil {
+			c.log.Err(hashErr).Msgf("fail to get block hash for height: %d", blockMeta.Height)
+			// if we can't get the hash, assume it's a reorg and add to rescan
+			hashMismatch = true
+		} else if !strings.EqualFold(blockMeta.BlockHash, hash) {
+			hashMismatch = true
+		}
+
+		if !hashMismatch {
 			break // we know about this block, everything prior is okay
 		}
 
@@ -167,16 +178,19 @@ func (c *Client) reConfirmTx(height int64) ([]int64, error) {
 
 		rescanBlockHeights = append(rescanBlockHeights, blockMeta.Height)
 
-		// update the stored block meta with the new block hash
-		var r *btcjson.GetBlockVerboseResult
-		r, err = c.rpc.GetBlockVerbose(hash)
-		if err != nil {
-			c.log.Err(err).Int64("height", blockMeta.Height).Msg("fail to get block verbose result")
-		}
-		blockMeta.PreviousHash = r.PreviousHash
-		blockMeta.BlockHash = r.Hash
-		if err = c.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta); err != nil {
-			c.log.Err(err).Int64("height", blockMeta.Height).Msg("fail to save block meta of height")
+		// try to update the stored block meta with the new block hash, but don't fail if we can't
+		if hashErr == nil { // only try if we successfully got the hash
+			var r *btcjson.GetBlockVerboseResult
+			r, err = c.rpc.GetBlockVerbose(hash)
+			if err != nil {
+				c.log.Err(err).Int64("height", blockMeta.Height).Msg("fail to get block verbose result")
+			} else {
+				blockMeta.PreviousHash = r.PreviousHash
+				blockMeta.BlockHash = r.Hash
+				if err = c.temporalStorage.SaveBlockMeta(blockMeta.Height, blockMeta); err != nil {
+					c.log.Err(err).Int64("height", blockMeta.Height).Msg("fail to save block meta of height")
+				}
+			}
 		}
 	}
 	return rescanBlockHeights, nil

@@ -256,7 +256,7 @@ services:
     image: registry.gitlab.com/thorchain/midgard:develop
     restart: unless-stopped
     environment:
-      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlynode:1317/thorchain
+      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlynode:1317/switchlyprotocol
       MIDGARD_THORCHAIN_TENDERMINT_URL: http://switchlynode:26657/websocket
       MIDGARD_SWITCHLYPROTOCOL_THOR_NODE_URL: http://switchlynode:1317/switchlyprotocol
       MIDGARD_SWITCHLYPROTOCOL_TENDERMINT_URL: http://switchlynode:26657/websocket

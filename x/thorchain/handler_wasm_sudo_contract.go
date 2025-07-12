@@ -47,7 +47,7 @@ func (h WasmSudoContractHandler) validate(ctx cosmos.Context, msg wasmtypes.MsgS
 func (h WasmSudoContractHandler) handle(ctx cosmos.Context, msg wasmtypes.MsgSudoContract) (*wasmtypes.MsgSudoContractResponse, error) {
 	ctx.Logger().Info("receive MsgSudoContract", "from", msg.Authority)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgSudoContract while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgSudoContract while SwitchlyProtocol is halted")
 	}
 
 	authorityAddr, err := cosmos.AccAddressFromBech32(msg.Authority)

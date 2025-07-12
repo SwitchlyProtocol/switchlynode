@@ -430,7 +430,7 @@ func (c *EVMClient) GetBalances(addr string, height *big.Int) (common.Coins, err
 			}
 		}
 		bal := c.evmScanner.tokenManager.ConvertAmount(token.Address, balance)
-		coins = append(coins, common.NewCoin(asset, bal))
+		coins = append(coins, common.NewCoin(asset, cosmos.NewUintFromBigInt(bal)))
 	}
 
 	return coins.Distinct(), nil
@@ -561,13 +561,13 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 	gasRate := c.GetGasPrice()
 	if c.cfg.BlockScanner.FixedGasRate > 0 || gasRate.Cmp(big.NewInt(0)) == 0 {
 		// if chain gas is zero we are still filling our gas price buffer, use outbound rate
-		gasRate = convertThorchainAmountToWei(big.NewInt(txOutItem.GasRate))
+		gasRate = convertSwitchlyProtocolAmountToWei(big.NewInt(txOutItem.GasRate))
 	} else {
 		// Thornode uses a gas rate 1.5x the reported network fee for the rate and computed
 		// max gas to ensure the rate is sufficient when it is signed later. Since we now know
 		// the more recent rate, we will use our current rate with a lower bound on 2/3 the
 		// outbound rate (the original rate we reported to Thornode in the network fee).
-		lowerBound := convertThorchainAmountToWei(big.NewInt(txOutItem.GasRate))
+		lowerBound := convertSwitchlyProtocolAmountToWei(big.NewInt(txOutItem.GasRate))
 		lowerBound.Mul(lowerBound, big.NewInt(2))
 		lowerBound.Div(lowerBound, big.NewInt(3))
 
@@ -586,7 +586,7 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 
 	c.logger.Info().
 		Stringer("inHash", txOutItem.InHash).
-		Str("outboundRate", convertThorchainAmountToWei(big.NewInt(txOutItem.GasRate)).String()).
+		Str("outboundRate", convertSwitchlyProtocolAmountToWei(big.NewInt(txOutItem.GasRate)).String()).
 		Str("currentRate", c.GetGasPrice().String()).
 		Str("effectiveRate", gasRate.String()).
 		Msg("gas rate")
@@ -614,7 +614,7 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 
 	scheduledMaxFee := big.NewInt(0)
 	for _, coin := range txOutItem.MaxGas {
-		scheduledMaxFee.Add(scheduledMaxFee, convertThorchainAmountToWei(coin.Amount.BigInt()))
+		scheduledMaxFee.Add(scheduledMaxFee, convertSwitchlyProtocolAmountToWei(coin.Amount.BigInt()))
 	}
 
 	if txOutItem.Aggregator != "" {
@@ -650,7 +650,7 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 	// L2 chains require a small amount of gas asset left for the L1 fee
 	if c.cfg.EVM.ExtraL1GasFee > 0 {
 		l1Fee := big.NewInt(c.cfg.EVM.ExtraL1GasFee)
-		scheduledMaxFee = scheduledMaxFee.Sub(scheduledMaxFee, convertThorchainAmountToWei(l1Fee))
+		scheduledMaxFee = scheduledMaxFee.Sub(scheduledMaxFee, convertSwitchlyProtocolAmountToWei(l1Fee))
 	}
 
 	// determine max gas units based on scheduled max gas (fee) and current rate

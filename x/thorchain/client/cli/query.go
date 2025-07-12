@@ -23,7 +23,7 @@ func (v ver) String() string {
 
 func GetQueryCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:                        "thorchain",
+		Use:                        "switchlyprotocol",
 		Short:                      "Querying commands for the Switchly module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,

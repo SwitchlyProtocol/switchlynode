@@ -80,7 +80,7 @@ func (s *KeeperAdvSwapQueueSuite) TestGetAdvSwapQueueIndexKey(c *C) {
 		TargetAsset: common.SWTCAsset(),
 		TradeTarget: cosmos.NewUint(1239585),
 	}
-	c.Check(k.getAdvSwapQueueIndexKey(ctx, msg), Equals, "aqlim//BTC.BTC>THOR.RUNE/000000000000806721/")
+	c.Check(k.getAdvSwapQueueIndexKey(ctx, msg), Equals, "aqlim//BTC.BTC>SWITCHLY.SWTC/000000000000806721/")
 }
 
 func (s *KeeperAdvSwapQueueSuite) TestRewriteRatio(c *C) {

@@ -127,7 +127,7 @@ func (s *CosmosTestSuite) TestGetAddress(c *C) {
 	c.Check(acc.Sequence, Equals, int64(3))
 	c.Check(acc.Coins.EqualsEx(expectedCoins), Equals, true)
 
-	pk := common.PubKey("sthorpub1addwnpepqf72ur2e8zk8r5augtrly40cuy94f7e663zh798tyms6pu2k8qdswf4es66")
+	pk := common.PubKey("tswtcpub1addwnpepqf72ur2e8zk8r5augtrly40cuy94f7e663zh798tyms6pu2k8qdswf4es6w")
 	acc, err = cc.GetAccount(pk, big.NewInt(0))
 	c.Assert(err, IsNil)
 	c.Check(acc.AccountNumber, Equals, int64(3530305))
@@ -164,7 +164,7 @@ func (s *CosmosTestSuite) TestProcessOutboundTx(c *C) {
 	}, nil, s.bridge, s.m)
 	c.Assert(err, IsNil)
 
-	vaultPubKey, err := common.NewPubKey("sthorpub1addwnpepqda0q2avvxnferqasee42lu5492jlc4zvf6u264famvg9dywgq2kz0zaecw")
+	vaultPubKey, err := common.NewPubKey("tswtcpub1addwnpepqda0q2avvxnferqasee42lu5492jlc4zvf6u264famvg9dywgq2kz0zaec8")
 	c.Assert(err, IsNil)
 	outAsset, err := common.NewAsset("GAIA.ATOM")
 	c.Assert(err, IsNil)

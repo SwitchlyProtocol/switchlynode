@@ -32,7 +32,7 @@ func (m *MsgWasmExec) ValidateBasic() error {
 		return cosmos.ErrUnknownRequest("asset cannot be empty")
 	}
 	if !(m.Asset.IsSecuredAsset() || !m.Asset.IsNative()) {
-		return cosmos.ErrUnknownRequest("asset cannot be THORChain asset")
+		return cosmos.ErrUnknownRequest("asset cannot be SwitchlyProtocol asset")
 	}
 	if m.Amount.IsZero() {
 		return cosmos.ErrUnknownRequest("amount cannot be zero")

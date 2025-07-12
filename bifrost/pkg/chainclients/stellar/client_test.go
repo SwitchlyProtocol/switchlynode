@@ -119,7 +119,7 @@ func (s *StellarClientTestSuite) TestGetChain(c *C) {
 
 func (s *StellarClientTestSuite) TestGetAddress(c *C) {
 	// Test with a valid Stellar public key
-	pubKeyStr := "thorpub1addwnpepqflvfv08t6qt95lmttd6wpf3ss8wx63e9vf6fvyuj2yy6nnyna576rfzjks"
+	pubKeyStr := "tswtcpub1addwnpepqflvfv08t6qt95lmttd6wpf3ss8wx63e9vf6fvyuj2yy6nnyna576qmw2y8"
 	pubKey, err := common.NewPubKey(pubKeyStr)
 	if err != nil {
 		// If the pubkey format is invalid, test that GetAddress handles it gracefully

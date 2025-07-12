@@ -47,7 +47,7 @@ func (h WasmStoreCodeHandler) validate(ctx cosmos.Context, msg wasmtypes.MsgStor
 func (h WasmStoreCodeHandler) handle(ctx cosmos.Context, msg wasmtypes.MsgStoreCode) (*wasmtypes.MsgStoreCodeResponse, error) {
 	ctx.Logger().Info("receive MsgStoreCode", "from", msg.Sender)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgStoreCode while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgStoreCode while SwitchlyProtocol is halted")
 	}
 
 	senderAddr, err := cosmos.AccAddressFromBech32(msg.Sender)

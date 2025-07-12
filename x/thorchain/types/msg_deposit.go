@@ -39,7 +39,7 @@ func (m *MsgDeposit) ValidateBasic() error {
 	}
 	for _, coin := range m.Coins {
 		if !coin.IsNative() {
-			return cosmos.ErrUnknownRequest("all coins must be native to THORChain")
+			return cosmos.ErrUnknownRequest("all coins must be native to SwitchlyProtocol")
 		}
 	}
 	if len([]byte(m.Memo)) > constants.MaxMemoSize {

@@ -160,7 +160,7 @@ func (h ManageTHORNameHandler) handleV3_0_0(ctx cosmos.Context, msg MsgManageTHO
 			return nil, err
 		}
 		var addBlocks int64
-		// registration fee is for THORChain addresses only
+		// registration fee is for SwitchlyProtocol addresses only
 		if !exists {
 			// minus registration fee
 			registrationFee := h.mgr.Keeper().GetTHORNameRegisterFee(ctx)

@@ -47,7 +47,7 @@ func (h WasmUpdateAdminHandler) validate(ctx cosmos.Context, msg wasmtypes.MsgUp
 func (h WasmUpdateAdminHandler) handle(ctx cosmos.Context, msg wasmtypes.MsgUpdateAdmin) (*wasmtypes.MsgUpdateAdminResponse, error) {
 	ctx.Logger().Info("receive MsgUpdateAdmin", "from", msg.Sender)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgUpdateAdmin while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgUpdateAdmin while SwitchlyProtocol is halted")
 	}
 
 	senderAddr, err := cosmos.AccAddressFromBech32(msg.Sender)

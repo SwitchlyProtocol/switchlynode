@@ -32,7 +32,7 @@ func (HelperAffiliateSuite) TestSkimAffiliateFees(c *C) {
 	acct2 := mgr.Keeper().GetBalance(ctx, affAcctAddr2)
 	c.Assert(acct2.AmountOf(common.SWTCNative.Native()).String(), Equals, "0")
 
-	memo := fmt.Sprintf("=:THOR.RUNE:%s::%s/%s:100/50", GetRandomTHORAddress(), affAddr1, affAddr2)
+	memo := fmt.Sprintf("=:SWITCHLY.SWTC:%s::%s/%s:100/50", GetRandomTHORAddress(), affAddr1, affAddr2)
 	coin := common.NewCoin(common.SWTCNative, cosmos.NewUint(10*common.One))
 
 	feeSkimmed, err := skimAffiliateFees(ctx, mgr, tx, signer, coin, memo)
@@ -48,7 +48,7 @@ func (HelperAffiliateSuite) TestSkimAffiliateFees(c *C) {
 	// Use one thorname and one rune address
 	tn := types.THORName{Name: "t", Owner: affAcctAddr1, ExpireBlockHeight: 10000000, Aliases: []types.THORNameAlias{{Chain: common.SWITCHLYChain, Address: affAddr1}}}
 	mgr.Keeper().SetTHORName(ctx, tn)
-	memo = fmt.Sprintf("=:THOR.RUNE:%s::t/%s:100/50", GetRandomTHORAddress(), affAddr2)
+	memo = fmt.Sprintf("=:SWITCHLY.SWTC:%s::t/%s:100/50", GetRandomTHORAddress(), affAddr2)
 
 	feeSkimmed, err = skimAffiliateFees(ctx, mgr, tx, signer, coin, memo)
 	c.Assert(err, IsNil)

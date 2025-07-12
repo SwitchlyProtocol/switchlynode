@@ -113,7 +113,7 @@ type KVStore struct {
 	constAccessor constants.ConstantValues
 }
 
-// NewKVStore creates new instances of the thorchain Keeper
+// NewKVStore creates new instances of the switchlyprotocol Keeper
 func NewKVStore(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeeper authkeeper.AccountKeeper, upgradeKeeper *upgradekeeper.Keeper, storeKey cosmos.StoreKey, version semver.Version) KVStore {
 	return KVStore{
 		coinKeeper:    coinKeeper,
@@ -126,7 +126,7 @@ func NewKVStore(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeep
 	}
 }
 
-// NewKeeper creates new instances of the thorchain Keeper
+// NewKeeper creates new instances of the switchlyprotocol Keeper
 func NewKeeper(cdc codec.BinaryCodec, coinKeeper bankkeeper.Keeper, accountKeeper authkeeper.AccountKeeper, upgradeKeeper *upgradekeeper.Keeper, storeKey cosmos.StoreKey) keeper.Keeper {
 	version := semver.MustParse("0.0.0")
 	return NewKVStore(cdc, coinKeeper, accountKeeper, upgradeKeeper, storeKey, version)
@@ -439,7 +439,7 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 		k.SetMimir(ctx, "HaltTrading", 1)
 		k.SetMimir(ctx, "HaltChainGlobal", 1)
 		k.SetMimir(ctx, "PauseLP", 1)
-		k.SetMimir(ctx, "HaltTHORChain", 1)
+		k.SetMimir(ctx, "HaltSwitchlyProtocol", 1)
 	}
 
 	return nil
