@@ -35,7 +35,7 @@ func (TxOutTestSuite) TestTxOutItemHash(c *C) {
 	item = TxOutItem{
 		Chain:       "ETH",
 		ToAddress:   "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a",
-		VaultPubKey: "thorpub1addwnpepqv7kdf473gc4jyls7hlx4rg",
+		VaultPubKey: "tswtcpub1addwnpepqv7kdf473gc4jyls7hlx4rg",
 		Memo:        "REFUND:9999A5A08D8FCF942E1AAAA01AB1E521B699BA3A009FA0591C011DC1FFDC5E68",
 		InHash:      "9999A5A08D8FCF942E1AAAA01AB1E521B699BA3A009FA0591C011DC1FFDC5E68",
 	}

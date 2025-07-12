@@ -826,7 +826,7 @@ func (e *EVMScanner) getTxInFromTransaction(tx *etypes.Transaction, receipt *ety
 	}
 
 	nativeValue := e.tokenManager.ConvertAmount(evm.NativeTokenAddr, tx.Value())
-	txInItem.Coins = append(txInItem.Coins, common.NewCoin(e.cfg.ChainID.GetGasAsset(), nativeValue))
+	txInItem.Coins = append(txInItem.Coins, common.NewCoin(e.cfg.ChainID.GetGasAsset(), cosmos.NewUintFromBigInt(nativeValue)))
 	txGasPrice := tx.GasPrice()
 	txInItem.Gas = common.MakeEVMGas(e.cfg.ChainID, txGasPrice, receipt.GasUsed, receipt.L1Fee)
 	txInItem.Gas[0].Asset = e.cfg.ChainID.GetGasAsset()
@@ -888,8 +888,10 @@ func (e *EVMScanner) getTxInFromSmartContract(tx *etypes.Transaction, receipt *e
 	}
 	p := evm.NewSmartContractLogParser(e.isToValidContractAddress,
 		e.tokenManager.GetAssetFromTokenAddress,
-		e.tokenManager.GetTokenDecimalsForTHORChain,
-		e.tokenManager.ConvertAmount,
+		e.tokenManager.GetTokenDecimalsForSwitchlyProtocol,
+		func(token string, amt *big.Int) cosmos.Uint {
+			return cosmos.NewUintFromBigInt(e.tokenManager.ConvertAmount(token, amt))
+		},
 		e.vaultABI,
 		e.cfg.ChainID.GetGasAsset(),
 		maxLogs,
@@ -916,7 +918,7 @@ func (e *EVMScanner) getTxInFromSmartContract(tx *etypes.Transaction, receipt *e
 			// native value in it
 			nativeValue := cosmos.NewUintFromBigInt(tx.Value())
 			if !nativeValue.IsZero() {
-				nativeValue = e.tokenManager.ConvertAmount(evm.NativeTokenAddr, tx.Value())
+				nativeValue = cosmos.NewUintFromBigInt(e.tokenManager.ConvertAmount(evm.NativeTokenAddr, tx.Value()))
 				if txInItem.Coins.GetCoin(e.cfg.ChainID.GetGasAsset()).IsEmpty() && !nativeValue.IsZero() {
 					txInItem.Coins = append(txInItem.Coins, common.NewCoin(e.cfg.ChainID.GetGasAsset(), nativeValue))
 				}

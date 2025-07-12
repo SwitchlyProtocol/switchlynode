@@ -80,7 +80,7 @@ func (h RagnarokHandler) slash(ctx cosmos.Context, tx ObservedTx) error {
 }
 
 func (h RagnarokHandler) handleV3_0_0(ctx cosmos.Context, msg MsgRagnarok) (*cosmos.Result, error) {
-	// for ragnarok on thorchain ,
+	// for ragnarok on switchlyprotocol ,
 	if msg.Tx.Tx.Chain.Equals(common.SWITCHLYChain) {
 		return &cosmos.Result{}, nil
 	}
@@ -94,11 +94,11 @@ func (h RagnarokHandler) handleV3_0_0(ctx cosmos.Context, msg MsgRagnarok) (*cos
 			return nil, ErrInternal(err, "unable to get txOut record")
 		}
 		for i, tx := range txOut.TxArray {
-			// ragnarok is the memo used by thorchain to identify fund returns to
+			// ragnarok is the memo used by switchlyprotocol to identify fund returns to
 			// bonders, LPs, and reserve contributors.
 			// it use ragnarok:{block height} to mark a tx out caused by the ragnarok protocol
 			// this type of tx out is special, because it doesn't have relevant tx
-			// in to trigger it, it is trigger by thorchain itself.
+			// in to trigger it, it is trigger by switchlyprotocol itself.
 
 			fromAddress, _ := tx.VaultPubKey.GetAddress(tx.Chain)
 

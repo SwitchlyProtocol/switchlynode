@@ -315,7 +315,7 @@ func (s *SlasherVCUR) LackSigning(ctx cosmos.Context, mgr Manager) error {
 					// If the currently-assigned vault is an ActiveVault and the only one with enough funds for the outbound,
 					// the item should be reassigned to the same vault rather than assigned to another vault without enough funds;
 					// this is especially important for GAIA outbounds, for which insufficient-funds failures
-					// have THORChain-unobserved gas costs (causing churn-migration-jamming vault insolvency).
+					// have SwitchlyProtocol-unobserved gas costs (causing churn-migration-jamming vault insolvency).
 					// As such, re-add the (now free) funds of the outbound being replaced.
 					if active[i].PubKey.Equals(toi.VaultPubKey) {
 						active[i].Coins = active[i].Coins.Add(toi.Coin)
@@ -385,7 +385,7 @@ func (s *SlasherVCUR) LackSigning(ctx cosmos.Context, mgr Manager) error {
 								ctx.Logger().Info("clearing aggregator fields on outbound reassignment", "hash", toi.InHash)
 
 								// Here, simultaneously clear the Aggregator information for a reassigned TxOutItem and its Actions item
-								// so that a SwapOut will send the THORChain output asset instead of cycling and swallowingif
+								// so that a SwapOut will send the SwitchlyProtocol output asset instead of cycling and swallowingif
 								// (and maybe failing with slashes) if something goes wrong.
 								toi.Aggregator = ""
 								toi.AggregatorTargetAsset = ""
@@ -483,7 +483,7 @@ func (s *SlasherVCUR) SlashVault(ctx cosmos.Context, vaultPK common.PubKey, coin
 			ctx.Logger().Error("fail to get pool for slash", "asset", coin.Asset, "error", err)
 			continue
 		}
-		// THORChain doesn't even have a pool for the asset
+		// SwitchlyProtocol doesn't even have a pool for the asset
 		if pool.IsEmpty() {
 			ctx.Logger().Error("cannot slash for an empty pool", "asset", coin.Asset)
 			continue

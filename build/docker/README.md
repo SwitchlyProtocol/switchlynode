@@ -148,10 +148,14 @@ Once the mocknet is running, you can open open a shell in the `cli` service to a
 docker compose run cli
 
 # increase default 60 block churn (keyring password is "password")
-thornode tx thorchain mimir CHURNINTERVAL 1000 --from dog $TX_FLAGS
+switchlynode tx switchlyprotocol mimir CHURNINTERVAL 1000 --from dog $TX_FLAGS
 
 # set limit to 1 new node per churn (keyring password is "password")
-thornode tx thorchain mimir NUMBEROFNEWNODESPERCHURN 1 --from dog $TX_FLAGS
+switchlynode tx switchlyprotocol mimir NUMBEROFNEWNODESPERCHURN 1 --from dog $TX_FLAGS
+
+# add liquidity
+switchlynode tx switchlyprotocol deposit 10000000000 rune ADD:ETH.ETH:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
+switchlynode tx switchlyprotocol deposit 10000000000 rune ADD:ETH.TKN-0X52C84043CD9C865236F11D9FC9F56AA003C1F922:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
 ```
 
 ## EVM Tool

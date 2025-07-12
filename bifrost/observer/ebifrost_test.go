@@ -273,7 +273,7 @@ func (s *ObserverSuite) TestAttestedTxWorkflow(c *C) {
 			common.Address("receiver"),
 			common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(100*common.One))},
 			common.Gas{common.NewCoin(common.BTCAsset, cosmos.NewUint(1*common.One))},
-			"SWAP:THOR.RUNE",
+			"SWAP:SWITCHLY.SWTC",
 		),
 		1,
 		common.PubKey("pubkey"),

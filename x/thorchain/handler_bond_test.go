@@ -226,7 +226,7 @@ func (HandlerBondSuite) TestBondProvider_Validate(c *C) {
 	// try to bond with an eth address
 	msg = NewMsgBond(txIn, standbyNA, amt, GetRandomETHAddress(), nil, activeNA, -1)
 	err = handler.validate(ctx, *msg)
-	errCheck(c, err, "bonding address is NOT a THORChain address")
+	errCheck(c, err, "bonding address is NOT a SwitchlyProtocol address")
 
 	// try to bond with a valid additional bond provider
 	bp := NewBondProviders(standbyNA)

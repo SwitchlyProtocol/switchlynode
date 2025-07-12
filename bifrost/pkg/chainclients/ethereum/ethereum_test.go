@@ -336,7 +336,7 @@ func (s *EthereumSuite) TestClient(c *C) {
     "height": 1,
     "tx_array": [
         {
-            "vault_pub_key": "swtcpub1addwnpepq2mza4j4vplyjw295pkq8j2dan627lz6vufeu22pjx5vnnyjted5vwqyq7n5d",
+            "vault_pub_key": "tswtcpub1addwnpepqfgpnhk4z80fglgp4cget35dsdzpfxdkudtzw09pm2t0wv6rvhds2flawm6",
             "chain": "ETH",
 			"from_address":"0xa7d9ddbe1f17865597fbd27ec712455208b6b76d",
             "to_address": "0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",
@@ -710,4 +710,15 @@ func (s *EthereumSuite) TestGetConfirmationCount(c *C) {
 		},
 		MemPool: false,
 	}), Equals, int64(2))
+}
+
+func httpTestHandler(c *C, rw http.ResponseWriter, fixture string) {
+	content, err := os.ReadFile(fixture)
+	if err != nil {
+		c.Fatal(err)
+	}
+	rw.Header().Set("Content-Type", "application/json")
+	if _, err = rw.Write(content); err != nil {
+		c.Fatal(err)
+	}
 }

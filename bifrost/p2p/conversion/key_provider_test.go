@@ -26,8 +26,8 @@ func TestGetPubKeysFromPeerIDs(t *testing.T) {
 		t.FailNow()
 	}
 	assert.Len(t, result, 2)
-	assert.Equal(t, "thorpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5s8fm4n", result[0])
-	assert.Equal(t, "thorpub1addwnpepqga5cupfejfhtw507sh36fvwaekyjt5kwaw0cmgnpku0at2a87qqkp60t43", result[1])
+	assert.Equal(t, "tswtcpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5sxem4q", result[0])
+	assert.Equal(t, "tswtcpub1addwnpepqga5cupfejfhtw507sh36fvwaekyjt5kwaw0cmgnpku0at2a87qqkpwqxd4l", result[1])
 	input = append(input, "whatever")
 	result, err = GetPubKeysFromPeerIDs(input)
 	assert.NotNil(t, err)
@@ -53,8 +53,8 @@ func (*KeyProviderTestSuite) TestGetPriKey(c *C) {
 
 func (KeyProviderTestSuite) TestGetPeerIDs(c *C) {
 	pubKeys := []string{
-		"thorpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5s8fm4n",
-		"thorpub1addwnpepqga5cupfejfhtw507sh36fvwaekyjt5kwaw0cmgnpku0at2a87qqkp60t43",
+		"tswtcpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5sxem4q",
+		"tswtcpub1addwnpepqga5cupfejfhtw507sh36fvwaekyjt5kwaw0cmgnpku0at2a87qqkpwqxd4l",
 	}
 	peers, err := GetPeerIDs(pubKeys)
 	c.Assert(err, IsNil)
@@ -69,7 +69,7 @@ func (KeyProviderTestSuite) TestGetPeerIDs(c *C) {
 }
 
 func (KeyProviderTestSuite) TestGetPeerIDFromPubKey(c *C) {
-	pID, err := GetPeerIDFromPubKey("thorpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5s8fm4n")
+	pID, err := GetPeerIDFromPubKey("tswtcpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5sxem4q")
 	c.Assert(err, IsNil)
 	c.Assert(pID.String(), Equals, "16Uiu2HAmBdJRswX94UwYj6VLhh4GeUf9X3SjBRgTqFkeEMLmfk2M")
 	pID1, err := GetPeerIDFromPubKey("whatever")
@@ -81,6 +81,6 @@ func (KeyProviderTestSuite) TestCheckKeyOnCurve(c *C) {
 	_, err := CheckKeyOnCurve("aa")
 	c.Assert(err, NotNil)
 	SetupBech32Prefix()
-	_, err = CheckKeyOnCurve("thorpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5s8fm4n")
+	_, err = CheckKeyOnCurve("tswtcpub1addwnpepqtctt9l4fddeh0krvdpxmqsxa5z9xsa0ac6frqfhm9fq6c6u5lck5sxem4q")
 	c.Assert(err, IsNil)
 }

@@ -47,7 +47,7 @@ func (h WasmClearAdminHandler) validate(ctx cosmos.Context, msg wasmtypes.MsgCle
 func (h WasmClearAdminHandler) handle(ctx cosmos.Context, msg wasmtypes.MsgClearAdmin) (*wasmtypes.MsgClearAdminResponse, error) {
 	ctx.Logger().Info("receive MsgClearAdmin", "from", msg.Sender)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgClearAdmin while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgClearAdmin while SwitchlyProtocol is halted")
 	}
 
 	senderAddr, err := cosmos.AccAddressFromBech32(msg.Sender)

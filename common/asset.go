@@ -249,7 +249,7 @@ func (a Asset) IsDerivedAsset() bool {
 func (a Asset) Native() string {
 	switch {
 	case a.IsRune():
-		return "rune"
+		return "switchcoin"
 	case a.Equals(TOR):
 		return "tor"
 	case a.Equals(TCY):
@@ -285,7 +285,7 @@ func (a Asset) String() string {
 func (a Asset) ShortCode() string {
 	switch a.String() {
 	case "SWITCHLY.SWTC":
-		return "s"
+		return "r"
 	case "GAIA.ATOM":
 		return "g"
 	case "DOGE.DOGE":
@@ -345,7 +345,7 @@ func (a Asset) IsRUJI() bool {
 }
 
 // IsNative is a helper function, returns true when the asset is a native
-// asset to SWITCHLYChain (ie rune, a synth, etc)
+// asset to SWITCHLYChain (ie swtc, a synth, etc)
 func (a Asset) IsNative() bool {
 	return a.GetChain().IsSWITCHLYChain()
 }

@@ -62,7 +62,7 @@ func (h VersionHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSetVersion) er
 		return cosmos.ErrUnknownRequest(fmt.Sprintf("%s is invalid", msg.Version))
 	}
 	if len(v.Build) > 0 || len(v.Pre) > 0 {
-		return cosmos.ErrUnknownRequest("THORChain doesn't use Pre/Build version")
+		return cosmos.ErrUnknownRequest("SwitchlyProtocol doesn't use Pre/Build version")
 	}
 	if err := validateVersionAuth(ctx, h.mgr.Keeper(), msg.Signer); err != nil {
 		return cosmos.ErrUnauthorized(err.Error())

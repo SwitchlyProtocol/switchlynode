@@ -338,12 +338,12 @@ func quoteSimulateSwap(ctx cosmos.Context, mgr *Mgrs, amount sdkmath.Uint, msg *
 	}, emitAmount, outboundFeeAmount, nil
 }
 
-func convertThorchainAmountToWei(amt *big.Int) *big.Int {
-	return big.NewInt(0).Mul(amt, big.NewInt(common.One*100))
+func convertSwitchlyProtocolAmountToWei(amt *big.Int) *big.Int {
+	return new(big.Int).Mul(amt, big.NewInt(common.One*100))
 }
 
 func quoteInboundInfo(ctx cosmos.Context, mgr *Mgrs, amount sdkmath.Uint, chain common.Chain, asset common.Asset) (address, router common.Address, confirmations int64, err error) {
-	// If inbound chain is THORChain there is no inbound address
+	// If inbound chain is SwitchlyProtocol there is no inbound address
 	if chain.IsSWITCHLYChain() {
 		address = common.NoAddress
 		router = common.NoAddress
@@ -385,7 +385,8 @@ func quoteInboundInfo(ctx cosmos.Context, mgr *Mgrs, amount sdkmath.Uint, chain 
 		if err != nil {
 			return common.NoAddress, common.NoAddress, 0, fmt.Errorf("unable to convert asset: %w", err)
 		}
-		gasAssetAmountWei := convertThorchainAmountToWei(gasAssetAmount.BigInt())
+
+		gasAssetAmountWei := convertSwitchlyProtocolAmountToWei(gasAssetAmount.BigInt())
 		confValue := common.GetUncappedShare(cosmos.NewUint(uint64(confMul)), cosmos.NewUint(constants.MaxBasisPts), cosmos.NewUintFromBigInt(big.NewInt(ethBlockRewardAndFee)))
 		confirmations = int64(cosmos.NewUintFromBigInt(gasAssetAmountWei).MulUint64(2).Quo(confValue).Uint64())
 	}

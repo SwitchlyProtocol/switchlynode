@@ -7,7 +7,7 @@ import (
 )
 
 // RefundHandler a handle to process tx that had refund memo
-// usually this type or tx is because Thorchain fail to process the tx, which result in a refund, signer honour the tx and refund customer accordingly
+// usually this type or tx is because SwitchlyProtocol fail to process the tx, which result in a refund, signer honour the tx and refund customer accordingly
 type RefundHandler struct {
 	ch  CommonOutboundTxHandler
 	mgr Manager

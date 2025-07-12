@@ -44,7 +44,7 @@ func (h WasmExecHandler) validate(ctx cosmos.Context, msg MsgWasmExec) error {
 func (h WasmExecHandler) handle(ctx cosmos.Context, msg MsgWasmExec) (*cosmos.Result, error) {
 	ctx.Logger().Info("receive MsgWasmExec", "from", msg.Signer)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgWasmExec while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgWasmExec while SwitchlyProtocol is halted")
 	}
 
 	var (

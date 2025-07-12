@@ -120,13 +120,13 @@
                 "keygen_time": "0",
                 "keygen_type": "AsgardKeygen",
                 "keyshares_backup": null,
-                "pool_pub_key": "tthorpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
+                "pool_pub_key": "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
                 "pub_keys": [
-                  "tthorpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
-                  "tthorpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+                  "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
+                  "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
                 ],
                 "secp256k1_signature": null,
-                "signer": "tthor1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
+                "signer": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
               }
             ],
             "non_critical_extension_options": [],
@@ -143,7 +143,7 @@
           "gas_used": "53758",
           "events": [
             {
-              "acc_seq": "tthor1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m/0",
+              "acc_seq": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m/0",
               "type": "tx"
             },
             {

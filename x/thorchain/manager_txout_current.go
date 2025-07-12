@@ -316,7 +316,7 @@ func (tos *TxOutStorageVCUR) cachedTryAddTxOutItem(ctx cosmos.Context, mgr Manag
 	}
 
 	// Add total outbound fee to the OutboundGasWithheldRune. totalOutboundFeeRune will be 0 if these are Migration outbounds
-	// Don't count outbounds on THORChain ($RUNE and Synths)
+	// Don't count outbounds on SwitchlyProtocol ($RUNE and Synths)
 	if !totalOutboundFeeRune.IsZero() && !toi.Chain.IsSWITCHLYChain() {
 		if err := mgr.Keeper().AddToOutboundFeeWithheldRune(ctx, toi.Coin.Asset, totalOutboundFeeRune); err != nil {
 			ctx.Logger().Error("fail to add to outbound fee withheld rune", "outbound asset", toi.Coin.Asset, "error", err)
@@ -678,7 +678,7 @@ func (tos *TxOutStorageVCUR) prepareTxOutItem(ctx cosmos.Context, toi TxOutItem)
 
 		vault, err := tos.keeper.GetVault(ctx, outputs[i].VaultPubKey)
 		if err != nil && !outputs[i].Chain.IsSWITCHLYChain() {
-			// For THORChain outputs (since having an empty VaultPubKey)
+			// For SwitchlyProtocol outputs (since having an empty VaultPubKey)
 			// GetVault is expected to fail, so do not log the error.
 			ctx.Logger().Error("fail to get vault", "error", err)
 		}
@@ -1025,7 +1025,7 @@ func (tos *TxOutStorageVCUR) nativeTxOut(ctx cosmos.Context, mgr Manager, toi Tx
 
 	toi.ModuleName = toi.GetModuleName() // Ensure that non-"".
 
-	// mint if we're sending from THORChain module
+	// mint if we're sending from SwitchlyProtocol module
 	if toi.ModuleName == ModuleName {
 		if err := tos.keeper.MintToModule(ctx, toi.ModuleName, toi.Coin); err != nil {
 			return fmt.Errorf("fail to mint coins during txout: %w", err)

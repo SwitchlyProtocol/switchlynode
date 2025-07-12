@@ -79,12 +79,12 @@ func (c *CosmosBlockScanner) fromCosmosToThorchain(coin cosmos.Coin) (common.Coi
 	amount := coin.Amount.BigInt()
 	var exp big.Int
 	// Decimals are more than native THORChain, so divide...
-	if decimals > common.THORChainDecimals {
-		decimalDiff := int64(decimals - common.THORChainDecimals)
+	if decimals > common.SwitchlyProtocolDecimals {
+		decimalDiff := int64(decimals - common.SwitchlyProtocolDecimals)
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
-	} else if decimals < common.THORChainDecimals {
+	} else if decimals < common.SwitchlyProtocolDecimals {
 		// Decimals are less than native THORChain, so multiply...
-		decimalDiff := int64(common.THORChainDecimals - decimals)
+		decimalDiff := int64(common.SwitchlyProtocolDecimals - decimals)
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
 	return common.Coin{
@@ -103,13 +103,13 @@ func (c *CosmosBlockScanner) fromThorchainToCosmos(coin common.Coin) (cosmos.Coi
 	decimals := asset.CosmosDecimals
 	amount := coin.Amount.BigInt()
 	var exp big.Int
-	if decimals > common.THORChainDecimals {
+	if decimals > common.SwitchlyProtocolDecimals {
 		// Decimals are more than native THORChain, so multiply...
-		decimalDiff := int64(decimals - common.THORChainDecimals)
+		decimalDiff := int64(decimals - common.SwitchlyProtocolDecimals)
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
-	} else if decimals < common.THORChainDecimals {
+	} else if decimals < common.SwitchlyProtocolDecimals {
 		// Decimals are less than native THORChain, so divide...
-		decimalDiff := int64(common.THORChainDecimals - decimals)
+		decimalDiff := int64(common.SwitchlyProtocolDecimals - decimals)
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
 	return cosmos.NewCoin(asset.CosmosDenom, sdkmath.NewIntFromBigInt(amount)), nil

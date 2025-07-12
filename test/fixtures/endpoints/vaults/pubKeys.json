@@ -1,7 +1,7 @@
 {
   "asgard": [
     {
-      "pub_key": "swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z",
+      "pub_key": "tswtcpub1addwnpepqdd86fqaa5m8787ad4z39mpe20qwqs2fesedmlfc0ym37hhe65ke2cp6hcn",
       "routers": [
         {
           "chain": "ETH",
@@ -14,7 +14,7 @@
       ]
     },
     {
-      "pub_key": "swtcpub1addwnpepqflvfv08t6qt95lmttd6wpf3ss8wx63e9vf6fvyuj2yy6nnyna576rfzjks",
+      "pub_key": "tswtcpub1addwnpepqt68t0rcvekkadgqa9amwqvvn49txf0qd5z7hwnp0ws0an6hf9u2kn9lms0",
       "routers": [
         {
           "chain": "ETH",
@@ -27,7 +27,7 @@
       ]
     },
     {
-      "pub_key": "swtcpub1addwnpepq2flfr96skc5lkwdv0n5xjsnhmuju20x3zndgu42zd8dtkrud9m2vajhww6",
+      "pub_key": "tswtcpub1addwnpepqwzmgtuknngtdz4ruhe28tmzzqt4xjzsqte8ktmfa98pdclf7ez9wwdepn3",
       "routers": [
         {
           "chain": "ETH",
@@ -40,7 +40,7 @@
       ]
     },
     {
-      "pub_key": "swtcpub1addwnpepqwhnus6xs4208d4ynm05lv493amz3fexfjfx4vptntedd7k0ajlcunlfxxs",
+      "pub_key": "tswtcpub1addwnpepqt52wjlavln7yasf4cuvl4zagxlce67c6hnhwnmv6xc7psgkt24h6vvwz60",
       "routers": [
         {
           "chain": "ETH",
@@ -53,7 +53,7 @@
       ]
     },
     {
-      "pub_key": "swtcpub1addwnpepq2mza4j4vplyjw295pkq8j2dan627lz6vufeu22pjx5vnnyjted5vwq3e3d",
+      "pub_key": "tswtcpub1addwnpepqdgjqezs2dhcg0uwkffswecp5mkxmzt2ruh2zs9u0lrwfsx2xdjzgp3q60a",
       "routers": [
         {
           "chain": "ETH",
@@ -68,7 +68,7 @@
   ],
   "yggdrasil": [
     {
-      "pub_key": "swtcpub1addwnpepq27s79a9xk8hjcpjuthmwnl2z4su43uynekcjuqcnmhpemfgfrh6sm4yd8e",
+      "pub_key": "tswtcpub1addwnpepqgmpc4usz20js2uyx758mnjwujwp7ssgq6sm0458n88t0x0f4pnn637c3jl",
       "routers": [
         {
           "chain": "ETH",
@@ -81,7 +81,7 @@
       ]
     },
     {
-      "pub_key": "swtcpub1addwnpepqtsgdw5dj7pj497vr2397pnfctf0d3lf7f2ssu39hts45567syh5xuz5jrs",
+      "pub_key": "tswtcpub1addwnpepq2lf5sdxrlvxywv6rcdl84g0zuz503tknwaeusrd3v5hhg6e06fcks9cntd",
       "routers": [
         {
           "chain": "ETH",

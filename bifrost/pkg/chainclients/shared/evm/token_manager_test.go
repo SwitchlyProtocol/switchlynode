@@ -144,12 +144,12 @@ func (s *TokenManagerTestSuite) TestGetDecimals(c *C) {
 	err = manager.SaveTokenMeta("USDC", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", 6)
 	c.Assert(err, IsNil)
 
-	decimals := manager.GetTokenDecimalsForTHORChain(NativeTokenAddr)
+	decimals := manager.GetTokenDecimalsForSwitchlyProtocol(NativeTokenAddr)
 	c.Assert(decimals, Equals, int64(0))
 
-	decimals = manager.GetTokenDecimalsForTHORChain("0xB0b86991c6218b36c1d19D4a2e9Eb0cE3606eB49")
+	decimals = manager.GetTokenDecimalsForSwitchlyProtocol("0xB0b86991c6218b36c1d19D4a2e9Eb0cE3606eB49")
 	c.Assert(decimals, Equals, int64(0))
 
-	decimals = manager.GetTokenDecimalsForTHORChain("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
+	decimals = manager.GetTokenDecimalsForSwitchlyProtocol("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")
 	c.Assert(decimals, Equals, int64(6))
 }

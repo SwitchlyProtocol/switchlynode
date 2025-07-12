@@ -28,6 +28,7 @@ func getChainID(client *ethclient.Client, timeout time.Duration) (*big.Int, erro
 	return chainID, err
 }
 
-func convertThorchainAmountToWei(amt *big.Int) *big.Int {
-	return big.NewInt(0).Mul(amt, big.NewInt(common.One*100))
+// convertSwitchlyProtocolAmountToWei converts amt in 1e8 decimals to wei (1e18 decimals)
+func convertSwitchlyProtocolAmountToWei(amt *big.Int) *big.Int {
+	return new(big.Int).Mul(amt, big.NewInt(common.One*100))
 }

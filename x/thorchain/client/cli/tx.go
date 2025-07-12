@@ -23,7 +23,7 @@ import (
 
 func GetTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:                        "thorchain",
+		Use:                        "switchlyprotocol",
 		Short:                      "Switchly transaction subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,

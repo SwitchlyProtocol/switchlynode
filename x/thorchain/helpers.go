@@ -80,8 +80,8 @@ func refundTx(ctx cosmos.Context, tx ObservedTx, mgr Manager, refundCode uint32,
 	// For refund events, emit the event after the txout attempt in order to include the 'fail to refund' reason if unsuccessful.
 	eventRefund := NewEventRefund(refundCode, refundReason, tx.Tx, common.NewFee(common.Coins{}, cosmos.ZeroUint()))
 	if len(refundCoins) > 0 {
-		// create a new TX based on the coins thorchain refund , some of the coins thorchain doesn't refund
-		// coin thorchain doesn't have pool with , likely airdrop
+		// create a new TX based on the coins switchlyprotocol refund , some of the coins switchlyprotocol doesn't refund
+		// coin switchlyprotocol doesn't have pool with , likely airdrop
 		newTx := common.NewTx(tx.Tx.ID, tx.Tx.FromAddress, tx.Tx.ToAddress, tx.Tx.Coins, tx.Tx.Gas, tx.Tx.Memo)
 		eventRefund = NewEventRefund(refundCode, refundReason, newTx, common.Fee{}) // fee param not used in downstream event
 	}
@@ -127,7 +127,7 @@ func unrefundableCoinCleanup(ctx cosmos.Context, mgr Manager, toi TxOutItem, bur
 		ctx.Logger().Error("fail to refund non-native tx, leaving coins in vault", "toi.InHash", toi.InHash, "toi.Coin", toi.Coin)
 		return
 	case sourceModuleName != ReserveName:
-		// If unable to refund THOR.RUNE, send it to the Reserve.
+		// If unable to refund SWITCHLY.SWTC, send it to the Reserve.
 		err := mgr.Keeper().SendFromModuleToModule(ctx, sourceModuleName, ReserveName, common.NewCoins(coin))
 		if err != nil {
 			ctx.Logger().Error("fail to send native coin to Reserve during cleanup", "error", err)

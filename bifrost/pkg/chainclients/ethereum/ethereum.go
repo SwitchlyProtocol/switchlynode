@@ -347,7 +347,7 @@ func (c *Client) getSmartContractByAddress(addr common.Address) common.Address {
 
 func (c *Client) convertSigningAmount(amt *big.Int, token string) *big.Int {
 	// convert 1e8 to 1e18
-	amt = c.convertThorchainAmountToWei(amt)
+	amt = c.convertSwitchlyProtocolAmountToWei(amt)
 	if IsETH(token) {
 		return amt
 	}
@@ -368,8 +368,8 @@ func (c *Client) convertSigningAmount(amt *big.Int, token string) *big.Int {
 	return amt
 }
 
-func (c *Client) convertThorchainAmountToWei(amt *big.Int) *big.Int {
-	return big.NewInt(0).Mul(amt, big.NewInt(common.One*100))
+func (c *Client) convertSwitchlyProtocolAmountToWei(amt *big.Int) *big.Int {
+	return new(big.Int).Mul(amt, big.NewInt(common.One*100))
 }
 
 // SignTx sign the the given TxArrayItem
@@ -525,13 +525,13 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 	gasRate := c.GetGasPrice()
 	if c.cfg.BlockScanner.FixedGasRate > 0 || gasRate.Cmp(big.NewInt(0)) == 0 {
 		// if chain gas is zero we are still filling our gas price buffer, use outbound rate
-		gasRate = c.convertThorchainAmountToWei(big.NewInt(tx.GasRate))
+		gasRate = c.convertSwitchlyProtocolAmountToWei(big.NewInt(tx.GasRate))
 	} else {
 		// Thornode uses a gas rate 1.5x the reported network fee for the rate and computed
 		// max gas to ensure the rate is sufficient when it is signed later. Since we now know
 		// the more recent rate, we will use our current rate with a lower bound on 2/3 the
 		// outbound rate (the original rate we reported to Thornode in the network fee).
-		lowerBound := c.convertThorchainAmountToWei(big.NewInt(tx.GasRate))
+		lowerBound := c.convertSwitchlyProtocolAmountToWei(big.NewInt(tx.GasRate))
 		lowerBound.Mul(lowerBound, big.NewInt(2))
 		lowerBound.Div(lowerBound, big.NewInt(3))
 
@@ -554,7 +554,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 
 	c.logger.Info().
 		Stringer("inHash", tx.InHash).
-		Str("outboundRate", c.convertThorchainAmountToWei(big.NewInt(tx.GasRate)).String()).
+		Str("outboundRate", c.convertSwitchlyProtocolAmountToWei(big.NewInt(tx.GasRate)).String()).
 		Str("currentRate", c.GetGasPrice().String()).
 		Str("effectiveRate", gasRate.String()).
 		Msg("gas rate")
@@ -602,7 +602,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 
 	scheduledMaxFee := big.NewInt(0)
 	for _, coin := range tx.MaxGas {
-		scheduledMaxFee.Add(scheduledMaxFee, c.convertThorchainAmountToWei(coin.Amount.BigInt()))
+		scheduledMaxFee.Add(scheduledMaxFee, c.convertSwitchlyProtocolAmountToWei(coin.Amount.BigInt()))
 	}
 
 	if tx.Aggregator != "" {
@@ -956,7 +956,7 @@ func (c *Client) getBlockRequiredConfirmation(txIn stypes.TxIn, height int64) (i
 	}
 	c.logger.Debug().Msgf("asgards: %+v", asgards)
 	totalTxValue := c.getTotalTransactionValue(txIn, asgards)
-	totalTxValueInWei := c.convertThorchainAmountToWei(totalTxValue.BigInt())
+	totalTxValueInWei := c.convertSwitchlyProtocolAmountToWei(totalTxValue.BigInt())
 	confMul, err := utxo.GetConfMulBasisPoint(c.GetChain().String(), c.bridge)
 	if err != nil {
 		c.logger.Err(err).Msgf("failed to get conf multiplier mimir value for %s", c.GetChain().String())

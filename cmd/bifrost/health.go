@@ -123,10 +123,10 @@ func (s *HealthServer) getP2pIDHandler(w http.ResponseWriter, _ *http.Request) {
 func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 	res := &P2PStatusResponse{Peers: make([]P2PStatusPeer, 0)}
 
-	// get thorchain nodes
+	// get switchlyprotocol nodes
 	nodesByIP := map[string]openapi.Node{}
 	thornode := config.GetBifrost().Switchlyprotocol.ChainHost
-	url := fmt.Sprintf("http://%s/thorchain/nodes", thornode)
+	url := fmt.Sprintf("http://%s/switchlyprotocol/nodes", thornode)
 	resp, err := http.Get(url)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get thornode status")
@@ -339,9 +339,9 @@ func (s *HealthServer) chainScanner(w http.ResponseWriter, _ *http.Request) {
 	}
 	wg.Wait()
 
-	// Fetch thorchain height
+	// Fetch switchlyprotocol height
 	thornode := config.GetBifrost().Switchlyprotocol.ChainHost
-	url := fmt.Sprintf("http://%s/thorchain/lastblock", thornode)
+	url := fmt.Sprintf("http://%s/switchlyprotocol/lastblock", thornode)
 	resp, err := http.Get(url)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get thornode status")

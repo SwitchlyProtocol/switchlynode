@@ -102,7 +102,7 @@ func setupManagerForTest(c *C) (cosmos.Context, *Mgrs) {
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
-	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "thorchain"}, false, logger())
+	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchlyprotocol"}, false, logger())
 	ctx = ctx.WithBlockHeight(18)
 	encodingConfig := testutil.MakeTestEncodingConfig(
 		bank.AppModuleBasic{},
@@ -222,7 +222,7 @@ func setupKeeperForTest(c *C) (cosmos.Context, keeper.Keeper) {
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
-	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "thorchain"}, false, logger())
+	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchlyprotocol"}, false, logger())
 	ctx = ctx.WithBlockHeight(18)
 
 	encodingConfig := testutil.MakeTestEncodingConfig(

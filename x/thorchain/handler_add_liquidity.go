@@ -75,15 +75,15 @@ func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) e
 		return fmt.Errorf("cannot add liquidity to Ragnaroked pool (%s)", msg.Asset.String())
 	}
 
-	// Note that GetChain() without GetLayer1Asset() would indicate THORChain for synthetic assets.
+	// Note that GetChain() without GetLayer1Asset() would indicate SwitchlyProtocol for synthetic assets.
 	gasAsset := msg.Asset.GetLayer1Asset().GetChain().GetGasAsset()
 	// Even if a destination gas asset pool is empty, the first add liquidity has to be symmetrical,
 	// and so there is no need to check at this stage for whether the addition is of RUNE or Asset or with needsSwap.
 	if !msg.Asset.Equals(gasAsset) && !msg.Asset.IsTCY() && !msg.Asset.IsRUJI() {
 		gasPool, err := h.mgr.Keeper().GetPool(ctx, gasAsset)
 		// Note that for a synthetic asset msg.Asset.Chain (unlike msg.Asset.GetChain())
-		// is intentionally used to be the external chain rather than THOR.
-		// Any destination asset starting with THOR should be rejected for no THOR.RUNE
+		// is intentionally used to be the external chain rather than SWITCHLY.
+		// Any destination asset starting with SWITCHLY should be rejected for no SWITCHLY.SWTC
 		// gas asset pool existing.
 		if err != nil {
 			return ErrInternal(err, "fail to get gas pool")
@@ -127,7 +127,7 @@ func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) e
 	}
 
 	if !msg.RuneAddress.IsEmpty() && !msg.RuneAddress.IsChain(common.SWITCHLYChain) {
-		ctx.Logger().Error("rune address must be THORChain")
+		ctx.Logger().Error("rune address must be SwitchlyProtocol")
 		return errAddLiquidityFailValidation
 	}
 
@@ -175,7 +175,7 @@ func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) e
 	}
 
 	ensureLiquidityNoLargerThanBond := h.mgr.GetConstants().GetBoolValue(constants.StrictBondLiquidityRatio)
-	// if the pool is THORChain no need to check economic security
+	// if the pool is SwitchlyProtocol no need to check economic security
 	if msg.Asset.IsSyntheticAsset() || !ensureLiquidityNoLargerThanBond {
 		return nil
 	}

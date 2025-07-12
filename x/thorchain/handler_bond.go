@@ -87,7 +87,7 @@ func (h BondHandler) validateV3_0_0(ctx cosmos.Context, msg MsgBond) error {
 	}
 
 	if !msg.BondAddress.IsChain(common.SWITCHLYChain) {
-		return cosmos.ErrUnknownRequest(fmt.Sprintf("bonding address is NOT a THORChain address: %s", msg.BondAddress.String()))
+		return cosmos.ErrUnknownRequest(fmt.Sprintf("bonding address is NOT a SwitchlyProtocol address: %s", msg.BondAddress.String()))
 	}
 
 	bp, err := h.mgr.Keeper().GetBondProviders(ctx, msg.NodeAddress)
@@ -171,7 +171,7 @@ func (h BondHandler) handleV3_0_0(ctx cosmos.Context, msg MsgBond) (err error) {
 	acct := h.mgr.Keeper().GetAccount(ctx, msg.NodeAddress)
 
 	// when node bond for the first time , send 1 RUNE to node address
-	// so as the node address will be created on THORChain otherwise node account won't be able to send tx
+	// so as the node address will be created on SwitchlyProtocol otherwise node account won't be able to send tx
 	if acct == nil && nodeAccount.Bond.GTE(cosmos.NewUint(common.One)) {
 		coin := common.NewCoin(common.SWTCNative, cosmos.NewUint(common.One))
 		if err = h.mgr.Keeper().SendFromModuleToAccount(ctx, BondName, msg.NodeAddress, common.NewCoins(coin)); err != nil {

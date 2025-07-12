@@ -87,9 +87,9 @@ func (h MigrateHandler) handleV3_0_0(ctx cosmos.Context, msg MsgMigrate) (*cosmo
 
 	shouldSlash := true
 	for i, tx := range txOut.TxArray {
-		// migrate is the memo used by thorchain to identify fund migration between asgard vault.
-		// it use migrate:{block height} to mark a tx out caused by vault rotation
-		// this type of tx out is special , because it doesn't have relevant tx in to trigger it, it is trigger by thorchain itself.
+		// migrate is the memo used by SwitchlyProtocol to identify fund migration between asgard vault.
+		// Migration is the process to move funds from one asgard vault to another
+		// this type of tx out is special , because it doesn't have relevant tx in to trigger it, it is trigger by SwitchlyProtocol itself.
 		fromAddress, _ := tx.VaultPubKey.GetAddress(tx.Chain)
 
 		if tx.InHash.Equals(common.BlankTxID) &&

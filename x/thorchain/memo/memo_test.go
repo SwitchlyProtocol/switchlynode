@@ -54,7 +54,7 @@ func (s *MemoSuite) SetUpSuite(c *C) {
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
-	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "thorchain"}, false, log.NewNopLogger())
+	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchlyprotocol"}, false, log.NewNopLogger())
 	s.ctx = ctx.WithBlockHeight(18)
 
 	encodingConfig := testutil.MakeTestEncodingConfig(
@@ -151,7 +151,7 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	c.Check(memo.IsInbound(), Equals, true)
 	c.Check(memo.IsInternal(), Equals, false)
 	c.Check(memo.IsOutbound(), Equals, false)
-	c.Check(memo.GetAsset().String(), Equals, "THOR.RUNE")
+	c.Check(memo.GetAsset().String(), Equals, "SWITCHLY.SWTC")
 
 	// custom refund address
 	refundAddr := types.GetRandomTHORAddress()
@@ -222,7 +222,7 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Check(swapMemo.GetStreamQuantity(), Equals, uint64(20), Commentf("%d", swapMemo.GetStreamQuantity()))
 	c.Check(swapMemo.GetStreamInterval(), Equals, uint64(10))
-	c.Check(swapMemo.String(), Equals, "=:THOR.RUNE:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20")
+	c.Check(swapMemo.String(), Equals, "=:SWITCHLY.SWTC:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20")
 
 	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a://")
 	c.Assert(err, IsNil)
@@ -402,7 +402,7 @@ func (s *MemoSuite) TestParse(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
 	c.Check(memo.IsType(TxAdd), Equals, true, Commentf("MEMO: %+v", memo))
-	c.Check(memo.String(), Equals, "+:THOR.RUNE")
+	c.Check(memo.String(), Equals, "+:SWITCHLY.SWTC")
 
 	_, err = ParseMemoWithTHORNames(ctx, k, "ADD:BTC.BTC")
 	c.Assert(err, IsNil)
@@ -411,7 +411,7 @@ func (s *MemoSuite) TestParse(c *C) {
 	c.Check(memo.GetDestination().String(), Equals, "bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej")
 	c.Check(memo.IsType(TxAdd), Equals, true, Commentf("MEMO: %+v", memo))
 
-	_, err = ParseMemoWithTHORNames(ctx, k, "ADD:ETH.ETH:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:tthor176xrckly4p7efq7fshhcuc2kax3dyxu9hguzl7:1000")
+	_, err = ParseMemoWithTHORNames(ctx, k, "ADD:ETH.ETH:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:swtc176xrckly4p7efq7fshhcuc2kax3dyxu9hguzl7:1000")
 	c.Assert(err, IsNil)
 
 	memo, err = ParseMemoWithTHORNames(ctx, k, "TCY:"+thorAddr.String())
@@ -642,10 +642,10 @@ func (s *MemoSuite) TestParse(c *C) {
 	_, err = ParseMemoWithTHORNames(ctx, k, "whatever") // not support
 	c.Assert(err, NotNil)
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "x:tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f:AA==")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "x:swtc14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f:AA==")
 	c.Assert(err, IsNil)
 	c.Check(memo.IsType(TxExec), Equals, true)
-	c.Check(memo.String(), Equals, "x:tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f:AA==")
+	c.Check(memo.String(), Equals, "x:swtc14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f:AA==")
 	_, err = ParseMemoWithTHORNames(ctx, k, "tcy:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a") // invalid thor address
 	c.Assert(err, NotNil)
 	_, err = ParseMemoWithTHORNames(ctx, k, "tcy-") // emptu bps

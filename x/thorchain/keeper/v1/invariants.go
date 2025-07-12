@@ -14,8 +14,8 @@ func (k KVStore) InvariantRoutes() []common.InvariantRoute {
 	return []common.InvariantRoute{
 		common.NewInvariantRoute("asgard", AsgardInvariant(k)),
 		common.NewInvariantRoute("bond", BondInvariant(k)),
-		common.NewInvariantRoute("thorchain", THORChainInvariant(k)),
-		common.NewInvariantRoute("affiliate_collector", AffilliateCollectorInvariant(k)),
+		common.NewInvariantRoute("switchlyprotocol", SwitchlyProtocolInvariant(k)),
+		common.NewInvariantRoute("affiliate", AffilliateCollectorInvariant(k)),
 		common.NewInvariantRoute("pools", PoolsInvariant(k)),
 		common.NewInvariantRoute("streaming_swaps", StreamingSwapsInvariant(k)),
 		common.NewInvariantRoute("runepool", RUNEPoolInvariant(k)),
@@ -505,6 +505,24 @@ func LendingInvariant(k KVStore) common.Invariant {
 		if len(modCoins) > len(assetToTotal) {
 			broken = true
 			msg = append(msg, "extra coins on module")
+		}
+
+		return msg, broken
+	}
+}
+
+// SwitchlyProtocolInvariant the switchlyprotocol module should never hold a balance
+func SwitchlyProtocolInvariant(k KVStore) common.Invariant {
+	return func(ctx cosmos.Context) (msg []string, broken bool) {
+		// module balance of switchlyprotocol
+		modAddr := k.GetModuleAccAddress(ModuleName)
+		bal := k.GetBalance(ctx, modAddr)
+		// switchlyprotocol module should never carry a balance
+		if !bal.IsZero() {
+			broken = true
+			for _, coin := range bal {
+				msg = append(msg, fmt.Sprintf("oversolvent: %s", coin))
+			}
 		}
 
 		return msg, broken

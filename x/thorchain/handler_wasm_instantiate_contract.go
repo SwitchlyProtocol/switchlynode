@@ -47,7 +47,7 @@ func (h WasmInstantiateContractHandler) validate(ctx cosmos.Context, msg wasmtyp
 func (h WasmInstantiateContractHandler) handle(ctx cosmos.Context, msg wasmtypes.MsgInstantiateContract) (*wasmtypes.MsgInstantiateContractResponse, error) {
 	ctx.Logger().Info("receive MsgInstantiateContract", "from", msg.Sender)
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgInstantiateContract while THORChain is halted")
+		return nil, fmt.Errorf("unable to use MsgInstantiateContract while SwitchlyProtocol is halted")
 	}
 
 	senderAddr, err := cosmos.AccAddressFromBech32(msg.Sender)

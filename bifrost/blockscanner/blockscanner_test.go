@@ -108,16 +108,9 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
 			c.Assert(err, IsNil)
-		case strings.HasPrefix(r.RequestURI, "/thorchain/lastblock"):
-			// NOTE: weird pattern in GetBlockHeight uses first thorchain height.
-			_, err := w.Write([]byte(`[
-          {
-            "chain": "NOOP",
-            "lastobservedin": 0,
-            "lastsignedout": 0,
-            "thorchain": 0
-          }
-        ]`))
+		case strings.HasPrefix(r.RequestURI, "/switchlyprotocol/lastblock"):
+			// NOTE: weird pattern in GetBlockHeight uses first switchlyprotocol height.
+			_, err := w.Write([]byte(lastBlockResult))
 			c.Assert(err, IsNil)
 		}
 	})
@@ -125,7 +118,7 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 	server := httptest.NewServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchlyprotocol",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -180,7 +173,7 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 	server := httptest.NewTLSServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchlyprotocol",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -219,7 +212,7 @@ func (s *BlockScannerTestSuite) TestBadConnection(c *C) {
 	server := httptest.NewServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchlyprotocol",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -280,7 +273,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	server := httptest.NewServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchlyprotocol",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -353,12 +346,12 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
 			c.Assert(err, IsNil)
-		case strings.HasPrefix(r.RequestURI, "/thorchain/lastblock"):
+		case strings.HasPrefix(r.RequestURI, "/switchlyprotocol/lastblock"):
 			// Return last observed height for ETH chain
 			resp := fmt.Sprintf(`[{"chain": "ETH", "last_observed_in": %d, "last_signed_out": 0, "thorchain": 150}]`, lastObservedHeight)
 			_, err := w.Write([]byte(resp))
 			c.Assert(err, IsNil)
-		case strings.HasPrefix(r.RequestURI, "/thorchain/constants"):
+		case strings.HasPrefix(r.RequestURI, "/switchlyprotocol/constants"):
 			// Return constants used in rollback calculation - note integers WITHOUT quotes
 			resp := `{"int_64_values": {"ObservationDelayFlexibility": 10, "ThorchainBlockTime": 6000000000}}`
 			_, err := w.Write([]byte(resp))
@@ -372,7 +365,7 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 	defer server.Close()
 
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchlyprotocol",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",

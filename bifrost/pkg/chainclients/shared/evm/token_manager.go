@@ -14,11 +14,10 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm/types"
 	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 const (
@@ -146,25 +145,17 @@ func (h *TokenManager) GetAssetFromTokenAddress(token string) (common.Asset, err
 	return common.NewAsset(fmt.Sprintf("%s.%s-%s", h.nativeAsset.Chain, tokenMeta.Symbol, strings.ToUpper(tokenMeta.Address)))
 }
 
-// convertAmount will convert the amount to 1e8 , the decimals used by THORChain
-func (h *TokenManager) ConvertAmount(token string, amt *big.Int) cosmos.Uint {
-	if IsNative(token) {
-		return cosmos.NewUintFromBigInt(amt).QuoUint64(common.One * 100)
+// ConvertSwitchlyProtocolAmountToWei converts amt in 1e8 decimals to wei (1e18 decimals)
+func (h *TokenManager) ConvertSwitchlyProtocolAmountToWei(amt *big.Int) *big.Int {
+	return new(big.Int).Mul(amt, big.NewInt(common.One*100))
+}
+
+func (h *TokenManager) ConvertAmount(token string, amt *big.Int) *big.Int {
+	if !IsNative(token) {
+		return amt
 	}
-	decimals := h.defaultDecimals
-	tokenMeta, err := h.GetTokenMeta(token)
-	if err != nil {
-		h.logger.Err(err).Str("address", token).Msg("failed to get token meta for token address")
-	}
-	if !tokenMeta.IsEmpty() {
-		decimals = tokenMeta.Decimal
-	}
-	if decimals != h.defaultDecimals {
-		var value big.Int
-		amt = amt.Mul(amt, value.Exp(big.NewInt(10), big.NewInt(int64(h.defaultDecimals)), nil))
-		amt = amt.Div(amt, value.Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
-	}
-	return cosmos.NewUintFromBigInt(amt).QuoUint64(common.One * 100)
+	amt = h.ConvertSwitchlyProtocolAmountToWei(amt)
+	return amt
 }
 
 // ConvertThorchainAmountToWei converts amt in 1e8 decimals to wei (1e18 decimals)
@@ -196,8 +187,8 @@ func (h *TokenManager) ConvertSigningAmount(amt *big.Int, token string) *big.Int
 	return amt
 }
 
-// return value 0 means use the default value which is common.THORChainDecimals, use 1e8 as precision
-func (h *TokenManager) GetTokenDecimalsForTHORChain(token string) int64 {
+// return value 0 means use the default value which is common.SwitchlyProtocolDecimals, use 1e8 as precision
+func (h *TokenManager) GetTokenDecimalsForSwitchlyProtocol(token string) int64 {
 	if IsNative(token) {
 		return 0
 	}
@@ -208,8 +199,8 @@ func (h *TokenManager) GetTokenDecimalsForTHORChain(token string) int64 {
 	if tokenMeta.IsEmpty() {
 		return 0
 	}
-	// when the token's precision is more than THORChain , that's fine , just use THORChainDecimals
-	if tokenMeta.Decimal >= common.THORChainDecimals {
+	// when the token's precision is more than SwitchlyProtocol , that's fine , just use SwitchlyProtocolDecimals
+	if tokenMeta.Decimal >= common.SwitchlyProtocolDecimals {
 		return 0
 	}
 	return int64(tokenMeta.Decimal)

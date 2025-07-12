@@ -48,7 +48,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.Chain.Equals(ETHChain), Equals, true)
 	c.Check(asset.Symbol.Equals(Symbol("KNC")), Equals, true)
 	c.Check(asset.Ticker.Equals(Ticker("KNC")), Equals, true)
-	asset, err = NewAsset("ETH.RUNE-0x3155ba85d5f96b2d030a4966af206230e46849cb")
+	asset, err = NewAsset("ETH.SWTC-0x3155ba85d5f96b2d030a4966af206230e46849cb")
 	c.Assert(err, IsNil)
 
 	// DOGE test
@@ -155,25 +155,25 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Assert(err, NotNil)
 	c.Check(strings.Contains(err.Error(), "invalid symbol"), Equals, true)
 
-	asset, err = NewAsset("ETH-RUNE-0x3155ba85d5f96b2d030a4966af206230e46849cb")
+	asset, err = NewAsset("ETH-SWTC-0x3155ba85d5f96b2d030a4966af206230e46849cb")
 	c.Assert(err, IsNil)
 	c.Check(asset.IsNative(), Equals, true)
 	c.Check(asset.IsSecuredAsset(), Equals, true)
 	c.Check(asset.IsTradeAsset(), Equals, false)
 	c.Check(asset.IsSyntheticAsset(), Equals, false)
 	c.Assert(asset.Chain, Equals, ETHChain)
-	c.Check(asset.Symbol.Equals(Symbol("RUNE-0X3155BA85D5F96B2D030A4966AF206230E46849CB")), Equals, true)
-	c.Check(asset.Ticker.Equals(Ticker("RUNE")), Equals, true)
+	c.Check(asset.Symbol.Equals(Symbol("SWTC-0X3155BA85D5F96B2D030A4966AF206230E46849CB")), Equals, true)
+	c.Check(asset.Ticker.Equals(Ticker("SWTC")), Equals, true)
 
-	asset, err = NewAsset("ETH.RUNE-0x3155ba85d5f96b2d030a4966af206230e46849cb")
+	asset, err = NewAsset("ETH.SWTC-0x3155ba85d5f96b2d030a4966af206230e46849cb")
 	c.Assert(err, IsNil)
 	c.Check(asset.IsNative(), Equals, false)
 	c.Check(asset.IsSecuredAsset(), Equals, false)
 	c.Check(asset.IsTradeAsset(), Equals, false)
 	c.Check(asset.IsSyntheticAsset(), Equals, false)
 	c.Assert(asset.Chain, Equals, ETHChain)
-	c.Check(asset.Symbol.Equals(Symbol("RUNE-0X3155BA85D5F96B2D030A4966AF206230E46849CB")), Equals, true)
-	c.Check(asset.Ticker.Equals(Ticker("RUNE")), Equals, true)
+	c.Check(asset.Symbol.Equals(Symbol("SWTC-0X3155BA85D5F96B2D030A4966AF206230E46849CB")), Equals, true)
+	c.Check(asset.Ticker.Equals(Ticker("SWTC")), Equals, true)
 
 	// Ensure that x/denom assets are not interpreted as synth assets
 	asset, err = NewAsset("x/custom")

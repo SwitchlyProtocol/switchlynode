@@ -35,7 +35,7 @@ var _ = Suite(&ThorchainSuite{})
 
 func (s *ThorchainSuite) SetUpTest(c *C) {
 	cfg2 := cosmos.GetConfig()
-	cfg2.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccAddr)
+	cfg2.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
 	cfg, _, kb := SetupThorchainForTest(c)
 	s.cfg = cfg
 	s.server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -317,5 +317,5 @@ func (s *ThorchainSuite) TestTHORName(c *C) {
 	c.Assert(result.ExpireBlockHeight, Equals, int64(10000))
 	c.Assert(result.Aliases, HasLen, 1)
 	c.Assert(result.Aliases[0].Chain, Equals, common.SWITCHLYChain)
-	c.Assert(result.Aliases[0].Address, Equals, common.Address("tthor1tdfqy34uptx207scymqsy4k5uzfmry5sf7z3dw"))
+	c.Assert(result.Aliases[0].Address, Equals, common.Address("tswtc1nxx42h8wv59tjk9r7vnlza34hnm3ueq7ww4s8a"))
 }

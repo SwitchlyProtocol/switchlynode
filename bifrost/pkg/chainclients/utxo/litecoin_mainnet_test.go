@@ -13,9 +13,9 @@ import (
 
 func (s *LitecoinSuite) TestGetAddress(c *C) {
 	ttypes.SetupConfigForTest()
-	pubkey := common.PubKey("swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d")
+	pubkey := common.PubKey("swtcpub1addwnpepqf0tc7xeqy23je53kmhyf420y76xhk2ufwjr6hkt52xe5na9w6rcy90jkdm")
 	addr := s.client.GetAddress(pubkey)
-	c.Assert(addr, Equals, "ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm")
+	c.Assert(addr, Equals, "ltc1qhsn2d5m3rj8dev79zkx9rv84f809f4qf0wdkhd")
 }
 
 func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
@@ -37,7 +37,7 @@ func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
@@ -56,7 +56,7 @@ func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
@@ -79,7 +79,7 @@ func (s *LitecoinSuite) TestConfirmationCountReady(c *C) {
 				Gas: common.Gas{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(40000)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
@@ -108,7 +108,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
@@ -128,7 +128,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
@@ -148,7 +148,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(12345600)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
@@ -168,7 +168,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(22345600)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
@@ -188,7 +188,7 @@ func (s *LitecoinSuite) TestGetConfirmationCount(c *C) {
 				Coins: common.Coins{
 					common.NewCoin(common.LTCAsset, cosmos.NewUint(123456000)),
 				},
-				Memo:                "MEMO",
+				Memo:                "noop",
 				ObservedVaultPubKey: pkey,
 			},
 		},
