@@ -1,8 +1,8 @@
 package types
 
 const (
-	// ModuleName name of SwitchlyProtocol module
-	ModuleName = "switchlyprotocol"
+	// ModuleName name of Switchly module
+	ModuleName = "switchly"
 	// DefaultCodespace is the same as ModuleName
 	DefaultCodespace = ModuleName
 	// ReserveName the module account name to keep reserve

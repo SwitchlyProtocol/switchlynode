@@ -22,16 +22,16 @@ func main() {
 	case common.MockNet:
 		fmt.Println("SwitchlyProtocol mocknet:")
 		config := cosmos.GetConfig()
-		config.SetBech32PrefixForAccount("tswtc", "tswtcpub")
-		config.SetBech32PrefixForValidator("tswtcv", "tswtcvpub")
-		config.SetBech32PrefixForConsensusNode("tswtcc", "tswtccpub")
+		config.SetBech32PrefixForAccount("tswitch", "tswitchpub")
+		config.SetBech32PrefixForValidator("tswitchv", "tswitchvpub")
+		config.SetBech32PrefixForConsensusNode("tswitchc", "tswitchcpub")
 		config.Seal()
 	case common.MainNet:
 		fmt.Println("SwitchlyProtocol mainnet:")
 		config := cosmos.GetConfig()
-		config.SetBech32PrefixForAccount("swtc", "swtcpub")
-		config.SetBech32PrefixForValidator("swtcv", "swtcvpub")
-		config.SetBech32PrefixForConsensusNode("swtcc", "swtccpub")
+		config.SetBech32PrefixForAccount("switch", "switchpub")
+		config.SetBech32PrefixForValidator("switchv", "switchvpub")
+		config.SetBech32PrefixForConsensusNode("switchc", "switchcpub")
 		config.Seal()
 	}
 

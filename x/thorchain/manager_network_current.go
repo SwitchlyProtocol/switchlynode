@@ -207,7 +207,7 @@ func (vm *NetworkMgrVCUR) spawnDerivedAssets(ctx cosmos.Context, mgr Manager) er
 	// get assets to create derived pools
 	layer1Assets := []common.Asset{common.TOR}
 	for _, chain := range active[0].GetChains() {
-		// no derived asset for switchlyprotocol
+		// no derived asset for switchly
 		if chain.IsSWITCHLYChain() {
 			continue
 		}

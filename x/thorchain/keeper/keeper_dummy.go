@@ -128,7 +128,7 @@ func (k KVStoreDummy) MintAndSendToAccount(ctx cosmos.Context, to cosmos.AccAddr
 
 func (k KVStoreDummy) GetModuleAddress(module string) (common.Address, error) {
 	if module == ReserveName {
-		return "swtc1tgwz2az6ut78neq6vhqd3pt5jjf3ghqmv3grcx", nil // Mocknet Reserve address
+		return "tswitch1kjwj4342akvwmgsfh9gv700jwsvlnlf2ykzv8h", nil // Mocknet Reserve address
 	}
 	return "", kaboom
 }

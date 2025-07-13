@@ -113,7 +113,7 @@ func (t *TssServer) generateSignature(msgID string, msgsToSign [][]byte, req key
 			t.logger.Error().Err(errJoinParty).Msgf("fail to convert the peerID to public key %s", leader)
 			blameLeader = blame.NewBlame(blame.TssSyncFail, []blame.Node{})
 		} else {
-			blameLeader = blame.NewBlame(blame.TssSyncFail, []blame.Node{{leaderPubKey, nil, nil}})
+			blameLeader = blame.NewBlame(blame.TssSyncFail, []blame.Node{{Pubkey: leaderPubKey, BlameData: nil, BlameSignature: nil}})
 		}
 
 		t.broadcastKeysignFailure(msgID, allPeersID)

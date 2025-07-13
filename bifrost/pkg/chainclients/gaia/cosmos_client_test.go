@@ -104,7 +104,7 @@ func (s *CosmosTestSuite) TestGetAddress(c *C) {
 
 	cfg := config.BifrostBlockScannerConfiguration{
 		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-			{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
+			{Denom: "uatom", Decimals: 6, SwitchlySymbol: "ATOM"},
 		},
 	}
 
@@ -158,7 +158,7 @@ func (s *CosmosTestSuite) TestProcessOutboundTx(c *C) {
 			CosmosGRPCHost:   fakeGRPCHost,
 			StartBlockHeight: 1, // avoids querying thorchain for block height
 			WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-				{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
+				{Denom: "uatom", Decimals: 6, SwitchlySymbol: "ATOM"},
 			},
 		},
 	}, nil, s.bridge, s.m)

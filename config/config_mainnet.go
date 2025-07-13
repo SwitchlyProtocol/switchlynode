@@ -20,13 +20,13 @@ const (
 )
 
 func getSeedAddrs() (addrs []string) {
-	if config.Switchlynode.SeedNodesEndpoint == "" {
+	if config.Switchly.SeedNodesEndpoint == "" {
 		log.Warn().Msg("no seed nodes endpoint provided")
 		return
 	}
 
 	// get nodes
-	res, err := http.Get(config.Switchlynode.SeedNodesEndpoint)
+	res, err := http.Get(config.Switchly.SeedNodesEndpoint)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to get thorchain nodes")
 	}
@@ -61,7 +61,7 @@ func getSeedAddrs() (addrs []string) {
 }
 
 func assertBifrostHasSeeds() {
-	if config.Switchlynode.SeedNodesEndpoint == "" {
+	if config.Switchly.SeedNodesEndpoint == "" {
 		log.Warn().Msg("no seed nodes endpoint provided, skipping seed file check")
 		return
 	}

@@ -125,8 +125,8 @@ func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 
 	// get switchlyprotocol nodes
 	nodesByIP := map[string]openapi.Node{}
-	thornode := config.GetBifrost().Switchlyprotocol.ChainHost
-	url := fmt.Sprintf("http://%s/switchlyprotocol/nodes", thornode)
+	thornode := config.GetBifrost().Switchly.ChainHost
+	url := fmt.Sprintf("http://%s/switchly/nodes", thornode)
 	resp, err := http.Get(url)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get thornode status")
@@ -234,7 +234,7 @@ func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 func (s *HealthServer) currentSigning(w http.ResponseWriter, _ *http.Request) {
 	res := make([]VaultResponse, 0)
 
-	thornode := config.GetBifrost().Switchlyprotocol.ChainHost
+	thornode := config.GetBifrost().Switchly.ChainHost
 	url := fmt.Sprintf("http://%s%s", thornode, thorclient.AsgardVault)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -340,8 +340,8 @@ func (s *HealthServer) chainScanner(w http.ResponseWriter, _ *http.Request) {
 	wg.Wait()
 
 	// Fetch switchlyprotocol height
-	thornode := config.GetBifrost().Switchlyprotocol.ChainHost
-	url := fmt.Sprintf("http://%s/switchlyprotocol/lastblock", thornode)
+	thornode := config.GetBifrost().Switchly.ChainHost
+	url := fmt.Sprintf("http://%s/switchly/lastblock", thornode)
 	resp, err := http.Get(url)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get thornode status")

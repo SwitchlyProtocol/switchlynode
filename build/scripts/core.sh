@@ -31,10 +31,10 @@ add_node_account() {
   NODE_PUB_KEY_ED25519=$6
   IP_ADDRESS=$7
   MEMBERSHIP=$8
-  jq --arg IP_ADDRESS "$IP_ADDRESS" --arg VERSION "$VERSION" --arg BOND_ADDRESS "$BOND_ADDRESS" --arg VALIDATOR "$VALIDATOR" --arg NODE_ADDRESS "$NODE_ADDRESS" --arg NODE_PUB_KEY "$NODE_PUB_KEY" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.switchlyprotocol.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address":$BOND_ADDRESS, "signer_membership": [], "validator_cons_pub_key":$VALIDATOR, "pub_key_set":{"secp256k1":$NODE_PUB_KEY,"ed25519":$NODE_PUB_KEY_ED25519}}]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg NODE_ADDRESS "$NODE_ADDRESS" --arg VERSION "$VERSION" --arg IP_ADDRESS "$IP_ADDRESS" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.switchly.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address": $NODE_ADDRESS, "pub_key_set":{"secp256k1":$NODE_PUB_KEY_ED25519,"ed25519":$NODE_PUB_KEY_ED25519}}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
   if [ -n "$MEMBERSHIP" ]; then
-    jq --arg MEMBERSHIP "$MEMBERSHIP" '.app_state.switchlyprotocol.node_accounts[-1].signer_membership += [$MEMBERSHIP]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+    jq --arg MEMBERSHIP "$MEMBERSHIP" '.app_state.switchly.node_accounts[-1].signer_membership += [$MEMBERSHIP]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
     mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
   fi
 }
@@ -57,7 +57,7 @@ add_account() {
 }
 
 reserve() {
-  jq --arg RESERVE "$1" '.app_state.switchlyprotocol.reserve = $RESERVE' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg RESERVE "$1" '.app_state.switchly.reserve = $RESERVE' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
@@ -69,7 +69,7 @@ disable_bank_send() {
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
-# inits a switchlyprotocol with the provided list of genesis accounts
+# inits a switchly with the provided list of genesis accounts
 init_chain() {
   IFS=","
 
@@ -89,11 +89,11 @@ set_node_keys() {
   SIGNER_NAME="$1"
   SIGNER_PASSWD="$2"
   PEER="$3"
-  NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | switchlynode keys show switchlyprotocol --pubkey --keyring-backend file | switchlynode pubkey)"
+  NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | switchlynode keys show switchly --pubkey --keyring-backend file | switchlynode pubkey)"
   NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
   VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
   echo "Setting SwitchlyNode keys"
-  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
 }
 
 set_ip_address() {
@@ -102,11 +102,11 @@ set_ip_address() {
   PEER="$3"
   NODE_IP_ADDRESS="${4:-$(curl -s http://whatismyip.akamai.com)}"
   echo "Setting SwitchlyNode IP address $NODE_IP_ADDRESS"
-  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchlyprotocol set-ip-address "$NODE_IP_ADDRESS" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-ip-address "$NODE_IP_ADDRESS" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --yes
 }
 
 fetch_version() {
-  switchlynode query switchlyprotocol version --output json | jq -r .version
+  switchlynode query switchly version --output json | jq -r .version
 }
 
 create_switchly_user() {
@@ -167,21 +167,21 @@ set_bond_module() {
 }
 
 set_eth_contract() {
-  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "ETH", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts += [{"chain": "ETH", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_avax_contract() {
-  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "AVAX", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts += [{"chain": "AVAX", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_bsc_contract() {
-  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "BSC", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts += [{"chain": "BSC", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 
 set_base_contract() {
-  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }

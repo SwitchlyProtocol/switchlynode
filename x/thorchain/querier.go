@@ -44,7 +44,7 @@ var (
 
 func initTendermint() {
 	// get tendermint port from config
-	portSplit := strings.Split(config.GetSwitchlynode().Tendermint.RPC.ListenAddress, ":")
+	portSplit := strings.Split(config.GetSwitchly().Tendermint.RPC.ListenAddress, ":")
 	port := portSplit[len(portSplit)-1]
 
 	// setup tendermint client
@@ -230,7 +230,7 @@ func (qs queryServer) queryVaultsPubkeys(ctx cosmos.Context, _ *types.QueryVault
 	if err != nil {
 		return nil, err
 	}
-	cutOffAge := ctx.BlockHeight() - config.GetSwitchlynode().VaultPubkeysCutoffBlocks
+	cutOffAge := ctx.BlockHeight() - config.GetSwitchly().VaultPubkeysCutoffBlocks
 	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		var vault Vault

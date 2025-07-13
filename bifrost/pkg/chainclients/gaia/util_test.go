@@ -20,7 +20,7 @@ func (s *UtilTestSuite) SetUpSuite(c *C) {
 		ChainID:            common.GAIAChain,
 		GasPriceResolution: 100_000,
 		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-			{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
+			{Denom: "uatom", Decimals: 6, SwitchlySymbol: "ATOM"},
 		},
 	}
 	s.scanner = CosmosBlockScanner{cfg: cfg}

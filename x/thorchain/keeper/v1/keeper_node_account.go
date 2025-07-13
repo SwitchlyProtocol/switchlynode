@@ -372,7 +372,7 @@ func (k KVStore) IncNodeAccountSlashPoints(ctx cosmos.Context, addr cosmos.AccAd
 		),
 	)
 
-	if config.GetSwitchlynode().Telemetry.SlashPoints {
+	if config.GetSwitchly().Telemetry.SlashPoints {
 		slashTelemetry(ctx, pts, addr, "IncSlashPoints")
 	}
 
@@ -403,7 +403,7 @@ func (k KVStore) DecNodeAccountSlashPoints(ctx cosmos.Context, addr cosmos.AccAd
 		),
 	)
 
-	if config.GetSwitchlynode().Telemetry.SlashPoints {
+	if config.GetSwitchly().Telemetry.SlashPoints {
 		slashTelemetry(ctx, -pts, addr, "DecSlashPoints")
 	}
 

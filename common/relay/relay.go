@@ -38,7 +38,7 @@ func NewNodeRelay(channel, text string) *NodeRelay {
 
 func (n *NodeRelay) fetchUUID() error {
 	// GET UUID PREFIX
-	resp, err := http.Get(fmt.Sprintf("%s/uuid_prefix", config.GetSwitchlynode().NodeRelayURL))
+	resp, err := http.Get(fmt.Sprintf("%s/uuid_prefix", config.GetSwitchly().NodeRelayURL))
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (n *NodeRelay) Broadcast() (string, error) {
 	// POST to discord bot
 	responseBody := bytes.NewBuffer(postBody)
 	// Leverage Go's HTTP Post function to make request
-	resp, err := http.Post(fmt.Sprintf("%s/msg", config.GetSwitchlynode().NodeRelayURL), "application/json", responseBody)
+	resp, err := http.Post(fmt.Sprintf("%s/msg", config.GetSwitchly().NodeRelayURL), "application/json", responseBody)
 	// Handle Error
 	if err != nil {
 		return "", err

@@ -40,28 +40,28 @@ func InitNetwork() {
 
 	switch config.Get().Network {
 	case "mainnet":
-		bech32PrefixAccAddr = "swtc"
-		bech32PrefixAccPub = "swtcpub"
-		bech32PrefixValAddr = "swtcv"
-		bech32PrefixValPub = "swtcvpub"
-		bech32PrefixConsAddr = "swtcc"
-		bech32PrefixConsPub = "swtccpub"
+		bech32PrefixAccAddr = "switch"
+		bech32PrefixAccPub = "switchpub"
+		bech32PrefixValAddr = "switchv"
+		bech32PrefixValPub = "switchvpub"
+		bech32PrefixConsAddr = "switchc"
+		bech32PrefixConsPub = "switchcpub"
 
 	case "stagenet":
-		bech32PrefixAccAddr = "sswtc"
-		bech32PrefixAccPub = "sswtcpub"
-		bech32PrefixValAddr = "sswtcv"
-		bech32PrefixValPub = "sswtcvpub"
-		bech32PrefixConsAddr = "sswtcc"
-		bech32PrefixConsPub = "sswtccpub"
+		bech32PrefixAccAddr = "sswitch"
+		bech32PrefixAccPub = "sswitchpub"
+		bech32PrefixValAddr = "sswitchv"
+		bech32PrefixValPub = "sswitchvpub"
+		bech32PrefixConsAddr = "sswitchc"
+		bech32PrefixConsPub = "sswitchcpub"
 
 	case "mocknet":
-		bech32PrefixAccAddr = "tswtc"
-		bech32PrefixAccPub = "tswtcpub"
-		bech32PrefixValAddr = "tswtcv"
-		bech32PrefixValPub = "tswtcvpub"
-		bech32PrefixConsAddr = "tswtcc"
-		bech32PrefixConsPub = "tswtccpub"
+		bech32PrefixAccAddr = "tswitch"
+		bech32PrefixAccPub = "tswitchpub"
+		bech32PrefixValAddr = "tswitchv"
+		bech32PrefixValPub = "tswitchvpub"
+		bech32PrefixConsAddr = "tswitchc"
+		bech32PrefixConsPub = "tswitchcpub"
 
 	default:
 		log.Fatal().Str("network", config.Get().Network).Msg("unknown network")

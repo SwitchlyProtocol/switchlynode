@@ -22,32 +22,32 @@ import (
 )
 
 func GetTxCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:                        "switchlyprotocol",
+	txCmd := &cobra.Command{
+		Use:                        "switchly",
 		Short:                      "Switchly transaction subcommands",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
 
-	cmd.AddCommand(GetCmdSetNodeKeys())
-	cmd.AddCommand(GetCmdSetVersion())
-	cmd.AddCommand(GetCmdProposeUpgrade())
-	cmd.AddCommand(GetCmdApproveUpgrade())
-	cmd.AddCommand(GetCmdRejectUpgrade())
-	cmd.AddCommand(GetCmdSetIPAddress())
-	cmd.AddCommand(GetCmdBan())
-	cmd.AddCommand(GetCmdMimir())
-	cmd.AddCommand(GetCmdNodePauseChain())
-	cmd.AddCommand(GetCmdNodeResumeChain())
-	cmd.AddCommand(GetCmdDeposit())
-	cmd.AddCommand(GetCmdSend())
-	cmd.AddCommand(GetCmdObserveTxIns())
-	cmd.AddCommand(GetCmdObserveTxOuts())
-	for _, subCmd := range cmd.Commands() {
+	txCmd.AddCommand(GetCmdSetNodeKeys())
+	txCmd.AddCommand(GetCmdSetVersion())
+	txCmd.AddCommand(GetCmdProposeUpgrade())
+	txCmd.AddCommand(GetCmdApproveUpgrade())
+	txCmd.AddCommand(GetCmdRejectUpgrade())
+	txCmd.AddCommand(GetCmdSetIPAddress())
+	txCmd.AddCommand(GetCmdBan())
+	txCmd.AddCommand(GetCmdMimir())
+	txCmd.AddCommand(GetCmdNodePauseChain())
+	txCmd.AddCommand(GetCmdNodeResumeChain())
+	txCmd.AddCommand(GetCmdDeposit())
+	txCmd.AddCommand(GetCmdSend())
+	txCmd.AddCommand(GetCmdObserveTxIns())
+	txCmd.AddCommand(GetCmdObserveTxOuts())
+	for _, subCmd := range txCmd.Commands() {
 		flags.AddTxFlagsToCmd(subCmd)
 	}
-	return cmd
+	return txCmd
 }
 
 // GetCmdDeposit command to send a native transaction

@@ -4,6 +4,5 @@
 package tcysmartcontract
 
 const (
-	// Update with local smart contract address for testing
-	TCYSmartContractAddress = "swtc1hjpct8pd9d48vyqltaqunltwx9twm57l4h2dac"
+	TCYSmartContractAddress = "tswitch1waga7ad30nrqvp8x4y0g4dztjdw0ypv874qj8m"
 )

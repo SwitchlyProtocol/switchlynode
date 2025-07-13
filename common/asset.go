@@ -37,8 +37,8 @@ var (
 	XRPAsset = Asset{Chain: XRPChain, Symbol: "XRP", Ticker: "XRP", Synth: false}
 	// XLMAsset XLM
 	XLMAsset = Asset{Chain: StellarChain, Symbol: "XLM", Ticker: "XLM", Synth: false}
-	// SWTCNative SWTC on switchlyprotocol
-	SWTCNative  = Asset{Chain: SWITCHLYChain, Symbol: "SWTC", Ticker: "SWTC", Synth: false}
+	// SWTCNative SWITCH on switchly
+	SWTCNative  = Asset{Chain: SWITCHLYChain, Symbol: "SWITCH", Ticker: "SWITCH", Synth: false}
 	RUJI        = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
 	TCY         = Asset{Chain: SWITCHLYChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
 	TOR         = Asset{Chain: SWITCHLYChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
@@ -249,7 +249,7 @@ func (a Asset) IsDerivedAsset() bool {
 func (a Asset) Native() string {
 	switch {
 	case a.IsRune():
-		return "switchcoin"
+		return "switch"
 	case a.Equals(TOR):
 		return "tor"
 	case a.Equals(TCY):
@@ -284,7 +284,7 @@ func (a Asset) String() string {
 // ShortCode returns the short code for the asset.
 func (a Asset) ShortCode() string {
 	switch a.String() {
-	case "SWITCHLY.SWTC":
+	case "SWITCHLY.SWITCH":
 		return "r"
 	case "GAIA.ATOM":
 		return "g"
@@ -324,8 +324,8 @@ func (a Asset) IsGasAsset() bool {
 func SWTCAsset() Asset {
 	return Asset{
 		Chain:  SWITCHLYChain,
-		Symbol: "SWTC",
-		Ticker: "SWTC",
+		Symbol: "SWITCH",
+		Ticker: "SWITCH",
 		Synth:  false,
 	}
 }
