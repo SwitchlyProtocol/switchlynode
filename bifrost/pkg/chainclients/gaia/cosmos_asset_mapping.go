@@ -16,7 +16,7 @@ func (c *CosmosBlockScanner) GetAssetByCosmosDenom(denom string) (CosmosAssetMap
 			return CosmosAssetMapping{
 				CosmosDenom:            asset.Denom,
 				CosmosDecimals:         asset.Decimals,
-				SwitchlyProtocolSymbol: asset.SwitchlyProtocolSymbol,
+				SwitchlyProtocolSymbol: asset.SwitchlySymbol,
 			}, true
 		}
 	}
@@ -25,11 +25,11 @@ func (c *CosmosBlockScanner) GetAssetByCosmosDenom(denom string) (CosmosAssetMap
 
 func (c *CosmosBlockScanner) GetAssetByThorchainSymbol(symbol string) (CosmosAssetMapping, bool) {
 	for _, asset := range c.cfg.WhitelistCosmosAssets {
-		if strings.EqualFold(asset.SwitchlyProtocolSymbol, symbol) {
+		if strings.EqualFold(asset.SwitchlySymbol, symbol) {
 			return CosmosAssetMapping{
 				CosmosDenom:            asset.Denom,
 				CosmosDecimals:         asset.Decimals,
-				SwitchlyProtocolSymbol: asset.SwitchlyProtocolSymbol,
+				SwitchlyProtocolSymbol: asset.SwitchlySymbol,
 			}, true
 		}
 	}

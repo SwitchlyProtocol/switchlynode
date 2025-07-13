@@ -74,20 +74,20 @@ func main() {
 	if err = m.Start(); err != nil {
 		log.Fatal().Err(err).Msg("fail to start metric collector")
 	}
-	if len(cfg.Switchlyprotocol.SignerName) == 0 {
+	if len(cfg.Switchly.SignerName) == 0 {
 		log.Fatal().Msg("signer name is empty")
 	}
-	if len(cfg.Switchlyprotocol.SignerPasswd) == 0 {
+	if len(cfg.Switchly.SignerPasswd) == 0 {
 		log.Fatal().Msg("signer password is empty")
 	}
-	kb, _, err := thorclient.GetKeyringKeybase(cfg.Switchlyprotocol.ChainHomeFolder, cfg.Switchlyprotocol.SignerName, cfg.Switchlyprotocol.SignerPasswd)
+	kb, _, err := thorclient.GetKeyringKeybase(cfg.Switchly.ChainHomeFolder, cfg.Switchly.SignerName, cfg.Switchly.SignerPasswd)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to get keyring keybase")
 	}
 
-	k := thorclient.NewKeysWithKeybase(kb, cfg.Switchlyprotocol.SignerName, cfg.Switchlyprotocol.SignerPasswd)
+	k := thorclient.NewKeysWithKeybase(kb, cfg.Switchly.SignerName, cfg.Switchly.SignerPasswd)
 	// thorchain bridge
-	thorchainBridge, err := thorclient.NewThorchainBridge(cfg.Switchlyprotocol, m, k)
+	thorchainBridge, err := thorclient.NewThorchainBridge(cfg.Switchly, m, k)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to create new thorchain bridge")
 	}
@@ -194,7 +194,7 @@ func main() {
 	ctx := context.Background()
 
 	// start observer notifier
-	ag, err := observer.NewAttestationGossip(comm.GetHost(), k, cfg.Switchlyprotocol.ChainEBifrost, thorchainBridge, m, cfg.AttestationGossip)
+	ag, err := observer.NewAttestationGossip(comm.GetHost(), k, cfg.Switchly.ChainEBifrost, thorchainBridge, m, cfg.AttestationGossip)
 
 	// start observer
 	obs, err := observer.NewObserver(pubkeyMgr, chains, thorchainBridge, m, cfgChains[tcommon.BTCChain].BlockScanner.DBPath, tssKeysignMetricMgr, ag, *deckDump)

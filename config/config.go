@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"text/template"
@@ -59,13 +57,13 @@ var (
 )
 
 type Config struct {
-	Switchlynode Switchlynode `mapstructure:"switchly"`
-	Bifrost      Bifrost      `mapstructure:"bifrost"`
+	Switchly Switchly `mapstructure:"switchly"`
+	Bifrost  Bifrost  `mapstructure:"bifrost"`
 }
 
-// GetSwitchlynode returns the global switchlynode configuration.
-func GetSwitchlynode() Switchlynode {
-	return config.Switchlynode
+// GetSwitchly returns the global switchly configuration.
+func GetSwitchly() Switchly {
+	return config.Switchly
 }
 
 // GetBifrost returns the global switchlynode configuration.
@@ -250,14 +248,14 @@ func Init() {
 	viper.SetConfigType("toml")
 
 	// dynamically set rpc listen address
-	if config.Switchlynode.Tendermint.RPC.ListenAddress == "" {
-		config.Switchlynode.Tendermint.RPC.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", rpcPort)
+	if config.Switchly.Tendermint.RPC.ListenAddress == "" {
+		config.Switchly.Tendermint.RPC.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", rpcPort)
 	}
-	if config.Switchlynode.Tendermint.P2P.ListenAddress == "" {
-		config.Switchlynode.Tendermint.P2P.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", p2pPort)
+	if config.Switchly.Tendermint.P2P.ListenAddress == "" {
+		config.Switchly.Tendermint.P2P.ListenAddress = fmt.Sprintf("tcp://0.0.0.0:%d", p2pPort)
 	}
-	if config.Switchlynode.Cosmos.EBifrost.Address == "" {
-		config.Switchlynode.Cosmos.EBifrost.Address = fmt.Sprintf("0.0.0.0:%d", ebifrostPort)
+	if config.Switchly.Cosmos.EBifrost.Address == "" {
+		config.Switchly.Cosmos.EBifrost.Address = fmt.Sprintf("0.0.0.0:%d", ebifrostPort)
 	}
 }
 
@@ -293,7 +291,7 @@ func InitBifrost() {
 	}
 
 	// set signer password explicitly from environment variable
-	config.Bifrost.Switchlyprotocol.SignerPasswd = os.Getenv("SIGNER_PASSWD")
+	config.Bifrost.Switchly.SignerPasswd = os.Getenv("SIGNER_PASSWD")
 
 	// set bootstrap peers from seeds endpoint if unset
 	if len(config.Bifrost.TSS.BootstrapPeers) == 0 {
@@ -301,28 +299,28 @@ func InitBifrost() {
 	}
 }
 
-func InitSwitchlynode(ctx context.Context) {
-	// Environment variables prefixed with `SWITCHLYNODE` will be read by viper in cosmos-sdk
+func InitSwitchly(ctx context.Context) {
+	// Environment variables prefixed with `SWITCHLY` will be read by viper in cosmos-sdk
 	// initialization and overwrite configuration we apply in this package.
 	for _, env := range os.Environ() {
 		envKey := strings.Split(env, "=")[0]
-		if strings.HasPrefix(envKey, "SWITCHLYNODE_") {
+		if strings.HasPrefix(envKey, "SWITCHLY_") {
 			log.Warn().Msgf("environment variable %s could overwrite config", env)
 		}
 	}
 
 	// if auto statesync enable, find latest snapshot height and hash that should exist
-	if config.Switchlynode.AutoStateSync.Enabled {
-		switchlynodeAutoStateSync(ctx)
+	if config.Switchly.AutoStateSync.Enabled {
+		switchlyAutoStateSync(ctx)
 	}
 
 	// dynamically set seeds
-	seedAddrs, tmSeeds := switchlynodeSeeds()
-	config.Switchlynode.Tendermint.P2P.Seeds = strings.Join(tmSeeds, ",")
+	seedAddrs, tmSeeds := switchlySeeds()
+	config.Switchly.Tendermint.P2P.Seeds = strings.Join(tmSeeds, ",")
 
 	// set the Tendermint external address
 	if os.Getenv("EXTERNAL_IP") != "" {
-		config.Switchlynode.Tendermint.P2P.ExternalAddress = fmt.Sprintf("%s:%d", os.Getenv("EXTERNAL_IP"), p2pPort)
+		config.Switchly.Tendermint.P2P.ExternalAddress = fmt.Sprintf("%s:%d", os.Getenv("EXTERNAL_IP"), p2pPort)
 	}
 
 	// set paths
@@ -336,7 +334,7 @@ func InitSwitchlynode(ctx context.Context) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open config.toml")
 	}
-	err = t.ExecuteTemplate(tendermintFile, "config.toml.tmpl", config.Switchlynode.Tendermint)
+	err = t.ExecuteTemplate(tendermintFile, "config.toml.tmpl", config.Switchly.Tendermint)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to render config.toml")
 	}
@@ -346,24 +344,154 @@ func InitSwitchlynode(ctx context.Context) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open app.toml")
 	}
-	err = t.ExecuteTemplate(cosmosFile, "app.toml.tmpl", config.Switchlynode.Cosmos)
+	err = t.ExecuteTemplate(cosmosFile, "app.toml.tmpl", config.Switchly.Cosmos)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to render app.toml")
 	}
 
 	// fetch genesis
 	if len(seedAddrs) > 0 {
-		switchlynodeFetchGenesis(seedAddrs)
+		// Genesis fetching is handled elsewhere
+		log.Info().Msg("seeds available for genesis fetch")
 	} else {
 		log.Warn().Msg("no seeds, skipping genesis fetch")
 	}
 }
 
 // -------------------------------------------------------------------------------------
-// Switchlynode
+// Switchly
 // -------------------------------------------------------------------------------------
 
-type Switchlynode struct {
+func switchlySeeds() (seedAddrs, tmSeeds []string) {
+	// use environment variable if set
+	seeds := os.Getenv("SEEDS")
+	if seeds != "" {
+		for _, seed := range strings.Split(seeds, ",") {
+			seedAddrs = append(seedAddrs, strings.TrimSpace(seed))
+		}
+	} else {
+		seedAddrs = getSeedAddrs()
+	}
+
+	// fetch p2p node ids from seeds
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	for retry := 0; retry < MaxRetries; retry++ {
+		for _, seed := range seedAddrs {
+			wg.Add(1)
+			go func(seed string) {
+				defer wg.Done()
+
+				// parse seed address
+				seedIP := seed
+				if strings.Contains(seed, ":") {
+					seedIP = strings.Split(seed, ":")[0]
+				}
+
+				// fetch node status
+				url := fmt.Sprintf("http://%s:%d/status", seedIP, rpcPort)
+				res, err := http.Get(url)
+				if err != nil {
+					return
+				}
+				defer res.Body.Close()
+
+				// decode response
+				type status struct {
+					Result struct {
+						NodeInfo struct {
+							ID      string `json:"id"`
+							Network string `json:"network"`
+						} `json:"node_info"`
+					} `json:"result"`
+				}
+				var s status
+				dec := json.NewDecoder(res.Body)
+				err = dec.Decode(&s)
+				if err != nil {
+					log.Error().Err(err).Msg("failed to decode node status")
+					return
+				}
+
+				// skip if the node is not on the same network
+				if s.Result.NodeInfo.Network != os.Getenv("CHAIN_ID") {
+					log.Error().
+						Str("network", s.Result.NodeInfo.Network).
+						Str("expected", os.Getenv("CHAIN_ID")).
+						Msg("node is not on the same network")
+					return
+				}
+
+				// update seeds
+				mu.Lock()
+				tmSeeds = append(tmSeeds, fmt.Sprintf("%s@%s:%d", s.Result.NodeInfo.ID, seedIP, p2pPort))
+				mu.Unlock()
+			}(seed)
+		}
+		wg.Wait()
+
+		// retry a few times if we have no seeds
+		if len(tmSeeds) > 0 {
+			break
+		}
+		log.Info().Msg("retrying to fetch seeds...")
+		time.Sleep(RetryBackoff)
+	}
+
+	log.Info().Msgf("found %d p2p seeds", len(tmSeeds))
+	return
+}
+
+func switchlyAutoStateSync(ctx context.Context) {
+	// if we already have a state assume we have a snapshot and skip
+	dataDir := os.ExpandEnv("$HOME/.switchlynode/data/state.db")
+	if _, err := os.Stat(dataDir); err == nil {
+		log.Info().Msg("data directory detected, skipping auto statesync configuration")
+		return
+	}
+
+	for _, host := range strings.Split(config.Switchly.Tendermint.StateSync.RPCServers, ",") {
+		log.Info().Msgf("auto statesync enabled, determining trust height via %s", host)
+
+		client, err := tmhttp.New(host, "")
+		if err != nil {
+			log.Err(err).Str("host", host).Msg("failed to create tendermint client")
+			continue
+		}
+
+		// get the height of the expected snapshot
+		status, err := client.Status(ctx)
+		if err != nil {
+			log.Err(err).Str("host", host).Msg("failed to get status")
+			continue
+		}
+		height := status.SyncInfo.LatestBlockHeight - config.Switchly.AutoStateSync.BlockBuffer
+
+		// get the hash of the trust block
+		block, err := client.Block(ctx, &height)
+		if err != nil {
+			log.Err(err).Str("host", host).Int64("height", height).Msg("failed to get block")
+			continue
+		}
+		hash := block.BlockID.Hash.String()
+
+		// set the trusted hash and height in tendermint
+		log.Info().Int64("height", height).Str("hash", hash).Msg("setting automatic statesync trust")
+		config.Switchly.Tendermint.StateSync.Enable = true
+		config.Switchly.Tendermint.StateSync.TrustHeight = height
+		config.Switchly.Tendermint.StateSync.TrustHash = hash
+
+		// set the persistent peers in tendermint to the known auto statesync peers
+		config.Switchly.Tendermint.P2P.PersistentPeers = strings.Join(config.Switchly.AutoStateSync.Peers, ",")
+
+		// success
+		return
+	}
+
+	log.Fatal().Msg("failed to determine statesync trust height from any rpc host")
+}
+
+type Switchly struct {
 	// NodeRelayURL is the URL of the node relay service.
 	NodeRelayURL string `mapstructure:"node_relay_url"`
 
@@ -372,7 +500,7 @@ type Switchlynode struct {
 	// observed by bifrost.
 	VaultPubkeysCutoffBlocks int64 `mapstructure:"vault_pubkeys_cutoff_blocks"`
 
-	// SeedNodesEndpoint is the full URL to a /switchlyprotocol/nodes endpoint for finding active
+	// SeedNodesEndpoint is the full URL to a /switchly/nodes endpoint for finding active
 	// validators to seed genesis and peers.
 	SeedNodesEndpoint string `mapstructure:"seed_nodes_endpoint"`
 
@@ -503,7 +631,7 @@ type Switchlynode struct {
 
 type Bifrost struct {
 	Signer            BifrostSignerConfiguration     `mapstructure:"signer"`
-	Switchlyprotocol  BifrostClientConfiguration     `mapstructure:"switchlyprotocol"`
+	Switchly          BifrostClientConfiguration     `mapstructure:"switchly"`
 	AttestationGossip BifrostAttestationGossipConfig `mapstructure:"attestation_gossip"`
 	Metrics           BifrostMetricsConfiguration    `mapstructure:"metrics"`
 	Chains            struct {
@@ -780,7 +908,7 @@ type BifrostBlockScannerConfiguration struct {
 	CosmosGRPCTLS bool `mapstructure:"cosmos_grpc_tls"`
 
 	// GasCacheBlocks is the number of blocks worth of gas price data cached to determine
-	// the gas price reported to SwitchlyProtocol.
+	// the gas price reported to Switchly.
 	GasCacheBlocks int `mapstructure:"gas_cache_blocks"`
 
 	// Concurrency is the number of goroutines used for RPC requests on data within a
@@ -879,9 +1007,9 @@ func (c BifrostTSSConfiguration) GetExternalIP() string {
 }
 
 type WhitelistCosmosAsset struct {
-	Denom                  string `mapstructure:"denom"`
-	Decimals               int    `mapstructure:"decimals"`
-	SwitchlyProtocolSymbol string `mapstructure:"symbol"`
+	Denom          string `mapstructure:"denom"`
+	Decimals       int    `mapstructure:"decimals"`
+	SwitchlySymbol string `mapstructure:"symbol"`
 }
 
 // GetBootstrapPeers return the internal bootstrap peers in a slice of maddr.Multiaddr
@@ -954,244 +1082,4 @@ func resolveAddrs(addrs []string) []string {
 	}
 
 	return resolvedAddrs
-}
-
-func switchlynodeSeeds() (seedAddrs, tmSeeds []string) {
-	// use environment variable if set
-	seeds := os.Getenv("SEEDS")
-	if seeds != "" {
-		seedAddrs = strings.Split(seeds, ",")
-	} else {
-		log.Info().Msg("seeds not provided, initializing automatically...")
-		seedAddrs = getSeedAddrs()
-	}
-
-	// resolve any hostnames
-	seedAddrs = resolveAddrs(seedAddrs)
-
-	// skip further steps if there were no seeds to check
-	if len(seedAddrs) == 0 {
-		log.Warn().Msg("no seeds found")
-		return
-	}
-
-	// initialize seed with their node id if the network matches
-	wg := sync.WaitGroup{}
-	mu := sync.Mutex{}
-
-	for try := 0; try < MaxRetries; try++ {
-		for _, seed := range seedAddrs {
-			wg.Add(1)
-			go func(seedIP string) {
-				defer wg.Done()
-
-				// get node status
-				res, err := httpClient.Get(fmt.Sprintf("http://%s:%d/status", seedIP, rpcPort))
-				if err != nil {
-					log.Error().Err(err).Msg("failed to get node status")
-					return
-				}
-
-				// decode status response
-				type status struct {
-					Result struct {
-						NodeInfo struct {
-							ID      string `json:"id"`
-							Network string `json:"network"`
-						} `json:"node_info"`
-					} `json:"result"`
-				}
-				var s status
-				dec := json.NewDecoder(res.Body)
-				err = dec.Decode(&s)
-				if err != nil {
-					log.Error().Err(err).Msg("failed to decode node status")
-					return
-				}
-
-				// skip if the node is not on the same network
-				if s.Result.NodeInfo.Network != os.Getenv("CHAIN_ID") {
-					log.Error().
-						Str("network", s.Result.NodeInfo.Network).
-						Str("expected", os.Getenv("CHAIN_ID")).
-						Msg("node is not on the same network")
-					return
-				}
-
-				// update seeds
-				mu.Lock()
-				tmSeeds = append(tmSeeds, fmt.Sprintf("%s@%s:%d", s.Result.NodeInfo.ID, seedIP, p2pPort))
-				mu.Unlock()
-			}(seed)
-		}
-		wg.Wait()
-
-		// retry a few times if we have no seeds
-		if len(tmSeeds) > 0 {
-			break
-		}
-		log.Info().Msg("retrying to fetch seeds...")
-		time.Sleep(RetryBackoff)
-	}
-
-	log.Info().Msgf("found %d p2p seeds", len(tmSeeds))
-	return
-}
-
-func switchlynodeAutoStateSync(ctx context.Context) {
-	// if we already have a state assume we have a snapshot and skip
-	dataDir := os.ExpandEnv("$HOME/.switchlynode/data/state.db")
-	if _, err := os.Stat(dataDir); err == nil {
-		log.Info().Msg("data directory detected, skipping auto statesync configuration")
-		return
-	}
-
-	for _, host := range strings.Split(config.Switchlynode.Tendermint.StateSync.RPCServers, ",") {
-		log.Info().Msgf("auto statesync enabled, determining trust height via %s", host)
-
-		client, err := tmhttp.New(host, "")
-		if err != nil {
-			log.Err(err).Str("host", host).Msg("failed to create tendermint client")
-			continue
-		}
-
-		// get the height of the expected snapshot
-		status, err := client.Status(ctx)
-		if err != nil {
-			log.Err(err).Str("host", host).Msg("failed to get status")
-			continue
-		}
-		height := status.SyncInfo.LatestBlockHeight - config.Switchlynode.AutoStateSync.BlockBuffer
-
-		// get the hash of the trust block
-		block, err := client.Block(ctx, &height)
-		if err != nil {
-			log.Err(err).Str("host", host).Int64("height", height).Msg("failed to get block")
-			continue
-		}
-		hash := block.BlockID.Hash.String()
-
-		// set the trusted hash and height in tendermint
-		log.Info().Int64("height", height).Str("hash", hash).Msg("setting automatic statesync trust")
-		config.Switchlynode.Tendermint.StateSync.Enable = true
-		config.Switchlynode.Tendermint.StateSync.TrustHeight = height
-		config.Switchlynode.Tendermint.StateSync.TrustHash = hash
-
-		// set the persistent peers in tendermint to the known auto statesync peers
-		config.Switchlynode.Tendermint.P2P.PersistentPeers = strings.Join(config.Switchlynode.AutoStateSync.Peers, ",")
-
-		// success
-		return
-	}
-
-	log.Fatal().Msg("failed to determine statesync trust height from any rpc host")
-}
-
-func switchlynodeFetchGenesis(seeds []string) {
-	home := os.ExpandEnv("$HOME/.switchlynode")
-	genesisPath := filepath.Join(home, "config", "genesis.json")
-
-	// check to see if we already have a genesis file
-	if fi, err := os.Stat(genesisPath); !os.IsNotExist(err) || (fi != nil && fi.Size() == 0) {
-		log.Info().Msg("genesis file already exists, skipping fetch")
-		return
-	}
-
-	// iterate peers until we succeed in fetching genesis
-	for peerRetry := 0; peerRetry < MaxRetries; peerRetry++ {
-		for _, seed := range seeds {
-			// initialize empty genesis
-			err := os.MkdirAll(filepath.Dir(genesisPath), 0o755)
-			if err != nil {
-				log.Fatal().Err(err).Msg("failed to create genesis directory")
-			}
-
-			f, err := os.OpenFile(genesisPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
-			if err != nil {
-				log.Fatal().Err(err).Msg("failed to create genesis file")
-			}
-			defer f.Close()
-
-			// fetch genesis file in chunks
-			for chunkID := 0; ; chunkID++ {
-				for chunkRetry := 0; chunkRetry < MaxRetries; chunkRetry++ {
-					clog := log.With().
-						Str("seed", seed).
-						Int("chunk", chunkID).
-						Int("retry", chunkRetry).
-						Logger()
-
-					url := fmt.Sprintf("http://%s:%d/genesis_chunked?chunk=%d", seed, rpcPort, chunkID)
-					var res *http.Response
-					res, err = http.Get(url)
-					if err != nil || res.StatusCode != http.StatusOK {
-						clog.Err(err).Msg("failed to fetch genesis chunk")
-						time.Sleep(RetryBackoff)
-						continue
-					}
-
-					// decode the json response which contains the base64 encoded chunk
-					type chunkResponse struct {
-						Result struct {
-							Data  string `json:"data"`
-							Chunk string `json:"chunk"`
-							Total string `json:"total"`
-						} `json:"result"`
-					}
-
-					var response chunkResponse
-					dec := json.NewDecoder(res.Body)
-					err = dec.Decode(&response)
-					res.Body.Close()
-					if err != nil {
-						clog.Err(err).Msg("failed to decode genesis chunk")
-						time.Sleep(RetryBackoff)
-						continue
-					}
-
-					// decode the base64 chunk
-					var chunkData []byte
-					chunkData, err = base64.StdEncoding.DecodeString(response.Result.Data)
-					if err != nil {
-						clog.Err(err).Msg("failed to decode base64 genesis chunk")
-						time.Sleep(RetryBackoff)
-						continue
-					}
-
-					// write the decoded chunk to the file
-					_, err = f.Write(chunkData)
-					if err != nil {
-						clog.Fatal().Err(err).Msg("failed to write genesis chunk to file")
-					}
-
-					// convert chunk and total to int
-					var chunk, total int
-					chunk, err = strconv.Atoi(response.Result.Chunk)
-					if err != nil {
-						clog.Err(err).Msg("failed to convert chunk to int")
-						time.Sleep(RetryBackoff)
-						continue
-					}
-					total, err = strconv.Atoi(response.Result.Total)
-					if err != nil {
-						clog.Err(err).Msg("failed to convert total to int")
-						time.Sleep(RetryBackoff)
-						continue
-					}
-
-					// done if the current chunk is the last one
-					if chunk == total-1 {
-						clog.Info().Msg("genesis file successfully fetched")
-						return
-					}
-
-					// break chunk retry on success
-					break
-				}
-			}
-		}
-
-		time.Sleep(RetryBackoff)
-		log.Info().Msg("retrying to fetch genesis...")
-	}
 }

@@ -104,7 +104,7 @@ func (s *BlockScannerTestSuite) TestCalculateAverageGasFees(c *C) {
 		ChainID:            common.GAIAChain,
 		GasPriceResolution: 100_000,
 		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-			{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
+			{Denom: "uatom", Decimals: 6, SwitchlySymbol: "ATOM"},
 		},
 	}
 	blockScanner := CosmosBlockScanner{cfg: cfg}
@@ -199,7 +199,7 @@ func (s *BlockScannerTestSuite) TestProcessTxs(c *C) {
 	cfg := config.BifrostBlockScannerConfiguration{
 		ChainID: common.GAIAChain,
 		WhitelistCosmosAssets: []config.WhitelistCosmosAsset{
-			{Denom: "uatom", Decimals: 6, SwitchlyProtocolSymbol: "ATOM"},
+			{Denom: "uatom", Decimals: 6, SwitchlySymbol: "ATOM"},
 		},
 	}
 	registry := s.bridge.GetContext().InterfaceRegistry

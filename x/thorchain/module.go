@@ -100,7 +100,7 @@ func (AppModuleBasic) GetTxCmd() *cobra.Command {
 
 // ____________________________________________________________________________
 
-// AppModule implements an application module for the switchlyprotocol module.
+// AppModule implements an application module for the switchly module.
 type AppModule struct {
 	AppModuleBasic
 	mgr              *Mgrs
@@ -160,7 +160,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	// Example:
 	// m := NewMigrator(am.mgr)
 	// if err := cfg.RegisterMigration(types.ModuleName, 5, m.Migrate5to6); err != nil {
-	//     panic(fmt.Sprintf("failed to migrate x/switchlyprotocol from version 5 to 6: %v", err))
+	//     panic(fmt.Sprintf("failed to migrate x/switchly from version 5 to 6: %v", err))
 	// }
 }
 
@@ -267,7 +267,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 	return ModuleCdc.MustMarshalJSON(&gs)
 }
 
-// CustomGRPCGatewayRouter sets switchlyprotocol's custom GRPC gateway router
+// CustomGRPCGatewayRouter sets switchly's custom GRPC gateway router
 // Must be called before any GRPC gateway routes are registered
 // GRPC gateway router settings are the same as cosmos sdk except for the additional
 // serve mux option, WithMetadata().

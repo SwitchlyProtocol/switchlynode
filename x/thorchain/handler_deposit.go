@@ -13,7 +13,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
 )
 
-// DepositHandler is to process native messages on SwitchlyProtocol
+// DepositHandler is to process native messages on Switchly
 type DepositHandler struct {
 	mgr Manager
 }
@@ -64,7 +64,7 @@ func (h DepositHandler) validateV3_0_0(ctx cosmos.Context, msg MsgDeposit) error
 
 func (h DepositHandler) handle(ctx cosmos.Context, msg MsgDeposit) (*cosmos.Result, error) {
 	if h.mgr.Keeper().IsChainHalted(ctx, common.SWITCHLYChain) {
-		return nil, fmt.Errorf("unable to use MsgDeposit while SwitchlyProtocol is halted")
+		return nil, fmt.Errorf("unable to use MsgDeposit while Switchly is halted")
 	}
 
 	asset := msg.Coins[0].Asset
@@ -83,7 +83,7 @@ func (h DepositHandler) handle(ctx cosmos.Context, msg MsgDeposit) (*cosmos.Resu
 	default:
 		coins, err := msg.Coins.Native()
 		if err != nil {
-			return nil, ErrInternal(err, "coins are native to SwitchlyProtocol")
+			return nil, ErrInternal(err, "coins are native to Switchly")
 		}
 
 		if !h.mgr.Keeper().HasCoins(ctx, msg.GetSigners()[0], coins) {

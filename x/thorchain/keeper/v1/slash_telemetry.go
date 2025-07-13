@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/go-metrics"
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
 	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 
 func init() {
 	config.Init()
-	if config.GetSwitchlynode().Telemetry.SlashPoints {
+	if config.GetSwitchly().Telemetry.SlashPoints {
 		stackBuf = make([]byte, 4096)
 		path := os.ExpandEnv("${HOME}/.thornode/slash_telemetry.json")
 		file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)

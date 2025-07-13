@@ -22,13 +22,15 @@ func (v ver) String() string {
 }
 
 func GetQueryCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:                        "switchlyprotocol",
-		Short:                      "Querying commands for the Switchly module",
+	queryCmd := &cobra.Command{
+		Use:                        "switchly",
+		Short:                      "Querying commands for the switchly module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
+
+	return queryCmd
 }
 
 // GetCmdGetVersion queries current version

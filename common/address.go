@@ -186,8 +186,8 @@ func (addr Address) IsChain(chain Chain) bool {
 		return prefix == "cosmos"
 	case SWITCHLYChain:
 		prefix, _, _ := bech32.Decode(addr.String())
-		return prefix == "swtc" || prefix == "sswtc" || prefix == "tswtc" ||
-			prefix == "swtcvaloper" || prefix == "sswtcvaloper" || prefix == "tswtcvaloper"
+		return prefix == "switch" || prefix == "sswitch" || prefix == "tswitch" ||
+			prefix == "switchvaloper" || prefix == "sswitchvaloper" || prefix == "tswitchvaloper"
 	case BTCChain:
 		prefix, _, err := bech32.Decode(addr.String())
 		if err == nil && (prefix == "bc" || prefix == "tb") {
@@ -286,13 +286,13 @@ func (addr Address) GetNetwork(chain Chain) ChainNetwork {
 	switch chain {
 	case SWITCHLYChain:
 		prefix, _, _ := bech32.Decode(addr.String())
-		if strings.EqualFold(prefix, "swtc") || strings.EqualFold(prefix, "swtcvaloper") {
+		if strings.EqualFold(prefix, "switch") || strings.EqualFold(prefix, "switchvaloper") {
 			return mainNetPredicate()
 		}
-		if strings.EqualFold(prefix, "tswtc") || strings.EqualFold(prefix, "tswtcvaloper") {
+		if strings.EqualFold(prefix, "tswitch") || strings.EqualFold(prefix, "tswitchvaloper") {
 			return MockNet
 		}
-		if strings.EqualFold(prefix, "sswtc") || strings.EqualFold(prefix, "sswtcvaloper") {
+		if strings.EqualFold(prefix, "sswitch") || strings.EqualFold(prefix, "sswitchvaloper") {
 			return StageNet
 		}
 	case BTCChain:

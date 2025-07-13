@@ -1291,7 +1291,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 
 	if common.CurrentChainNetwork == common.MockNet {
 		addressBTC = "bcrt1qg2px54as9vgzaarkr0zy95hacg3lg4kqz4rrwf"
-		addressTHOR = "swtc12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr"
+		addressTHOR = "tswitch1em3zz5pamuftha9nafr7rsa8u860pjeycw6g3c"
 		values = []string{
 			// "=:r:tswtc12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr/bcrt1qg2px54as9vgzaarkr0zy95ha^"
 			"3d3a723a7474686f723132787867327365766d3335713534766a68737371686c66376c7138643278686d75356b3067722f62637274317167327078353461733976677a6161726b72307a79393568615e",
@@ -1383,8 +1383,8 @@ func (s *QuerierSuite) TestQueryCodes(c *C) {
 	c.Assert(code.Code, Equals, "a8f1a38aa518864169e30ab482ea86558a817982a030b8888ea6dfa0cd700128")
 	c.Assert(code.Origin, Equals, "https://thorchain.org")
 	c.Assert(len(code.Deployers), Equals, 2)
-	c.Assert(code.Deployers[0], Equals, "swtc1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k")
-	c.Assert(code.Deployers[1], Equals, "swtc1khtl8ch2zgay00c47ukvulam3a4faw2500g7lu")
+	c.Assert(code.Deployers[0], Equals, "tswitch1nrp4veflhpjnv87akxcpxln5lmc4z4kkdsdpd5")
+	c.Assert(code.Deployers[1], Equals, "tswitch1770gl4x5u7aauzlc7su7j3kl6jgduz2wck29yl")
 }
 
 func (s *QuerierSuite) TestNetwork(c *C) {

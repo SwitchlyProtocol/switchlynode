@@ -94,13 +94,13 @@ func (MigrationHelpersTestSuite) TestGetTCYClaimsFromData(c *C) {
 
 	c.Assert(claimer[2].Amount.Equal(math.NewUint(1111)), Equals, true)
 	c.Assert(claimer[2].Asset.Equals(common.DOGEAsset), Equals, true)
-	address, err = common.NewAddress("swtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff")
+	address, err = common.NewAddress("tswitch1v0982t4mwv64gytjesmfa2mkxsmz24j7lm93su")
 	c.Assert(err, IsNil)
 	c.Assert(claimer[2].L1Address.Equals(address), Equals, true)
 
 	c.Assert(claimer[3].Amount.Equal(math.NewUint(1111)), Equals, true)
 	c.Assert(claimer[3].Asset.Equals(common.DOGEAsset), Equals, true)
-	address, err = common.NewAddress("swtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff")
+	address, err = common.NewAddress("tswitch1v0982t4mwv64gytjesmfa2mkxsmz24j7lm93su")
 	c.Assert(err, IsNil)
 	c.Assert(claimer[3].L1Address.Equals(address), Equals, true)
 }
@@ -118,7 +118,7 @@ func (MigrationHelpersTestSuite) TestSetTCYClaims(c *C) {
 	_, err = mgr.Keeper().GetTCYClaimer(ctx, address2, common.BTCAsset)
 	c.Assert(err.Error(), Equals, fmt.Sprintf("TCYClaimer doesn't exist: %s", address2.String()))
 
-	address3, err := common.NewAddress("swtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff")
+	address3, err := common.NewAddress("tswitch1v0982t4mwv64gytjesmfa2mkxsmz24j7lm93su")
 	c.Assert(err, IsNil)
 	_, err = mgr.Keeper().GetTCYClaimer(ctx, address3, common.DOGEAsset)
 	c.Assert(err.Error(), Equals, fmt.Sprintf("TCYClaimer doesn't exist: %s", address3.String()))
