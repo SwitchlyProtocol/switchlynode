@@ -67,7 +67,8 @@ func (a AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
 
 // DefaultGenesis returns default genesis state as raw bytes for the module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(DefaultGenesis())
+	defaultState := DefaultGenesisState()
+	return cdc.MustMarshalJSON(&defaultState)
 }
 
 // ValidateGenesis check of the Genesis

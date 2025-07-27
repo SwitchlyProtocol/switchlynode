@@ -31,7 +31,7 @@ add_node_account() {
   NODE_PUB_KEY_ED25519=$6
   IP_ADDRESS=$7
   MEMBERSHIP=$8
-  jq --arg NODE_ADDRESS "$NODE_ADDRESS" --arg VERSION "$VERSION" --arg IP_ADDRESS "$IP_ADDRESS" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.switchly.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address": $NODE_ADDRESS, "pub_key_set":{"secp256k1":$NODE_PUB_KEY_ED25519,"ed25519":$NODE_PUB_KEY_ED25519}}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg IP_ADDRESS "$IP_ADDRESS" --arg VERSION "$VERSION" --arg BOND_ADDRESS "$BOND_ADDRESS" --arg VALIDATOR "$VALIDATOR" --arg NODE_ADDRESS "$NODE_ADDRESS" --arg NODE_PUB_KEY "$NODE_PUB_KEY" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.switchly.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address":$BOND_ADDRESS, "signer_membership": [], "validator_cons_pub_key":$VALIDATOR, "pub_key_set":{"secp256k1":$NODE_PUB_KEY,"ed25519":$NODE_PUB_KEY_ED25519}}]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
   if [ -n "$MEMBERSHIP" ]; then
     jq --arg MEMBERSHIP "$MEMBERSHIP" '.app_state.switchly.node_accounts[-1].signer_membership += [$MEMBERSHIP]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
@@ -74,8 +74,33 @@ init_chain() {
   IFS=","
 
   echo "Init chain"
-  switchlynode init local --chain-id "$CHAIN_ID"
-  echo "$SIGNER_PASSWD" | switchlynode keys list --keyring-backend file
+  echo "DEBUG: CHAIN_ID is '$CHAIN_ID'"
+  echo "DEBUG: About to run: switchlynode init local --chain-id $CHAIN_ID"
+  
+  # Test the init command with explicit error handling
+  if switchlynode init local --chain-id "$CHAIN_ID" 2>&1; then
+    echo "DEBUG: switchlynode init successful"
+  else
+    echo "ERROR: switchlynode init failed with exit code $?"
+    echo "DEBUG: Trying alternative init syntax..."
+    
+    # Try alternative init command syntax
+    if switchlynode init --chain-id "$CHAIN_ID" local 2>&1; then
+      echo "DEBUG: Alternative init syntax worked"
+    else
+      echo "ERROR: Alternative init also failed"
+      echo "DEBUG: Checking switchlynode init help..."
+      switchlynode init --help | head -10
+      exit 1
+    fi
+  fi
+  
+  echo "DEBUG: About to list keys"
+  if echo "$SIGNER_PASSWD" | switchlynode keys list --keyring-backend file 2>/dev/null; then
+    echo "DEBUG: Keys list successful"
+  else
+    echo "DEBUG: No keys found or keys list failed (this is expected for fresh init)"
+  fi
 }
 
 fetch_node_id() {
@@ -89,7 +114,7 @@ set_node_keys() {
   SIGNER_NAME="$1"
   SIGNER_PASSWD="$2"
   PEER="$3"
-  NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | switchlynode keys show switchly --pubkey --keyring-backend file | switchlynode pubkey)"
+  NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend file | switchlynode pubkey)"
   NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
   VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
   echo "Setting SwitchlyNode keys"
@@ -106,7 +131,9 @@ set_ip_address() {
 }
 
 fetch_version() {
-  switchlynode query switchly version --output json | jq -r .version
+  # Try to get version from query, if it fails use a default
+  VERSION=$(switchlynode version --output json 2>/dev/null || echo "3.7.0")
+  echo "$VERSION"
 }
 
 create_switchly_user() {
@@ -120,21 +147,21 @@ create_switchly_user() {
   if [ $? -ne 0 ]; then
     echo "Creating SwitchlyNode Switchly '$SIGNER_NAME' account"
     if [ -n "$SIGNER_SEED_PHRASE" ]; then
-      printf "%s\n%s\n%s\n" "$SIGNER_SEED_PHRASE" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --recover
+      printf "%s\n%s\n%s\n" "$SIGNER_SEED_PHRASE" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys add "$SIGNER_NAME" --keyring-backend file --algo secp256k1 --recover
+      NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
     else
-      sig_pw=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD")
-      RESULT=$(echo "$sig_pw" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --output json 2>&1)
-      SIGNER_SEED_PHRASE=$(echo "$RESULT" | jq -r '.mnemonic')
+      printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys add "$SIGNER_NAME" --keyring-backend file --algo secp256k1
+      NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
     fi
+    export NODE_PUB_KEY_ED25519
   fi
-  NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
 }
 
 set_bond_module() {
   if [ "$NET" = "mocknet" ]; then
-    BOND_MODULE_ADDR="tswtc17gw75axcnr8747pkanye45pnrwk7p9c3jrajtc"
+    BOND_MODULE_ADDR="tswitch17gw75axcnr8747pkanye45pnrwk7p9c3apgv77"
   elif [ "$NET" = "stagenet" ]; then
-    BOND_MODULE_ADDR="sswtc17gw75axcnr8747pkanye45pnrwk7p9c3zds5yr"
+    BOND_MODULE_ADDR="sswitch17gw75axcnr8747pkanye45pnrwk7p9c3ve0wxj"
   else
     echo "Unsupported NET: $NET"
     exit 1
@@ -160,7 +187,7 @@ set_bond_module() {
     '.app_state.bank.balances += [
     {
       "address": $BOND_MODULE_ADDR,
-      "coins": [ { "denom": "rune", "amount": "30000000000000" } ]
+      "coins": [ { "denom": "switch", "amount": "30000000000000" } ]
     }
   ]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
@@ -183,5 +210,10 @@ set_bsc_contract() {
 
 set_base_contract() {
   jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
+}
+
+set_xlm_contract() {
+  jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts += [{"chain": "XLM", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
