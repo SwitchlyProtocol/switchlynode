@@ -97,11 +97,11 @@ func (s EventSuite) TestReward(c *C) {
 func (s EventSuite) TestSlash(c *C) {
 	evt := NewEventSlash(common.BNBBEP20Asset, []PoolAmt{
 		{common.BNBBEP20Asset, 30},
-		{common.SWTCNative, 30},
+		{common.SwitchNative, 30},
 	})
 	c.Check(evt.Type(), Equals, "slash")
 	c.Check(evt.SlashAmount[0].Asset, Equals, common.BNBBEP20Asset)
-	c.Check(evt.SlashAmount[1].Asset, Equals, common.SWTCNative)
+	c.Check(evt.SlashAmount[1].Asset, Equals, common.SwitchNative)
 	events, err := evt.Events()
 	c.Check(err, IsNil)
 	c.Check(events, NotNil)

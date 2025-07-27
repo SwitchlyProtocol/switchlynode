@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-export SIGNER_NAME="${SIGNER_NAME:=switchlyprotocol}"
+export SIGNER_NAME="${SIGNER_NAME:=switchly}"
 export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
 
 . "$(dirname "$0")/core.sh"
@@ -18,17 +18,17 @@ fi
 
 genesis_init() {
   init_chain
+  switchlynode config set client chain-id "$CHAIN_ID" --home ~/.switchlynode
   create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
   VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
-  NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show switchlyprotocol -a --keyring-backend file)
-  NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show switchlyprotocol --pubkey --keyring-backend file | switchlynode pubkey)
-  NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
+  NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
+  NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -p --keyring-backend file | switchlynode pubkey)
   VERSION=$(fetch_version)
 
   NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
-  add_node_account "$NODE_ADDRESS" "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" "$BOND_ADDRESS" "$VERSION" "$NODE_IP_ADDRESS" "$MEMBERSHIP"
-  add_account "$NODE_ADDRESS" swtc 100000000000
+  add_node_account "$NODE_ADDRESS" "$VALIDATOR" "$NODE_PUB_KEY" "$VERSION" "$NODE_ADDRESS" "$NODE_PUB_KEY_ED25519" "$NODE_IP_ADDRESS"
+  add_account "$NODE_ADDRESS" switch 100000000000
 
   # disable default bank transfer, and opt to use our own custom one
   disable_bank_send
@@ -38,20 +38,20 @@ genesis_init() {
   if [ "$NET" = "mocknet" ]; then
     echo "Setting up accounts"
 
-    # smoke test accounts
-    add_account swtc1z63f3mzwv3g75az80xwmhrawdqcjpaek5l3xv6 swtc 500000000000000000000 # cat
-    add_account swtc1xwusttz86hqfuk5z7amcgqsg7vp6g8zhsp5lu2 swtc 500000000000000000000 # dog
-    add_account swtc1ragkh3hp7wvdpw3qgxr5vchqaecmupv8ql3p5y swtc 500000000000000000000 # fox
-    add_account swtc1wz78qmrkplrdhy37tw0tnvn0tkm5pqd6zdp257 swtc 500000000000000000000 # pig
+    # Setup accounts in mocknet
+    add_account tswitch1c9vr9yvtratlqwhyua24zfpet2zmjvrlvnspg6 switch 5000000000000
+    add_account tswitch126g33q5a7f0exms8qrz46qmu6hlrwc32jxgzxp switch 25000000000100
+    add_account tswitch18s83m747vmre2ljw45t7dlmju96zmt03humlvj switch 25000000000100
+    add_account tswitch1tyry86qensp4ws4enudkrjrw408x559ghwe7xy switch 5090000000000
 
-    # local cluster accounts (2M SWTC)
-    add_account swtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej swtc 200000000000000 # cat
-    add_account swtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m swtc 200000000000000 # dog
-    add_account swtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr swtc 200000000000000 # fox
-    add_account swtc1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u swtc 200000000000000 # pig
+    # Liquidity Provider accounts (one for each chain)
+    add_account tswitch1ugursz23jha99zeglv9qww8gaxcgz2xjq4qcp9 switch 200000000000000 # cat
+    add_account tswitch1swe4u2gw9vlze677fgseyka0tu0zgmp2wkdktk switch 200000000000000 # dog
+    add_account tswitch1exgvymgkqf4q7rd9epnpk0t6f3z4z9udkrzane switch 200000000000000 # fox
+    add_account tswitch1pc52j8mzkhp0ywya2vtqhkatkqumpn6h9t2rec switch 200000000000000 # pig
 
-    # simulation master
-    add_account swtc1f4l5dlqhaujgkxxqmug4stfvmvt58vx2tspx4g swtc 100000000000000 # master
+    # User accounts for smoke tests
+    add_account tswitch1vny3kasx3nlh6h8h4w2nw92clj8hncg2v27duw switch 100000000000000 # master
 
     # mint to reserve for mocknet
     reserve 22000000000000000
@@ -60,17 +60,14 @@ genesis_init() {
 
     # deploy evm contracts
     deploy_evm_contracts
-    
-    # deploy stellar contracts
-    deploy_stellar_contracts
   fi
 
   if [ "$NET" = "stagenet" ]; then
     if [ -z ${FAUCET+x} ]; then
-      echo "env variable 'FAUCET' is not defined: should be a sswtc address"
+      echo "env variable 'FAUCET' is not defined: should be a sswitch address"
       exit 1
     fi
-    add_account "$FAUCET" swtc 40000000000000000
+    add_account "$FAUCET" switch 40000000000000000
 
     reserve 5000000000000000
 
@@ -103,20 +100,6 @@ genesis_init() {
   switchlynode validate-genesis
 }
 
-fetch_version() {
-  switchlynode query switchlyprotocol version --output json | jq -r .version
-}
-
-deploy_stellar_contracts() {
-  # Placeholder for stellar contract deployment
-  echo "Stellar contracts deployment not implemented yet"
-}
-
-set_xlm_contract() {
-  jq --arg CONTRACT "$1" '.app_state.switchlyprotocol.chain_contracts += [{"chain": "XLM", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
-  mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
-}
-
 ########################################################################################
 # Main
 ########################################################################################
@@ -129,6 +112,12 @@ fi
 # render tendermint and cosmos configuration files
 switchlynode render-config
 
-export SIGNER_NAME
-export SIGNER_PASSWD
-exec switchlynode start
+  # validate genesis
+  echo "Genesis validation:"
+  switchlynode genesis validate ~/.switchlynode/config/genesis.json
+  
+  echo "DEBUG: About to exec with arguments: $@"
+  echo "DEBUG: Number of arguments: $#"
+  echo "DEBUG: First argument: $1"
+  echo "DEBUG: Second argument: ${2:-NONE}"
+  exec "$@"

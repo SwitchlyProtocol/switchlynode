@@ -166,7 +166,7 @@ func (s *XrpTestSuite) TestGetAddress(c *C) {
 	c.Check(acc.Sequence, Equals, int64(6))
 	c.Check(acc.Coins.EqualsEx(expectedCoins), Equals, true)
 
-	pk := common.PubKey("tswtcpub1addwnpepqtrvka83xluqq522k8at4d84gnthj5ryqhrf0fa24yze4yhk7j0fk4876f3")
+	pk := common.PubKey("tswitchpub1addwnpepqtrvka83xluqq522k8at4d84gnthj5ryqhrf0fa24yze4yhk7j0fk4876f3")
 	acc, err = xrpclient.GetAccount(pk, big.NewInt(0))
 	c.Assert(err, IsNil)
 	c.Check(acc.AccountNumber, Equals, int64(0))
@@ -197,7 +197,7 @@ func (s *XrpTestSuite) TestProcessOutboundTx(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(client.networkID, Equals, uint32(1234))
 
-	vaultPubKey, err := common.NewPubKey("tswtcpub1addwnpepqtrvka83xluqq522k8at4d84gnthj5ryqhrf0fa24yze4yhk7j0fk4876f3")
+	vaultPubKey, err := common.NewPubKey("tswitchpub1addwnpepqtrvka83xluqq522k8at4d84gnthj5ryqhrf0fa24yze4yhk7j0fk4876f3")
 	c.Assert(err, IsNil)
 	outAsset, err := common.NewAsset("XRP.XRP")
 	c.Assert(err, IsNil)
@@ -248,7 +248,7 @@ func (s *XrpTestSuite) TestXAddresses(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(client.networkID, Equals, uint32(1234))
 
-	vaultPubKey, err := common.NewPubKey("tswtcpub1addwnpepqtrvka83xluqq522k8at4d84gnthj5ryqhrf0fa24yze4yhk7j0fk4876f3")
+	vaultPubKey, err := common.NewPubKey("tswitchpub1addwnpepqtrvka83xluqq522k8at4d84gnthj5ryqhrf0fa24yze4yhk7j0fk4876f3")
 	c.Assert(err, IsNil)
 	outAsset, err := common.NewAsset("XRP.XRP")
 	c.Assert(err, IsNil)

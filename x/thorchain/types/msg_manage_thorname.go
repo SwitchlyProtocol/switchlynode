@@ -42,7 +42,7 @@ func (m *MsgManageTHORName) ValidateBasic() error {
 	if !m.Address.IsChain(m.Chain) {
 		return cosmos.ErrUnknownRequest("address and chain must match")
 	}
-	if !m.Coin.IsRune() {
+	if !m.Coin.IsSwitch() {
 		return cosmos.ErrUnknownRequest("coin must be native rune")
 	}
 	return nil

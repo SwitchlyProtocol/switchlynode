@@ -198,7 +198,7 @@ func (tos *TxOutStorageVCUR) takeAffiliateFee(ctx cosmos.Context, mgr Manager, t
 	// know this is the affiliate fee outbound. In this case we should skip taking an
 	// additional fee. For swaps to RUNE the affiliate fee will be paid out as a direct
 	// RUNE transfer with no txout manager outbound, so it won't get back to this check.
-	if toi.Coin.Asset.IsRune() && !memo.GetAsset().IsRune() {
+	if toi.Coin.Asset.IsSwitch() && !memo.GetAsset().IsSwitch() {
 		return toi.Coin.Amount, nil
 	}
 
@@ -600,7 +600,7 @@ func (tos *TxOutStorageVCUR) prepareTxOutItem(ctx cosmos.Context, toi TxOutItem)
 		// Deduct OutboundTransactionFee from TOI and add to Reserve
 		memo, err := ParseMemoWithTHORNames(ctx, tos.keeper, outputs[i].Memo)
 		if err == nil && !memo.IsType(TxMigrate) && !memo.IsType(TxRagnarok) && !toi.ToAddress.Equals(lendAddr) {
-			if outputs[i].Coin.IsRune() {
+			if outputs[i].Coin.IsSwitch() {
 				if outputs[i].Coin.Amount.LTE(transactionFee) {
 					runeFee = outputs[i].Coin.Amount // Fee is the full amount
 				}
@@ -751,11 +751,11 @@ func (tos *TxOutStorageVCUR) prepareTxOutItem(ctx cosmos.Context, toi TxOutItem)
 		}
 	}
 	if !finalRuneFee.IsZero() {
-		if toi.Coin.IsRune() {
+		if toi.Coin.IsSwitch() {
 			// If the source module is the Reserve, leave the fee in the Reserve without a transfer.
 			if toi.ModuleName != ReserveName {
 				sourceModule := toi.GetModuleName() // Ensure that non-"".
-				coin := common.NewCoin(common.SWTCAsset(), finalRuneFee)
+				coin := common.NewCoin(common.SwitchAsset(), finalRuneFee)
 				err := tos.keeper.SendFromModuleToModule(ctx, sourceModule, ReserveName, common.NewCoins(coin))
 				if err != nil {
 					ctx.Logger().Error("fail to send fee to reserve", "error", err, "module", sourceModule)
@@ -776,7 +776,7 @@ func (tos *TxOutStorageVCUR) prepareTxOutItem(ctx cosmos.Context, toi TxOutItem)
 			//
 			// If the source module is the Reserve, leave the fee in the Reserve without a transfer.
 			if !toi.Coin.Asset.IsDerivedAsset() && sourceModule != ReserveName {
-				coin := common.NewCoin(common.SWTCAsset(), finalRuneFee)
+				coin := common.NewCoin(common.SwitchAsset(), finalRuneFee)
 				err := tos.keeper.SendFromModuleToModule(ctx, sourceModule, ReserveName, common.NewCoins(coin))
 				if err != nil {
 					ctx.Logger().Error("fail to send fee to reserve", "error", err, "module", sourceModule)
@@ -1095,7 +1095,7 @@ func (tos *TxOutStorageVCUR) nativeTxOut(ctx cosmos.Context, mgr Manager, toi Tx
 		from,
 		toi.ToAddress,
 		common.Coins{toi.Coin},
-		common.Gas{common.NewCoin(common.SWTCAsset(), outboundTxFee)},
+		common.Gas{common.NewCoin(common.SwitchAsset(), outboundTxFee)},
 		toi.Memo,
 	)
 

@@ -922,9 +922,9 @@ func (s *BitcoinCashSuite) TestGetOutput(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdku") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("switchpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdku") // from PubKeys-Mainnet.json
 	} else {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z") // from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("switchpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lc2l2z") // from PubKeys.json
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())

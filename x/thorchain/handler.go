@@ -96,7 +96,7 @@ func getMsgWithdrawFromMemo(memo WithdrawLiquidityMemo, tx ObservedTx, signer co
 func getMsgAddLiquidityFromMemo(ctx cosmos.Context, memo AddLiquidityMemo, tx ObservedTx, signer cosmos.AccAddress) (cosmos.Msg, error) {
 	// Extract the Rune amount and the asset amount from the transaction. At least one of them must be
 	// nonzero. If THORNode saw two types of coins, one of them must be the asset coin.
-	runeCoin := tx.Tx.Coins.GetCoin(common.SWTCAsset())
+	runeCoin := tx.Tx.Coins.GetCoin(common.SwitchAsset())
 	assetCoin := tx.Tx.Coins.GetCoin(memo.GetAsset())
 
 	var runeAddr common.Address
@@ -117,7 +117,7 @@ func getMsgAddLiquidityFromMemo(ctx cosmos.Context, memo AddLiquidityMemo, tx Ob
 }
 
 func getMsgDonateFromMemo(memo DonateMemo, tx ObservedTx, signer cosmos.AccAddress) (cosmos.Msg, error) {
-	runeCoin := tx.Tx.Coins.GetCoin(common.SWTCAsset())
+	runeCoin := tx.Tx.Coins.GetCoin(common.SwitchAsset())
 	assetCoin := tx.Tx.Coins.GetCoin(memo.GetAsset())
 	return NewMsgDonate(tx.Tx, memo.GetAsset(), runeCoin.Amount, assetCoin.Amount, signer), nil
 }
@@ -152,7 +152,7 @@ func getMsgLoanRepaymentFromMemo(memo LoanRepaymentMemo, from common.Address, co
 }
 
 func getMsgBondFromMemo(memo BondMemo, tx ObservedTx, signer cosmos.AccAddress) (cosmos.Msg, error) {
-	coin := tx.Tx.Coins.GetCoin(common.SWTCAsset())
+	coin := tx.Tx.Coins.GetCoin(common.SwitchAsset())
 	return NewMsgBond(tx.Tx, memo.GetAccAddress(), coin.Amount, tx.Tx.FromAddress, memo.BondProviderAddress, signer, memo.NodeOperatorFee), nil
 }
 
@@ -191,7 +191,9 @@ func processOneTxIn(ctx cosmos.Context, keeper keeper.Keeper, tx ObservedTx, sig
 		newMsg, err = getMsgAddLiquidityFromMemo(ctx, m, tx, signer)
 	case WithdrawLiquidityMemo:
 		m.Asset = fuzzyAssetMatch(ctx, keeper, m.Asset)
-		m.WithdrawalAsset = fuzzyAssetMatch(ctx, keeper, m.WithdrawalAsset)
+		if !m.WithdrawalAsset.IsEmpty() {
+			m.WithdrawalAsset = fuzzyAssetMatch(ctx, keeper, m.WithdrawalAsset)
+		}
 		newMsg, err = getMsgWithdrawFromMemo(m, tx, signer)
 	case SwapMemo:
 		m.Asset = fuzzyAssetMatch(ctx, keeper, m.Asset)
@@ -215,7 +217,7 @@ func processOneTxIn(ctx cosmos.Context, keeper keeper.Keeper, tx ObservedTx, sig
 	case LeaveMemo:
 		newMsg, err = getMsgLeaveFromMemo(m, tx, signer)
 	case ReserveMemo:
-		res := NewReserveContributor(tx.Tx.FromAddress, tx.Tx.Coins.GetCoin(common.SWTCAsset()).Amount)
+		res := NewReserveContributor(tx.Tx.FromAddress, tx.Tx.Coins.GetCoin(common.SwitchAsset()).Amount)
 		newMsg = NewMsgReserveContributor(tx.Tx, res, signer)
 	case NoOpMemo:
 		newMsg = NewMsgNoOp(tx, signer, m.Action)

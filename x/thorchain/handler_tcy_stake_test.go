@@ -71,7 +71,7 @@ func (s *HandlerTCYStake) TestValidate(c *C) {
 	c.Assert(err, NotNil)
 
 	// coin is not tcy
-	coin = common.NewCoin(common.SWTCNative, cosmos.NewUint(100))
+	coin = common.NewCoin(common.SwitchNative, cosmos.NewUint(100))
 	tx = common.NewTx(
 		common.BlankTxID,
 		fromAddr,

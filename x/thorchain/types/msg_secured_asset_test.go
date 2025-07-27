@@ -22,7 +22,7 @@ func (MsgSecuredAssetSuite) TestDeposit(c *C) {
 	m = NewMsgSecuredAssetDeposit(common.EmptyAsset, amt, signer, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
-	m = NewMsgSecuredAssetDeposit(common.SWTCNative, amt, signer, signer, dummyTx)
+	m = NewMsgSecuredAssetDeposit(common.SwitchNative, amt, signer, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
 	m = NewMsgSecuredAssetDeposit(asset, cosmos.ZeroUint(), signer, signer, dummyTx)
@@ -42,7 +42,7 @@ func (MsgSecuredAssetSuite) TestWithdraw(c *C) {
 	m = NewMsgSecuredAssetWithdraw(common.EmptyAsset, amt, ethAddr, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
-	m = NewMsgSecuredAssetWithdraw(common.SWTCNative, amt, ethAddr, signer, dummyTx)
+	m = NewMsgSecuredAssetWithdraw(common.SwitchNative, amt, ethAddr, signer, dummyTx)
 	c.Check(m.ValidateBasic(), NotNil)
 
 	m = NewMsgSecuredAssetWithdraw(asset, cosmos.ZeroUint(), ethAddr, signer, dummyTx)

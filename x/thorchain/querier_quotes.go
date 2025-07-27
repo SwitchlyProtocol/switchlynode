@@ -178,7 +178,7 @@ func quoteConvertAsset(ctx cosmos.Context, mgr *Mgrs, fromAsset common.Asset, am
 	}
 
 	// convert to rune
-	if !fromAsset.IsRune() {
+	if !fromAsset.IsSwitch() {
 		// get the fromPool for the from asset
 		fromPool, err := mgr.Keeper().GetPool(ctx, fromAsset.GetLayer1Asset())
 		if err != nil {
@@ -194,7 +194,7 @@ func quoteConvertAsset(ctx cosmos.Context, mgr *Mgrs, fromAsset common.Asset, am
 	}
 
 	// convert to target asset
-	if !toAsset.IsRune() {
+	if !toAsset.IsSwitch() {
 
 		toPool, err := mgr.Keeper().GetPool(ctx, toAsset.GetLayer1Asset())
 		if err != nil {
@@ -308,7 +308,7 @@ func quoteSimulateSwap(ctx cosmos.Context, mgr *Mgrs, amount sdkmath.Uint, msg *
 		liquidityFee = liquidityFee.Add(sdkmath.NewUintFromString(s["liquidity_fee_in_rune"]))
 	}
 	var targetPool types.Pool
-	if !msg.TargetAsset.IsRune() {
+	if !msg.TargetAsset.IsSwitch() {
 		targetPool, err = mgr.Keeper().GetPool(ctx, msg.TargetAsset.GetLayer1Asset())
 		if err != nil {
 			return nil, sdkmath.ZeroUint(), sdkmath.ZeroUint(), fmt.Errorf("unable to get pool: %w", err)
@@ -477,14 +477,14 @@ func calculateMinSwapAmount(ctx cosmos.Context, mgr *Mgrs, fromAsset, toAsset co
 	minSwapAmount = minSwapAmount.Mul(cosmos.NewUint(4))
 
 	if affiliateBps.GT(cosmos.ZeroUint()) {
-		nativeTxFeeRune, err := mgr.GasMgr().GetAssetOutboundFee(ctx, common.SWTCNative, true)
+		nativeTxFeeRune, err := mgr.GasMgr().GetAssetOutboundFee(ctx, common.SwitchNative, true)
 		if err != nil {
 			return cosmos.ZeroUint(), fmt.Errorf("fail to get native tx fee for rune: %w", err)
 		}
 		affSwapAmountRune := nativeTxFeeRune.Mul(cosmos.NewUint(2))
 		mainSwapAmountRune := affSwapAmountRune.Mul(cosmos.NewUint(10_000)).Quo(affiliateBps)
 
-		mainSwapAmount, err := quoteConvertAsset(ctx, mgr, common.SWTCAsset(), mainSwapAmountRune, fromAsset)
+		mainSwapAmount, err := quoteConvertAsset(ctx, mgr, common.SwitchAsset(), mainSwapAmountRune, fromAsset)
 		if err != nil {
 			return cosmos.ZeroUint(), fmt.Errorf("fail to convert main swap amount to src asset %w", err)
 		}
@@ -724,7 +724,7 @@ func (qs queryServer) queryQuoteSwap(ctx cosmos.Context, req *types.QueryQuoteSw
 				},
 			},
 			Gas: []common.Coin{{
-				Asset:  common.SWTCAsset(),
+				Asset:  common.SwitchAsset(),
 				Amount: sdkmath.NewUint(1),
 			}},
 			Memo: memoString,
@@ -1283,7 +1283,7 @@ func (qs queryServer) queryQuoteLoanOpen(ctx cosmos.Context, req *types.QueryQuo
 		affCoin := common.NewCoin(asset, affiliateAmt)
 		gasCoin := common.NewCoin(asset.GetChain().GetGasAsset(), cosmos.OneUint())
 		fakeTx := common.NewTx(common.BlankTxID, randomCollateralOwner, common.NoopAddress, common.NewCoins(affCoin), common.Gas{gasCoin}, "noop")
-		affiliateSwap := NewMsgSwap(fakeTx, common.SWTCAsset(), affiliate, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, 0, 0, 0, nil)
+		affiliateSwap := NewMsgSwap(fakeTx, common.SwitchAsset(), affiliate, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, 0, 0, 0, nil)
 
 		_, affiliateRuneAmt, _, err = quoteSimulateSwap(ctx, qs.mgr, affiliateAmt, affiliateSwap, 1)
 		if err == nil {
@@ -1472,7 +1472,7 @@ func (qs queryServer) queryQuoteLoanOpen(ctx cosmos.Context, req *types.QueryQuo
 	}
 
 	// convert fees to target asset if it is not rune
-	if !targetAsset.Equals(common.SWTCNative) {
+	if !targetAsset.Equals(common.SwitchNative) {
 		targetPool, err := qs.mgr.Keeper().GetPool(ctx, targetAsset)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get pool: %w", err)
@@ -1662,7 +1662,7 @@ func quoteSimulateCloseLoan(ctx cosmos.Context, mgr *Mgrs, msg *MsgLoanRepayment
 			case coin.Asset.Equals(common.TOR):
 				repaymentEmit = coin
 				repaymentLiquidityFee = repaymentLiquidityFee.Add(sdkmath.NewUintFromString(em["liquidity_fee_in_rune"]))
-			case !coin.IsRune():
+			case !coin.IsSwitch():
 				outboundEmit = coin
 				outboundLiquidityFee = outboundLiquidityFee.Add(sdkmath.NewUintFromString(em["liquidity_fee_in_rune"]))
 			default:
@@ -1727,7 +1727,7 @@ func quoteSimulateCloseLoan(ctx cosmos.Context, mgr *Mgrs, msg *MsgLoanRepayment
 
 	// convert fees to target asset if it is not rune
 	liquidityFee := repaymentLiquidityFee.Add(outboundLiquidityFee)
-	if !msg.CollateralAsset.Equals(common.SWTCNative) {
+	if !msg.CollateralAsset.Equals(common.SwitchNative) {
 		loanPool, err := mgr.Keeper().GetPool(ctx, msg.CollateralAsset)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get pool: %w", err)
@@ -1858,7 +1858,7 @@ func (qs queryServer) queryQuoteLoanClose(ctx cosmos.Context, req *types.QueryQu
 	totalPendingDebtInRune := poolThorAsset.AssetValueInRune(pendingDebt)
 	totalPendingDebtInRepaymentAsset := totalPendingDebtInRune
 
-	if !asset.IsRune() {
+	if !asset.IsSwitch() {
 		totalPendingDebtInRepaymentAsset = poolRepayment.RuneValueInAsset(totalPendingDebtInRune)
 	}
 

@@ -19,7 +19,7 @@ func (MsgDepositSuite) TestMsgDepositSuite(c *C) {
 	c.Assert(acc1.Empty(), Equals, false)
 
 	coins := common.Coins{
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(12*common.One)),
 	}
 	memo := "hello"
 	msg := NewMsgDeposit(coins, memo, acc1)
@@ -47,7 +47,7 @@ func (MsgDepositSuite) TestMsgDepositSuite(c *C) {
 	c.Assert(errors.Is(err2, se.ErrUnknownRequest), Equals, true)
 
 	msg3 := NewMsgDeposit(common.Coins{
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(12*common.One)),
 	}, "asdfsdkljadslfasfaqcvbncvncvbncvbncvbncvbncvbncvbncvbncvbncvbnsdfasdfasfasdfkjqwerqlkwerqlerqwlkerjqlwkerjqwlkerjqwlkerjqlkwerjklqwerjqwlkerjqlwkerjwqelrasdfsdkljadslfasfaqcvbncvncvbncvbncvbncvbncvbncvbncvbncvbncvbnsdfasdfasfasdfkjqwerqlkwerqlerqwlkerjqlwkerjqwlkerjqwlkerjqlkwerjklqwerjqwlkerjqlwkerjwqelr", acc1)
 	err3 := msg3.ValidateBasic()
 	c.Assert(err3, NotNil)
@@ -57,7 +57,7 @@ func (MsgDepositSuite) TestMsgDepositSuite(c *C) {
 func (s *MsgDepositSuite) TestMsgDeposit(c *C) {
 	acc1 := GetRandomBech32Addr()
 	coins := common.NewCoins(
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(12*common.One)),
 	)
 	memo := "hello"
 
@@ -77,7 +77,7 @@ func (s *MsgDepositSuite) TestMsgDeposit(c *C) {
 func (s *MsgDepositSuite) TestMsgDepositValidation(c *C) {
 	acc1 := GetRandomBech32Addr()
 	coins := common.NewCoins(
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(12*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(12*common.One)),
 	)
 	memo := "hello"
 

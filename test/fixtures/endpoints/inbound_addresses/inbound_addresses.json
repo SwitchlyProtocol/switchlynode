@@ -1,21 +1,21 @@
 [
   {
     "chain": "BTC",
-    "pub_key": "tswtcpub1addwnpepqttwt7sw069epyu3t8qwl5ts2dmc3d744ns8x04kf6c5fufrmydlwp69pdv",
+    "pub_key": "tswitchpub1addwnpepqttwt7sw069epyu3t8qwl5ts2dmc3d744ns8x04kf6c5fufrmydlwp69pdv",
     "address": "tb1qaz3stfwl2xcn8nk7l32qgqpx0uxse5lev30f0f",
     "router": "",
     "halted": false
   },
   {
     "chain": "ETH",
-    "pub_key": "tswtcpub1addwnpepqttwt7sw069epyu3t8qwl5ts2dmc3d744ns8x04kf6c5fufrmydlwp69pdv",
+    "pub_key": "tswitchpub1addwnpepqttwt7sw069epyu3t8qwl5ts2dmc3d744ns8x04kf6c5fufrmydlwp69pdv",
     "address": "0x3fd2D4cE97B082d4BcE3f9fee2A3D60668D2f473",
     "router": "0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44",
     "halted": false
   },
   {
     "chain": "AVAX",
-    "pub_key": "tswtcpub1addwnpepqttwt7sw069epyu3t8qwl5ts2dmc3d744ns8x04kf6c5fufrmydlwp69pdv",
+    "pub_key": "tswitchpub1addwnpepqttwt7sw069epyu3t8qwl5ts2dmc3d744ns8x04kf6c5fufrmydlwp69pdv",
     "address": "0x3fd2D4cE97B082d4BcE3f9fee2A3D60668D2f473",
     "router": "0x17aB05351fC94a1a67Bf3f56DdbB941aE6c63E25",
     "halted": false

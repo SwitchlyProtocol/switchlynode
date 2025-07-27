@@ -14,7 +14,7 @@ import (
 
 func (s *BitcoinCashSuite) TestGetAddress(c *C) {
 	ttypes.SetupConfigForTest()
-	pubkey := common.PubKey("swtcpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdku")
+	pubkey := common.PubKey("switchpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdku")
 	addr := s.client.GetAddress(pubkey)
 	c.Assert(addr, Equals, "qz3scswlwnn0a9ls85xqyjxv0rry40egpv9c2qt60c")
 }

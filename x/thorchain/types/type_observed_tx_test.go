@@ -153,7 +153,7 @@ func (s TypeObservedTxSuite) TestVoter(c *C) {
 	c.Check(voter.String() == txID.String(), Equals, true)
 
 	thorchainCoins := common.Coins{
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(100)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(100)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100)),
 	}
 	inputs := []struct {
@@ -346,18 +346,18 @@ func (s TypeObservedTxSuite) TestAddOutTx(c *C) {
 func (s TypeObservedTxSuite) TestObservedTxEquals(c *C) {
 	coins1 := common.Coins{
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100*common.One)),
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One)),
 	}
 	coins2 := common.Coins{
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100*common.One)),
 	}
 	coins3 := common.Coins{
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(200*common.One)),
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One)),
 	}
 	coins4 := common.Coins{
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One)),
 	}
 	eth, err := common.NewAddress("0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Assert(err, IsNil)

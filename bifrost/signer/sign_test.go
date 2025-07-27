@@ -407,7 +407,7 @@ func (s *SignSuite) TestProcess(c *C) {
 			account: common.Account{
 				Coins: common.Coins{
 					common.NewCoin(common.ETHAsset, cosmos.NewUint(1000000)),
-					common.NewCoin(common.SWTCNative, cosmos.NewUint(1000000)),
+					common.NewCoin(common.SwitchNative, cosmos.NewUint(1000000)),
 				},
 			},
 		},
@@ -597,7 +597,7 @@ func (s *SignSuite) TestRound7Retry(c *C) {
 			Chain:       common.ETHChain,
 			ToAddress:   "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a",
 			Memo:        msg,
-			VaultPubKey: "tswtcpub1addwnpepqfup3y8p0egd7ml7vrnlxgl3wvnp89mpn0tjpj0p2nm2gh0n9hlrvphlvuq",
+			VaultPubKey: "tswitchpub1addwnpepqfup3y8p0egd7ml7vrnlxgl3wvnp89mpn0tjpj0p2nm2gh0n9hlrvphlvuq",
 			Coins: common.Coins{ // must be set or signer overrides memo
 				common.NewCoin(common.ETHAsset, cosmos.NewUint(1000000)),
 			},

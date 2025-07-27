@@ -37,7 +37,7 @@ func (m *MsgRunePoolDeposit) ValidateBasic() error {
 	if !m.Tx.Coins[0].Asset.Chain.IsSWITCHLYChain() {
 		return cosmos.ErrInvalidCoins("coin chain must be SWITCHLYChain")
 	}
-	if !m.Tx.Coins[0].IsRune() {
+	if !m.Tx.Coins[0].IsSwitch() {
 		return cosmos.ErrInvalidCoins("coin must be RUNE")
 	}
 	if m.Signer.Empty() {

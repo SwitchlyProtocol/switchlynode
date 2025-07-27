@@ -15,8 +15,8 @@ func (s AssetSuite) TestAsset(c *C) {
 	asset, err := NewAsset("switchly.switch")
 	c.Assert(err, IsNil)
 	c.Check(asset.Valid(), IsNil)
-	c.Check(asset.Equals(SWTCNative), Equals, true)
-	c.Check(asset.IsRune(), Equals, true)
+	c.Check(asset.Equals(SwitchNative), Equals, true)
+	c.Check(asset.IsSwitch(), Equals, true)
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.Synth, Equals, false)
 	c.Check(asset.String(), Equals, "SWITCHLY.SWITCH")
@@ -39,7 +39,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	asset, err = NewAsset("switch")
 	c.Assert(err, IsNil)
 	c.Check(asset.Valid(), IsNil)
-	c.Check(asset.Equals(SWTCNative), Equals, true)
+	c.Check(asset.Equals(SwitchNative), Equals, true)
 
 	// ETH test
 	asset, err = NewAsset("eth.knc")
@@ -57,7 +57,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.Valid(), IsNil)
 	c.Check(asset.Chain.Equals(DOGEChain), Equals, true)
 	c.Check(asset.Equals(DOGEAsset), Equals, true)
-	c.Check(asset.IsRune(), Equals, false)
+	c.Check(asset.IsSwitch(), Equals, false)
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "DOGE.DOGE")
 
@@ -67,7 +67,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.Valid(), IsNil)
 	c.Check(asset.Chain.Equals(BCHChain), Equals, true)
 	c.Check(asset.Equals(BCHAsset), Equals, true)
-	c.Check(asset.IsRune(), Equals, false)
+	c.Check(asset.IsSwitch(), Equals, false)
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "BCH.BCH")
 
@@ -77,7 +77,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.Valid(), IsNil)
 	c.Check(asset.Chain.Equals(LTCChain), Equals, true)
 	c.Check(asset.Equals(LTCAsset), Equals, true)
-	c.Check(asset.IsRune(), Equals, false)
+	c.Check(asset.IsSwitch(), Equals, false)
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "LTC.LTC")
 
@@ -99,11 +99,11 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "BTC~BTC")
 
-	asset, err = NewAsset("switchly~swtc")
+	asset, err = NewAsset("switchly~switch")
 	c.Assert(err, IsNil)
 	err = asset.Valid()
 	c.Check(err, NotNil)
-	c.Check(err.Error(), Equals, "trade asset cannot have chain SWITCHLY: SWITCHLY~SWTC")
+	c.Check(err.Error(), Equals, "trade asset cannot have chain SWITCHLY: SWITCHLY~SWITCH")
 
 	// btc~btc with invalid synth flag
 	asset.Synth = true
@@ -189,7 +189,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.Valid(), IsNil)
 	c.Check(asset.Chain.Equals(StellarChain), Equals, true)
 	c.Check(asset.Equals(XLMAsset), Equals, true)
-	c.Check(asset.IsRune(), Equals, false)
+	c.Check(asset.IsSwitch(), Equals, false)
 	c.Check(asset.IsEmpty(), Equals, false)
 	c.Check(asset.String(), Equals, "XLM.XLM")
 

@@ -16,7 +16,7 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 
 	// empty the starting balance of asgard
 	runeBal := k.GetRuneBalanceOfModule(ctx, AsgardName)
-	coins := common.NewCoins(common.NewCoin(common.SWTCAsset(), runeBal))
+	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), runeBal))
 	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ReserveName, coins), IsNil)
 
 	pool := NewPool()
@@ -42,7 +42,7 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 	swapMsg := MsgSwap{
 		Tx: GetRandomTx(),
 	}
-	swapMsg.Tx.Coins = common.NewCoins(common.NewCoin(common.SWTCAsset(), cosmos.NewUint(2000)))
+	swapMsg.Tx.Coins = common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2000)))
 	c.Assert(k.SetSwapQueueItem(ctx, swapMsg, 0), IsNil)
 
 	// synth swaps are ignored
@@ -59,12 +59,12 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 	c.Assert(broken, Equals, true)
 	c.Assert(len(msg), Equals, 2)
 	c.Assert(msg[0], Equals, "insolvent: 666btc/btc")
-	c.Assert(msg[1], Equals, "insolvent: 3100switchcoin")
+	c.Assert(msg[1], Equals, "insolvent: 3100switch")
 
 	// send the expected amount to asgard
 	expCoins := common.NewCoins(
 		common.NewCoin(common.BTCAsset.GetSyntheticAsset(), cosmos.NewUint(666)),
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(3100)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(3100)),
 	)
 	for _, coin := range expCoins {
 		c.Assert(k.MintToModule(ctx, ModuleName, coin), IsNil)
@@ -76,13 +76,13 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 	c.Assert(msg, IsNil)
 
 	// send a little more to make asgard oversolvent
-	extraCoins := common.NewCoins(common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1)))
+	extraCoins := common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1)))
 	c.Assert(k.SendFromModuleToModule(ctx, ReserveName, AsgardName, extraCoins), IsNil)
 
 	msg, broken = invariant(ctx)
 	c.Assert(broken, Equals, true)
 	c.Assert(len(msg), Equals, 1)
-	c.Assert(msg[0], Equals, "oversolvent: 1switchcoin")
+	c.Assert(msg[0], Equals, "oversolvent: 1switch")
 }
 
 func (s *InvariantsSuite) TestBondInvariant(c *C) {
@@ -105,9 +105,9 @@ func (s *InvariantsSuite) TestBondInvariant(c *C) {
 	msg, broken := invariant(ctx)
 	c.Assert(broken, Equals, true)
 	c.Assert(len(msg), Equals, 1)
-	c.Assert(msg[0], Equals, "insolvent: 3100switchcoin")
+	c.Assert(msg[0], Equals, "insolvent: 3100switch")
 
-	expRune := common.NewCoin(common.SWTCAsset(), cosmos.NewUint(3100))
+	expRune := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(3100))
 	c.Assert(k.MintToModule(ctx, ModuleName, expRune), IsNil)
 	c.Assert(k.SendFromModuleToModule(ctx, ModuleName, BondName, common.NewCoins(expRune)), IsNil)
 
@@ -122,7 +122,7 @@ func (s *InvariantsSuite) TestBondInvariant(c *C) {
 	msg, broken = invariant(ctx)
 	c.Assert(broken, Equals, true)
 	c.Assert(len(msg), Equals, 1)
-	c.Assert(msg[0], Equals, "oversolvent: 3100switchcoin")
+	c.Assert(msg[0], Equals, "oversolvent: 3100switch")
 }
 
 func (s *InvariantsSuite) TestSwitchlyProtocolInvariant(c *C) {
@@ -136,11 +136,11 @@ func (s *InvariantsSuite) TestSwitchlyProtocolInvariant(c *C) {
 	c.Assert(msg, IsNil)
 
 	// send some coins to make it oversolvent
-	coins := common.NewCoins(common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1)))
+	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1)))
 	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ModuleName, coins), IsNil)
 
 	msg, broken = invariant(ctx)
 	c.Assert(broken, Equals, true)
 	c.Assert(len(msg), Equals, 1)
-	c.Assert(msg[0], Equals, "oversolvent: 1switchcoin")
+	c.Assert(msg[0], Equals, "oversolvent: 1switch")
 }

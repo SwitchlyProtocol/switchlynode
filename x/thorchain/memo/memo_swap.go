@@ -246,7 +246,9 @@ func (p *parser) ParseSwapMemoV3_0_0() (SwapMemo, error) {
 	// Set a affiliate address (even though it is not used) - to pass validation
 	affAddr := common.NoAddress
 	if !totalAffBps.IsZero() && len(affiliates) > 0 {
-		affAddr = p.getAddressWithKeeper(4, false, common.NoAddress, common.SWITCHLYChain)
+		// Use the first affiliate for legacy support
+		firstAffiliate := affiliates[0]
+		affAddr = p.getAddressFromString(firstAffiliate, common.SWITCHLYChain, false)
 	}
 
 	// Set affiliate thorname when there is only one, this is used in handler_swap to

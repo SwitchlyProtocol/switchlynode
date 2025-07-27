@@ -84,7 +84,7 @@ func (s *BitcoinSignerSuite) SetUpTest(c *C) {
 	}
 
 	s.server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.RequestURI == "/switchly/vaults/swtcpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug/signers" { // nolint
+		if req.RequestURI == "/switchly/vaults/switchpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug/signers" { // nolint
 			_, err := rw.Write([]byte("[]"))
 			c.Assert(err, IsNil)
 		} else if strings.HasPrefix(req.RequestURI, "/thorchain/vaults") && strings.HasSuffix(req.RequestURI, "/signers") {
@@ -219,7 +219,7 @@ func (s *BitcoinSignerSuite) TestSignTxHappyPathWithPrivateKey(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.BTCChain,
 		ToAddress:   addr,
-		VaultPubKey: "swtcpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
+		VaultPubKey: "switchpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
 		Coins: common.Coins{
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(10)),
 		},
@@ -256,7 +256,7 @@ func (s *BitcoinSignerSuite) TestSignTxWithoutPredefinedMaxGas(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.BTCChain,
 		ToAddress:   addr,
-		VaultPubKey: "swtcpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
+		VaultPubKey: "switchpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
 		Coins: common.Coins{
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(10)),
 		},
@@ -342,7 +342,7 @@ func (s *BitcoinSignerSuite) TestSignTxWithAddressPubkey(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.BTCChain,
 		ToAddress:   "04ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "swtcpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
+		VaultPubKey: "switchpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
 		Coins: common.Coins{
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(10)),
 		},
@@ -376,7 +376,7 @@ func (s *BitcoinSignerSuite) TestToAddressCanNotRoundTripShouldBlock(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.BTCChain,
 		ToAddress:   "05ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "swtcpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
+		VaultPubKey: "switchpub1addwnpepq26xxtggfp0lrhedk4demt7jxdrar3r6g4c89g0g003x39j5n2rnwpnraug",
 		Coins: common.Coins{
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(10)),
 		},

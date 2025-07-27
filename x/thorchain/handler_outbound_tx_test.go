@@ -200,14 +200,14 @@ func newOutboundTxHandlerTestHelper(c *C) outboundTxHandlerTestHelper {
 	}
 	asgardVault.AddFunds(vaultCoins)
 	c.Assert(mgr.Keeper().SetVault(ctx, asgardVault), IsNil)
-	addr, err := asgardVault.PubKey.GetAddress(common.SWTCAsset().Chain)
+	addr, err := asgardVault.PubKey.GetAddress(common.SwitchAsset().Chain)
 	c.Check(err, IsNil)
 
 	tx := NewObservedTx(common.Tx{
 		ID:          GetRandomTxHash(),
-		Chain:       common.SWTCAsset().Chain,
+		Chain:       common.SwitchAsset().Chain,
 		Coins:       common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(1*common.One))},
-		Memo:        "SWAP:" + common.SWTCAsset().String(),
+		Memo:        "SWAP:" + common.SwitchAsset().String(),
 		FromAddress: GetRandomBTCAddress(),
 		ToAddress:   addr,
 		Gas: common.Gas{
@@ -386,7 +386,7 @@ func (s *HandlerOutboundTxSuite) TestOuboundTxHandlerSendExtraFundShouldBeSlashe
 		ID:    GetRandomTxHash(),
 		Chain: common.BTCChain,
 		Coins: common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(2*common.One)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2*common.One)),
 		},
 		Memo:        NewOutboundMemo(helper.inboundTx.Tx.ID).String(),
 		FromAddress: fromAddr,
@@ -417,7 +417,7 @@ func (s *HandlerOutboundTxSuite) TestOutboundTxHandlerSendAdditionalCoinsShouldB
 		ID:    GetRandomTxHash(),
 		Chain: common.BTCChain,
 		Coins: common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1*common.One)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1*common.One)),
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(1*common.One)),
 		},
 		Memo:        NewOutboundMemo(helper.inboundTx.Tx.ID).String(),
@@ -446,7 +446,7 @@ func (s *HandlerOutboundTxSuite) TestOutboundTxHandlerInvalidObservedTxVoterShou
 		ID:    GetRandomTxHash(),
 		Chain: common.BTCChain,
 		Coins: common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1*common.One)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1*common.One)),
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(1*common.One)),
 		},
 		Memo:        NewOutboundMemo(helper.inboundTx.Tx.ID).String(),

@@ -126,15 +126,21 @@ func GetRandomBech32ConsensusPubKey() string {
 	return result
 }
 
+// GetRandomRUNEAddress generate a random RUNE address for test (deprecated)
+// NOTE: This function is deprecated, use GetRandomSwitchlyAddress instead
 func GetRandomRUNEAddress() common.Address {
-	return GetRandomTHORAddress()
+	return GetRandomSwitchlyAddress()
 }
 
+// GetRandomSwitchlyAddress generate a random Switchly address for test
+func GetRandomSwitchlyAddress() common.Address {
+	return common.Address(GetRandomBech32Addr().String())
+}
+
+// GetRandomTHORAddress generate a random THOR address for test (legacy function)
+// NOTE: This function is deprecated, use GetRandomSwitchlyAddress instead
 func GetRandomTHORAddress() common.Address {
-	name := common.RandHexString(10)
-	str, _ := common.ConvertAndEncode(cmd.Bech32PrefixAccAddr, crypto.AddressHash([]byte(name)))
-	thor, _ := common.NewAddress(str)
-	return thor
+	return GetRandomSwitchlyAddress()
 }
 
 // GetRandomETHAddress get a random ETH address for test purpose

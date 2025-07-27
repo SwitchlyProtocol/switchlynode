@@ -11,7 +11,7 @@ const (
 	AsgardName             = types.AsgardName
 	AffiliateCollectorName = types.AffiliateCollectorName
 	TreasuryName           = types.TreasuryName
-	SWTCPoolName           = types.SWTCPoolName
+	SwitchPoolName         = types.SwitchPoolName
 	TCYClaimingName        = types.TCYClaimingName
 	TCYStakeName           = types.TCYStakeName
 	BondName               = types.BondName

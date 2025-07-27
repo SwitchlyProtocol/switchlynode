@@ -84,7 +84,7 @@ func (s *LitecoinSignerSuite) SetUpTest(c *C) {
 	}
 
 	s.server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.RequestURI == "/switchly/vaults/swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d/signers" { // nolint
+		if req.RequestURI == "/switchly/vaults/switchpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d/signers" { // nolint
 			_, err := rw.Write([]byte("[]"))
 			c.Assert(err, IsNil)
 		} else if strings.HasPrefix(req.RequestURI, "/thorchain/vaults") && strings.HasSuffix(req.RequestURI, "/signers") {
@@ -220,7 +220,7 @@ func (s *LitecoinSignerSuite) TestSignTxHappyPathWithPrivateKey(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.LTCChain,
 		ToAddress:   addr,
-		VaultPubKey: "swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
+		VaultPubKey: "switchpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
 		Coins: common.Coins{
 			common.NewCoin(common.LTCAsset, cosmos.NewUint(10)),
 		},
@@ -257,7 +257,7 @@ func (s *LitecoinSignerSuite) TestSignTxWithoutPredefinedMaxGas(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.LTCChain,
 		ToAddress:   addr,
-		VaultPubKey: "swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
+		VaultPubKey: "switchpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
 		Coins: common.Coins{
 			common.NewCoin(common.LTCAsset, cosmos.NewUint(10)),
 		},
@@ -343,7 +343,7 @@ func (s *LitecoinSignerSuite) TestSignAddressPubKeyShouldFail(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.LTCChain,
 		ToAddress:   "04ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
+		VaultPubKey: "switchpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
 		Coins: common.Coins{
 			common.NewCoin(common.LTCAsset, cosmos.NewUint(10)),
 		},
@@ -376,7 +376,7 @@ func (s *LitecoinSignerSuite) TestToAddressCanNotRoundTripShouldBlock(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.LTCChain,
 		ToAddress:   "05ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
+		VaultPubKey: "switchpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d",
 		Coins: common.Coins{
 			common.NewCoin(common.LTCAsset, cosmos.NewUint(10)),
 		},

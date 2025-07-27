@@ -345,7 +345,7 @@ func MsgTssPoolHandleV3_0_0(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) (*
 					// take out bond from the node account and add it to the Reserve
 					// thus good behaviour nodes and liquidity providers will get reward
 					na.Bond = common.SafeSub(na.Bond, slashBond)
-					coin := common.NewCoin(common.SWTCNative, slashBond)
+					coin := common.NewCoin(common.SwitchNative, slashBond)
 					if !coin.Amount.IsZero() {
 						if err := mgr.Keeper().SendFromModuleToModule(ctx, BondName, ReserveName, common.NewCoins(coin)); err != nil {
 							return nil, fmt.Errorf("fail to transfer funds from bond to reserve: %w", err)

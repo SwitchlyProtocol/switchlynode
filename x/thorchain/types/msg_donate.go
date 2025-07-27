@@ -34,8 +34,8 @@ func (m *MsgDonate) ValidateBasic() error {
 	if m.Asset.IsEmpty() {
 		return cosmos.ErrUnknownRequest("donate asset cannot be empty")
 	}
-	if m.Asset.IsRune() {
-		return cosmos.ErrUnknownRequest("asset cannot be rune")
+	if m.Asset.IsSwitch() {
+		return cosmos.ErrUnknownRequest("asset cannot be switch")
 	}
 	if m.RuneAmount.IsZero() && m.AssetAmount.IsZero() {
 		return errors.New("rune and asset amount cannot be zero")

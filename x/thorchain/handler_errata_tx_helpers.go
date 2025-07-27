@@ -129,7 +129,7 @@ func processErrataTxAttestation(
 	runeCoin := common.NoCoin
 	assetCoin := common.NoCoin
 	for _, coin := range tx.Coins {
-		if coin.IsRune() {
+		if coin.IsSwitch() {
 			runeCoin = coin
 		} else {
 			assetCoin = coin
@@ -236,7 +236,7 @@ func processErrataOutboundTx(ctx cosmos.Context, k keeper.Keeper, eventMgr Event
 		}
 		if compensate {
 			for _, coin := range tx.Coins {
-				if coin.IsRune() {
+				if coin.IsSwitch() {
 					// it is using native rune, so outbound can't be RUNE
 					continue
 				}
@@ -250,7 +250,7 @@ func processErrataOutboundTx(ctx cosmos.Context, k keeper.Keeper, eventMgr Event
 				p.BalanceAsset = common.SafeSub(p.BalanceAsset, coin.Amount)
 				// trunk-ignore(golangci-lint/govet): shadow
 				if err := k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.Coins{
-					common.NewCoin(common.SWTCAsset(), runeValue),
+					common.NewCoin(common.SwitchAsset(), runeValue),
 				}); err != nil {
 					return fmt.Errorf("fail to send fund from reserve to asgard: %w", err)
 				}

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/cast"
@@ -20,6 +21,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
@@ -34,6 +36,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
+	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
@@ -119,6 +122,8 @@ func initRootCmd(
 		pruning.Cmd(newApp, app.DefaultNodeHome),
 		snapshot.Cmd(newApp),
 		renderConfigCommand(),
+		GetEd25519Keys(),
+		GetPubKeyCmd(),
 	)
 
 	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
@@ -271,7 +276,7 @@ func appExport(
 	appOpts servertypes.AppOptions,
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
-	var switchlyApp *app.SwitchlyProtocolApp
+	var switchlyApp *app.SwitchlyApp
 	homePath, ok := appOpts.Get("home").(string)
 	if !ok || homePath == "" {
 		homePath = app.DefaultNodeHome
@@ -318,7 +323,23 @@ func DefaultBaseappOptions(appOpts types.AppOptions) []func(*baseapp.BaseApp) {
 		cast.ToUint32(appOpts.Get("snapshot-keep-recent")),
 	)
 
-	return []func(*baseapp.BaseApp){
+	homeDir := cast.ToString(appOpts.Get(flags.FlagHome))
+	chainID := cast.ToString(appOpts.Get(flags.FlagChainID))
+	if chainID == "" {
+		// fallback to genesis chain-id
+		reader, err2 := os.Open(filepath.Join(homeDir, "config", "genesis.json"))
+		if err2 != nil {
+			panic(err2)
+		}
+		defer reader.Close()
+
+		chainID, err = genutiltypes.ParseChainIDFromGenesis(reader)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse chain-id from genesis file: %w", err))
+		}
+	}
+
+	baseappOptions := []func(*baseapp.BaseApp){
 		baseapp.SetPruning(pruningOpts),
 		baseapp.SetMinGasPrices(cast.ToString(appOpts.Get("minimum-gas-prices"))),
 		baseapp.SetHaltHeight(cast.ToUint64(appOpts.Get("halt-height"))),
@@ -331,4 +352,11 @@ func DefaultBaseappOptions(appOpts types.AppOptions) []func(*baseapp.BaseApp) {
 		baseapp.SetIAVLCacheSize(cast.ToInt(appOpts.Get("iavl-cache-size"))),
 		baseapp.SetIAVLDisableFastNode(cast.ToBool(appOpts.Get("iavl-disable-fastnode"))),
 	}
+
+	// Add chain-id if we found it in genesis
+	if chainID != "" {
+		baseappOptions = append(baseappOptions, baseapp.SetChainID(chainID))
+	}
+
+	return baseappOptions
 }

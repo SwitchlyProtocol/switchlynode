@@ -177,14 +177,14 @@ func (h SwapHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSwap) error {
 		// the following is only applicable for mainnet
 		totalLiquidityRUNE, err := h.getTotalLiquidityRUNE(ctx)
 		if err != nil {
-			return ErrInternal(err, "fail to get total liquidity RUNE")
+			return ErrInternal(err, "fail to get total liquidity SWITCH")
 		}
 
-		// total liquidity RUNE after current add liquidity
+		// total liquidity SWITCH after current add liquidity
 		if len(msg.Tx.Coins) > 0 {
 			// calculate rune value on incoming swap, and add to total liquidity.
 			runeVal := sourceCoin.Amount
-			if !sourceCoin.IsRune() {
+			if !sourceCoin.IsSwitch() {
 				pool, err := h.mgr.Keeper().GetPool(ctx, sourceCoin.Asset.GetLayer1Asset())
 				if err != nil {
 					return ErrInternal(err, "fail to get pool")
@@ -199,7 +199,7 @@ func (h SwapHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSwap) error {
 		}
 		if maximumLiquidityRune > 0 {
 			if totalLiquidityRUNE.GT(cosmos.NewUint(uint64(maximumLiquidityRune))) {
-				return errAddLiquidityRUNEOverLimit
+				return errAddLiquiditySWITCHOverLimit
 			}
 		}
 
@@ -209,7 +209,7 @@ func (h SwapHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSwap) error {
 		targetAmount, runeAmount := cosmos.ZeroUint(), cosmos.ZeroUint()
 		swapper, err := GetSwapper(h.mgr.GetVersion())
 		if err == nil {
-			if sourceCoin.IsRune() {
+			if sourceCoin.IsSwitch() {
 				runeAmount = sourceCoin.Amount
 			} else {
 				// asset --> rune swap
@@ -240,10 +240,10 @@ func (h SwapHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSwap) error {
 		ensureLiquidityNoLargerThanBond := h.mgr.GetConstants().GetBoolValue(constants.StrictBondLiquidityRatio)
 		if ensureLiquidityNoLargerThanBond {
 			// If source and target are synthetic assets there is no net
-			// liquidity gain (RUNE is just moved from pool A to pool B), so
+			// liquidity gain (SWITCH is just moved from pool A to pool B), so
 			// skip this check
 			if !sourceCoin.Asset.IsSyntheticAsset() && atTVLCap(ctx, common.NewCoins(sourceCoin), h.mgr) {
-				return errAddLiquidityRUNEMoreThanBond
+				return errAddLiquiditySWITCHMoreThanBond
 			}
 		}
 	}
@@ -343,7 +343,7 @@ func (h SwapHandler) handleV3_0_0(ctx cosmos.Context, msg MsgSwap) (*cosmos.Resu
 		return nil, swapErr
 	}
 
-	// Check if swap is to AffiliateCollector Module, if so, add the accrued RUNE for the affiliate
+	// Check if swap is to AffiliateCollector Module, if so, add the accrued SWITCH for the affiliate
 	affColAddress, err := h.mgr.Keeper().GetModuleAddress(AffiliateCollectorName)
 	if err != nil {
 		ctx.Logger().Error("failed to retrieve AffiliateCollector module address", "error", err)
@@ -357,14 +357,14 @@ func (h SwapHandler) handleV3_0_0(ctx cosmos.Context, msg MsgSwap) (*cosmos.Resu
 		affThorname = mem.GetAffiliateTHORName()
 	}
 
-	if affThorname != nil && msg.Destination.Equals(affColAddress) && !msg.AffiliateAddress.IsEmpty() && msg.TargetAsset.IsRune() {
-		// Add accrued RUNE for this affiliate
+	if affThorname != nil && msg.Destination.Equals(affColAddress) && !msg.AffiliateAddress.IsEmpty() && msg.TargetAsset.IsSwitch() {
+		// Add accrued SWITCH for this affiliate
 		affCol, err = h.mgr.Keeper().GetAffiliateCollector(ctx, affThorname.Owner)
 		if err != nil {
 			ctx.Logger().Error("failed to retrieve AffiliateCollector for thorname owner", "address", affThorname.Owner.String(), "error", err)
 		} else {
-			// The TargetAsset has already been established to be RUNE.
-			transactionFee, err := h.mgr.GasMgr().GetAssetOutboundFee(ctx, common.SWTCAsset(), true)
+			// The TargetAsset has already been established to be SWITCH.
+			transactionFee, err := h.mgr.GasMgr().GetAssetOutboundFee(ctx, common.SwitchAsset(), true)
 			if err != nil {
 				ctx.Logger().Error("failed to get transaction fee", "error", err)
 			} else {
@@ -478,7 +478,7 @@ func (h SwapHandler) handleV3_0_0(ctx cosmos.Context, msg MsgSwap) (*cosmos.Resu
 	return &cosmos.Result{}, nil
 }
 
-// getTotalLiquidityRUNE we have in all pools
+// getTotalLiquiditySWITCH we have in all pools (legacy function name for backward compatibility)
 func (h SwapHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.Uint, error) {
 	pools, err := h.mgr.Keeper().GetPools(ctx)
 	if err != nil {

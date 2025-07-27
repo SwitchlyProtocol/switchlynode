@@ -251,7 +251,7 @@ func (s *HandlerAddLiquiditySuite) TestAddLiquidityHandlerValidation(c *C) {
 		GetRandomRUNEAddress(),
 		common.Coins{common.NewCoin(ethSynthAsset, cosmos.NewUint(common.One*5))},
 		common.Gas{
-			{Asset: common.SWTCNative, Amount: cosmos.NewUint(1 * common.One)},
+			{Asset: common.SwitchNative, Amount: cosmos.NewUint(1 * common.One)},
 		},
 		"add:ETH.ETH",
 	)
@@ -304,7 +304,7 @@ func (s *HandlerAddLiquiditySuite) TestAddLiquidityHandlerValidation(c *C) {
 		{
 			name:           "total liquidity provider is more than total bond should fail",
 			msg:            NewMsgAddLiquidity(GetRandomTx(), common.ETHAsset, cosmos.NewUint(common.One*5000), cosmos.NewUint(common.One*5000), GetRandomRUNEAddress(), GetRandomETHAddress(), common.NoAddress, cosmos.ZeroUint(), activeNodeAccount.NodeAddress),
-			expectedResult: errAddLiquidityRUNEMoreThanBond,
+			expectedResult: errAddLiquiditySWITCHMoreThanBond,
 		},
 		{
 			name:           "rune address with wrong chain should fail",
@@ -960,7 +960,7 @@ func (s *HandlerAddLiquiditySuite) TestAddLiquidityPOL(c *C) {
 		addTxHash,
 		polAddr,
 		polAddr,
-		common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(common.One*100))},
+		common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(common.One*100))},
 		common.Gas{},
 		"add:ETH",
 	)

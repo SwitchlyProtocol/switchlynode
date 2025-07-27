@@ -114,7 +114,7 @@
                   }
                 ],
                 "memo": "maint:",
-                "signer": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej"
+                "signer": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej"
               }
             ],
             "non_critical_extension_options": [],
@@ -132,26 +132,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+              "spender": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
               "type": "transfer"
             },
             {
-              "sender": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+              "sender": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej/0",
+              "acc_seq": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej/0",
               "type": "tx"
             },
             {
@@ -240,7 +240,7 @@
                   }
                 ],
                 "memo": "maint:invalid-address",
-                "signer": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej"
+                "signer": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej"
               }
             ],
             "non_critical_extension_options": [],
@@ -258,26 +258,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+              "spender": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
               "type": "transfer"
             },
             {
-              "sender": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+              "sender": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej/1",
+              "acc_seq": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej/1",
               "type": "tx"
             },
             {
@@ -365,8 +365,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "BOND:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "BOND:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -383,26 +383,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/0",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/0",
               "type": "tx"
             },
             {
@@ -413,50 +413,50 @@
               "action": "/types.MsgDeposit",
               "module": "MsgDeposit",
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
               "amount": "100000000000rune",
               "msg_index": "0",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "100000000000rune",
               "msg_index": "0",
-              "receiver": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+              "receiver": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
               "type": "coin_received"
             },
             {
               "amount": "100000000000rune",
               "msg_index": "0",
-              "recipient": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "msg_index": "0",
               "type": "new_node"
             },
             {
               "amount": "100000000000",
-              "bond_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "bond_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "bond_type": "bond_paid",
               "chain": "THOR",
               "coin": "100000000000 THOR.RUNE",
-              "from": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "from": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "id": "44199C7C7C9DC6007CDDE6435F45E0357848B99D147C98050D3075DE595A560C",
-              "memo": "BOND:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "memo": "BOND:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "msg_index": "0",
-              "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-              "to": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+              "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "to": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
               "type": "bond"
             }
           ]
@@ -540,8 +540,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "maint:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "maint:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -558,26 +558,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/1",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/1",
               "type": "tx"
             },
             {
@@ -588,13 +588,13 @@
               "action": "/types.MsgDeposit",
               "module": "MsgDeposit",
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
               "maintenance": "on",
               "msg_index": "0",
-              "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "toggle_maintenance"
             }
           ]
@@ -678,8 +678,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "leave:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "leave:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -696,26 +696,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/2",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/2",
               "type": "tx"
             },
             {
@@ -726,51 +726,51 @@
               "action": "/types.MsgDeposit",
               "module": "MsgDeposit",
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
               "amount": "100000000000rune",
               "msg_index": "0",
-              "spender": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+              "spender": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
               "type": "coin_spent"
             },
             {
               "amount": "100000000000rune",
               "msg_index": "0",
-              "receiver": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "receiver": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_received"
             },
             {
               "amount": "100000000000rune",
               "msg_index": "0",
-              "recipient": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-              "sender": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+              "recipient": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
               "type": "transfer"
             },
             {
               "msg_index": "0",
-              "sender": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+              "sender": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
               "type": "message"
             },
             {
               "amount": "100000000000",
-              "bond_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "bond_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "bond_type": "bond_returned",
               "chain": "THOR",
               "coin": "0 THOR.RUNE",
-              "from": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "from": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "id": "FFCEC1A660FFB8D07BF67BFE80842CA29AD8A5487CD2E9AC2946B0F22E9AD132",
-              "memo": "leave:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "memo": "leave:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "msg_index": "0",
-              "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-              "to": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+              "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "to": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
               "type": "bond"
             },
             {
               "msg_index": "0",
-              "node": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-              "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "node": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "txid": "FFCEC1A660FFB8D07BF67BFE80842CA29AD8A5487CD2E9AC2946B0F22E9AD132",
               "type": "validator_request_leave"
             }
@@ -855,8 +855,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "maint:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "maint:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -873,26 +873,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/3",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/3",
               "type": "tx"
             },
             {
@@ -903,13 +903,13 @@
               "action": "/types.MsgDeposit",
               "module": "MsgDeposit",
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
               "maintenance": "off",
               "msg_index": "0",
-              "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "toggle_maintenance"
             }
           ]
@@ -993,8 +993,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "maint:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "maint:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -1011,26 +1011,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/4",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/4",
               "type": "tx"
             },
             {
@@ -1041,13 +1041,13 @@
               "action": "/types.MsgDeposit",
               "module": "MsgDeposit",
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
               "maintenance": "on",
               "msg_index": "0",
-              "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "toggle_maintenance"
             }
           ]
@@ -1131,8 +1131,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "maint:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "maint:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -1149,26 +1149,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/5",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/5",
               "type": "tx"
             },
             {
@@ -1179,13 +1179,13 @@
               "action": "/types.MsgDeposit",
               "module": "MsgDeposit",
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
               "maintenance": "off",
               "msg_index": "0",
-              "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "toggle_maintenance"
             }
           ]
@@ -1269,8 +1269,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "maint:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "maint:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -1287,26 +1287,26 @@
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/6",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/6",
               "type": "tx"
             },
             {
@@ -1317,13 +1317,13 @@
               "action": "/types.MsgDeposit",
               "module": "MsgDeposit",
               "msg_index": "0",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
               "maintenance": "on",
               "msg_index": "0",
-              "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "toggle_maintenance"
             }
           ]
@@ -1407,8 +1407,8 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "maint:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycrINVALID",
-                "signer": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
+                "memo": "maint:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycrINVALID",
+                "signer": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr"
               }
             ],
             "non_critical_extension_options": [],
@@ -1420,32 +1420,32 @@
         },
         "result": {
           "code": 99,
-          "log": "failed to execute message; message index: 0: invalid memo: 2 errors occurred:\n\t* internal error\n\t* MEMO: maint:tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycrINVALID\nPARSE FAILURE(S): cannot parse 'tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycrINVALID' as an AccAddress: decoding bech32 failed: string not all lowercase or all uppercase\n\n: internal error",
+          "log": "failed to execute message; message index: 0: invalid memo: 2 errors occurred:\n\t* internal error\n\t* MEMO: maint:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycrINVALID\nPARSE FAILURE(S): cannot parse 'tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycrINVALID' as an AccAddress: decoding bech32 failed: string not all lowercase or all uppercase\n\n: internal error",
           "gas_wanted": "-1",
           "gas_used": "57140",
           "events": [
             {
               "amount": "2000000rune",
-              "spender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "spender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "coin_spent"
             },
             {
               "amount": "2000000rune",
-              "receiver": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "receiver": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
               "type": "coin_received"
             },
             {
               "amount": "2000000rune",
-              "recipient": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "recipient": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "transfer"
             },
             {
-              "sender": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+              "sender": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "type": "message"
             },
             {
-              "acc_seq": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/7",
+              "acc_seq": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr/7",
               "type": "tx"
             },
             {

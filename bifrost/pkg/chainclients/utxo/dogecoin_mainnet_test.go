@@ -14,7 +14,7 @@ import (
 
 func (s *DogecoinSuite) TestGetAddress(c *C) {
 	ttypes.SetupConfigForTest()
-	pubkey := common.PubKey("tswtcpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdkx")
+	pubkey := common.PubKey("tswitchpub19daym3mcdfmlr4hck2qmg2l87sdnwh88avr28fju6e87rv6qsq2sytzzrta")
 	addr := s.client.GetAddress(pubkey)
 	c.Assert(addr, Equals, "DNHwstQwWzW3yTBarsmrzNs47JujMczfbN")
 }
@@ -32,7 +32,7 @@ func (s *DogecoinSuite) TestConfirmationCountReady(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -51,7 +51,7 @@ func (s *DogecoinSuite) TestConfirmationCountReady(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -71,7 +71,7 @@ func (s *DogecoinSuite) TestConfirmationCountReady(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -103,7 +103,7 @@ func (s *DogecoinSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -123,7 +123,7 @@ func (s *DogecoinSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -143,7 +143,7 @@ func (s *DogecoinSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -163,7 +163,7 @@ func (s *DogecoinSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -183,7 +183,7 @@ func (s *DogecoinSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{

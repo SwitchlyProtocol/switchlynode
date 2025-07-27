@@ -40,7 +40,7 @@ func triggerPreferredAssetSwapV3_0_0(ctx cosmos.Context, mgr Manager, tn THORNam
 	}
 
 	affRune := affcol.RuneAmount
-	affCoin := common.NewCoin(common.SWTCAsset(), affRune)
+	affCoin := common.NewCoin(common.SwitchAsset(), affRune)
 
 	networkMemo := fmt.Sprintf("%s-%s", PreferredAssetSwapMemoPrefix, tn.Name)
 	asgardAddress, err := mgr.Keeper().GetModuleAddress(AsgardName)
@@ -230,7 +230,7 @@ func skimAffiliateFeesV3_0_0(ctx cosmos.Context, mgr Manager, mainTx common.Tx, 
 			affCoin := common.NewCoin(coin.Asset, affAmt)
 
 			// Distribute fee to affiliate
-			if coin.Asset.IsRune() {
+			if coin.Asset.IsSwitch() {
 				// Transfer to RUNE address or affiliate collector module
 				if thorname != nil && !thorname.PreferredAsset.IsEmpty() {
 					// Send RUNE to the affiliate collector and update the account
@@ -309,12 +309,12 @@ func affiliateSwapToRuneV3_0_0(ctx cosmos.Context, mgr Manager, mainTx common.Tx
 	if tn != nil {
 		tnMemo = tn.Name
 	}
-	memoStr := NewSwapMemo(ctx, mgr, common.SWTCAsset(), affAddr, cosmos.ZeroUint(), tnMemo, cosmos.ZeroUint())
+	memoStr := NewSwapMemo(ctx, mgr, common.SwitchAsset(), affAddr, cosmos.ZeroUint(), tnMemo, cosmos.ZeroUint())
 	mainTx.Memo = memoStr
 
 	affiliateSwap := NewMsgSwap(
 		mainTx,
-		common.SWTCAsset(),
+		common.SwitchAsset(),
 		affAddr,
 		cosmos.ZeroUint(),
 		common.NoAddress,

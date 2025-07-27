@@ -49,7 +49,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 	}{
 		{
 			requestTxHash: common.TxID(""),
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -79,7 +79,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			target:        common.Asset{},
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -89,7 +89,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.ZeroUint(),
 			requester:     ethAddress,
@@ -99,7 +99,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     common.NoAddress,
@@ -109,7 +109,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -119,7 +119,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		{
 			requestTxHash: txID,
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100000000),
 			requester:     ethAddress,
@@ -175,7 +175,7 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		expectedError error
 	}{
 		"swap RUNE for BNB": {
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			dest:          common.BNBBEP20Asset,
 			destAddr:      bnbAddr,
 			tradeTarget:   cosmos.ZeroUint(),
@@ -183,20 +183,20 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		"swap BNB for RUNE": {
 			source:        common.BNBBEP20Asset,
-			dest:          common.SWTCNative,
+			dest:          common.SwitchNative,
 			destAddr:      thorAddr,
 			tradeTarget:   cosmos.ZeroUint(),
 			expectedError: nil,
 		},
 		"swap RUNE for RUNE": {
-			source:        common.SWTCNative,
-			dest:          common.SWTCNative,
+			source:        common.SwitchNative,
+			dest:          common.SwitchNative,
 			destAddr:      thorAddr,
 			tradeTarget:   cosmos.ZeroUint(),
 			expectedError: fmt.Errorf("invalid message"),
 		},
 		"swap RUNE for BNB with trade target": {
-			source:        common.SWTCNative,
+			source:        common.SwitchNative,
 			dest:          common.BNBBEP20Asset,
 			destAddr:      bnbAddr,
 			tradeTarget:   cosmos.NewUint(100),
@@ -204,14 +204,14 @@ func (MsgSwapSuite) TestMsgSwap(c *C) {
 		},
 		"swap BNB for RUNE with trade target": {
 			source:        common.BNBBEP20Asset,
-			dest:          common.SWTCNative,
+			dest:          common.SwitchNative,
 			destAddr:      thorAddr,
 			tradeTarget:   cosmos.NewUint(100),
 			expectedError: nil,
 		},
 		"swap RUNE for RUNE with trade target": {
-			source:        common.SWTCNative,
-			dest:          common.SWTCNative,
+			source:        common.SwitchNative,
+			dest:          common.SwitchNative,
 			destAddr:      thorAddr,
 			tradeTarget:   cosmos.NewUint(100),
 			expectedError: fmt.Errorf("invalid message"),

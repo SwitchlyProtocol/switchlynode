@@ -135,7 +135,7 @@ func (s *HandlerVersionSuite) TestHandle(c *C) {
 	c.Assert(result, IsNil)
 	keeper.failSaveNodeAccount = false
 
-	if !common.SWTCAsset().Equals(common.SWTCNative) {
+	if !common.SwitchAsset().Equals(common.SwitchNative) {
 		// BEP2 RUNE
 		keeper.failGetNetwork = true
 		result, err = handler.Run(ctx, msg)

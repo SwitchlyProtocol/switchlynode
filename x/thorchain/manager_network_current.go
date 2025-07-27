@@ -580,7 +580,7 @@ func (vm *NetworkMgrVCUR) migrateFunds(ctx cosmos.Context, mgr Manager) error {
 					continue
 				}
 				// ERC20 RUNE will be burned when it reach router contract
-				if coin.IsRune() && coin.Asset.GetChain().Equals(common.ETHChain) {
+				if coin.IsSwitch() && coin.Asset.GetChain().Equals(common.ETHChain) {
 					continue
 				}
 
@@ -710,7 +710,7 @@ func (vm *NetworkMgrVCUR) migrateFunds(ctx cosmos.Context, mgr Manager) error {
 						}
 						runeAmt := p.AssetValueInRune(coin.Amount)
 						if !runeAmt.IsZero() {
-							if err := vm.k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.NewCoins(common.NewCoin(common.SWTCAsset(), runeAmt))); err != nil {
+							if err := vm.k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.NewCoins(common.NewCoin(common.SwitchAsset(), runeAmt))); err != nil {
 								return fmt.Errorf("fail to transfer RUNE from reserve to asgard,err:%w", err)
 							}
 						}
@@ -1020,7 +1020,7 @@ func (vm *NetworkMgrVCUR) addPOLLiquidity(
 	if runeAmt.IsZero() {
 		return nil
 	}
-	coins := common.NewCoins(common.NewCoin(common.SWTCAsset(), runeAmt))
+	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), runeAmt))
 
 	// rune pool tracks the reserve and pooler unit shares of pol
 	runePool, err := mgr.Keeper().GetRUNEPool(ctx)
@@ -1141,14 +1141,14 @@ func (vm *NetworkMgrVCUR) removePOLLiquidity(
 
 	// process the withdraw
 	withdrawUnits := common.GetSafeShare(runeAmt, runePoolValue, runePool.TotalUnits())
-	coins := common.NewCoins(common.NewCoin(common.SWTCAsset(), cosmos.ZeroUint()))
+	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint()))
 	tx := common.NewTx(common.BlankTxID, polAddress, asgardAddress, coins, nil, "THOR-POL-REMOVE")
 	msg := NewMsgWithdrawLiquidity(
 		tx,
 		polAddress,
 		basisPts,
 		pool.Asset,
-		common.SWTCAsset(),
+		common.SwitchAsset(),
 		signer,
 	)
 
@@ -1368,7 +1368,7 @@ func (vm *NetworkMgrVCUR) withdrawLPs(ctx cosmos.Context, pool Pool, na NodeAcco
 			withdrawAddr = lp.RuneAddress
 			// if liquidity provider only add RUNE , then asset address will be empty
 			if lp.AssetAddress.IsEmpty() {
-				withdrawAsset = common.SWTCAsset()
+				withdrawAsset = common.SwitchAsset()
 			}
 		} else {
 			// if liquidity provider only add Asset, then RUNE Address will be empty
@@ -1458,7 +1458,7 @@ func (vm *NetworkMgrVCUR) withdrawLiquidity(ctx cosmos.Context, pool Pool, na No
 
 	// If any RUNE remains in the pool (such as if the last withdraw were Asset-address-only),
 	// transfer it to the Reserve to prevent broken-invariant Pool Module oversolvency.
-	remainingRune := common.NewCoin(common.SWTCAsset(), pool.BalanceRune)
+	remainingRune := common.NewCoin(common.SwitchAsset(), pool.BalanceRune)
 	pool.BalanceRune = cosmos.ZeroUint()
 	remainingRune.Amount = remainingRune.Amount.Add(pool.PendingInboundRune)
 	pool.PendingInboundRune = cosmos.ZeroUint()
@@ -1589,14 +1589,14 @@ func (vm *NetworkMgrVCUR) UpdateNetwork(ctx cosmos.Context, constAccessor consta
 		if err != nil {
 			return fmt.Errorf("fail to AccAddressFromBech32(devFundAddressConst)")
 		}
-		coin := common.NewCoin(common.SWTCNative, devFundDeduct)
+		coin := common.NewCoin(common.SwitchNative, devFundDeduct)
 		if err := vm.k.SendFromModuleToAccount(ctx, ReserveName, devFundAddress, common.NewCoins(coin)); err != nil {
 			return fmt.Errorf("fail to transfer funds from reserve to devFundAddress: %w", err)
 		}
 	}
 
 	if !systemIncomeBurnDeduct.IsZero() {
-		coin := common.NewCoin(common.SWTCNative, systemIncomeBurnDeduct)
+		coin := common.NewCoin(common.SwitchNative, systemIncomeBurnDeduct)
 		// Burn system income
 		// Send to SwitchlyProtocol module first, then burn
 		if err := vm.k.SendFromModuleToModule(ctx, ReserveName, ModuleName, common.NewCoins(coin)); err != nil {
@@ -1616,7 +1616,7 @@ func (vm *NetworkMgrVCUR) UpdateNetwork(ctx cosmos.Context, constAccessor consta
 	}
 
 	if !tcyStakeDeduct.IsZero() {
-		coin := common.NewCoin(common.SWTCNative, tcyStakeDeduct)
+		coin := common.NewCoin(common.SwitchNative, tcyStakeDeduct)
 		if err := vm.k.SendFromModuleToModule(ctx, ReserveName, TCYStakeName, common.NewCoins(coin)); err != nil {
 			return fmt.Errorf("fail to transfer funds from reserve to tcy fund: %w", err)
 		}
@@ -1670,7 +1670,7 @@ func (vm *NetworkMgrVCUR) UpdateNetwork(ctx cosmos.Context, constAccessor consta
 	}
 
 	if !bondReward.IsZero() {
-		coin := common.NewCoin(common.SWTCNative, bondReward)
+		coin := common.NewCoin(common.SwitchNative, bondReward)
 		if err := vm.k.SendFromModuleToModule(ctx, ReserveName, BondName, common.NewCoins(coin)); err != nil {
 			ctx.Logger().Error("fail to transfer funds from reserve to bond", "error", err)
 			return fmt.Errorf("fail to transfer funds from reserve to bond: %w", err)
@@ -1701,7 +1701,7 @@ func (vm *NetworkMgrVCUR) payPoolRewards(ctx cosmos.Context, poolRewards []cosmo
 		if err := vm.k.SetPool(ctx, pools[i]); err != nil {
 			return fmt.Errorf("fail to set pool: %w", err)
 		}
-		coin := common.NewCoin(common.SWTCNative, reward)
+		coin := common.NewCoin(common.SwitchNative, reward)
 		if err := vm.k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.NewCoins(coin)); err != nil {
 			return fmt.Errorf("fail to transfer funds from reserve to asgard: %w", err)
 		}
@@ -1926,7 +1926,7 @@ func (vm *NetworkMgrVCUR) redeemSynthAssetToReserve(ctx cosmos.Context, p Pool) 
 	}
 	vm.k.SetPoolRagnarokStart(ctx, p.Asset)
 	if err := vm.k.SendFromModuleToModule(ctx, AsgardName, ReserveName,
-		common.NewCoins(common.NewCoin(common.SWTCNative, runeValue))); err != nil {
+		common.NewCoins(common.NewCoin(common.SwitchNative, runeValue))); err != nil {
 		ctx.Logger().Error("fail to send redeemed synth RUNE to reserve", "error", err)
 	}
 	ctx.Logger().
@@ -1976,7 +1976,7 @@ func (vm *NetworkMgrVCUR) distributeTCYStake(ctx cosmos.Context, mgr Manager) {
 	}
 
 	tcyStakeBalance := mgr.Keeper().GetRuneBalanceOfModule(ctx, TCYStakeName)
-	tcyStakeRune := common.NewCoin(common.SWTCNative, tcyStakeBalance)
+	tcyStakeRune := common.NewCoin(common.SwitchNative, tcyStakeBalance)
 	minRuneMultiple := vm.k.GetConfigInt64(ctx, constants.MinRuneForTCYStakeDistribution)
 	minTCYMultiple := vm.k.GetConfigInt64(ctx, constants.MinTCYForTCYStakeDistribution)
 
@@ -1992,7 +1992,7 @@ func (vm *NetworkMgrVCUR) distributeTCYStake(ctx cosmos.Context, mgr Manager) {
 
 	for _, dist := range tcyDistributions {
 		accRuneAmount := common.GetSafeShare(dist.TCYAmount, distributableAmountOfTCY, tcyStakeRuneToDistribute)
-		accRuneCoin := common.NewCoin(common.SWTCNative, accRuneAmount)
+		accRuneCoin := common.NewCoin(common.SwitchNative, accRuneAmount)
 
 		var err error
 		if dist.Account.Equals(claimingAcc) {
@@ -2110,7 +2110,7 @@ func (vm *NetworkMgrVCUR) claimingSwapRuneToTCY(ctx cosmos.Context, mgr Manager)
 		return err
 	}
 
-	err = mgr.Keeper().SendFromModuleToModule(ctx, TCYClaimingName, AsgardName, common.NewCoins(common.NewCoin(common.SWTCNative, claimingRuneBalance)))
+	err = mgr.Keeper().SendFromModuleToModule(ctx, TCYClaimingName, AsgardName, common.NewCoins(common.NewCoin(common.SwitchNative, claimingRuneBalance)))
 	if err != nil {
 		return err
 	}

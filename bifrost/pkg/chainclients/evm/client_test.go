@@ -347,7 +347,7 @@ func (s *EVMSuite) TestClient(c *C) {
     "height": 1,
     "tx_array": [
         {
-            "vault_pub_key": "ttswtcpub1addwnpepqdd86fqaa5m8787ad4z39mpe20qwqs2fesedmlfc0ym37hhe65ke2cjgm4qx",
+            "vault_pub_key": "ttswitchpub1addwnpepqdd86fqaa5m8787ad4z39mpe20qwqs2fesedmlfc0ym37hhe65ke2cjgm4qx",
             "chain": "ETH",
 			"from_address":"0xa7d9ddbe1f17865597fbd27ec712455208b6b76d",
             "to_address": "0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae",

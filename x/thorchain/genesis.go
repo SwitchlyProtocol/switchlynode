@@ -304,7 +304,7 @@ func initGenesis(ctx cosmos.Context, keeper keeper.Keeper, data GenesisState) []
 
 	// Mint coins into the reserve
 	if data.Reserve > 0 {
-		coin := common.NewCoin(common.SWTCNative, cosmos.NewUint(data.Reserve))
+		coin := common.NewCoin(common.SwitchNative, cosmos.NewUint(data.Reserve))
 		if err := keeper.MintToModule(ctx, ModuleName, coin); err != nil {
 			panic(err)
 		}

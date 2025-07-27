@@ -146,7 +146,7 @@ func (h BanHandler) handleV3_0_0(ctx cosmos.Context, msg MsgBan) (*cosmos.Result
 		toBan.Bond = common.SafeSub(toBan.Bond, slashAmt)
 
 		// transfer the slash amount from bond to reserve
-		coin := common.NewCoin(common.SWTCNative, slashAmt)
+		coin := common.NewCoin(common.SwitchNative, slashAmt)
 		if err = h.mgr.Keeper().SendFromModuleToModule(ctx, BondName, ReserveName, common.NewCoins(coin)); err != nil {
 			ctx.Logger().Error("fail to transfer funds from bond to reserve", "error", err)
 			return nil, err

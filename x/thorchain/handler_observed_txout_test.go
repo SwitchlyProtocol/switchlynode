@@ -189,7 +189,7 @@ func (s *HandlerObservedTxOutSuite) TestHandle(c *C) {
 	vault := NewVault(ctx.BlockHeight(), ActiveVault, AsgardVault, pk, common.Chains{common.ETHChain}.Strings(), []ChainContract{})
 	vault.Membership = []string{pk.String()}
 	vault.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(500)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(500)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(200*common.One)),
 	}
 	keeper := &TestObservedTxOutHandleKeeper{
@@ -286,7 +286,7 @@ func (s *HandlerObservedTxOutSuite) TestHandleFailedTransaction(c *C) {
 	vault := NewVault(ctx.BlockHeight(), ActiveVault, AsgardVault, pk, common.Chains{common.ETHChain}.Strings(), []ChainContract{})
 	vault.Membership = []string{pk.String()}
 	vault.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(500)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(500)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(200*common.One)),
 	}
 	keeper := &TestObservedTxOutHandleKeeper{
@@ -381,7 +381,7 @@ func (s *HandlerObservedTxOutSuite) TestHandleStolenFundsInvalidMemo(c *C) {
 	vault := NewVault(ctx.BlockHeight(), ActiveVault, AsgardVault, pk, common.Chains{common.ETHChain}.Strings(), []ChainContract{})
 	vault.Membership = []string{pk.String()}
 	vault.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(500*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(500*common.One)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(200*common.One)),
 	}
 	keeper := &TestObservedTxOutHandleKeeper{

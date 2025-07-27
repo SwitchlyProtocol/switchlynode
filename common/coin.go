@@ -87,9 +87,14 @@ func (c Coin) IsNative() bool {
 	return c.Asset.GetChain().Equals(SWITCHLYChain)
 }
 
-// IsRune checks whether the coin's Asset is RUNE.
+// IsSwitch checks whether the coin's Asset is SWITCH.
+func (c Coin) IsSwitch() bool {
+	return c.Asset.IsSwitch()
+}
+
+// IsRune checks whether the coin's Asset is RUNE (legacy method - use IsSwitch instead).
 func (c Coin) IsRune() bool {
-	return c.Asset.IsRune()
+	return c.Asset.IsSwitch()
 }
 
 // IsTCY checks whether the coin's Asset is TCY.

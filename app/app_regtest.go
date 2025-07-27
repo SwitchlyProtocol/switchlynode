@@ -38,13 +38,13 @@ func init() {
 	}()
 }
 
-func (app *SwitchlyProtocolApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+func (app *SwitchlyApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
 	<-begin
 	return app.ModuleManager.BeginBlock(ctx)
 }
 
 // EndBlocker application updates every end block
-func (app *SwitchlyProtocolApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+func (app *SwitchlyApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
 	defer func() { end <- struct{}{} }()
 	return app.ModuleManager.EndBlock(ctx)
 }

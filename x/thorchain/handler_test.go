@@ -68,7 +68,7 @@ func (s *HandlerSuite) SetUpSuite(*C) {
 }
 
 func FundModule(c *C, ctx cosmos.Context, k keeper.Keeper, name string, amt uint64) {
-	coin := common.NewCoin(common.SWTCNative, cosmos.NewUint(amt))
+	coin := common.NewCoin(common.SwitchNative, cosmos.NewUint(amt))
 	err := k.MintToModule(ctx, ModuleName, coin)
 	c.Assert(err, IsNil)
 	err = k.SendFromModuleToModule(ctx, ModuleName, name, common.NewCoins(coin))
@@ -76,7 +76,7 @@ func FundModule(c *C, ctx cosmos.Context, k keeper.Keeper, name string, amt uint
 }
 
 func FundAccount(c *C, ctx cosmos.Context, k keeper.Keeper, addr cosmos.AccAddress, amt uint64) {
-	coin := common.NewCoin(common.SWTCNative, cosmos.NewUint(amt))
+	coin := common.NewCoin(common.SwitchNative, cosmos.NewUint(amt))
 	err := k.MintToModule(ctx, ModuleName, coin)
 	c.Assert(err, IsNil)
 	err = k.SendFromModuleToAccount(ctx, ModuleName, addr, common.NewCoins(coin))
@@ -102,7 +102,7 @@ func setupManagerForTest(c *C) (cosmos.Context, *Mgrs) {
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
-	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchlyprotocol"}, false, logger())
+	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchly"}, false, logger())
 	ctx = ctx.WithBlockHeight(18)
 	encodingConfig := testutil.MakeTestEncodingConfig(
 		bank.AppModuleBasic{},
@@ -121,7 +121,7 @@ func setupManagerForTest(c *C) (cosmos.Context, *Mgrs) {
 			types.LendingName:            {},
 			types.AffiliateCollectorName: {},
 			types.TreasuryName:           {},
-			types.SWTCPoolName:           {},
+			types.SwitchPoolName:         {},
 			types.TCYStakeName:           {},
 			types.TCYClaimingName:        {},
 		},
@@ -155,7 +155,7 @@ func setupManagerForTest(c *C) (cosmos.Context, *Mgrs) {
 	c.Assert(err, IsNil)
 
 	c.Assert(bk.MintCoins(ctx, ModuleName, cosmos.Coins{
-		cosmos.NewCoin(common.SWTCAsset().Native(), cosmos.NewInt(200_000_000_00000000)),
+		cosmos.NewCoin(common.SwitchAsset().Native(), cosmos.NewInt(200_000_000_00000000)),
 	}), IsNil)
 	uk := upgradekeeper.NewKeeper(
 		nil,
@@ -222,7 +222,7 @@ func setupKeeperForTest(c *C) (cosmos.Context, keeper.Keeper) {
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
-	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchlyprotocol"}, false, logger())
+	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchly"}, false, logger())
 	ctx = ctx.WithBlockHeight(18)
 
 	encodingConfig := testutil.MakeTestEncodingConfig(
@@ -259,10 +259,10 @@ func setupKeeperForTest(c *C) (cosmos.Context, keeper.Keeper) {
 	)
 
 	c.Assert(bk.MintCoins(ctx, ModuleName, cosmos.Coins{
-		cosmos.NewCoin(common.SWTCAsset().Native(), cosmos.NewInt(200_000_000_00000000)),
+		cosmos.NewCoin(common.SwitchAsset().Native(), cosmos.NewInt(200_000_000_00000000)),
 	}), IsNil)
 	c.Assert(bk.BurnCoins(ctx, ModuleName, cosmos.Coins{
-		cosmos.NewCoin(common.SWTCAsset().Native(), cosmos.NewInt(200_000_000_00000000)),
+		cosmos.NewCoin(common.SwitchAsset().Native(), cosmos.NewInt(200_000_000_00000000)),
 	}), IsNil)
 	uk := upgradekeeper.NewKeeper(
 		nil,
@@ -337,7 +337,7 @@ func (HandlerSuite) TestHandleTxInWithdrawLiquidityMemo(c *C) {
 	vault := GetRandomVault()
 	vault.Coins = common.Coins{
 		common.NewCoin(common.DOGEAsset, cosmos.NewUint(100*common.One)),
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(100*common.One)),
 	}
 	c.Assert(w.keeper.SetVault(w.ctx, vault), IsNil)
 	vaultAddr, err := vault.PubKey.GetAddress(common.ETHChain)
@@ -363,7 +363,7 @@ func (HandlerSuite) TestHandleTxInWithdrawLiquidityMemo(c *C) {
 		ID:    GetRandomTxHash(),
 		Chain: common.ETHChain,
 		Coins: common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1*common.One)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1*common.One)),
 		},
 		Memo:        "withdraw:DOGE.DOGE",
 		FromAddress: lp.RuneAddress,
@@ -472,7 +472,7 @@ func (HandlerSuite) TestGetMsgSwapFromMemo(c *C) {
 			Chain: common.ETHChain,
 			Coins: common.Coins{
 				common.NewCoin(
-					common.SWTCAsset(),
+					common.SwitchAsset(),
 					cosmos.NewUint(100*common.One),
 				),
 			},
@@ -496,7 +496,7 @@ func (HandlerSuite) TestGetMsgWithdrawFromMemo(c *C) {
 	w := getHandlerTestWrapper(c, 1, true, false)
 	tx := GetRandomTx()
 	tx.Memo = "withdraw:BTC.BTC:10000"
-	if common.SWTCAsset().Equals(common.SWTCNative) {
+	if common.SwitchAsset().Equals(common.SwitchNative) {
 		tx.FromAddress = GetRandomTHORAddress()
 	}
 	obTx := NewObservedTx(tx, w.ctx.BlockHeight(), GetRandomPubKey(), w.ctx.BlockHeight())
@@ -523,7 +523,7 @@ func (HandlerSuite) TestGetMsgBondFromMemo(c *C) {
 	w := getHandlerTestWrapper(c, 1, true, false)
 	tx := GetRandomTx()
 	tx.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(100*common.One)),
 	}
 	tx.Memo = "bond:" + GetRandomBech32Addr().String()
 	obTx := NewObservedTx(tx, w.ctx.BlockHeight(), GetRandomPubKey(), w.ctx.BlockHeight())
@@ -538,7 +538,7 @@ func (HandlerSuite) TestGetMsgUnBondFromMemo(c *C) {
 	w := getHandlerTestWrapper(c, 1, true, false)
 	tx := GetRandomTx()
 	tx.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(100*common.One)),
 	}
 	tx.Memo = "unbond:" + GetRandomTHORAddress().String() + ":1000"
 	obTx := NewObservedTx(tx, w.ctx.BlockHeight(), GetRandomPubKey(), w.ctx.BlockHeight())
@@ -558,7 +558,7 @@ func (HandlerSuite) TestGetMsgLiquidityFromMemo(c *C) {
 	c.Assert(ok, Equals, true)
 	tcanAsset, err := common.NewAsset("DOGE.TCAN-014")
 	c.Assert(err, IsNil)
-	runeAsset := common.SWTCAsset()
+	runeAsset := common.SwitchAsset()
 	c.Assert(err, IsNil)
 
 	txin := common.NewObservedTx(
@@ -638,7 +638,7 @@ func (HandlerSuite) TestMsgLeaveFromMemo(c *C) {
 		common.Tx{
 			ID:          GetRandomTxHash(),
 			Chain:       common.ETHChain,
-			Coins:       common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1))},
+			Coins:       common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1))},
 			Memo:        fmt.Sprintf("LEAVE:%s", addr.String()),
 			FromAddress: GetRandomDOGEAddress(),
 			ToAddress:   GetRandomDOGEAddress(),
@@ -664,7 +664,7 @@ func (s *HandlerSuite) TestReserveContributor(c *C) {
 		common.Tx{
 			ID:          GetRandomTxHash(),
 			Chain:       common.ETHChain,
-			Coins:       common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1))},
+			Coins:       common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1))},
 			Memo:        "reserve",
 			FromAddress: GetRandomDOGEAddress(),
 			ToAddress:   GetRandomDOGEAddress(),
@@ -783,7 +783,7 @@ func (s *HandlerSuite) TestMemoFetchAddress(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(addr.Equals(thorAddr), Equals, true)
 
-	addr, err = FetchAddress(ctx, k, "hello.thor", common.SWITCHLYChain)
+	addr, err = FetchAddress(ctx, k, "hello.switchly", common.SWITCHLYChain)
 	c.Assert(err, IsNil)
 	c.Check(addr.Equals(thorAddr), Equals, true)
 }

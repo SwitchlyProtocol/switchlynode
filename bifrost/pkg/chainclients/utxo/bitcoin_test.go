@@ -87,7 +87,7 @@ func init() {
 	btcChainRPCs["getrawtransaction-54ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/btc/tx-54ef.json")
 	btcChainRPCs["getrawtransaction-64ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/btc/tx-64ef.json")
 	btcChainRPCs["getrawtransaction-74ef2f4679fb90af42e8d963a5d85645d0fd86e5fe8ea4e69dbf2d444cb26528"] = loadFixture("../../../../test/fixtures/btc/tx-74ef.json")
-	btcChainRPCs["getrawtransaction-24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2"] = loadFixture("../../../../test/fixtures/btc/tx-24ed.json")
+	btcChainRPCs["getrawtransaction-9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031"] = loadFixture("../../../../test/fixtures/btc/tx-24ed.json")
 	btcChainRPCs["getrawtransaction-27de3e1865c098cd4fded71bae1e8236fd27ce5dce6e524a9ac5cd1a17b5c241"] = loadFixture("../../../../test/fixtures/btc/tx-c241.json")
 	btcChainRPCs["getrawtransaction"] = loadFixture("../../../../test/fixtures/btc/tx.json")
 	btcChainRPCs["createwallet"] = loadFixture("../../../../test/fixtures/btc/createwallet.json")
@@ -244,7 +244,7 @@ func (s *BitcoinSuite) TestFetchTxs(c *C) {
 
 	// Find the specific transaction we're testing
 	var targetTx *types.TxInItem
-	expectedTxID := "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2"
+	expectedTxID := "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031"
 	for _, tx := range txs.TxArray {
 		if tx.Tx == expectedTxID {
 			targetTx = tx
@@ -632,7 +632,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx := btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -659,7 +659,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -687,7 +687,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -715,7 +715,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -728,7 +728,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -801,7 +801,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -909,7 +909,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -945,7 +945,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -981,7 +981,7 @@ func (s *BitcoinSuite) TestIgnoreTx(c *C) {
 	tx = btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -1019,7 +1019,7 @@ func (s *BitcoinSuite) TestGetGas(c *C) {
 	tx := btcjson.TxRawResult{
 		Vin: []btcjson.Vin{
 			{
-				Txid: "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Txid: "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Vout: 0,
 			},
 		},
@@ -1114,7 +1114,7 @@ func (s *BitcoinSuite) TestOnObservedTxIn(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "bc1q0s4mg25tu6termrk8egltfyme4q7sg3h0e56p3",
 				To:          "bc1q2gjc0rnhy4nrxvuklk6ptwkcs9kcr59mcl2q9j",
 				Coins: common.Coins{
@@ -1221,9 +1221,9 @@ func (s *BitcoinSuite) TestGetOutput(c *C) {
 	var vaultPubKey common.PubKey
 	var err error
 	if common.CurrentChainNetwork == common.MainNet {
-		vaultPubKey, err = common.NewPubKey("swtcpub1addwnpepqdcwls5zx6qmccq254rs2uw7s9xe0jzfuegcyvfdqt62u6l0y0je29nqsj5") // from PubKeys-Mainnet.json
+		vaultPubKey, err = common.NewPubKey("switchpub1addwnpepqg8m9v30fy6rlx4zwd2lp4rg3x07fxt3acgdc9xtca9hdeupusxjs74fvlr") // valid mainnet key
 	} else {
-		vaultPubKey, err = common.NewPubKey("tswtcpub1addwnpepqflvfv08t6qt95lmttd6wpf3ss8wx63e9vf6fvyuj2yy6nnyna576qmw2y8") // first from PubKeys.json
+		vaultPubKey, err = common.NewPubKey("tswitchpub1addwnpepq2zqsng9kvg5f75rhkq2xq89jp9pvfyluuf7ctfq0ntqfa5xsgxxqx07yrr") // valid testnet key
 	}
 	c.Assert(err, IsNil, Commentf(vaultPubKey.String()))
 	vaultAddress, err := vaultPubKey.GetAddress(s.client.GetChain())

@@ -252,7 +252,7 @@ func (m *EventAddLiquidity) Events() (cosmos.Events, error) {
 		cosmos.NewAttribute("asset_address", m.AssetAddress.String()),
 	)
 	if !m.RuneTxID.Equals(m.AssetTxID) && !m.RuneTxID.IsEmpty() {
-		evt = evt.AppendAttributes(cosmos.NewAttribute(fmt.Sprintf("%s_txid", common.SWTCNative.Chain), m.RuneTxID.String()))
+		evt = evt.AppendAttributes(cosmos.NewAttribute(fmt.Sprintf("%s_txid", common.SwitchNative.Chain), m.RuneTxID.String()))
 	}
 
 	if !m.AssetTxID.IsEmpty() {
@@ -821,7 +821,7 @@ func (m *EventPendingLiquidity) Events() (cosmos.Events, error) {
 		cosmos.NewAttribute("asset_address", m.AssetAddress.String()),
 	)
 	if !m.RuneTxID.Equals(m.AssetTxID) && !m.RuneTxID.IsEmpty() {
-		evt = evt.AppendAttributes(cosmos.NewAttribute(fmt.Sprintf("%s_txid", common.SWTCNative.Chain), m.RuneTxID.String()))
+		evt = evt.AppendAttributes(cosmos.NewAttribute(fmt.Sprintf("%s_txid", common.SwitchNative.Chain), m.RuneTxID.String()))
 	}
 
 	if !m.AssetTxID.IsEmpty() {

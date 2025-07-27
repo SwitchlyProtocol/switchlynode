@@ -275,7 +275,7 @@ func (pm *PoolMgrVCUR) removeLiquidityProviders(ctx cosmos.Context, asset common
 				ID:          common.BlankTxID,
 				FromAddress: lp.GetAddress(),
 				ToAddress:   common.NoAddress,
-				Coins:       common.NewCoins(common.NewCoin(common.SWTCAsset(), cosmos.ZeroUint())),
+				Coins:       common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint())),
 				Chain:       common.SWITCHLYChain,
 			},
 			cosmos.ZeroUint(),
@@ -545,7 +545,7 @@ func (pm *PoolMgrVCUR) commitPendingLiquidity(ctx cosmos.Context, pool Pool, mgr
 		if !lp.PendingAsset.IsZero() {
 			tx.FromAddress = lp.RuneAddress
 			tx.Chain = common.SWITCHLYChain
-			tx.Coins = common.NewCoins(common.NewCoin(common.SWTCAsset(), runeAdd))
+			tx.Coins = common.NewCoins(common.NewCoin(common.SwitchAsset(), runeAdd))
 		}
 
 		msg := NewMsgAddLiquidity(tx, lp.Asset, runeAdd, assetAdd, lp.RuneAddress, lp.AssetAddress, common.NoAddress, cosmos.ZeroUint(), signer)

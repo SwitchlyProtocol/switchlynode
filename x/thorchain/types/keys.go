@@ -13,12 +13,12 @@ const (
 	BondName = "bond"
 	// LendingName
 	LendingName = "lending"
-	// AffiliateCollectorName the name of the account used to store swtc for affiliate fee swaps
+	// AffiliateCollectorName the name of the account used to store switch for affiliate fee swaps
 	AffiliateCollectorName = "affiliate_collector"
+	// SwitchPoolName the name of the account used to track SwitchPool
+	SwitchPoolName = "switch_pool"
 	// TreasuryName the name of the account used for treasury governance
 	TreasuryName = "treasury"
-	// SWTCPoolName the name of the account used to track SWTCPool
-	SWTCPoolName = "swtc_pool"
 	// TCYClaimingName the name of the account used to track claming funds from $TCY
 	TCYClaimingName = "tcy_claim"
 	// TCYStakeName the name of the account used to track stake funds from $TCY

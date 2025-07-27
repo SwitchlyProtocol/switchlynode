@@ -86,7 +86,7 @@ func (s *DogecoinSignerSuite) SetUpTest(c *C) {
 	}
 
 	s.server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.RequestURI == "/switchly/vaults/tswtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3/signers" { // nolint
+		if req.RequestURI == "/switchly/vaults/tswitchpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3/signers" { // nolint
 			_, err := rw.Write([]byte("[]"))
 			c.Assert(err, IsNil)
 		} else if strings.HasPrefix(req.RequestURI, "/thorchain/vaults") && strings.HasSuffix(req.RequestURI, "/signers") {
@@ -218,7 +218,7 @@ func (s *DogecoinSignerSuite) TestSignTxHappyPathWithPrivateKey(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   addr,
-		VaultPubKey: "tswtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
+		VaultPubKey: "tswitchpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},
@@ -255,7 +255,7 @@ func (s *DogecoinSignerSuite) TestSignTxWithoutPredefinedMaxGas(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   addr,
-		VaultPubKey: "tswtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
+		VaultPubKey: "tswitchpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},
@@ -341,7 +341,7 @@ func (s *DogecoinSignerSuite) TestSignAddressPubKeyShouldFail(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   "04ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "tswtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
+		VaultPubKey: "tswitchpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},
@@ -374,7 +374,7 @@ func (s *DogecoinSignerSuite) TestToAddressCanNotRoundTripShouldBlock(c *C) {
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.DOGEChain,
 		ToAddress:   "05ae1a62fe09c5f51b13905f07f06b99a2f7159b2225f374cd378d71302fa28414e7aab37397f554a7df5f142c21c1b7303b8a0626f1baded5c72a704f7e6cd84c",
-		VaultPubKey: "tswtcpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
+		VaultPubKey: "tswitchpub1addwnpepq2tc2h6qycclp8nq9ewv4hppj5plqlxaf3emyg2m2sv022nlm07djqw0cc3",
 		Coins: common.Coins{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10)),
 		},

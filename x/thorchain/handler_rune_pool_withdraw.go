@@ -188,7 +188,7 @@ func (h RunePoolWithdrawHandler) handleV3_0_0(ctx cosmos.Context, msg MsgRunePoo
 	// send the affiliate fee
 	userAmount := common.SafeSub(withdrawAmount, affiliateAmount)
 	if !affiliateAmount.IsZero() {
-		affiliateCoins := common.NewCoins(common.NewCoin(common.SWTCNative, affiliateAmount))
+		affiliateCoins := common.NewCoins(common.NewCoin(common.SwitchNative, affiliateAmount))
 		affiliateAddress, err := msg.AffiliateAddress.AccAddress()
 		if err != nil {
 			return fmt.Errorf("fail to get affiliate address: %w", err)
@@ -200,7 +200,7 @@ func (h RunePoolWithdrawHandler) handleV3_0_0(ctx cosmos.Context, msg MsgRunePoo
 	}
 
 	// send the user the withdraw
-	userCoins := common.NewCoins(common.NewCoin(common.SWTCNative, userAmount))
+	userCoins := common.NewCoins(common.NewCoin(common.SwitchNative, userAmount))
 	err = h.mgr.Keeper().SendFromModuleToAccount(ctx, RUNEPoolName, msg.Signer, userCoins)
 	if err != nil {
 		return fmt.Errorf("fail to send user withdraw: %w", err)

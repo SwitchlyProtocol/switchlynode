@@ -176,12 +176,14 @@ func init() {
 }
 
 var (
-	_ runtime.AppI            = (*SwitchlyProtocolApp)(nil)
-	_ servertypes.Application = (*SwitchlyProtocolApp)(nil)
+	_ runtime.AppI            = (*SwitchlyApp)(nil)
+	_ servertypes.Application = (*SwitchlyApp)(nil)
 )
 
-// ChainApp extended ABCI application
-type SwitchlyProtocolApp struct {
+// SwitchlyApp extends an ABCI application, but with most of its parameters exported.
+// They are exported for convenience in creating helper functions, as object
+// capabilities aren't needed for testing.
+type SwitchlyApp struct {
 	*baseapp.BaseApp
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
@@ -201,8 +203,8 @@ type SwitchlyProtocolApp struct {
 	ParamsKeeper          paramskeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	SwitchlyprotocolKeeper thorchainkeeper.Keeper
-	EnshrinedBifrost       *ebifrost.EnshrinedBifrost
+	SwitchlyKeeper   thorchainkeeper.Keeper
+	EnshrinedBifrost *ebifrost.EnshrinedBifrost
 
 	DenomKeeper      denomkeeper.Keeper
 	msgServiceRouter *MsgServiceRouter // router for redirecting Msg service messages
@@ -229,7 +231,7 @@ func NewChainApp(
 	appOpts servertypes.AppOptions,
 	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) *SwitchlyProtocolApp {
+) *SwitchlyApp {
 	ebifrostConfig, err := ebifrost.ReadEBifrostConfig(appOpts)
 	if err != nil {
 		panic(fmt.Sprintf("error while reading ebifrost config: %s", err))
@@ -301,7 +303,7 @@ func NewChainApp(
 		panic(err)
 	}
 
-	app := &SwitchlyProtocolApp{
+	app := &SwitchlyApp{
 		BaseApp:           bApp,
 		legacyAmino:       ec.Amino,
 		appCodec:          ec.Codec,
@@ -395,7 +397,7 @@ func NewChainApp(
 		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
 	)
 
-	app.SwitchlyprotocolKeeper = thorchainkeeperv1.NewKeeper(
+	app.SwitchlyKeeper = thorchainkeeperv1.NewKeeper(
 		app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, keys[thorchaintypes.StoreKey],
 	)
 
@@ -446,7 +448,7 @@ func NewChainApp(
 	telemetryEnabled := cast.ToBool(appOpts.Get("telemetry.enabled"))
 	testApp := cast.ToBool(appOpts.Get(TestApp))
 
-	mgrs := thorchain.NewManagers(app.SwitchlyprotocolKeeper, app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, app.WasmKeeper, keys[thorchaintypes.StoreKey])
+	mgrs := thorchain.NewManagers(app.SwitchlyKeeper, app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, app.WasmKeeper, keys[thorchaintypes.StoreKey])
 	app.msgServiceRouter.AddCustomRoute("cosmos.bank.v1beta1.Msg", thorchain.NewBankSendHandler(thorchain.NewSendHandler(mgrs)))
 
 	thorchainModule := thorchain.NewAppModule(mgrs, telemetryEnabled, testApp)
@@ -455,7 +457,7 @@ func NewChainApp(
 
 	defaultProposalHandler := baseapp.NewDefaultProposalHandler(bApp.Mempool(), bApp)
 	eBifrostProposalHandler := thorchainkeeperabci.NewProposalHandler(
-		&app.SwitchlyprotocolKeeper,
+		&app.SwitchlyKeeper,
 		app.EnshrinedBifrost,
 		defaultProposalHandler.PrepareProposalHandler(),
 		defaultProposalHandler.ProcessProposalHandler(),
@@ -612,7 +614,7 @@ func NewChainApp(
 				SignModeHandler: txConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			THORChainKeeper:       app.SwitchlyprotocolKeeper,
+			THORChainKeeper:       app.SwitchlyKeeper,
 			WasmConfig:            &wasmConfig,
 			WasmKeeper:            &app.WasmKeeper,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -677,7 +679,7 @@ func NewChainApp(
 	return app
 }
 
-func (app *SwitchlyProtocolApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
+func (app *SwitchlyApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
 	// when skipping sdk 47 for sdk 50, the upgrade handler is called too late in BaseApp
 	// this is a hack to ensure that the migration is executed when needed and not panics
 	app.once.Do(func() {
@@ -698,24 +700,24 @@ func (app *SwitchlyProtocolApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*
 	return app.BaseApp.FinalizeBlock(req)
 }
 
-func (app *SwitchlyProtocolApp) setPostHandler() {
+func (app *SwitchlyApp) setPostHandler() {
 	app.SetPostHandler(sdk.ChainPostDecorators(ebifrost.NewEnshrineBifrostPostDecorator(app.EnshrinedBifrost)))
 }
 
 // Name returns the name of the App
-func (app *SwitchlyProtocolApp) Name() string { return app.BaseApp.Name() }
+func (app *SwitchlyApp) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
-func (app *SwitchlyProtocolApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+func (app *SwitchlyApp) PreBlocker(ctx sdk.Context, req *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
 	return app.ModuleManager.PreBlock(ctx)
 }
 
-func (a *SwitchlyProtocolApp) Configurator() module.Configurator {
+func (a *SwitchlyApp) Configurator() module.Configurator {
 	return a.configurator
 }
 
 // InitChainer application update at chain initialization
-func (app *SwitchlyProtocolApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+func (app *SwitchlyApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
@@ -729,7 +731,7 @@ func (app *SwitchlyProtocolApp) InitChainer(ctx sdk.Context, req *abci.RequestIn
 }
 
 // LoadHeight loads a particular height
-func (app *SwitchlyProtocolApp) LoadHeight(height int64) error {
+func (app *SwitchlyApp) LoadHeight(height int64) error {
 	return app.LoadVersion(height)
 }
 
@@ -737,7 +739,7 @@ func (app *SwitchlyProtocolApp) LoadHeight(height int64) error {
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *SwitchlyProtocolApp) LegacyAmino() *codec.LegacyAmino {
+func (app *SwitchlyApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
@@ -745,22 +747,22 @@ func (app *SwitchlyProtocolApp) LegacyAmino() *codec.LegacyAmino {
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *SwitchlyProtocolApp) AppCodec() codec.Codec {
+func (app *SwitchlyApp) AppCodec() codec.Codec {
 	return app.appCodec
 }
 
 // InterfaceRegistry returns ChainApp's InterfaceRegistry
-func (app *SwitchlyProtocolApp) InterfaceRegistry() types.InterfaceRegistry {
+func (app *SwitchlyApp) InterfaceRegistry() types.InterfaceRegistry {
 	return app.interfaceRegistry
 }
 
 // TxConfig returns ChainApp's TxConfig
-func (app *SwitchlyProtocolApp) TxConfig() client.TxConfig {
+func (app *SwitchlyApp) TxConfig() client.TxConfig {
 	return app.txConfig
 }
 
 // AutoCliOpts returns the autocli options for the app.
-func (app *SwitchlyProtocolApp) AutoCliOpts() autocli.AppOptions {
+func (app *SwitchlyApp) AutoCliOpts() autocli.AppOptions {
 	modules := make(map[string]appmodule.AppModule, 0)
 	for _, m := range app.ModuleManager.Modules {
 		if moduleWithName, ok := m.(module.HasName); ok {
@@ -781,19 +783,19 @@ func (app *SwitchlyProtocolApp) AutoCliOpts() autocli.AppOptions {
 }
 
 // DefaultGenesis returns a default genesis from the registered AppModuleBasic's.
-func (a *SwitchlyProtocolApp) DefaultGenesis() map[string]json.RawMessage {
+func (a *SwitchlyApp) DefaultGenesis() map[string]json.RawMessage {
 	return a.BasicModuleManager.DefaultGenesis(a.appCodec)
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *SwitchlyProtocolApp) GetKey(storeKey string) *storetypes.KVStoreKey {
+func (app *SwitchlyApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	return app.keys[storeKey]
 }
 
 // GetStoreKeys returns all the stored store keys.
-func (app *SwitchlyProtocolApp) GetStoreKeys() []storetypes.StoreKey {
+func (app *SwitchlyApp) GetStoreKeys() []storetypes.StoreKey {
 	keys := make([]storetypes.StoreKey, 0, len(app.keys))
 	for _, key := range app.keys {
 		keys = append(keys, key)
@@ -807,26 +809,26 @@ func (app *SwitchlyProtocolApp) GetStoreKeys() []storetypes.StoreKey {
 // GetTKey returns the TransientStoreKey for the provided store key.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *SwitchlyProtocolApp) GetTKey(storeKey string) *storetypes.TransientStoreKey {
+func (app *SwitchlyApp) GetTKey(storeKey string) *storetypes.TransientStoreKey {
 	return app.tkeys[storeKey]
 }
 
 // GetSubspace returns a param subspace for a given module name.
 //
 // NOTE: This is solely to be used for testing purposes.
-func (app *SwitchlyProtocolApp) GetSubspace(moduleName string) paramstypes.Subspace {
+func (app *SwitchlyApp) GetSubspace(moduleName string) paramstypes.Subspace {
 	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
 	return subspace
 }
 
 // SimulationManager implements the SimulationApp interface
-func (app *SwitchlyProtocolApp) SimulationManager() *module.SimulationManager {
+func (app *SwitchlyApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
 // API server.
-func (app *SwitchlyProtocolApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+func (app *SwitchlyApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiSvr.ClientCtx
 
 	// Must call this before registering any GRPC gateway routes
@@ -879,12 +881,12 @@ func RegisterSwaggerAPI(rtr *mux.Router, swaggerEnabled bool) error {
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
-func (app *SwitchlyProtocolApp) RegisterTxService(clientCtx client.Context) {
+func (app *SwitchlyApp) RegisterTxService(clientCtx client.Context) {
 	authtx.RegisterTxService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.BaseApp.Simulate, app.interfaceRegistry)
 }
 
 // RegisterTendermintService implements the Application.RegisterTendermintService method.
-func (app *SwitchlyProtocolApp) RegisterTendermintService(clientCtx client.Context) {
+func (app *SwitchlyApp) RegisterTendermintService(clientCtx client.Context) {
 	cmtApp := server.NewCometABCIWrapper(app)
 	cmtservice.RegisterTendermintService(
 		clientCtx,
@@ -894,7 +896,7 @@ func (app *SwitchlyProtocolApp) RegisterTendermintService(clientCtx client.Conte
 	)
 }
 
-func (app *SwitchlyProtocolApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
+func (app *SwitchlyApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
 	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 
 	if err := app.EnshrinedBifrost.Start(); err != nil && !errors.Is(err, ebifrost.ErrAlreadyStarted) {
@@ -902,7 +904,7 @@ func (app *SwitchlyProtocolApp) RegisterNodeService(clientCtx client.Context, cf
 	}
 }
 
-func (app *SwitchlyProtocolApp) Close() error {
+func (app *SwitchlyApp) Close() error {
 	app.EnshrinedBifrost.Stop()
 
 	return app.BaseApp.Close()
@@ -935,12 +937,12 @@ func BlockedAddresses() map[string]bool {
 }
 
 // MsgServiceRouter returns the MsgServiceRouter.
-func (app *SwitchlyProtocolApp) MsgServiceRouter() *MsgServiceRouter {
+func (app *SwitchlyApp) MsgServiceRouter() *MsgServiceRouter {
 	return app.msgServiceRouter
 }
 
 // SetInterfaceRegistry sets the InterfaceRegistry.
-func (app *SwitchlyProtocolApp) SetInterfaceRegistry(registry types.InterfaceRegistry) {
+func (app *SwitchlyApp) SetInterfaceRegistry(registry types.InterfaceRegistry) {
 	app.interfaceRegistry = registry
 	app.msgServiceRouter.SetInterfaceRegistry(registry)
 	app.BaseApp.SetInterfaceRegistry(registry)
@@ -962,17 +964,17 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 }
 
 // BeginBlocker application updates every begin block
-func (app *SwitchlyProtocolApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+func (app *SwitchlyApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
 	return app.ModuleManager.BeginBlock(ctx)
 }
 
 // EndBlocker application updates every end block
-func (app *SwitchlyProtocolApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+func (app *SwitchlyApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
 	return app.ModuleManager.EndBlock(ctx)
 }
 
 // RegisterUpgradeHandlers registers the chain upgrade handlers
-func (app *SwitchlyProtocolApp) RegisterUpgradeHandlers() {
+func (app *SwitchlyApp) RegisterUpgradeHandlers() {
 	// setupLegacyKeyTables(&app.ParamsKeeper)
 	if len(Upgrades) == 0 {
 		// always have a unique upgrade registered for the current version to test in system tests
@@ -980,12 +982,12 @@ func (app *SwitchlyProtocolApp) RegisterUpgradeHandlers() {
 	}
 
 	keepers := upgrades.AppKeepers{
-		SwitchlyprotocolKeeper: app.SwitchlyprotocolKeeper,
-		AccountKeeper:          &app.AccountKeeper,
-		ParamsKeeper:           &app.ParamsKeeper,
-		ConsensusParamsKeeper:  &app.ConsensusParamsKeeper,
-		Codec:                  app.appCodec,
-		GetStoreKey:            app.GetKey,
+		SwitchlyKeeper:        app.SwitchlyKeeper,
+		AccountKeeper:         &app.AccountKeeper,
+		ParamsKeeper:          &app.ParamsKeeper,
+		ConsensusParamsKeeper: &app.ConsensusParamsKeeper,
+		Codec:                 app.appCodec,
+		GetStoreKey:           app.GetKey,
 	}
 	// register all upgrade handlers
 	for _, upgrade := range Upgrades {
@@ -1018,7 +1020,7 @@ func (app *SwitchlyProtocolApp) RegisterUpgradeHandlers() {
 }
 
 // ExportAppStateAndValidators exports the state of the application for a genesis file.
-func (app *SwitchlyProtocolApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs, modulesToExport []string) (servertypes.ExportedApp, error) {
+func (app *SwitchlyApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs, modulesToExport []string) (servertypes.ExportedApp, error) {
 	// as if they could withdraw from the start of the next block
 	ctx := app.NewContext(true)
 
@@ -1050,7 +1052,7 @@ func (app *SwitchlyProtocolApp) ExportAppStateAndValidators(forZeroHeight bool, 
 }
 
 // prepForZeroHeightGenesis prepares the application for a zero-height genesis.
-func (app *SwitchlyProtocolApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
+func (app *SwitchlyApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
 	// Implementation for zero height genesis preparation
 }
 
