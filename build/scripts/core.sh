@@ -132,9 +132,9 @@ create_switchly_user() {
 
 set_bond_module() {
   if [ "$NET" = "mocknet" ]; then
-    BOND_MODULE_ADDR="tswtc17gw75axcnr8747pkanye45pnrwk7p9c3jrajtc"
+    BOND_MODULE_ADDR="tswitch17gw75axcnr8747pkanye45pnrwk7p9c3apgv77"
   elif [ "$NET" = "stagenet" ]; then
-    BOND_MODULE_ADDR="sswtc17gw75axcnr8747pkanye45pnrwk7p9c3zds5yr"
+    BOND_MODULE_ADDR="sswitch17gw75axcnr8747pkanye45pnrwk7p9c3ve0wxj"
   else
     echo "Unsupported NET: $NET"
     exit 1
@@ -160,7 +160,7 @@ set_bond_module() {
     '.app_state.bank.balances += [
     {
       "address": $BOND_MODULE_ADDR,
-      "coins": [ { "denom": "rune", "amount": "30000000000000" } ]
+      "coins": [ { "denom": "switch", "amount": "30000000000000" } ]
     }
   ]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
