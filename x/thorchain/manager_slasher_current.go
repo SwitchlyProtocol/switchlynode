@@ -547,12 +547,12 @@ func (s *SlasherVCUR) SlashVault(ctx cosmos.Context, vaultPK common.PubKey, coin
 		runeToReserve := common.SafeSub(totalRuneSlashed, runeToAsgard)
 
 		if !runeToReserve.IsZero() {
-			if err := s.keeper.SendFromModuleToModule(ctx, BondName, ReserveName, common.NewCoins(common.NewCoin(common.SwitchAsset(), runeToReserve))); err != nil {
+			if err := s.keeper.SendFromModuleToModule(ctx, BondName, ReserveName, common.NewCoins(common.NewCoin(common.SwitchNative, runeToReserve))); err != nil {
 				ctx.Logger().Error("fail to send slash funds to reserve module", "pk", vaultPK, "error", err)
 			}
 		}
 		if !runeToAsgard.IsZero() {
-			if err := s.keeper.SendFromModuleToModule(ctx, BondName, AsgardName, common.NewCoins(common.NewCoin(common.SwitchAsset(), runeToAsgard))); err != nil {
+			if err := s.keeper.SendFromModuleToModule(ctx, BondName, AsgardName, common.NewCoins(common.NewCoin(common.SwitchNative, runeToAsgard))); err != nil {
 				ctx.Logger().Error("fail to send slash fund to asgard module", "pk", vaultPK, "error", err)
 			}
 			s.updatePoolFromSlash(ctx, pool, common.NewCoin(coin.Asset, stolenAssetValue), runeToAsgard, mgr)
@@ -632,7 +632,7 @@ func (s *SlasherVCUR) updatePoolFromSlash(ctx cosmos.Context, pool types.Pool, s
 			Amount: 0 - int64(stolenAsset.Amount.Uint64()),
 		},
 		{
-			Asset:  common.SwitchAsset(),
+			Asset:  common.SwitchNative,
 			Amount: int64(runeCreditAmt.Uint64()),
 		},
 	}

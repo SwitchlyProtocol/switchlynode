@@ -272,7 +272,7 @@ func (s *HelperSuite) TestAddGasFees(c *C) {
 						ToAddress:   GetRandomETHAddress(),
 						Coins: common.Coins{
 							common.NewCoin(common.ETHAsset, cosmos.NewUint(5*common.One)),
-							common.NewCoin(common.SwitchAsset(), cosmos.NewUint(8*common.One)),
+							common.NewCoin(common.SwitchNative, cosmos.NewUint(8*common.One)),
 						},
 						Gas: common.Gas{
 							common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),

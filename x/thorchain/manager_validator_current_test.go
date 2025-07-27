@@ -919,7 +919,7 @@ func (vts *ValidatorMgrVCURTestSuite) TestActiveNodeRequestToLeaveShouldBeStandb
 
 		// Add bond to asgard
 		asgard.AddFunds(common.Coins{
-			common.NewCoin(common.SwitchAsset(), na.Bond),
+			common.NewCoin(common.SwitchNative, na.Bond),
 		})
 		asgard.Membership = append(asgard.Membership, na.PubKeySet.Secp256k1.String())
 		c.Assert(mgr.Keeper().SetVault(ctx, asgard), IsNil)

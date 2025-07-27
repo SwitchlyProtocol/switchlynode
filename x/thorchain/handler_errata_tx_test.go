@@ -99,7 +99,7 @@ func (s *HandlerErrataTxSuite) TestErrataHandlerHappyPath(c *C) {
 			Chain:       common.ETHChain,
 			FromAddress: addr,
 			Coins: common.Coins{
-				common.NewCoin(common.SwitchAsset(), cosmos.NewUint(30*common.One)),
+				common.NewCoin(common.SwitchNative, cosmos.NewUint(30*common.One)),
 			},
 			Memo: fmt.Sprintf("ADD:ETH.ETH:%s", GetRandomRUNEAddress()),
 		},
@@ -773,7 +773,7 @@ func (s *HandlerErrataTxSuite) TestObservingSlashing(c *C) {
 			Chain:       common.ETHChain,
 			FromAddress: addr,
 			Coins: common.Coins{
-				common.NewCoin(common.SwitchAsset(), cosmos.NewUint(30*common.One)),
+				common.NewCoin(common.SwitchNative, cosmos.NewUint(30*common.One)),
 			},
 			Memo: fmt.Sprintf("ADD:ETH.ETH:%s", GetRandomRUNEAddress()),
 		},

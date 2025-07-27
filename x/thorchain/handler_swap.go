@@ -364,7 +364,7 @@ func (h SwapHandler) handleV3_0_0(ctx cosmos.Context, msg MsgSwap) (*cosmos.Resu
 			ctx.Logger().Error("failed to retrieve AffiliateCollector for thorname owner", "address", affThorname.Owner.String(), "error", err)
 		} else {
 			// The TargetAsset has already been established to be SWITCH.
-			transactionFee, err := h.mgr.GasMgr().GetAssetOutboundFee(ctx, common.SwitchAsset(), true)
+			transactionFee, err := h.mgr.GasMgr().GetAssetOutboundFee(ctx, common.SwitchNative, true)
 			if err != nil {
 				ctx.Logger().Error("failed to get transaction fee", "error", err)
 			} else {

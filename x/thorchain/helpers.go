@@ -320,7 +320,7 @@ func refundBond(ctx cosmos.Context, tx common.Tx, acc cosmos.AccAddress, amt cos
 		// this is always RUNE, and the MsgDeposit handler should have already deducted a network fee,
 		// so this can be done with SendFromModuleToAccount even if under 0.02 RUNE
 		// (which would cause TryAddTxOutItem to fail from no output after fee deduction)
-		unbondCoin := common.NewCoin(common.SwitchAsset(), amt)
+		unbondCoin := common.NewCoin(common.SwitchNative, amt)
 		err = mgr.Keeper().SendFromModuleToAccount(ctx, BondName, provider.BondAddress, common.NewCoins(unbondCoin))
 		if err != nil {
 			return ErrInternal(err, "fail to send unbonded RUNE to bond address")
@@ -985,7 +985,7 @@ func atTVLCap(ctx cosmos.Context, coins common.Coins, mgr Manager) bool {
 		}
 	}
 
-	runeCoin := coins.GetCoin(common.SwitchAsset())
+	runeCoin := coins.GetCoin(common.SwitchNative)
 	totalRuneValue := runeCoin.Amount
 	for _, coin := range coins {
 		if coin.IsEmpty() {

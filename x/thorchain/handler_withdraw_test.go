@@ -415,7 +415,7 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_outboundFailures(c *C) {
 		lp.RuneAddress,
 		cosmos.NewUint(1000),
 		asset,
-		common.SwitchAsset(),
+		common.SwitchNative,
 		na.NodeAddress)
 
 	c.Assert(msg.ValidateBasic(), IsNil)
@@ -452,7 +452,7 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_outboundFailures(c *C) {
 		}
 	}
 
-	msg.WithdrawalAsset = common.SwitchAsset()
+	msg.WithdrawalAsset = common.SwitchNative
 	handleCase(msg, errInternal, nil, "asym rune fail", true)
 
 	msg.WithdrawalAsset = common.BTCAsset

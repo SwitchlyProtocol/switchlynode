@@ -16,7 +16,7 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 
 	// empty the starting balance of asgard
 	runeBal := k.GetRuneBalanceOfModule(ctx, AsgardName)
-	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), runeBal))
+	coins := common.NewCoins(common.NewCoin(common.SwitchNative, runeBal))
 	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ReserveName, coins), IsNil)
 
 	pool := NewPool()
@@ -42,7 +42,7 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 	swapMsg := MsgSwap{
 		Tx: GetRandomTx(),
 	}
-	swapMsg.Tx.Coins = common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2000)))
+	swapMsg.Tx.Coins = common.NewCoins(common.NewCoin(common.SwitchNative, cosmos.NewUint(2000)))
 	c.Assert(k.SetSwapQueueItem(ctx, swapMsg, 0), IsNil)
 
 	// synth swaps are ignored
@@ -64,7 +64,7 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 	// send the expected amount to asgard
 	expCoins := common.NewCoins(
 		common.NewCoin(common.BTCAsset.GetSyntheticAsset(), cosmos.NewUint(666)),
-		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(3100)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(3100)),
 	)
 	for _, coin := range expCoins {
 		c.Assert(k.MintToModule(ctx, ModuleName, coin), IsNil)
@@ -76,7 +76,7 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 	c.Assert(msg, IsNil)
 
 	// send a little more to make asgard oversolvent
-	extraCoins := common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1)))
+	extraCoins := common.NewCoins(common.NewCoin(common.SwitchNative, cosmos.NewUint(1)))
 	c.Assert(k.SendFromModuleToModule(ctx, ReserveName, AsgardName, extraCoins), IsNil)
 
 	msg, broken = invariant(ctx)
@@ -107,7 +107,7 @@ func (s *InvariantsSuite) TestBondInvariant(c *C) {
 	c.Assert(len(msg), Equals, 1)
 	c.Assert(msg[0], Equals, "insolvent: 3100switch")
 
-	expRune := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(3100))
+	expRune := common.NewCoin(common.SwitchNative, cosmos.NewUint(3100))
 	c.Assert(k.MintToModule(ctx, ModuleName, expRune), IsNil)
 	c.Assert(k.SendFromModuleToModule(ctx, ModuleName, BondName, common.NewCoins(expRune)), IsNil)
 
@@ -136,7 +136,7 @@ func (s *InvariantsSuite) TestSwitchlyProtocolInvariant(c *C) {
 	c.Assert(msg, IsNil)
 
 	// send some coins to make it oversolvent
-	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1)))
+	coins := common.NewCoins(common.NewCoin(common.SwitchNative, cosmos.NewUint(1)))
 	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ModuleName, coins), IsNil)
 
 	msg, broken = invariant(ctx)

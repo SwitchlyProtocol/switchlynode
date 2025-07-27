@@ -83,7 +83,7 @@ func (s *SlashingVCURSuite) TestNodeSignSlashErrors(c *C) {
 			GetRandomETHAddress(),
 			common.Coins{
 				common.NewCoin(common.ETHAsset, cosmos.NewUint(320000000)),
-				common.NewCoin(common.SwitchAsset(), cosmos.NewUint(420000000)),
+				common.NewCoin(common.SwitchNative, cosmos.NewUint(420000000)),
 			},
 			nil,
 			"SWAP:ETH.ETH",
@@ -137,7 +137,7 @@ func (s *SlashingVCURSuite) TestNotSigningSlash(c *C) {
 		GetRandomETHAddress(),
 		common.Coins{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(320000000)),
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(420000000)),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(420000000)),
 		},
 		nil,
 		"SWAP:ETH.ETH",

@@ -100,7 +100,7 @@ func (s *ThorchainSuite) TestChurn(c *C) {
 	// create starting point, vault and four node active node accounts
 	vault := GetRandomVault()
 	vault.AddFunds(common.Coins{
-		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(100*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(79*common.One)),
 	})
 	c.Assert(mgr.Keeper().SaveNetworkFee(ctx, common.ETHChain, NetworkFee{
@@ -166,7 +166,7 @@ func (s *ThorchainSuite) TestChurn(c *C) {
 	signer, err := common.PubKey(keygen.Members[0]).GetThorAddress()
 	c.Assert(err, IsNil)
 	keygenTime := int64(1024)
-	msg, err := NewMsgTssPool(keygen.Members, newVaultPk, []byte("fakeSignature"), nil, AsgardKeygen, ctx.BlockHeight(), Blame{}, common.Chains{common.SwitchAsset().Chain}.Strings(), signer, keygenTime)
+	msg, err := NewMsgTssPool(keygen.Members, newVaultPk, []byte("fakeSignature"), nil, AsgardKeygen, ctx.BlockHeight(), Blame{}, common.Chains{common.SwitchNative.Chain}.Strings(), signer, keygenTime)
 	c.Assert(err, IsNil)
 	tssHandler := NewTssHandler(mgr)
 
@@ -326,7 +326,7 @@ func (s *ThorchainSuite) TestRagnarok(c *C) {
 
 		// Add bond to asgard
 		asgard.AddFunds(common.Coins{
-			common.NewCoin(common.SwitchAsset(), na.Bond),
+			common.NewCoin(common.SwitchNative, na.Bond),
 		})
 		c.Assert(mgr.Keeper().SetVault(ctx, asgard), IsNil)
 	}
@@ -410,7 +410,7 @@ func (s *ThorchainSuite) TestRagnarokNoOneLeave(c *C) {
 
 		// Add bond to asgard
 		asgard.AddFunds(common.Coins{
-			common.NewCoin(common.SwitchAsset(), na.Bond),
+			common.NewCoin(common.SwitchNative, na.Bond),
 		})
 		asgard.Membership = append(asgard.Membership, na.PubKeySet.Secp256k1.String())
 		c.Assert(mgr.Keeper().SetVault(ctx, asgard), IsNil)
@@ -426,7 +426,7 @@ func (s *ThorchainSuite) TestRagnarokNoOneLeave(c *C) {
 	resHandler := NewReserveContributorHandler(mgr)
 	for _, res := range reserves {
 		asgard.AddFunds(common.Coins{
-			common.NewCoin(common.SwitchAsset(), res.Amount),
+			common.NewCoin(common.SwitchNative, res.Amount),
 		})
 		msg := NewMsgReserveContributor(GetRandomTx(), res, bonders[0].NodeAddress)
 		err := resHandler.handle(ctx, *msg)

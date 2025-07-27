@@ -85,11 +85,11 @@ func (s *SwapperVCUR) Swap(ctx cosmos.Context,
 		var swapEvt *EventSwap
 		var amt cosmos.Uint
 		// Here we use a swapTarget of 0 because the target is for the next swap asset in a double swap
-		amt, swapEvt, swapErr = s.swapOne(ctx, mgr, tx, common.SwitchAsset(), destination, cosmos.ZeroUint(), synthVirtualDepthMult)
+		amt, swapEvt, swapErr = s.swapOne(ctx, mgr, tx, common.SwitchNative, destination, cosmos.ZeroUint(), synthVirtualDepthMult)
 		if swapErr != nil {
 			return cosmos.ZeroUint(), swapEvents, swapErr
 		}
-		tx.Coins = common.Coins{common.NewCoin(common.SwitchAsset(), amt)}
+		tx.Coins = common.Coins{common.NewCoin(common.SwitchNative, amt)}
 		tx.Gas = nil
 		swapEvents = append(swapEvents, swapEvt)
 	}
@@ -385,7 +385,7 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		// (So that the liquidity fee isn't used for later swaps in the same block.)
 		if !swapEvt.LiquidityFeeInRune.IsZero() {
 			pool.BalanceRune = common.SafeSub(pool.BalanceRune, swapEvt.LiquidityFeeInRune)
-			liqFeeCoin := common.NewCoin(common.SwitchAsset(), swapEvt.LiquidityFeeInRune)
+			liqFeeCoin := common.NewCoin(common.SwitchNative, swapEvt.LiquidityFeeInRune)
 
 			targetModule := ReserveName
 			if pool.Asset.IsTCY() {

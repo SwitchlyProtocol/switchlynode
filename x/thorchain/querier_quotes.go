@@ -484,7 +484,7 @@ func calculateMinSwapAmount(ctx cosmos.Context, mgr *Mgrs, fromAsset, toAsset co
 		affSwapAmountRune := nativeTxFeeRune.Mul(cosmos.NewUint(2))
 		mainSwapAmountRune := affSwapAmountRune.Mul(cosmos.NewUint(10_000)).Quo(affiliateBps)
 
-		mainSwapAmount, err := quoteConvertAsset(ctx, mgr, common.SwitchAsset(), mainSwapAmountRune, fromAsset)
+		mainSwapAmount, err := quoteConvertAsset(ctx, mgr, common.SwitchNative, mainSwapAmountRune, fromAsset)
 		if err != nil {
 			return cosmos.ZeroUint(), fmt.Errorf("fail to convert main swap amount to src asset %w", err)
 		}
@@ -724,7 +724,7 @@ func (qs queryServer) queryQuoteSwap(ctx cosmos.Context, req *types.QueryQuoteSw
 				},
 			},
 			Gas: []common.Coin{{
-				Asset:  common.SwitchAsset(),
+				Asset:  common.SwitchNative,
 				Amount: sdkmath.NewUint(1),
 			}},
 			Memo: memoString,
@@ -1283,7 +1283,7 @@ func (qs queryServer) queryQuoteLoanOpen(ctx cosmos.Context, req *types.QueryQuo
 		affCoin := common.NewCoin(asset, affiliateAmt)
 		gasCoin := common.NewCoin(asset.GetChain().GetGasAsset(), cosmos.OneUint())
 		fakeTx := common.NewTx(common.BlankTxID, randomCollateralOwner, common.NoopAddress, common.NewCoins(affCoin), common.Gas{gasCoin}, "noop")
-		affiliateSwap := NewMsgSwap(fakeTx, common.SwitchAsset(), affiliate, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, 0, 0, 0, nil)
+		affiliateSwap := NewMsgSwap(fakeTx, common.SwitchNative, affiliate, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, 0, 0, 0, nil)
 
 		_, affiliateRuneAmt, _, err = quoteSimulateSwap(ctx, qs.mgr, affiliateAmt, affiliateSwap, 1)
 		if err == nil {

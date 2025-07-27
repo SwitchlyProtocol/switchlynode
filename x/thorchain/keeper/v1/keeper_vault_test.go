@@ -78,7 +78,7 @@ func (s *KeeperVaultSuite) TestVaultSorBySecurity(c *C) {
 	// Create three vaults
 	vault1 := NewVault(1024, ActiveVault, AsgardVault, GetRandomPubKey(), common.Chains{common.ETHChain}.Strings(), []ChainContract{})
 	vault1.AddFunds(common.Coins{
-		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(common.One*200)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(common.One*200)),
 	})
 	vault1.Membership = []string{
 		na1.PubKeySet.Secp256k1.String(),

@@ -55,7 +55,7 @@ func (HandlerBondSuite) TestBondHandler_ValidateActive(c *C) {
 		GetRandomETHAddress(),
 		GetRandomETHAddress(),
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10*common.One)),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(10*common.One)),
 		},
 		common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),
@@ -95,7 +95,7 @@ func (HandlerBondSuite) TestBondHandler_Run(c *C) {
 		GetRandomTHORAddress(),
 		GetRandomTHORAddress(),
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(uint64(minimumBondInRune+common.One))),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(uint64(minimumBondInRune+common.One))),
 		},
 		common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),
@@ -140,7 +140,7 @@ func (HandlerBondSuite) TestBondHandlerFailValidation(c *C) {
 		GetRandomTHORAddress(),
 		GetRandomTHORAddress(),
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(uint64(minimumBondInRune))),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(uint64(minimumBondInRune))),
 		},
 		common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),
@@ -201,7 +201,7 @@ func (HandlerBondSuite) TestBondProvider_Validate(c *C) {
 	handler := NewBondHandler(NewDummyMgrWithKeeper(k))
 	txIn := GetRandomTx()
 	amt := cosmos.NewUint(100 * common.One)
-	txIn.Coins = common.NewCoins(common.NewCoin(common.SwitchAsset(), amt))
+	txIn.Coins = common.NewCoins(common.NewCoin(common.SwitchNative, amt))
 	activeNA := activeNodeAccount.NodeAddress
 	activeNAAddress := common.Address(activeNA.String())
 	standbyNA := standbyNodeAccount.NodeAddress
@@ -258,7 +258,7 @@ func (HandlerBondSuite) TestBondProvider_OperatorFee(c *C) {
 	standbyNodeAddr := standbyNodeAccount.NodeAddress
 	amt := cosmos.NewUint(100 * common.One)
 	txIn := GetRandomTx()
-	txIn.Coins = common.NewCoins(common.NewCoin(common.SwitchAsset(), amt))
+	txIn.Coins = common.NewCoins(common.NewCoin(common.SwitchNative, amt))
 
 	/* Test Validation and Handling */
 
@@ -319,7 +319,7 @@ func (HandlerBondSuite) TestBondProvider_Handler(c *C) {
 	handler := NewBondHandler(NewDummyMgrWithKeeper(k))
 	txIn := GetRandomTx()
 	amt := cosmos.NewUint(100 * common.One)
-	txIn.Coins = common.NewCoins(common.NewCoin(common.SwitchAsset(), amt))
+	txIn.Coins = common.NewCoins(common.NewCoin(common.SwitchNative, amt))
 	activeNA := activeNodeAccount.NodeAddress
 	standbyNA := standbyNodeAccount.NodeAddress
 	standbyNAAddress := common.Address(standbyNA.String())

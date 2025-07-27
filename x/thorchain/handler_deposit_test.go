@@ -275,7 +275,7 @@ func (s *HandlerDepositSuite) TestTargetModule(c *C) {
 			moduleName: ReserveName,
 			messageProvider: func(c *C, ctx cosmos.Context) *MsgDeposit {
 				addr := GetRandomRUNEAddress()
-				coin := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(20_00000000))
+				coin := common.NewCoin(common.SwitchNative, cosmos.NewUint(20_00000000))
 				return NewMsgDeposit(common.Coins{coin}, "name:test:SWITCHLY:"+addr.String(), acctAddr)
 			},
 			validator: func(c *C, ctx cosmos.Context, result *cosmos.Result, err error, name string, balDelta cosmos.Uint) {

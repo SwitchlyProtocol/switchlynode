@@ -16,7 +16,7 @@ func (s *HandlerManageTHORNameSuite) TestValidator(c *C) {
 	ctx, mgr := setupManagerForTest(c)
 
 	handler := NewManageTHORNameHandler(mgr)
-	coin := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(100*common.One))
+	coin := common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One))
 	addr := GetRandomTHORAddress()
 	acc, _ := addr.AccAddress()
 	name := NewTHORName("hello", 50, []THORNameAlias{{Chain: common.SWITCHLYChain, Address: addr}})
@@ -80,7 +80,7 @@ func (s *HandlerManageTHORNameSuite) TestHandler(c *C) {
 
 	blocksPerYear := mgr.GetConstants().GetInt64Value(constants.BlocksPerYear)
 	handler := NewManageTHORNameHandler(mgr)
-	coin := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(100*common.One))
+	coin := common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One))
 	addr := GetRandomTHORAddress()
 	acc, _ := addr.AccAddress()
 	tnName := "hello"
@@ -89,7 +89,7 @@ func (s *HandlerManageTHORNameSuite) TestHandler(c *C) {
 	FundAccount(c, ctx, mgr.Keeper(), acc, 10*common.One)
 
 	// happy path, register new name
-	msg := NewMsgManageTHORName(tnName, common.SWITCHLYChain, addr, coin, 0, common.SwitchAsset(), acc, acc)
+	msg := NewMsgManageTHORName(tnName, common.SWITCHLYChain, addr, coin, 0, common.SwitchNative, acc, acc)
 	_, err := handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
 	name, err := mgr.Keeper().GetTHORName(ctx, tnName)
@@ -99,7 +99,7 @@ func (s *HandlerManageTHORNameSuite) TestHandler(c *C) {
 
 	// happy path, set alt chain address
 	ethAddr := GetRandomETHAddress()
-	msg = NewMsgManageTHORName(tnName, common.ETHChain, ethAddr, coin, 0, common.SwitchAsset(), acc, acc)
+	msg = NewMsgManageTHORName(tnName, common.ETHChain, ethAddr, coin, 0, common.SwitchNative, acc, acc)
 	_, err = handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
 	name, err = mgr.Keeper().GetTHORName(ctx, tnName)
@@ -108,7 +108,7 @@ func (s *HandlerManageTHORNameSuite) TestHandler(c *C) {
 
 	// happy path, update alt chain address
 	ethAddr = GetRandomETHAddress()
-	msg = NewMsgManageTHORName(tnName, common.ETHChain, ethAddr, coin, 0, common.SwitchAsset(), acc, acc)
+	msg = NewMsgManageTHORName(tnName, common.ETHChain, ethAddr, coin, 0, common.SwitchNative, acc, acc)
 	_, err = handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
 	name, err = mgr.Keeper().GetTHORName(ctx, tnName)
@@ -126,7 +126,7 @@ func (s *HandlerManageTHORNameSuite) TestHandler(c *C) {
 	// transfer thorname to new owner, should reset preferred asset/external aliases
 	addr2 := GetRandomTHORAddress()
 	acc2, _ := addr2.AccAddress()
-	msg = NewMsgManageTHORName(tnName, common.SWITCHLYChain, addr, coin, 0, common.SwitchAsset(), acc2, acc)
+	msg = NewMsgManageTHORName(tnName, common.SWITCHLYChain, addr, coin, 0, common.SwitchNative, acc2, acc)
 	_, err = handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
 	name, err = mgr.Keeper().GetTHORName(ctx, tnName)
@@ -136,7 +136,7 @@ func (s *HandlerManageTHORNameSuite) TestHandler(c *C) {
 	c.Check(name.GetOwner().Equals(acc2), Equals, true)
 
 	// happy path, release thorname back into the wild
-	msg = NewMsgManageTHORName(tnName, common.SWITCHLYChain, addr, common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint()), 1, common.SwitchAsset(), acc, acc)
+	msg = NewMsgManageTHORName(tnName, common.SWITCHLYChain, addr, common.NewCoin(common.SwitchNative, cosmos.ZeroUint()), 1, common.SwitchNative, acc, acc)
 	_, err = handler.handle(ctx, *msg)
 	c.Assert(err, IsNil)
 	name, err = mgr.Keeper().GetTHORName(ctx, tnName)

@@ -197,7 +197,7 @@ func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) e
 	}
 
 	coins := common.NewCoins(
-		common.NewCoin(common.SwitchAsset(), msg.RuneAmount),
+		common.NewCoin(common.SwitchNative, msg.RuneAmount),
 		common.NewCoin(msg.Asset, msg.AssetAmount),
 	)
 	if atTVLCap(ctx, coins, h.mgr) {

@@ -49,7 +49,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "empty-target",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.Asset{},
 			amount:        cosmos.NewUint(100 * common.One),
 			requester:     "tester",
@@ -60,7 +60,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "empty-requestTxHash",
 			requestTxHash: "",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100 * common.One),
 			requester:     "tester",
@@ -71,7 +71,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "empty-amount",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.ZeroUint(),
 			requester:     "tester",
@@ -82,7 +82,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "empty-requester",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100 * common.One),
 			requester:     "",
@@ -93,7 +93,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "empty-destination",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(100 * common.One),
 			requester:     GetRandomETHAddress(),
@@ -105,7 +105,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 			name:          "pool-not-exist",
 			requestTxHash: "hash",
 			source:        common.Asset{Chain: common.ETHChain, Ticker: "NOTEXIST", Symbol: "NOTEXIST"},
-			target:        common.SwitchAsset(),
+			target:        common.SwitchNative,
 			amount:        cosmos.NewUint(100 * common.One),
 			requester:     GetRandomETHAddress(),
 			destination:   GetRandomTHORAddress(),
@@ -116,7 +116,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "pool-not-exist-1",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.Asset{Chain: common.ETHChain, Ticker: "NOTEXIST", Symbol: "NOTEXIST"},
 			amount:        cosmos.NewUint(100 * common.One),
 			requester:     GetRandomTHORAddress(),
@@ -128,7 +128,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "swap-cross-chain-different-address",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.BTCAsset,
 			amount:        cosmos.NewUint(50 * common.One),
 			requester:     GetRandomTHORAddress(),
@@ -141,7 +141,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "swap-no-global-sliplimit",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(50 * common.One),
 			requester:     GetRandomTHORAddress(),
@@ -154,7 +154,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "swap-over-trade-sliplimit",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(9 * common.One),
 			requester:     GetRandomTHORAddress(),
@@ -166,7 +166,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "swap-no-target-price-no-protection",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(8 * common.One),
 			requester:     GetRandomTHORAddress(),
@@ -179,7 +179,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "swap",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(5 * common.One),
 			requester:     GetRandomTHORAddress(),
@@ -206,7 +206,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 			name:          "swap-synth-to-rune-when-pool-is-not-available",
 			requestTxHash: "hash",
 			source:        common.BCHAsset.GetSyntheticAsset(),
-			target:        common.SwitchAsset(),
+			target:        common.SwitchNative,
 			amount:        cosmos.NewUint(5 * common.One),
 			requester:     GetRandomTHORAddress(),
 			destination:   GetRandomTHORAddress(),
@@ -218,7 +218,7 @@ func (s *SwapVCURSuite) TestSwap(c *C) {
 		{
 			name:          "swap-slip-min",
 			requestTxHash: "hash",
-			source:        common.SwitchAsset(),
+			source:        common.SwitchNative,
 			target:        common.ETHAsset,
 			amount:        cosmos.NewUint(2 * 1000_000),
 			requester:     GetRandomTHORAddress(),
@@ -284,7 +284,7 @@ func (s *SwapVCURSuite) TestSynthSwap_RuneSynthRune(c *C) {
 			addr,
 			addr,
 			common.NewCoins(
-				common.NewCoin(common.SwitchAsset(), cosmos.NewUint(50*common.One)),
+				common.NewCoin(common.SwitchNative, cosmos.NewUint(50*common.One)),
 			),
 			common.Gas{
 				common.NewCoin(common.ETHAsset, cosmos.NewUint(200_000)),
@@ -410,7 +410,7 @@ func (s *SwapVCURSuite) TestSynthSwap_RuneSynthRune(c *C) {
 		poolUnitsBefore2 := pool.GetPoolUnits().Mul(pool.GetPoolUnits())
 		luviBefore2 := pool.BalanceRune.Mul(pool.BalanceAsset).Quo(poolUnitsBefore2)
 
-		amount, _, err := newSwapperVCUR().Swap(ctx, mgr.Keeper(), tx, common.SwitchAsset(), addr, cosmos.ZeroUint(), "", "", nil, StreamingSwap{}, 20_000, mgr)
+		amount, _, err := newSwapperVCUR().Swap(ctx, mgr.Keeper(), tx, common.SwitchNative, addr, cosmos.ZeroUint(), "", "", nil, StreamingSwap{}, 20_000, mgr)
 		c.Assert(err, IsNil)
 		c.Check(amount.Uint64(), Equals, swapResult.Uint64(),
 			Commentf("Actual: %d Exp: %d", amount.Uint64(), swapResult.Uint64()))

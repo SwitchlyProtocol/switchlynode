@@ -170,7 +170,7 @@ func assetToWithdraw(msg MsgWithdrawLiquidity, lp LiquidityProvider, pauseAsym i
 		return msg.Asset
 	}
 	if lp.AssetAddress.IsEmpty() {
-		return common.SwitchAsset()
+		return common.SwitchNative
 	}
 	if pauseAsym > 0 {
 		return common.EmptyAsset

@@ -38,7 +38,7 @@ func (s *HandlerSwapSuite) TestValidate(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.OneUint()),
+			common.NewCoin(common.SwitchNative, cosmos.OneUint()),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -186,7 +186,7 @@ func (s *HandlerSwapSuite) TestValidation(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(common.One*100)),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(common.One*100)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -238,7 +238,7 @@ func (s *HandlerSwapSuite) TestValidationWithStreamingSwap(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(common.One*100)),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(common.One*100)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -292,7 +292,7 @@ func (s *HandlerSwapSuite) TestHandle(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.OneUint()),
+			common.NewCoin(common.SwitchNative, cosmos.OneUint()),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -316,7 +316,7 @@ func (s *HandlerSwapSuite) TestHandle(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2*common.One)),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(2*common.One)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -404,7 +404,7 @@ func (s *HandlerSwapSuite) TestHandleStreamingSwap(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2_123400000)),
+			common.NewCoin(common.SwitchNative, cosmos.NewUint(2_123400000)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),

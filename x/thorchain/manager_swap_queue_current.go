@@ -291,7 +291,7 @@ func (vm *SwapQueueVCUR) cleanupFailedPreferredAssetSwap(ctx cosmos.Context, mgr
 	}
 
 	// send rune back to affiliate collector
-	if err := mgr.Keeper().SendFromModuleToModule(ctx, AsgardName, AffiliateCollectorName, common.NewCoins(common.NewCoin(common.SwitchAsset(), runeAmt))); err != nil {
+	if err := mgr.Keeper().SendFromModuleToModule(ctx, AsgardName, AffiliateCollectorName, common.NewCoins(common.NewCoin(common.SwitchNative, runeAmt))); err != nil {
 		return fmt.Errorf("failed to send rune back to affiliate collector: %w", err)
 	}
 
@@ -362,7 +362,7 @@ func (vm *SwapQueueVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synthVir
 			continue
 		}
 		// double swap , thus need to convert source coin to RUNE and calculate fee and slip again
-		runeCoin := common.NewCoin(common.SwitchAsset(), pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
+		runeCoin := common.NewCoin(common.SwitchNative, pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
 		nonRuneAsset = targetAsset
 		pool = pools[nonRuneAsset]
 		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {

@@ -143,17 +143,17 @@ func (KeeperTestSuit) TestMaxMint(c *C) {
 
 	max := int64(200000000_00000000)
 	k.SetMimir(ctx, "MaxRuneSupply", max)
-	maxCoin := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(uint64(max)))
+	maxCoin := common.NewCoin(common.SwitchNative, cosmos.NewUint(uint64(max)))
 
 	// ship asgard rune to reserve
-	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ReserveName, common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000000000000000)))), IsNil)
+	c.Assert(k.SendFromModuleToModule(ctx, AsgardName, ReserveName, common.NewCoins(common.NewCoin(common.SwitchNative, cosmos.NewUint(10000000000000000)))), IsNil)
 	// mint more rune into reserve to max the supply
-	mintAmt := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(uint64(max)-10000000000000000))
+	mintAmt := common.NewCoin(common.SwitchNative, cosmos.NewUint(uint64(max)-10000000000000000))
 	c.Assert(k.MintToModule(ctx, ModuleName, mintAmt), IsNil)
 	c.Assert(k.SendFromModuleToModule(ctx, ModuleName, ReserveName, common.NewCoins(mintAmt)), IsNil)
 
 	// mint more rune into another module
-	moreCoin := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(uint64(max/4)))
+	moreCoin := common.NewCoin(common.SwitchNative, cosmos.NewUint(uint64(max/4)))
 	c.Assert(k.MintToModule(ctx, ModuleName, moreCoin), IsNil)
 
 	// fetch module balances

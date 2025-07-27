@@ -48,8 +48,8 @@ func (s *HandlerLoanSuite) TestLoanValidate(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchNative, bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchNative)
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-ETH", 1)
@@ -112,8 +112,8 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchNative, bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchNative)
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 
@@ -189,8 +189,8 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToTOR(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchNative, bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchNative)
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 

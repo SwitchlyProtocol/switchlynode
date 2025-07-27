@@ -960,7 +960,7 @@ func (s *HandlerAddLiquiditySuite) TestAddLiquidityPOL(c *C) {
 		addTxHash,
 		polAddr,
 		polAddr,
-		common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(common.One*100))},
+		common.Coins{common.NewCoin(common.SwitchNative, cosmos.NewUint(common.One*100))},
 		common.Gas{},
 		"add:ETH",
 	)

@@ -774,10 +774,10 @@ func (vm *ValidatorMgrVCUR) ragnarokBond(ctx cosmos.Context, nth int64, mgr Mana
 
 		// refund bond
 		txOutItem := TxOutItem{
-			Chain:      common.SwitchAsset().Chain,
+			Chain:      common.SwitchNative.Chain,
 			ToAddress:  na.BondAddress,
 			InHash:     common.BlankTxID,
-			Coin:       common.NewCoin(common.SwitchAsset(), amt),
+			Coin:       common.NewCoin(common.SwitchNative, amt),
 			Memo:       NewRagnarokMemo(ctx.BlockHeight()).String(),
 			ModuleName: BondName,
 		}
@@ -896,7 +896,7 @@ func (vm *ValidatorMgrVCUR) ragnarokPools(ctx cosmos.Context, nth int64, mgr Man
 					withdrawAddr = lp.RuneAddress
 					// if liquidity provider only add RUNE , then asset address will be empty
 					if lp.AssetAddress.IsEmpty() {
-						withdrawAsset = common.SwitchAsset()
+						withdrawAsset = common.SwitchNative
 					}
 				} else {
 					// if liquidity provider only add Asset, then RUNE Address will be empty
@@ -916,7 +916,7 @@ func (vm *ValidatorMgrVCUR) ragnarokPools(ctx cosmos.Context, nth int64, mgr Man
 				_, err = handler(ctx, withdrawMsg)
 				if err != nil {
 					ctx.Logger().Error("fail to withdraw", "liquidity provider", lp.RuneAddress, "error", err)
-				} else if !withdrawAsset.Equals(common.SwitchAsset()) {
+				} else if !withdrawAsset.Equals(common.SwitchNative) {
 					// when withdraw asset is only RUNE , then it should process more , because RUNE asset doesn't leave THORChain
 					count++
 					pending, err := vm.k.GetRagnarokPending(ctx)

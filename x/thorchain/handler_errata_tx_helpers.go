@@ -250,7 +250,7 @@ func processErrataOutboundTx(ctx cosmos.Context, k keeper.Keeper, eventMgr Event
 				p.BalanceAsset = common.SafeSub(p.BalanceAsset, coin.Amount)
 				// trunk-ignore(golangci-lint/govet): shadow
 				if err := k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.Coins{
-					common.NewCoin(common.SwitchAsset(), runeValue),
+					common.NewCoin(common.SwitchNative, runeValue),
 				}); err != nil {
 					return fmt.Errorf("fail to send fund from reserve to asgard: %w", err)
 				}

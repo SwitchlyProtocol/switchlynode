@@ -304,7 +304,7 @@ func (s *KeeperNodeAccountSuite) TestRemoveLowBondValidatorAccounts(c *C) {
 
 	na2 := GetRandomValidatorNode(NodeStandby)
 	na2.Bond = cosmos.NewUint(common.One)
-	na2Coin := common.NewCoin(common.SwitchAsset(), na2.Bond)
+	na2Coin := common.NewCoin(common.SwitchNative, na2.Bond)
 
 	// sending tokens to bond
 	c.Assert(k.MintToModule(ctx, ModuleName, na2Coin), IsNil)

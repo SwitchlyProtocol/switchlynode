@@ -40,7 +40,7 @@ func AsgardInvariant(k KVStore) common.Invariant {
 				poolCoins = poolCoins.Add(coin)
 			case !pool.Asset.IsDerivedAsset():
 				coin := common.NewCoin(
-					common.SwitchAsset(),
+					common.SwitchNative,
 					pool.BalanceRune.Add(pool.PendingInboundRune),
 				)
 				poolCoins = poolCoins.Add(coin)
@@ -163,20 +163,20 @@ func BondInvariant(k KVStore) common.Invariant {
 		bondRewardRune := network.BondRewardRune
 
 		// get rune balance of bond module
-		bondModuleRune := k.GetBalanceOfModule(ctx, BondName, common.SwitchAsset().Native())
+		bondModuleRune := k.GetBalanceOfModule(ctx, BondName, common.SwitchNative.Native())
 
 		// bond module is expected to equal bonded rune and pending rewards
 		expectedRune := bondedRune.Add(bondRewardRune)
 		if expectedRune.GT(bondModuleRune) {
 			broken = true
 			diff := expectedRune.Sub(bondModuleRune)
-			coin, _ := common.NewCoin(common.SwitchAsset(), diff).Native()
+			coin, _ := common.NewCoin(common.SwitchNative, diff).Native()
 			msg = append(msg, fmt.Sprintf("insolvent: %s", coin))
 
 		} else if expectedRune.LT(bondModuleRune) {
 			broken = true
 			diff := bondModuleRune.Sub(expectedRune)
-			coin, _ := common.NewCoin(common.SwitchAsset(), diff).Native()
+			coin, _ := common.NewCoin(common.SwitchNative, diff).Native()
 			msg = append(msg, fmt.Sprintf("oversolvent: %s", coin))
 		}
 
@@ -207,7 +207,7 @@ func THORChainInvariant(k KVStore) common.Invariant {
 // rewards
 func AffilliateCollectorInvariant(k KVStore) common.Invariant {
 	return func(ctx cosmos.Context) (msg []string, broken bool) {
-		affColModuleRune := k.GetBalanceOfModule(ctx, AffiliateCollectorName, common.SwitchAsset().Native())
+		affColModuleRune := k.GetBalanceOfModule(ctx, AffiliateCollectorName, common.SwitchNative.Native())
 		affCols, err := k.GetAffiliateCollectors(ctx)
 		if err != nil {
 			if affColModuleRune.IsZero() {
@@ -225,12 +225,12 @@ func AffilliateCollectorInvariant(k KVStore) common.Invariant {
 		if totalAffRune.GT(affColModuleRune) {
 			broken = true
 			diff := totalAffRune.Sub(affColModuleRune)
-			coin, _ := common.NewCoin(common.SwitchAsset(), diff).Native()
+			coin, _ := common.NewCoin(common.SwitchNative, diff).Native()
 			msg = append(msg, fmt.Sprintf("insolvent: %s", coin))
 		} else if totalAffRune.LT(affColModuleRune) {
 			broken = true
 			diff := affColModuleRune.Sub(totalAffRune)
-			coin, _ := common.NewCoin(common.SwitchAsset(), diff).Native()
+			coin, _ := common.NewCoin(common.SwitchNative, diff).Native()
 			msg = append(msg, fmt.Sprintf("oversolvent: %s", coin))
 		}
 

@@ -1319,7 +1319,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 
 	request := types.QueryQuoteSwapRequest{
 		FromAsset:         common.BTCAsset.String(),
-		ToAsset:           common.SWTCNative.String(),
+		ToAsset:           common.SwitchNative.String(),
 		Amount:            "10000000",
 		StreamingInterval: "1",
 		StreamingQuantity: "5",

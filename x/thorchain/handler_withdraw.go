@@ -202,7 +202,7 @@ func (h WithdrawLiquidityHandler) handleV3_0_0(ctx cosmos.Context, msg MsgWithdr
 	}
 
 	if !runeAmt.IsZero() {
-		coin := common.NewCoin(common.SwitchAsset(), runeAmt)
+		coin := common.NewCoin(common.SwitchNative, runeAmt)
 		if err := transfer(coin, lp.RuneAddress); err != nil {
 			return nil, err
 		}
@@ -234,7 +234,7 @@ func (h WithdrawLiquidityHandler) handleV3_0_0(ctx cosmos.Context, msg MsgWithdr
 	}
 
 	// any extra rune in the transaction will be donated to reserve
-	reserveCoin := msg.Tx.Coins.GetCoin(common.SwitchAsset())
+	reserveCoin := msg.Tx.Coins.GetCoin(common.SwitchNative)
 	if !reserveCoin.IsEmpty() {
 		if err := h.mgr.Keeper().AddPoolFeeToReserve(ctx, reserveCoin.Amount); err != nil {
 			ctx.Logger().Error("fail to add fee to reserve", "error", err)
@@ -244,7 +244,7 @@ func (h WithdrawLiquidityHandler) handleV3_0_0(ctx cosmos.Context, msg MsgWithdr
 
 	// any extra non-rune in the transaction will be donated to its pool, if existing
 	for _, withdrawalCoin := range msg.Tx.Coins {
-		if withdrawalCoin.IsEmpty() || withdrawalCoin.Asset == common.SwitchAsset() {
+		if withdrawalCoin.IsEmpty() || withdrawalCoin.Asset == common.SwitchNative {
 			continue
 		}
 

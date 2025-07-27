@@ -97,7 +97,7 @@ func (h LoanOpenHandler) validateV3_0_0(ctx cosmos.Context, msg MsgLoanOpen) err
 	}
 
 	// Circuit Breaker: check if we're hit the max supply
-	supply := h.mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
+	supply := h.mgr.Keeper().GetTotalSupply(ctx, common.SwitchNative)
 	maxAmt := h.mgr.Keeper().GetConfigInt64(ctx, constants.MaxRuneSupply)
 	if maxAmt <= 0 {
 		return fmt.Errorf("no max supply set")
@@ -328,7 +328,7 @@ func (h LoanOpenHandler) getPoolCR(ctx cosmos.Context, pool Pool, collateralAmou
 	maxCR := h.mgr.Keeper().GetConfigInt64(ctx, constants.MaxCR)
 	lever := h.mgr.Keeper().GetConfigInt64(ctx, constants.LendingLever)
 
-	currentRuneSupply := h.mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
+	currentRuneSupply := h.mgr.Keeper().GetTotalSupply(ctx, common.SwitchNative)
 	maxRuneSupply := h.mgr.Keeper().GetConfigInt64(ctx, constants.MaxRuneSupply)
 	if maxRuneSupply <= 0 {
 		return cosmos.ZeroUint(), fmt.Errorf("no max supply set")
@@ -435,7 +435,7 @@ func (h LoanOpenHandler) handleAffiliateSwap(ctx cosmos.Context, msg MsgLoanOpen
 	affCoin := common.NewCoin(msg.CollateralAsset, affAmt)
 	gasCoin := common.NewCoin(msg.CollateralAsset.GetChain().GetGasAsset(), cosmos.OneUint())
 	fakeTx := common.NewTx(msg.TxID, common.NoopAddress, common.NoopAddress, common.NewCoins(affCoin), common.Gas{gasCoin}, "noop")
-	affiliateSwap := NewMsgSwap(fakeTx, common.SwitchAsset(), msg.AffiliateAddress, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, 0, 0, 0, msg.Signer)
+	affiliateSwap := NewMsgSwap(fakeTx, common.SwitchNative, msg.AffiliateAddress, cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(), "", "", nil, 0, 0, 0, msg.Signer)
 
 	var affThorname *types.THORName
 	voter, err := h.mgr.Keeper().GetObservedTxInVoter(ctx, msg.TxID)
@@ -532,7 +532,7 @@ func (h LoanOpenHandler) getTotalLiquidityRUNELoanPools(ctx cosmos.Context) (cos
 func (h LoanOpenHandler) GetLoanCollateralRemainingForPool(ctx cosmos.Context, pool Pool) (cosmos.Uint, error) {
 	lever := h.mgr.Keeper().GetConfigInt64(ctx, constants.LendingLever)
 
-	currentRuneSupply := h.mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
+	currentRuneSupply := h.mgr.Keeper().GetTotalSupply(ctx, common.SwitchNative)
 	maxRuneSupply := h.mgr.Keeper().GetConfigInt64(ctx, constants.MaxRuneSupply)
 	if maxRuneSupply <= 0 {
 		return cosmos.ZeroUint(), fmt.Errorf("no max supply set")

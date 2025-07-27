@@ -710,7 +710,7 @@ func (vm *NetworkMgrVCUR) migrateFunds(ctx cosmos.Context, mgr Manager) error {
 						}
 						runeAmt := p.AssetValueInRune(coin.Amount)
 						if !runeAmt.IsZero() {
-							if err := vm.k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.NewCoins(common.NewCoin(common.SwitchAsset(), runeAmt))); err != nil {
+							if err := vm.k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.NewCoins(common.NewCoin(common.SwitchNative, runeAmt))); err != nil {
 								return fmt.Errorf("fail to transfer RUNE from reserve to asgard,err:%w", err)
 							}
 						}
@@ -1020,7 +1020,7 @@ func (vm *NetworkMgrVCUR) addPOLLiquidity(
 	if runeAmt.IsZero() {
 		return nil
 	}
-	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), runeAmt))
+	coins := common.NewCoins(common.NewCoin(common.SwitchNative, runeAmt))
 
 	// rune pool tracks the reserve and pooler unit shares of pol
 	runePool, err := mgr.Keeper().GetRUNEPool(ctx)
@@ -1141,14 +1141,14 @@ func (vm *NetworkMgrVCUR) removePOLLiquidity(
 
 	// process the withdraw
 	withdrawUnits := common.GetSafeShare(runeAmt, runePoolValue, runePool.TotalUnits())
-	coins := common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint()))
+	coins := common.NewCoins(common.NewCoin(common.SwitchNative, cosmos.ZeroUint()))
 	tx := common.NewTx(common.BlankTxID, polAddress, asgardAddress, coins, nil, "THOR-POL-REMOVE")
 	msg := NewMsgWithdrawLiquidity(
 		tx,
 		polAddress,
 		basisPts,
 		pool.Asset,
-		common.SwitchAsset(),
+		common.SwitchNative,
 		signer,
 	)
 
@@ -1368,7 +1368,7 @@ func (vm *NetworkMgrVCUR) withdrawLPs(ctx cosmos.Context, pool Pool, na NodeAcco
 			withdrawAddr = lp.RuneAddress
 			// if liquidity provider only add RUNE , then asset address will be empty
 			if lp.AssetAddress.IsEmpty() {
-				withdrawAsset = common.SwitchAsset()
+				withdrawAsset = common.SwitchNative
 			}
 		} else {
 			// if liquidity provider only add Asset, then RUNE Address will be empty
@@ -1458,7 +1458,7 @@ func (vm *NetworkMgrVCUR) withdrawLiquidity(ctx cosmos.Context, pool Pool, na No
 
 	// If any RUNE remains in the pool (such as if the last withdraw were Asset-address-only),
 	// transfer it to the Reserve to prevent broken-invariant Pool Module oversolvency.
-	remainingRune := common.NewCoin(common.SwitchAsset(), pool.BalanceRune)
+	remainingRune := common.NewCoin(common.SwitchNative, pool.BalanceRune)
 	pool.BalanceRune = cosmos.ZeroUint()
 	remainingRune.Amount = remainingRune.Amount.Add(pool.PendingInboundRune)
 	pool.PendingInboundRune = cosmos.ZeroUint()

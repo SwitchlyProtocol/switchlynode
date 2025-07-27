@@ -262,7 +262,7 @@ func (vm *SwapQueueAdvVCUR) getAssetPairs(ctx cosmos.Context) (tradePairs, Pools
 	result := make(tradePairs, 0)
 	var pools Pools
 
-	assets := []common.Asset{common.SwitchAsset()}
+	assets := []common.Asset{common.SwitchNative}
 	iterator := vm.k.GetPoolIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -392,7 +392,7 @@ func (vm *SwapQueueAdvVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 
 			affiliateSwap = *NewMsgSwap(
 				msg.Tx,
-				common.SwitchAsset(),
+				common.SwitchNative,
 				msg.AffiliateAddress,
 				cosmos.ZeroUint(),
 				common.NoAddress,
@@ -435,7 +435,7 @@ func (vm *SwapQueueAdvVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 						continue
 					}
 					// since native transaction fee has been charged to inbound from address, thus for affiliated fee , the network doesn't need to charge it again
-					coin := common.NewCoin(common.SwitchAsset(), affiliateSwap.Tx.Coins[0].Amount)
+					coin := common.NewCoin(common.SwitchNative, affiliateSwap.Tx.Coins[0].Amount)
 					sdkErr := mgr.Keeper().SendFromModuleToAccount(ctx, AsgardName, toAddress, common.NewCoins(coin))
 					if sdkErr != nil {
 						ctx.Logger().Error("fail to send native asset to affiliate", "msg", msg.AffiliateAddress, "error", err, "asset", coin.Asset)
@@ -521,7 +521,7 @@ func (vm *SwapQueueAdvVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synth
 			continue
 		}
 		// double swap , thus need to convert source coin to RUNE and calculate fee and slip again
-		runeCoin := common.NewCoin(common.SwitchAsset(), pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
+		runeCoin := common.NewCoin(common.SwitchNative, pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
 		poolAsset = targetAsset
 		pool = pools[poolAsset]
 		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {

@@ -396,7 +396,7 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 	// from the reserve instead of minting new tokens
 	maxAmt, _ := k.GetMimir(ctx, constants.MaxRuneSupply.String())
 	if coin.IsSwitch() && maxAmt > 0 {
-		currentSupply := k.GetTotalSupply(ctx, common.SwitchAsset())  // current circulating supply of rune
+		currentSupply := k.GetTotalSupply(ctx, common.SwitchNative)  // current circulating supply of rune
 		maxSupply := cosmos.NewUint(uint64(maxAmt))                 // max supply of rune (ie 500m)
 		availableSupply := common.SafeSub(maxSupply, currentSupply) // available supply to be mint
 		// if available supply is less than the coin.Amount, we need to
@@ -406,7 +406,7 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 			borrowReserveAmt := common.SafeSub(coin.Amount, availableSupply) // to borrow from reserve
 			coin.Amount = common.SafeSub(coin.Amount, borrowReserveAmt)      // to mint later in this func
 
-			reserveCoin := common.NewCoin(common.SwitchAsset(), borrowReserveAmt)
+			reserveCoin := common.NewCoin(common.SwitchNative, borrowReserveAmt)
 			if err := k.SendFromModuleToModule(ctx, ReserveName, module, common.NewCoins(reserveCoin)); err != nil {
 				// If unable to move the needed surplus coin from the Reserve, error out without any minting.
 				ctx.Logger().Error("fail to move coins during circuit breaker", "error", err)
@@ -433,7 +433,7 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 	// be an issue (infinite mint bug/exploit), or maybe runway rune
 	// hyperinflation. In any case, pause everything and allow the
 	// community time to find a solution to the issue.
-	coin2 := k.coinKeeper.GetSupply(ctx, common.SwitchAsset().Native())
+	coin2 := k.coinKeeper.GetSupply(ctx, common.SwitchNative.Native())
 	maxAmt, _ = k.GetMimir(ctx, "MaxRuneSupply")
 	if maxAmt > 0 && coin2.Amount.GT(cosmos.NewInt(maxAmt)) {
 		k.SetMimir(ctx, "HaltTrading", 1)

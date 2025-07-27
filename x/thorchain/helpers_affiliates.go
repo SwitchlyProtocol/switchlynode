@@ -40,7 +40,7 @@ func triggerPreferredAssetSwapV3_0_0(ctx cosmos.Context, mgr Manager, tn THORNam
 	}
 
 	affRune := affcol.RuneAmount
-	affCoin := common.NewCoin(common.SwitchAsset(), affRune)
+	affCoin := common.NewCoin(common.SwitchNative, affRune)
 
 	networkMemo := fmt.Sprintf("%s-%s", PreferredAssetSwapMemoPrefix, tn.Name)
 	asgardAddress, err := mgr.Keeper().GetModuleAddress(AsgardName)
@@ -309,12 +309,12 @@ func affiliateSwapToRuneV3_0_0(ctx cosmos.Context, mgr Manager, mainTx common.Tx
 	if tn != nil {
 		tnMemo = tn.Name
 	}
-	memoStr := NewSwapMemo(ctx, mgr, common.SwitchAsset(), affAddr, cosmos.ZeroUint(), tnMemo, cosmos.ZeroUint())
+	memoStr := NewSwapMemo(ctx, mgr, common.SwitchNative, affAddr, cosmos.ZeroUint(), tnMemo, cosmos.ZeroUint())
 	mainTx.Memo = memoStr
 
 	affiliateSwap := NewMsgSwap(
 		mainTx,
-		common.SwitchAsset(),
+		common.SwitchNative,
 		affAddr,
 		cosmos.ZeroUint(),
 		common.NoAddress,

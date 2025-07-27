@@ -37,12 +37,12 @@ var (
 	XRPAsset = Asset{Chain: XRPChain, Symbol: "XRP", Ticker: "XRP", Synth: false}
 	// XLMAsset XLM
 	XLMAsset = Asset{Chain: StellarChain, Symbol: "XLM", Ticker: "XLM", Synth: false}
-	// SWTCNative SWITCH on switchly
-	SWTCNative  = Asset{Chain: SWITCHLYChain, Symbol: "SWITCH", Ticker: "SWITCH", Synth: false}
-	RUJI        = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
-	TCY         = Asset{Chain: SWITCHLYChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
-	TOR         = Asset{Chain: SWITCHLYChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
-	SWITCHLYBTC = Asset{Chain: SWITCHLYChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
+	// SwitchNative SWITCH on switchly
+	SwitchNative = Asset{Chain: SWITCHLYChain, Symbol: "SWITCH", Ticker: "SWITCH", Synth: false}
+	RUJI         = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
+	TCY          = Asset{Chain: SWITCHLYChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
+	TOR          = Asset{Chain: SWITCHLYChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
+	SWITCHLYBTC  = Asset{Chain: SWITCHLYChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
 )
 
 var _ sdk.CustomProtobufType = (*Asset)(nil)
@@ -112,7 +112,7 @@ func NewAssetWithShortCodesV3_1_0(input string) (Asset, error) {
 	shorts[DOGEAsset.ShortCode()] = DOGEAsset.String()
 	shorts[ETHAsset.ShortCode()] = ETHAsset.String()
 	shorts[LTCAsset.ShortCode()] = LTCAsset.String()
-	shorts[SWTCNative.ShortCode()] = SWTCNative.String()
+	shorts[SwitchNative.ShortCode()] = SwitchNative.String()
 	shorts[BaseETHAsset.ShortCode()] = BaseETHAsset.String()
 	shorts[XRPAsset.ShortCode()] = XRPAsset.String()
 	shorts[XLMAsset.ShortCode()] = XLMAsset.String()
@@ -320,19 +320,9 @@ func (a Asset) IsGasAsset() bool {
 	return a.Equals(gasAsset)
 }
 
-// SWTCAsset is the SWTC asset
-func SWTCAsset() Asset {
-	return Asset{
-		Chain:  SWITCHLYChain,
-		Symbol: "SWITCH",
-		Ticker: "SWITCH",
-		Synth:  false,
-	}
-}
-
 // IsRune check whether asset is RUNE
 func (a Asset) IsRune() bool {
-	return a.Equals(SWTCNative)
+	return a.Equals(SwitchNative)
 }
 
 // IsTCY is a helper function ,return true only when the asset represent TCY
@@ -345,7 +335,7 @@ func (a Asset) IsRUJI() bool {
 }
 
 // IsNative is a helper function, returns true when the asset is a native
-// asset to SWITCHLYChain (ie swtc, a synth, etc)
+// asset to SWITCHLYChain (ie switch, a synth, etc)
 func (a Asset) IsNative() bool {
 	return a.GetChain().IsSWITCHLYChain()
 }
@@ -385,6 +375,6 @@ func (a Asset) MimirString() string {
 	return a.Chain.String() + "-" + a.Symbol.String()
 }
 
-func (a Asset) IsSWTC() bool {
-	return a.Equals(SWTCNative)
+func (a Asset) IsSwitch() bool {
+	return a.Equals(SwitchNative)
 }
