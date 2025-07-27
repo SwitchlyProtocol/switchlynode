@@ -14,7 +14,7 @@ import (
 
 func (s *BitcoinCashSuite) TestGetAddress(c *C) {
 	ttypes.SetupConfigForTest()
-	pubkey := common.PubKey("tswtcpub1addwnpepq06smgna9nln5432hudgaelwz67w8nygk3d69dhza8awt7zegcauv4qrdkx")
+	pubkey := common.PubKey("tswitchpub19daym3mcdfmlr4hck2qmg2l87sdnwh88avr28fju6e87rv6qsq2sytzzrta")
 	addr := s.client.GetAddress(pubkey)
 	c.Assert(addr, Equals, "qz7zdfknwywgah9dev79zkx9rv84f809f4qftjhj0a")
 }
@@ -32,7 +32,7 @@ func (s *BitcoinCashSuite) TestConfirmationCountReady(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{
@@ -51,7 +51,7 @@ func (s *BitcoinCashSuite) TestConfirmationCountReady(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{
@@ -71,7 +71,7 @@ func (s *BitcoinCashSuite) TestConfirmationCountReady(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{
@@ -103,7 +103,7 @@ func (s *BitcoinCashSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{
@@ -123,7 +123,7 @@ func (s *BitcoinCashSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{
@@ -143,7 +143,7 @@ func (s *BitcoinCashSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{
@@ -163,7 +163,7 @@ func (s *BitcoinCashSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{
@@ -183,7 +183,7 @@ func (s *BitcoinCashSuite) TestGetConfirmationCount(c *C) {
 		TxArray: []*types.TxInItem{
 			{
 				BlockHeight: 2,
-				Tx:          "24ed2d26fd5d4e0e8fa86633e40faf1bdfc8d1903b1cd02855286312d48818a2",
+				Tx:          "9efcbb7f05f810434f777ff48c11bf526320493cb7721975efb938f1ecb6c031",
 				Sender:      "qqqzdh86crxjpyh2tgfy7gyfcwk4k74ze55ympqehp",
 				To:          "qpfztpuwwujkvvenjm7mg9d6mzqkmqwshv07z34njm",
 				Coins: common.Coins{

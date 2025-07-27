@@ -522,7 +522,7 @@ func (WithdrawSuite) TestWithdrawAsym(c *C) {
 				BasisPoints:     cosmos.NewUint(10000),
 				Asset:           common.ETHAsset,
 				Tx:              common.Tx{ID: "28B40BF105A112389A339A64BD1A042E6140DC9082C679586C6CF493A9FDE3FE"},
-				WithdrawalAsset: common.SWTCAsset(),
+				WithdrawalAsset: common.SwitchAsset(),
 				Signer:          accountAddr,
 			},
 			runeAmount:    cosmos.NewUint(6250000000),

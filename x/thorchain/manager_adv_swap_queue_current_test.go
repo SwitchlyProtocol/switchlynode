@@ -46,7 +46,7 @@ func (s AdvSwapQueueVCURSuite) TestScoreMsgs(c *C) {
 	msgs := []*MsgSwap{
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("5E1DF027321F1FE37CA19B9ECB11C2B4ABEC0D8322199D335D9CE4C39F85F115"),
-			Coins: common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(2*common.One))},
+			Coins: common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2*common.One))},
 		}, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
@@ -54,27 +54,27 @@ func (s AdvSwapQueueVCURSuite) TestScoreMsgs(c *C) {
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("53C1A22436B385133BDD9157BB365DB7AAC885910D2FA7C9DC3578A04FFD4ADC"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(50*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("6A470EB9AFE82981979A5EEEED3296E1E325597794BD5BFB3543A372CAF435E5"),
-			Coins: common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1*common.One))},
+			Coins: common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1*common.One))},
 		}, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("5EE9A7CCC55A3EBAFA0E542388CA1B909B1E3CE96929ED34427B96B7CCE9F8E8"),
-			Coins: common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(100*common.One))},
+			Coins: common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(100*common.One))},
 		}, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0FF2A521FB11FFEA4DFE3B7AD4066FF0A33202E652D846F8397EFC447C97A91B"),
-			Coins: common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10*common.One))},
+			Coins: common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10*common.One))},
 		}, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
@@ -83,7 +83,7 @@ func (s AdvSwapQueueVCURSuite) TestScoreMsgs(c *C) {
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000001"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(150*common.One))},
-		}, common.SWTCAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
@@ -91,7 +91,7 @@ func (s AdvSwapQueueVCURSuite) TestScoreMsgs(c *C) {
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000002"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(151*common.One))},
-		}, common.SWTCAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomTHORAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
@@ -125,70 +125,70 @@ func (s AdvSwapQueueVCURSuite) TestScoreMsgs(c *C) {
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000003"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(2*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000004"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(50*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000005"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(1*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000009"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(100*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000007"),
 			Coins: common.Coins{common.NewCoin(common.ETHAsset, cosmos.NewUint(10*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000008"),
 			Coins: common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(2*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000006"),
 			Coins: common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(50*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000010"),
 			Coins: common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(1*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000013"),
 			Coins: common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(100*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
 		NewMsgSwap(common.Tx{
 			ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000012"),
 			Coins: common.Coins{common.NewCoin(common.BTCAsset, cosmos.NewUint(10*common.One))},
-		}, common.SWTCAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
+		}, common.SwitchAsset(), GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 			"", "", nil,
 			MarketSwap,
 			0, 0, GetRandomBech32Addr()),
@@ -269,7 +269,7 @@ func (s AdvSwapQueueVCURSuite) TestFetchQueue(c *C) {
 
 	market := NewMsgSwap(common.Tx{
 		ID:    common.TxID("0000000000000000000000000000000000000000000000000000000000000014"),
-		Coins: common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.NewUint(2*common.One))},
+		Coins: common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2*common.One))},
 	}, common.ETHAsset, GetRandomETHAddress(), cosmos.ZeroUint(), common.NoAddress, cosmos.ZeroUint(),
 		"", "", nil,
 		MarketSwap,
@@ -321,38 +321,38 @@ func (s AdvSwapQueueVCURSuite) TestgetAssetPairs(c *C) {
 
 func (s AdvSwapQueueVCURSuite) TestTradePairsTodo(c *C) {
 	pairs := tradePairs{
-		{common.SWTCAsset(), common.ETHAsset},
-		{common.ETHAsset, common.SWTCAsset()},
-		{common.SWTCAsset(), common.BTCAsset},
-		{common.BTCAsset, common.SWTCAsset()},
+		{common.SwitchAsset(), common.ETHAsset},
+		{common.ETHAsset, common.SwitchAsset()},
+		{common.SwitchAsset(), common.BTCAsset},
+		{common.BTCAsset, common.SwitchAsset()},
 		{common.ETHAsset, common.BTCAsset},
 		{common.BTCAsset, common.ETHAsset},
 	}
 
 	// RUNE --> ETH
 	todo := make(tradePairs, 0)
-	todo = todo.findMatchingTrades(genTradePair(common.SWTCAsset(), common.ETHAsset), pairs)
+	todo = todo.findMatchingTrades(genTradePair(common.SwitchAsset(), common.ETHAsset), pairs)
 	c.Check(todo, HasLen, 2, Commentf("%d", len(todo)))
-	c.Check(todo[0].Equals(genTradePair(common.ETHAsset, common.SWTCAsset())), Equals, true, Commentf("%s", todo[0]))
+	c.Check(todo[0].Equals(genTradePair(common.ETHAsset, common.SwitchAsset())), Equals, true, Commentf("%s", todo[0]))
 	c.Check(todo[1].Equals(genTradePair(common.ETHAsset, common.BTCAsset)), Equals, true, Commentf("%s", todo[1]))
 
 	// ensure we don't duplicate
-	todo = todo.findMatchingTrades(genTradePair(common.SWTCAsset(), common.ETHAsset), pairs)
+	todo = todo.findMatchingTrades(genTradePair(common.SwitchAsset(), common.ETHAsset), pairs)
 	c.Check(todo, HasLen, 2, Commentf("%d", len(todo)))
 
 	// BTC --> RUNE
 	todo = make(tradePairs, 0)
-	todo = todo.findMatchingTrades(genTradePair(common.BTCAsset, common.SWTCAsset()), pairs)
+	todo = todo.findMatchingTrades(genTradePair(common.BTCAsset, common.SwitchAsset()), pairs)
 	c.Check(todo, HasLen, 2, Commentf("%d", len(todo)))
-	c.Check(todo[0].Equals(genTradePair(common.SWTCAsset(), common.BTCAsset)), Equals, true, Commentf("%s", todo[0]))
+	c.Check(todo[0].Equals(genTradePair(common.SwitchAsset(), common.BTCAsset)), Equals, true, Commentf("%s", todo[0]))
 	c.Check(todo[1].Equals(genTradePair(common.ETHAsset, common.BTCAsset)), Equals, true, Commentf("%s", todo[1]))
 
 	// BTC --> ETH
 	todo = make(tradePairs, 0)
 	todo = todo.findMatchingTrades(genTradePair(common.BTCAsset, common.ETHAsset), pairs)
 	c.Check(todo, HasLen, 3, Commentf("%d", len(todo)))
-	c.Check(todo[0].Equals(genTradePair(common.ETHAsset, common.SWTCAsset())), Equals, true, Commentf("%s", todo[0]))
-	c.Check(todo[1].Equals(genTradePair(common.SWTCAsset(), common.BTCAsset)), Equals, true, Commentf("%s", todo[1]))
+	c.Check(todo[0].Equals(genTradePair(common.ETHAsset, common.SwitchAsset())), Equals, true, Commentf("%s", todo[0]))
+	c.Check(todo[1].Equals(genTradePair(common.SwitchAsset(), common.BTCAsset)), Equals, true, Commentf("%s", todo[1]))
 	c.Check(todo[2].Equals(genTradePair(common.ETHAsset, common.BTCAsset)), Equals, true, Commentf("%s", todo[2]))
 }
 
@@ -360,10 +360,10 @@ func (s AdvSwapQueueVCURSuite) TestConvertProc(c *C) {
 	_, k := setupKeeperForTest(c)
 
 	pairs := tradePairs{
-		{common.SWTCAsset(), common.ETHAsset},
-		{common.ETHAsset, common.SWTCAsset()},
-		{common.SWTCAsset(), common.BTCAsset},
-		{common.BTCAsset, common.SWTCAsset()},
+		{common.SwitchAsset(), common.ETHAsset},
+		{common.ETHAsset, common.SwitchAsset()},
+		{common.SwitchAsset(), common.BTCAsset},
+		{common.BTCAsset, common.SwitchAsset()},
 		{common.ETHAsset, common.BTCAsset},
 		{common.BTCAsset, common.ETHAsset},
 	}
@@ -433,7 +433,7 @@ func (s AdvSwapQueueVCURSuite) TestEndBlock(c *C) {
 	tx := GetRandomTx()
 	ethAddr := GetRandomETHAddress()
 	tx.Memo = fmt.Sprintf("swap:ETH.ETH:%s", ethAddr)
-	tx.Coins = common.NewCoins(common.NewCoin(common.SWTCAsset(), cosmos.NewUint(2*common.One)))
+	tx.Coins = common.NewCoins(common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2*common.One)))
 	market := NewMsgSwap(
 		tx, common.ETHAsset, ethAddr, cosmos.ZeroUint(),
 		affilAddr, cosmos.NewUint(1_000),

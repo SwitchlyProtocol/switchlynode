@@ -37,7 +37,7 @@ AVALANCHE_ENDPOINT="${AVAX_HOST:-http://avalanche-daemon:9650/ext/bc/C/rpc}"
 XRP_ENDPOINT="${BIFROST_CHAINS_XRP_RPC_HOST:-http://xrp-daemon:${XRP_DAEMON_SERVICE_PORT_RPC:-51234}}"
 
 ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
-JSON=$(curl -sL --fail -m 10 "$API/switchlyprotocol/node/$ADDRESS")
+JSON=$(curl -sL --fail -m 10 "$API/switchly/node/$ADDRESS")
 
 IP=$(echo "$JSON" | jq -r ".ip_address")
 VERSION=$(echo "$JSON" | jq -r ".version")
@@ -51,14 +51,14 @@ PUB_KEY=$(echo "$JSON" | jq -r ".pub_key_set.secp256k1")
 
 if [ "$VALIDATOR" = "true" ]; then
   # calculate BTC chain sync progress
-  BTC_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchlyprotocol:password@"$BITCOIN_ENDPOINT")
+  BTC_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchly:password@"$BITCOIN_ENDPOINT")
   BTC_HEIGHT=$(echo "$BTC_RESULT" | jq -r ".result.headers")
   BTC_SYNC_HEIGHT=$(echo "$BTC_RESULT" | jq -r ".result.blocks")
   BTC_PROGRESS=$(echo "$BTC_RESULT" | jq -r ".result.verificationprogress")
   BTC_PROGRESS=$(calc_progress "$BTC_SYNC_HEIGHT" "$BTC_HEIGHT" "$BTC_PROGRESS")
 
   # calculate LTC chain sync progress
-  LTC_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchlyprotocol:password@"$LITECOIN_ENDPOINT")
+  LTC_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchly:password@"$LITECOIN_ENDPOINT")
   LTC_HEIGHT=$(echo "$LTC_RESULT" | jq -r ".result.headers")
   LTC_SYNC_HEIGHT=$(echo "$LTC_RESULT" | jq -r ".result.blocks")
   LTC_PROGRESS=$(echo "$LTC_RESULT" | jq -r ".result.verificationprogress")
@@ -88,14 +88,14 @@ if [ "$VALIDATOR" = "true" ]; then
   fi
 
   # calculate BCH chain sync progress
-  BCH_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchlyprotocol:password@"$BITCOIN_CASH_ENDPOINT")
+  BCH_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchly:password@"$BITCOIN_CASH_ENDPOINT")
   BCH_HEIGHT=$(echo "$BCH_RESULT" | jq -r ".result.headers")
   BCH_SYNC_HEIGHT=$(echo "$BCH_RESULT" | jq -r ".result.blocks")
   BCH_PROGRESS=$(echo "$BCH_RESULT" | jq -r ".result.verificationprogress")
   BCH_PROGRESS=$(calc_progress "$BCH_SYNC_HEIGHT" "$BCH_HEIGHT" "$BCH_PROGRESS")
 
   # calculate DOGE chain sync progress
-  DOGE_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchlyprotocol:password@"$DOGECOIN_ENDPOINT")
+  DOGE_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchly:password@"$DOGECOIN_ENDPOINT")
   DOGE_HEIGHT=$(echo "$DOGE_RESULT" | jq -r ".result.headers")
   DOGE_SYNC_HEIGHT=$(echo "$DOGE_RESULT" | jq -r ".result.blocks")
   DOGE_PROGRESS=$(echo "$DOGE_RESULT" | jq -r ".result.verificationprogress")
@@ -166,9 +166,9 @@ elif [ "$SEEDS" != "" ]; then
   done
   IFS=$OLD_IFS
 elif [ "$NET" = "mainnet" ]; then
-  SWITCHLY_HEIGHT=$(curl -sL --fail -m 10 https://rpc.switchlyprotocol.com/status | jq -r ".result.sync_info.latest_block_height")
+  SWITCHLY_HEIGHT=$(curl -sL --fail -m 10 https://rpc.switchly.com/status | jq -r ".result.sync_info.latest_block_height")
 elif [ "$NET" = "stagenet" ]; then
-  SWITCHLY_HEIGHT=$(curl -sL --fail -m 10 https://stagenet-rpc.switchlyprotocol.com/status | jq -r ".result.sync_info.latest_block_height")
+  SWITCHLY_HEIGHT=$(curl -sL --fail -m 10 https://stagenet-rpc.switchly.com/status | jq -r ".result.sync_info.latest_block_height")
 else
   SWITCHLY_HEIGHT=$SWITCHLY_SYNC_HEIGHT
 fi
@@ -196,7 +196,7 @@ if [ "$VALIDATOR" = "true" ]; then
 fi
 
 echo
-echo "API         http://$IP:1317/switchlyprotocol/doc/"
+echo "API         http://$IP:1317/switchly/doc/"
 echo "RPC         http://$IP:$SWITCHLYNODE_PORT"
 echo "MIDGARD     http://$IP:8080/v2/doc"
 
@@ -244,9 +244,9 @@ if [ "$((SWITCHLY_SYNC_HEIGHT - SWITCHLY_HEIGHT))" -gt 100 ]; then
 fi
 
 # get values for churn calculations
-MIMIR=$(curl -sL --fail -m 10 "$API/switchlyprotocol/mimir")
-CONSTANTS=$(curl -sL --fail -m 10 "$API/switchlyprotocol/constants")
-VAULTS=$(curl -sL --fail -m 10 "$API/switchlyprotocol/vaults/asgard")
+MIMIR=$(curl -sL --fail -m 10 "$API/switchly/mimir")
+CONSTANTS=$(curl -sL --fail -m 10 "$API/switchly/constants")
+VAULTS=$(curl -sL --fail -m 10 "$API/switchly/vaults/asgard")
 CHURN_MIGRATE_ROUNDS=$(echo "$MIMIR" | jq -r ".CHURNMIGRATEROUNDS // empty")
 CHURN_MIGRATE_ROUNDS=${CHURN_MIGRATE_ROUNDS:-$(echo "$CONSTANTS" | jq -r ".int_64_values.ChurnMigrateRounds")}
 FUND_MIGRATION_INTERVAL=$(echo "$MIMIR" | jq -r ".FUNDMIGRATIONINTERVAL")
@@ -308,9 +308,9 @@ if [ "$PUB_KEY" != "null" ]; then
   MEMBER_RETIRING=$(echo "$VAULTS" | jq -r ".[] | select(.status == \"RetiringVault\") | select([.membership[] == \"$PUB_KEY\"] | any) | .addresses[] | select(.chain == \"SWITCHLY\") | .address")
   UNBOND_ALLOWED="true"
 
-  EXPLORER="https://switchlyprotocol.com"
+  EXPLORER="https://switchly.com"
   if [ "$NET" = "stagenet" ]; then
-    EXPLORER="https://stagenet.switchlyprotocol.com"
+    EXPLORER="https://stagenet.switchly.com"
   fi
   if [ -n "$MEMBER_ACTIVE" ]; then
     echo "  Active Member: $EXPLORER/address/$MEMBER_ACTIVE"

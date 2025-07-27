@@ -336,7 +336,7 @@ func (k KVStore) getBools(ctx cosmos.Context, key string, record *[]bool) (bool,
 
 // GetRuneBalanceOfModule get the RUNE balance
 func (k KVStore) GetRuneBalanceOfModule(ctx cosmos.Context, moduleName string) cosmos.Uint {
-	return k.GetBalanceOfModule(ctx, moduleName, common.SWTCNative.Native())
+	return k.GetBalanceOfModule(ctx, moduleName, common.SwitchNative.Native())
 }
 
 func (k KVStore) GetBalanceOfModule(ctx cosmos.Context, moduleName, denom string) cosmos.Uint {
@@ -395,8 +395,8 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 	// mint new rune coins until we hit the cap (500m). Once we do, borrow
 	// from the reserve instead of minting new tokens
 	maxAmt, _ := k.GetMimir(ctx, constants.MaxRuneSupply.String())
-	if coin.IsRune() && maxAmt > 0 {
-		currentSupply := k.GetTotalSupply(ctx, common.SWTCAsset())  // current circulating supply of rune
+	if coin.IsSwitch() && maxAmt > 0 {
+		currentSupply := k.GetTotalSupply(ctx, common.SwitchAsset())  // current circulating supply of rune
 		maxSupply := cosmos.NewUint(uint64(maxAmt))                 // max supply of rune (ie 500m)
 		availableSupply := common.SafeSub(maxSupply, currentSupply) // available supply to be mint
 		// if available supply is less than the coin.Amount, we need to
@@ -406,7 +406,7 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 			borrowReserveAmt := common.SafeSub(coin.Amount, availableSupply) // to borrow from reserve
 			coin.Amount = common.SafeSub(coin.Amount, borrowReserveAmt)      // to mint later in this func
 
-			reserveCoin := common.NewCoin(common.SWTCAsset(), borrowReserveAmt)
+			reserveCoin := common.NewCoin(common.SwitchAsset(), borrowReserveAmt)
 			if err := k.SendFromModuleToModule(ctx, ReserveName, module, common.NewCoins(reserveCoin)); err != nil {
 				// If unable to move the needed surplus coin from the Reserve, error out without any minting.
 				ctx.Logger().Error("fail to move coins during circuit breaker", "error", err)
@@ -433,7 +433,7 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 	// be an issue (infinite mint bug/exploit), or maybe runway rune
 	// hyperinflation. In any case, pause everything and allow the
 	// community time to find a solution to the issue.
-	coin2 := k.coinKeeper.GetSupply(ctx, common.SWTCAsset().Native())
+	coin2 := k.coinKeeper.GetSupply(ctx, common.SwitchAsset().Native())
 	maxAmt, _ = k.GetMimir(ctx, "MaxRuneSupply")
 	if maxAmt > 0 && coin2.Amount.GT(cosmos.NewInt(maxAmt)) {
 		k.SetMimir(ctx, "HaltTrading", 1)
@@ -526,7 +526,7 @@ func (k KVStore) DeductNativeTxFeeFromAccount(ctx cosmos.Context, acctAddr cosmo
 	if fee.IsZero() {
 		return nil // no fee
 	}
-	coins := common.NewCoins(common.NewCoin(common.SWTCNative, fee))
+	coins := common.NewCoins(common.NewCoin(common.SwitchNative, fee))
 	return k.SendFromAccountToModule(ctx, acctAddr, ReserveName, coins)
 }
 
@@ -546,7 +546,7 @@ func (k KVStore) RagnarokAccount(ctx cosmos.Context, addr cosmos.AccAddress) {
 			}
 			coin := common.NewCoin(asset, cosmos.NewUint(bal.Amount.Uint64()))
 			coins := common.NewCoins(coin)
-			if asset.IsRune() {
+			if asset.IsSwitch() {
 				err = k.SendFromAccountToModule(ctx, addr, ReserveName, coins)
 				if err != nil {
 					ctx.Logger().Error("failed to transfer", "error", err)

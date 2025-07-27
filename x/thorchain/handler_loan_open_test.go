@@ -48,12 +48,12 @@ func (s *HandlerLoanSuite) TestLoanValidate(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SWTCAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.SWTCAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchAsset(), bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-ETH", 1)
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-BTC", 1)
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-ETH", 1)
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-BTC", 1)
 	owner := GetRandomETHAddress()
 
 	handler := NewLoanOpenHandler(mgr)
@@ -79,18 +79,23 @@ func (s *HandlerLoanSuite) TestLoanValidate(c *C) {
 func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 	ctx, mgr := setupManagerForTest(c)
 	ctx = ctx.WithBlockHeight(128)
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-ETH", 1)
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-BTC", 1)
+	mockTxOut := MockTxOutDummy{
+		blockOut: NewTxOut(ctx.BlockHeight()),
+	}
+	mgr.txOutStore = &mockTxOut
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-ETH", 1)
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-BTC", 1)
+	mgr.Keeper().SetMimir(ctx, "EnableDerivedAssets", 1)        // enable derived assets
+	mgr.Keeper().SetMimir(ctx, "LoanStreamingSwapsInterval", 1) // enable streaming swaps for loans
+	mgr.Keeper().SetMimir(ctx, "LendingLever", 3333)            // lending leverage factor
+	mgr.Keeper().SetMimir(ctx, "MinCR", 10000)                  // minimum collateralization ratio (100%)
+	mgr.Keeper().SetMimir(ctx, "MaxCR", 60000)                  // maximum collateralization ratio (600%)
 
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(83830778633)
 	pool.BalanceRune = cosmos.NewUint(1022440798362209)
 	pool.Decimals = 8
-	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
-
-	// generate derived asset pool for btc
-	pool.Asset = pool.Asset.GetDerivedAsset()
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	busd, err := common.NewAsset("ETH.BUSD-BD1")
@@ -107,8 +112,8 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SWTCAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.SWTCAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchAsset(), bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 
@@ -116,6 +121,9 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 	vault.AddFunds(common.NewCoins(common.NewCoin(common.BTCAsset, cosmos.NewUint(1000000000000))))
 	c.Assert(mgr.Keeper().SetVault(ctx, vault), IsNil)
 	c.Assert(mgr.Keeper().SaveNetworkFee(ctx, common.BTCChain, NewNetworkFee(common.BTCChain, 10, 10)), IsNil)
+
+	// Properly spawn derived assets through network manager after vault is set up
+	c.Assert(mgr.NetworkMgr().BeginBlock(ctx, mgr), IsNil)
 
 	owner, _ := common.NewAddress("bcrt1q8ln0p2d4mwng7x20nl7hku25d282sjgf2v74nt")
 
@@ -135,13 +143,14 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 	c.Check(loan.CollateralDeposited.Uint64(), Equals, uint64(99762133), Commentf("%d", loan.CollateralDeposited.Uint64()))
 	c.Check(loan.LastOpenHeight, Equals, int64(128), Commentf("%d", loan.LastOpenHeight))
 
-	items, err := mgr.TxOutStore().GetOutboundItems(ctx)
+	items, err := mgr.txOutStore.GetOutboundItems(ctx)
 	c.Assert(err, IsNil)
 	c.Assert(items, HasLen, 1)
 	item := items[0]
-	c.Check(item.Coin.Asset.Equals(common.BTCAsset), Equals, true)
-	c.Check(item.Coin.Amount.Uint64(), Equals, uint64(97593206), Commentf("%d", item.Coin.Amount.Uint64()))
-	c.Check(item.ToAddress.String(), Equals, "bcrt1qdn665723epwlg8u2mk7rg4yp7n72mzwqzuv9ye")
+	c.Check(item.Coin.Asset.Equals(common.BTCAsset.GetDerivedAsset()), Equals, true)
+	c.Check(item.Coin.Amount.Uint64(), Equals, uint64(99762133), Commentf("%d", item.Coin.Amount.Uint64()))
+	// For derived assets, the outbound goes to a "noop" address since it's handled internally
+	c.Check(item.ToAddress.String(), Equals, "noop")
 
 	totalCollateral, err := mgr.Keeper().GetTotalCollateral(ctx, common.BTCAsset)
 	c.Assert(err, IsNil)
@@ -175,13 +184,13 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToTOR(c *C) {
 	mgr.Keeper().SetMimir(ctx, "TorAnchor-ETH-BUSD-BD1", 1) // enable BUSD pool as a TOR anchor
 	mgr.Keeper().SetMimir(ctx, "EnableDerivedAssets", 1)    // enable derived assets
 	mgr.Keeper().SetMimir(ctx, "DerivedDepthBasisPts", 10_000)
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-ETH", 1)
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-BTC", 1)
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-ETH", 1)
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-BTC", 1)
 
 	// reduce the supply of rune
 	bal := mgr.Keeper().GetRuneBalanceOfModule(ctx, ModuleName)
-	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SWTCAsset(), bal)), IsNil)
-	supply := mgr.Keeper().GetTotalSupply(ctx, common.SWTCAsset())
+	c.Assert(mgr.Keeper().BurnFromModule(ctx, ModuleName, common.NewCoin(common.SwitchAsset(), bal)), IsNil)
+	supply := mgr.Keeper().GetTotalSupply(ctx, common.SwitchAsset())
 	max := supply.Add(cosmos.NewUint(15_000_000_00000000))
 	mgr.Keeper().SetMimir(ctx, "MaxRuneSupply", int64(max.Uint64()))
 
@@ -243,8 +252,8 @@ func (s *HandlerLoanSuite) TestLoanSwapFails(c *C) {
 	c.Assert(mgr.Keeper().SetPool(ctx, busdPool), IsNil)
 	mgr.Keeper().SetMimir(ctx, "TorAnchor-ETH-BUSD-BD1", 1) // enable BUSD pool as a TOR anchor
 	mgr.Keeper().SetMimir(ctx, "DerivedDepthBasisPts", 0)
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-ETH", 1)
-	mgr.Keeper().SetMimir(ctx, "LENDING-THOR-BTC", 1)
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-ETH", 1)
+	mgr.Keeper().SetMimir(ctx, "LENDING-SWITCHLY-BTC", 1)
 
 	vault := GetRandomVault()
 	vault.AddFunds(common.NewCoins(common.NewCoin(common.BTCAsset, cosmos.NewUint(1000000000000))))

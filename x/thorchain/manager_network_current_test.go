@@ -65,7 +65,7 @@ func (s *NetworkManagerVCURTestSuite) TestUpdateNetwork(c *C) {
 
 	// fail to get total liquidity fee should result an error
 	helper.failGetTotalLiquidityFee = true
-	if common.SWTCAsset().Equals(common.SWTCNative) {
+	if common.SwitchAsset().Equals(common.SwitchNative) {
 		FundModule(c, ctx, helper, ReserveName, 100*common.One)
 	}
 	c.Assert(networkMgr.UpdateNetwork(ctx, constAccessor, mgr.GasMgr(), mgr.EventMgr()), NotNil)
@@ -1162,7 +1162,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssets(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(usd.BalanceAsset.Uint64(), Equals, uint64(925681680182301), Commentf("%d", usd.BalanceAsset.Uint64()))
 	c.Check(usd.BalanceRune.Uint64(), Equals, uint64(187493559385369), Commentf("%d", usd.BalanceRune.Uint64()))
-	dbnb, _ := common.NewAsset("THOR.BNB")
+	dbnb, _ := common.NewAsset("SWITCHLY.BNB")
 	bnbPool, err := mgr.Keeper().GetPool(ctx, dbnb)
 	c.Assert(err, IsNil)
 	c.Check(bnbPool.BalanceAsset.Uint64(), Equals, uint64(4343330836117), Commentf("%d", bnbPool.BalanceAsset.Uint64()))
@@ -1358,18 +1358,18 @@ func (s *NetworkManagerVCURTestSuite) TestDistributeTCYStake(c *C) {
 
 	// Check balances, accounts should not receive funds from TCYStake since funds
 	// are less than MinRuneForTCYStakeDistribution
-	balanceAcc1 := mgr.Keeper().GetBalanceOf(ctx, acc1, common.SWTCNative)
+	balanceAcc1 := mgr.Keeper().GetBalanceOf(ctx, acc1, common.SwitchNative)
 	c.Assert(balanceAcc1.IsZero(), Equals, true)
-	balanceAcc2 := mgr.Keeper().GetBalanceOf(ctx, acc2, common.SWTCNative)
+	balanceAcc2 := mgr.Keeper().GetBalanceOf(ctx, acc2, common.SwitchNative)
 	c.Assert(balanceAcc2.IsZero(), Equals, true)
-	balanceAcc3 := mgr.Keeper().GetBalanceOf(ctx, acc3, common.SWTCNative)
+	balanceAcc3 := mgr.Keeper().GetBalanceOf(ctx, acc3, common.SwitchNative)
 	c.Assert(balanceAcc3.IsZero(), Equals, true)
-	balanceAcc4 := mgr.Keeper().GetBalanceOf(ctx, acc4, common.SWTCNative)
+	balanceAcc4 := mgr.Keeper().GetBalanceOf(ctx, acc4, common.SwitchNative)
 	c.Assert(balanceAcc4.IsZero(), Equals, true)
 
-	balanceTCY := mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SWTCNative)
+	balanceTCY := mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SwitchNative)
 	c.Assert(balanceTCY.Amount.Equal(math.NewInt(tcyStakeFeeAmount)), Equals, true)
-	c.Assert(balanceTCY.Denom, Equals, common.SWTCNative.Native())
+	c.Assert(balanceTCY.Denom, Equals, common.SwitchNative.Native())
 
 	c.Assert(mgr.Keeper().TCYStakerExists(ctx, address1), Equals, true)
 	c.Assert(mgr.Keeper().TCYStakerExists(ctx, address2), Equals, true)
@@ -1380,7 +1380,7 @@ func (s *NetworkManagerVCURTestSuite) TestDistributeTCYStake(c *C) {
 	tcyStakeFeeAmount = 210_000_000_00000000 - tcyStakeFeeAmount
 	c.Assert(tcyStakeFeeAmount > 0, Equals, true)
 	FundModule(c, ctx, mgr.Keeper(), TCYStakeName, uint64(tcyStakeFeeAmount))
-	balanceTCY = mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SWTCNative)
+	balanceTCY = mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SwitchNative)
 	c.Assert(balanceTCY.Amount.Equal(math.NewInt(210_000_000_00000000)), Equals, true)
 
 	nmgr.distributeTCYStake(ctx, mgr)
@@ -1394,40 +1394,40 @@ func (s *NetworkManagerVCURTestSuite) TestDistributeTCYStake(c *C) {
 	// Check balances, accounts should have their corresponding part: 75% to acc1,
 	// 25% to acc2, 0% to acc4 and claiming the corresponding part of acc4.
 	// TCYStake should not have funds after the distribution
-	balanceAcc1 = mgr.Keeper().GetBalanceOf(ctx, acc1, common.SWTCNative)
+	balanceAcc1 = mgr.Keeper().GetBalanceOf(ctx, acc1, common.SwitchNative)
 	c.Assert(balanceAcc1.Amount.Equal(math.NewInt(157_499_999_99950000)), Equals, true)
-	c.Assert(balanceAcc1.Denom, Equals, common.SWTCNative.Native())
+	c.Assert(balanceAcc1.Denom, Equals, common.SwitchNative.Native())
 
-	balanceAcc2 = mgr.Keeper().GetBalanceOf(ctx, acc2, common.SWTCNative)
+	balanceAcc2 = mgr.Keeper().GetBalanceOf(ctx, acc2, common.SwitchNative)
 	c.Assert(balanceAcc2.Amount.Equal(math.NewInt(52_499_999_99950001)), Equals, true)
-	c.Assert(balanceAcc2.Denom, Equals, common.SWTCNative.Native())
+	c.Assert(balanceAcc2.Denom, Equals, common.SwitchNative.Native())
 
-	balanceAcc4 = mgr.Keeper().GetBalanceOf(ctx, acc4, common.SWTCNative)
+	balanceAcc4 = mgr.Keeper().GetBalanceOf(ctx, acc4, common.SwitchNative)
 	c.Assert(balanceAcc4.IsZero(), Equals, true)
 
-	balanceClaiming := mgr.Keeper().GetBalanceOfModule(ctx, TCYClaimingName, common.SWTCNative.Native())
+	balanceClaiming := mgr.Keeper().GetBalanceOfModule(ctx, TCYClaimingName, common.SwitchNative.Native())
 	c.Assert(balanceClaiming.Equal(math.NewUint(99999)), Equals, true)
 
-	balanceTCY = mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SWTCNative)
+	balanceTCY = mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SwitchNative)
 	c.Assert(balanceTCY.Amount.IsZero(), Equals, true)
 
 	// Move acc1, acc2 and claiming module RUNE balances to zero
-	coin = common.NewCoin(common.SWTCNative, cosmos.NewUint(balanceAcc1.Amount.Uint64()))
+	coin = common.NewCoin(common.SwitchNative, cosmos.NewUint(balanceAcc1.Amount.Uint64()))
 	err = mgr.Keeper().SendFromAccountToModule(ctx, acc1, ModuleName, common.NewCoins(coin))
 	c.Assert(err, IsNil)
-	balanceAcc1 = mgr.Keeper().GetBalanceOf(ctx, acc1, common.SWTCNative)
+	balanceAcc1 = mgr.Keeper().GetBalanceOf(ctx, acc1, common.SwitchNative)
 	c.Assert(balanceAcc1.Amount.IsZero(), Equals, true)
 
-	coin = common.NewCoin(common.SWTCNative, cosmos.NewUint(balanceAcc2.Amount.Uint64()))
+	coin = common.NewCoin(common.SwitchNative, cosmos.NewUint(balanceAcc2.Amount.Uint64()))
 	err = mgr.Keeper().SendFromAccountToModule(ctx, acc2, ModuleName, common.NewCoins(coin))
 	c.Assert(err, IsNil)
-	balanceAcc2 = mgr.Keeper().GetBalanceOf(ctx, acc2, common.SWTCNative)
+	balanceAcc2 = mgr.Keeper().GetBalanceOf(ctx, acc2, common.SwitchNative)
 	c.Assert(balanceAcc2.Amount.IsZero(), Equals, true)
 
-	coin = common.NewCoin(common.SWTCNative, cosmos.NewUint(balanceClaiming.Uint64()))
+	coin = common.NewCoin(common.SwitchNative, cosmos.NewUint(balanceClaiming.Uint64()))
 	err = mgr.Keeper().SendFromModuleToModule(ctx, TCYClaimingName, ModuleName, common.NewCoins(coin))
 	c.Assert(err, IsNil)
-	balanceClaiming = mgr.Keeper().GetBalanceOfModule(ctx, TCYClaimingName, common.SWTCNative.Native())
+	balanceClaiming = mgr.Keeper().GetBalanceOfModule(ctx, TCYClaimingName, common.SwitchNative.Native())
 	c.Assert(balanceClaiming.IsZero(), Equals, true)
 
 	// Change distribution to acc1 = 50%, acc2 = 25% and acc4 = 25%
@@ -1457,22 +1457,22 @@ func (s *NetworkManagerVCURTestSuite) TestDistributeTCYStake(c *C) {
 	// Check balances, accounts should have their corresponding part: 50% to acc1,
 	// 25% to acc2, 25% to acc3 and acc4 should not receive rune.
 	// TCYStake should not have funds after the distribution
-	balanceAcc1 = mgr.Keeper().GetBalanceOf(ctx, acc1, common.SWTCNative)
+	balanceAcc1 = mgr.Keeper().GetBalanceOf(ctx, acc1, common.SwitchNative)
 	c.Assert(balanceAcc1.Amount.Equal(math.NewInt(210_000_000_00000000)), Equals, true)
-	c.Assert(balanceAcc1.Denom, Equals, common.SWTCNative.Native())
+	c.Assert(balanceAcc1.Denom, Equals, common.SwitchNative.Native())
 
-	balanceAcc2 = mgr.Keeper().GetBalanceOf(ctx, acc2, common.SWTCNative)
+	balanceAcc2 = mgr.Keeper().GetBalanceOf(ctx, acc2, common.SwitchNative)
 	c.Assert(balanceAcc2.Amount.Equal(math.NewInt(105_000_000_00000000)), Equals, true)
-	c.Assert(balanceAcc2.Denom, Equals, common.SWTCNative.Native())
+	c.Assert(balanceAcc2.Denom, Equals, common.SwitchNative.Native())
 
-	balanceAcc3 = mgr.Keeper().GetBalanceOf(ctx, acc3, common.SWTCNative)
+	balanceAcc3 = mgr.Keeper().GetBalanceOf(ctx, acc3, common.SwitchNative)
 	c.Assert(balanceAcc3.Amount.Equal(math.NewInt(105_000_000_00000000)), Equals, true)
-	c.Assert(balanceAcc3.Denom, Equals, common.SWTCNative.Native())
+	c.Assert(balanceAcc3.Denom, Equals, common.SwitchNative.Native())
 
-	balanceAcc4 = mgr.Keeper().GetBalanceOf(ctx, acc4, common.SWTCNative)
+	balanceAcc4 = mgr.Keeper().GetBalanceOf(ctx, acc4, common.SwitchNative)
 	c.Assert(balanceAcc4.IsZero(), Equals, true)
 
-	balanceTCY = mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SWTCNative)
+	balanceTCY = mgr.Keeper().GetBalanceOf(ctx, tcyStakeAddress, common.SwitchNative)
 	c.Assert(balanceTCY.Amount.IsZero(), Equals, true)
 }
 

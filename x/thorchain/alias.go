@@ -17,7 +17,7 @@ const (
 	LendingName            = types.LendingName
 	AffiliateCollectorName = types.AffiliateCollectorName
 	TreasuryName           = types.TreasuryName
-	RUNEPoolName           = types.SWTCPoolName
+	RUNEPoolName           = types.SwitchPoolName
 	TCYClaimingName        = types.TCYClaimingName
 	TCYStakeName           = types.TCYStakeName
 	RouterKey              = types.RouterKey

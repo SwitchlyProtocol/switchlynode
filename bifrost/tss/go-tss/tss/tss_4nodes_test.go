@@ -37,10 +37,10 @@ const (
 
 var (
 	testPubKeys = []string{
-		"tswtcpub1addwnpepqtdklw8tf3anjz7nn5fly3uvq2e67w2apn560s4smmrt9e3x52nt2sj4kw5q",
-		"tswtcpub1addwnpepqtspqyy6gk22u37ztra4hq3hdakc0w0k60sfy849mlml2vrpfr0wv0r5e9k",
-		"tswtcpub1addwnpepq2ryyje5zr09lq7gqptjwnxqsy2vcdngvwd6z7yt5yjcnyj8c8cn5dkzxed",
-		"tswtcpub1addwnpepqfjcw5l4ay5t00c32mmlky7qrppepxzdlkcwfs2fd5u73qrwna0vzqfp7dj6",
+		"tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
+		"tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
+		"tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
+		"tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
 	}
 	testPriKeyArr = []string{
 		"MjQ1MDc2MmM4MjU5YjRhZjhhNmFjMmI0ZDBkNzBkOGE1ZTBmNDQ5NGI4NzM4OTYyM2E3MmI0OWMzNmE1ODZhNw==",
@@ -260,13 +260,13 @@ func (s *FourNodeTestSuite) doTestFailJoinParty(c *C, version string) {
 		if version == newJoinPartyVersion {
 			c.Assert(item.Blame.BlameNodes, HasLen, 2)
 			expectedFailNode := []string{
-				"tswtcpub1addwnpepqtdklw8tf3anjz7nn5fly3uvq2e67w2apn560s4smmrt9e3x52nt2sj4kw5q",
-				"tswtcpub1addwnpepq2ryyje5zr09lq7gqptjwnxqsy2vcdngvwd6z7yt5yjcnyj8c8cn5dkzxed",
+				"tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
+				"tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
 			}
 			c.Assert(item.Blame.BlameNodes[0].Pubkey, Equals, expectedFailNode[0])
 			c.Assert(item.Blame.BlameNodes[1].Pubkey, Equals, expectedFailNode[1])
 		} else {
-			expectedFailNode = "tswtcpub1addwnpepqtdklw8tf3anjz7nn5fly3uvq2e67w2apn560s4smmrt9e3x52nt2sj4kw5q"
+			expectedFailNode = "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3"
 			c.Assert(item.Blame.BlameNodes[0].Pubkey, Equals, expectedFailNode)
 		}
 	}

@@ -498,7 +498,7 @@ func scheduledOutbound(height int64, events []map[string]string) {
 			fmt.Sprintf("Clout (%s)", addr),
 			fmt.Sprintf(
 				"%f %s (%s)",
-				float64(clout.Amount.Uint64())/common.One, common.SWTCNative.Ticker, util.FormatUSD(cloutUSD),
+				float64(clout.Amount.Uint64())/common.One, common.SwitchNative.Ticker, util.FormatUSD(cloutUSD),
 			),
 		)
 	}
@@ -547,7 +547,7 @@ func scheduledOutbound(height int64, events []map[string]string) {
 			fmt.Sprintf("Clout (%s)", *status.Tx.FromAddress),
 			fmt.Sprintf(
 				"%f %s (%s)",
-				float64(clout.Amount.Uint64())/common.One, common.SWTCNative.Ticker, util.FormatUSD(cloutUSD),
+				float64(clout.Amount.Uint64())/common.One, common.SwitchNative.Ticker, util.FormatUSD(cloutUSD),
 			),
 		)
 	}
@@ -801,7 +801,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 			title := fmt.Sprintf(
 				"Large Transfer >> %s RUNE (%s)",
 				util.FormatLocale(amount/common.One),
-				util.USDValueString(block.Header.Height, common.NewCoin(common.SWTCNative, cosmos.NewUint(amount))),
+				util.USDValueString(block.Header.Height, common.NewCoin(common.SwitchNative, cosmos.NewUint(amount))),
 			)
 
 			// use known address labels in alert
@@ -974,7 +974,7 @@ func NewNode(block *thorscan.BlockResponse) {
 				switch msg := msg.(type) {
 				case *thorchain.MsgDeposit:
 					for _, coin := range msg.Coins {
-						if coin.Asset.Equals(common.SWTCNative) {
+						if coin.Asset.Equals(common.SwitchNative) {
 							amount = coin.Amount.Uint64()
 						}
 					}
@@ -1043,7 +1043,7 @@ txs:
 				switch msg := msg.(type) {
 				case *thorchain.MsgDeposit:
 					for _, coin := range msg.Coins {
-						if coin.Asset.Equals(common.SWTCNative) {
+						if coin.Asset.Equals(common.SwitchNative) {
 							amount = coin.Amount.Uint64()
 						}
 					}

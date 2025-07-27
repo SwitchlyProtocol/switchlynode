@@ -153,13 +153,13 @@ func (vm *SwapQueueAdvVCUR) checkFeelessSwap(pools Pools, pair tradePair, indexR
 		runeAmt := common.GetSafeShare(one, sourcePool.BalanceAsset, sourcePool.BalanceRune)
 		emit := common.GetSafeShare(runeAmt, targetPool.BalanceRune, targetPool.BalanceAsset)
 		ratio = vm.getRatio(one, emit)
-	case pair.source.IsRune():
+	case pair.source.IsSwitch():
 		pool, ok := pools.Get(pair.target.GetLayer1Asset())
 		if !ok {
 			return false
 		}
 		ratio = vm.getRatio(pool.BalanceRune, pool.BalanceAsset)
-	case pair.target.IsRune():
+	case pair.target.IsSwitch():
 		pool, ok := pools.Get(pair.source.GetLayer1Asset())
 		if !ok {
 			return false
@@ -185,7 +185,7 @@ func (vm *SwapQueueAdvVCUR) checkWithFeeSwap(ctx cosmos.Context, pools Pools, ms
 	target := common.NewCoin(msg.TargetAsset, msg.TradeTarget)
 	var emit cosmos.Uint
 	switch {
-	case !source.IsRune() && !target.IsRune():
+	case !source.IsSwitch() && !target.IsSwitch():
 		sourcePool, ok := pools.Get(source.Asset.GetLayer1Asset())
 		if !ok {
 			return false
@@ -196,13 +196,13 @@ func (vm *SwapQueueAdvVCUR) checkWithFeeSwap(ctx cosmos.Context, pools Pools, ms
 		}
 		emit = swapper.CalcAssetEmission(sourcePool.BalanceAsset, source.Amount, sourcePool.BalanceRune)
 		emit = swapper.CalcAssetEmission(targetPool.BalanceRune, emit, targetPool.BalanceAsset)
-	case source.IsRune():
+	case source.IsSwitch():
 		pool, ok := pools.Get(target.Asset.GetLayer1Asset())
 		if !ok {
 			return false
 		}
 		emit = swapper.CalcAssetEmission(pool.BalanceRune, source.Amount, pool.BalanceAsset)
-	case target.IsRune():
+	case target.IsSwitch():
 		pool, ok := pools.Get(source.Asset.GetLayer1Asset())
 		if !ok {
 			return false
@@ -262,7 +262,7 @@ func (vm *SwapQueueAdvVCUR) getAssetPairs(ctx cosmos.Context) (tradePairs, Pools
 	result := make(tradePairs, 0)
 	var pools Pools
 
-	assets := []common.Asset{common.SWTCAsset()}
+	assets := []common.Asset{common.SwitchAsset()}
 	iterator := vm.k.GetPoolIterator(ctx)
 	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
@@ -392,7 +392,7 @@ func (vm *SwapQueueAdvVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 
 			affiliateSwap = *NewMsgSwap(
 				msg.Tx,
-				common.SWTCAsset(),
+				common.SwitchAsset(),
 				msg.AffiliateAddress,
 				cosmos.ZeroUint(),
 				common.NoAddress,
@@ -428,14 +428,14 @@ func (vm *SwapQueueAdvVCUR) EndBlock(ctx cosmos.Context, mgr Manager) error {
 			todo = todo.findMatchingTrades(genTradePair(msg.Tx.Coins[0].Asset, msg.TargetAsset), pairs)
 			if !affiliateSwap.Tx.IsEmpty() {
 				// if asset sent in is native rune, no need
-				if affiliateSwap.Tx.Coins[0].IsRune() {
+				if affiliateSwap.Tx.Coins[0].IsSwitch() {
 					toAddress, err := msg.AffiliateAddress.AccAddress()
 					if err != nil {
 						ctx.Logger().Error("fail to convert address into AccAddress", "msg", msg.AffiliateAddress, "error", err)
 						continue
 					}
 					// since native transaction fee has been charged to inbound from address, thus for affiliated fee , the network doesn't need to charge it again
-					coin := common.NewCoin(common.SWTCAsset(), affiliateSwap.Tx.Coins[0].Amount)
+					coin := common.NewCoin(common.SwitchAsset(), affiliateSwap.Tx.Coins[0].Amount)
 					sdkErr := mgr.Keeper().SendFromModuleToAccount(ctx, AsgardName, toAddress, common.NewCoins(coin))
 					if sdkErr != nil {
 						ctx.Logger().Error("fail to send native asset to affiliate", "msg", msg.AffiliateAddress, "error", err, "asset", coin.Asset)
@@ -488,7 +488,7 @@ func (vm *SwapQueueAdvVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synth
 		targetAsset := item.msg.TargetAsset
 
 		for _, a := range []common.Asset{sourceAsset, targetAsset} {
-			if a.IsRune() {
+			if a.IsSwitch() {
 				continue
 			}
 
@@ -503,7 +503,7 @@ func (vm *SwapQueueAdvVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synth
 		}
 
 		poolAsset := sourceAsset
-		if poolAsset.IsRune() {
+		if poolAsset.IsSwitch() {
 			poolAsset = targetAsset
 		}
 		pool := pools[poolAsset]
@@ -516,12 +516,12 @@ func (vm *SwapQueueAdvVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synth
 		}
 		vm.getLiquidityFeeAndSlip(ctx, pool, item.msg.Tx.Coins[0], &items[i], virtualDepthMult)
 
-		if sourceAsset.IsRune() || targetAsset.IsRune() {
+		if sourceAsset.IsSwitch() || targetAsset.IsSwitch() {
 			// single swap , stop here
 			continue
 		}
 		// double swap , thus need to convert source coin to RUNE and calculate fee and slip again
-		runeCoin := common.NewCoin(common.SWTCAsset(), pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
+		runeCoin := common.NewCoin(common.SwitchAsset(), pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
 		poolAsset = targetAsset
 		pool = pools[poolAsset]
 		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {
@@ -542,7 +542,7 @@ func (vm *SwapQueueAdvVCUR) getLiquidityFeeAndSlip(ctx cosmos.Context, pool Pool
 	// Get our X, x, Y values
 	var X, x, Y cosmos.Uint
 	x = sourceCoin.Amount
-	if sourceCoin.IsRune() {
+	if sourceCoin.IsSwitch() {
 		X = pool.BalanceRune
 		Y = pool.BalanceAsset
 	} else {
@@ -558,7 +558,7 @@ func (vm *SwapQueueAdvVCUR) getLiquidityFeeAndSlip(ctx cosmos.Context, pool Pool
 		panic(err)
 	}
 	fee := swapper.CalcLiquidityFee(X, x, Y)
-	if sourceCoin.IsRune() {
+	if sourceCoin.IsSwitch() {
 		fee = pool.AssetValueInRune(fee)
 	}
 	slip := swapper.CalcSwapSlip(X, x)

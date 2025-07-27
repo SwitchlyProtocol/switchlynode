@@ -360,10 +360,10 @@ type MockWithdrawTxOutStore struct {
 }
 
 func (store *MockWithdrawTxOutStore) TryAddTxOutItem(ctx cosmos.Context, mgr Manager, toi TxOutItem, _ cosmos.Uint) (bool, error) {
-	if toi.Coin.IsRune() && store.errRune != nil {
+	if toi.Coin.IsSwitch() && store.errRune != nil {
 		return false, store.errRune
 	}
-	if !toi.Coin.IsRune() && store.errAsset != nil {
+	if !toi.Coin.IsSwitch() && store.errAsset != nil {
 		return false, store.errAsset
 	}
 	return true, nil
@@ -415,7 +415,7 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_outboundFailures(c *C) {
 		lp.RuneAddress,
 		cosmos.NewUint(1000),
 		asset,
-		common.SWTCAsset(),
+		common.SwitchAsset(),
 		na.NodeAddress)
 
 	c.Assert(msg.ValidateBasic(), IsNil)
@@ -452,7 +452,7 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_outboundFailures(c *C) {
 		}
 	}
 
-	msg.WithdrawalAsset = common.SWTCAsset()
+	msg.WithdrawalAsset = common.SwitchAsset()
 	handleCase(msg, errInternal, nil, "asym rune fail", true)
 
 	msg.WithdrawalAsset = common.BTCAsset

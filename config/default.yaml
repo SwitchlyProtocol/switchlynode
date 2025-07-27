@@ -30,8 +30,8 @@ bifrost:
       - BASE
       - XRP
       - XLM
-  switchlyprotocol:
-    chain_id: switchlyprotocol
+  switchly:
+    chain_id: switchly
     chain_host: localhost:1317
     chain_rpc: ""
     chain_ebifrost: localhost:50051

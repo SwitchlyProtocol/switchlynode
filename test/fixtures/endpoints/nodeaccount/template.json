@@ -1,11 +1,11 @@
 {
   "status": "Active",
   "pub_key_set": {},
-  "node_address": "tswtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk",
+  "node_address": "tswitch174h5548evx027razjd3lfcvhk3l9qk8szamtut",
   "version": "0.1.0",
   "slash_points": 0,
   "jail": {
-    "node_address": "tswtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk",
+    "node_address": "tswitch174h5548evx027razjd3lfcvhk3l9qk8szamtut",
     "release_height": 0,
     "reason": ""
   },
@@ -28,9 +28,9 @@
   "ip_address": "127.0.0.1",
   "bond": "0",
   "active_block_height": 0,
-  "bond_address": "tswtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk",
+  "bond_address": "tswitch174h5548evx027razjd3lfcvhk3l9qk8szamtut",
   "status_since": 0,
-  "node_operator_address": "tswtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk",
+  "node_operator_address": "tswitch174h5548evx027razjd3lfcvhk3l9qk8szamtut",
   "total_bond": "0",
   "peer_id": ""
 }

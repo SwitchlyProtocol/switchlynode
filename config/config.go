@@ -89,7 +89,7 @@ func Init() {
 	// TODO: The following can be cleaned once all deployments are updated to use
 	// explicit keys for the new configuration package. In the meantime we will preserve
 	// mappings from historical environment for backwards compatibility.
-	assert(viper.BindEnv("bifrost.switchlyprotocol.signer_name", "SIGNER_NAME"))
+	assert(viper.BindEnv("bifrost.switchly.signer_name", "SIGNER_NAME"))
 	assert(viper.BindEnv(
 		"bifrost.chains.btc.block_scanner.block_height_discover_back_off",
 		"BLOCK_SCANNER_BACKOFF",
@@ -132,20 +132,20 @@ func Init() {
 	))
 	assert(viper.BindEnv("bifrost.tss.bootstrap_peers", "PEER"))
 	assert(viper.BindEnv("bifrost.tss.external_ip", "EXTERNAL_IP"))
-	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_id", "CHAIN_ID"))
-	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_host", "CHAIN_API"))
-	assert(viper.BindEnv("bifrost.switchlyprotocol.chain_host", "BIFROST_SWITCHLYPROTOCOL_CHAIN_HOST"))
+	assert(viper.BindEnv("bifrost.switchly.chain_id", "CHAIN_ID"))
+	assert(viper.BindEnv("bifrost.switchly.chain_host", "CHAIN_API"))
+	assert(viper.BindEnv("bifrost.switchly.chain_host", "BIFROST_SWITCHLY_CHAIN_HOST"))
 	assert(viper.BindEnv(
-		"bifrost.switchlyprotocol.chain_rpc",
+		"bifrost.switchly.chain_rpc",
 		"CHAIN_RPC",
 	))
 	assert(viper.BindEnv(
-		"bifrost.switchlyprotocol.chain_rpc",
-		"BIFROST_SWITCHLYPROTOCOL_CHAIN_RPC",
+		"bifrost.switchly.chain_rpc",
+		"BIFROST_SWITCHLY_CHAIN_RPC",
 	))
 	assert(viper.BindEnv(
-		"bifrost.switchlyprotocol.chain_ebifrost",
-		"BIFROST_SWITCHLYPROTOCOL_CHAIN_EBIFROST",
+		"bifrost.switchly.chain_ebifrost",
+		"BIFROST_SWITCHLY_CHAIN_EBIFROST",
 	))
 	assert(viper.BindEnv(
 		"bifrost.chains.BTC.rpc_host",
@@ -371,6 +371,12 @@ func switchlySeeds() (seedAddrs, tmSeeds []string) {
 		}
 	} else {
 		seedAddrs = getSeedAddrs()
+	}
+
+	// skip further steps if there were no seeds to check
+	if len(seedAddrs) == 0 {
+		log.Warn().Msg("no seeds found")
+		return
 	}
 
 	// fetch p2p node ids from seeds

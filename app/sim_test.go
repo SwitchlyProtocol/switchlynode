@@ -251,7 +251,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simtestutil.AppOptionsMap, *SwitchlyProtocolApp) {
+func setupSimulationApp(t *testing.T, msg string) (simtypes.Config, dbm.DB, simtestutil.AppOptionsMap, *SwitchlyApp) {
 	config := simcli.NewConfigFromFlags()
 	config.ChainID = SimAppChainID
 

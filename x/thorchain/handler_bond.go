@@ -173,7 +173,7 @@ func (h BondHandler) handleV3_0_0(ctx cosmos.Context, msg MsgBond) (err error) {
 	// when node bond for the first time , send 1 RUNE to node address
 	// so as the node address will be created on SwitchlyProtocol otherwise node account won't be able to send tx
 	if acct == nil && nodeAccount.Bond.GTE(cosmos.NewUint(common.One)) {
-		coin := common.NewCoin(common.SWTCNative, cosmos.NewUint(common.One))
+		coin := common.NewCoin(common.SwitchNative, cosmos.NewUint(common.One))
 		if err = h.mgr.Keeper().SendFromModuleToAccount(ctx, BondName, msg.NodeAddress, common.NewCoins(coin)); err != nil {
 			ctx.Logger().Error("fail to send one RUNE to node address", "error", err)
 			nodeAccount.Status = NodeUnknown

@@ -83,7 +83,7 @@ func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) e
 		gasPool, err := h.mgr.Keeper().GetPool(ctx, gasAsset)
 		// Note that for a synthetic asset msg.Asset.Chain (unlike msg.Asset.GetChain())
 		// is intentionally used to be the external chain rather than SWITCHLY.
-		// Any destination asset starting with SWITCHLY should be rejected for no SWITCHLY.SWTC
+		// Any destination asset starting with SWITCHLY should be rejected for no SWITCHLY.SWITCH
 		// gas asset pool existing.
 		if err != nil {
 			return ErrInternal(err, "fail to get gas pool")
@@ -120,14 +120,14 @@ func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) e
 		if !msg.AssetAddress.IsChain(msg.Asset.GetLayer1Asset().GetChain()) {
 			return fmt.Errorf("asset address must be layer1 chain")
 		}
-		// Savers vaults are not currently enabled for RUNE
+		// Savers vaults are not currently enabled for SWITCH
 		if !msg.RuneAmount.IsZero() {
-			return fmt.Errorf("cannot deposit rune into a vault")
+			return fmt.Errorf("cannot deposit switch into a vault")
 		}
 	}
 
 	if !msg.RuneAddress.IsEmpty() && !msg.RuneAddress.IsChain(common.SWITCHLYChain) {
-		ctx.Logger().Error("rune address must be SwitchlyProtocol")
+		ctx.Logger().Error("switch address must be Switchly")
 		return errAddLiquidityFailValidation
 	}
 
@@ -183,25 +183,25 @@ func (h AddLiquidityHandler) validate(ctx cosmos.Context, msg MsgAddLiquidity) e
 	// the following is only applicable for mainnet
 	totalLiquidityRUNE, err := h.getTotalLiquidityRUNE(ctx)
 	if err != nil {
-		return ErrInternal(err, "fail to get total liquidity RUNE")
+		return ErrInternal(err, "fail to get total liquidity SWITCH")
 	}
 
-	// total liquidity RUNE after current add liquidity
+	// total liquidity SWITCH after current add liquidity
 	totalLiquidityRUNE = totalLiquidityRUNE.Add(msg.RuneAmount)
 	totalLiquidityRUNE = totalLiquidityRUNE.Add(pool.AssetValueInRune(msg.AssetAmount))
 	maximumLiquidityRune := h.mgr.Keeper().GetConfigInt64(ctx, constants.MaximumLiquidityRune)
 	if maximumLiquidityRune > 0 {
 		if totalLiquidityRUNE.GT(cosmos.NewUint(uint64(maximumLiquidityRune))) {
-			return errAddLiquidityRUNEOverLimit
+			return errAddLiquiditySWITCHOverLimit
 		}
 	}
 
 	coins := common.NewCoins(
-		common.NewCoin(common.SWTCAsset(), msg.RuneAmount),
+		common.NewCoin(common.SwitchAsset(), msg.RuneAmount),
 		common.NewCoin(msg.Asset, msg.AssetAmount),
 	)
 	if atTVLCap(ctx, coins, h.mgr) {
-		return errAddLiquidityRUNEMoreThanBond
+		return errAddLiquiditySWITCHMoreThanBond
 	}
 
 	return nil
@@ -653,7 +653,7 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 	return nil
 }
 
-// getTotalLiquidityRUNE we have in all pools
+// getTotalLiquiditySWITCH we have in all pools (legacy function name for backward compatibility)
 func (h AddLiquidityHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.Uint, error) {
 	pools, err := h.mgr.Keeper().GetPools(ctx)
 	if err != nil {
@@ -677,5 +677,5 @@ func (h AddLiquidityHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.U
 }
 
 func (h AddLiquidityHandler) needsSwap(msg MsgAddLiquidity) bool {
-	return len(msg.Tx.Coins) == 1 && !msg.Tx.Coins[0].IsRune() && !msg.Asset.Equals(msg.Tx.Coins[0].Asset)
+	return len(msg.Tx.Coins) == 1 && !msg.Tx.Coins[0].IsSwitch() && !msg.Asset.Equals(msg.Tx.Coins[0].Asset)
 }

@@ -62,7 +62,7 @@ func init() {
 	}
 	stringOverrides = map[ConstantName]string{
 		DefaultPoolStatus: "Available",
-		DevFundAddress:    "swtc1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u", // addr_thor_pig in regtest
+		DevFundAddress:    "switch1qhy9zkhtwxrma0epm0a7ln0lz3hq5vc5p6f3dn", // addr_thor_pig in regtest
 	}
 
 	v1Values := NewConstantValue()

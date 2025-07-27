@@ -111,7 +111,7 @@ func (s *HandlerTCYStake) TestHandle(c *C) {
 		common.BlankTxID,
 		common.NoAddress,
 		GetRandomRUNEAddress(),
-		common.NewCoins(common.NewCoin(common.SWTCNative, cosmos.NewUint(1))),
+		common.NewCoins(common.NewCoin(common.SwitchNative, cosmos.NewUint(1))),
 		common.Gas{},
 		"",
 	)

@@ -54,7 +54,7 @@ func (s *MemoSuite) SetUpSuite(c *C) {
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
-	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchlyprotocol"}, false, log.NewNopLogger())
+	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchly"}, false, log.NewNopLogger())
 	s.ctx = ctx.WithBlockHeight(18)
 
 	encodingConfig := testutil.MakeTestEncodingConfig(
@@ -87,7 +87,7 @@ func (s *MemoSuite) SetUpSuite(c *C) {
 		log.NewNopLogger(),
 	)
 	c.Assert(bk.MintCoins(ctx, types.ModuleName, cosmos.Coins{
-		cosmos.NewCoin(common.SWTCNative.Native(), cosmos.NewInt(200_000_000_00000000)),
+		cosmos.NewCoin(common.SwitchNative.Native(), cosmos.NewInt(200_000_000_00000000)),
 	}), IsNil)
 	uk := upgradekeeper.NewKeeper(
 		nil,
@@ -114,44 +114,40 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	k := s.k
 
 	// happy paths
-	memo, err := ParseMemoWithTHORNames(ctx, k, "d:"+common.SWTCNative.String())
+	memo, err := ParseMemoWithTHORNames(ctx, k, "d:"+common.SwitchNative.String())
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxDonate), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.IsInbound(), Equals, true)
 	c.Check(memo.IsInternal(), Equals, false)
 	c.Check(memo.IsOutbound(), Equals, false)
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "+:"+common.SWTCNative.String())
-	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
-	c.Check(memo.IsType(TxAdd), Equals, true, Commentf("MEMO: %+v", memo))
-	c.Check(memo.IsInbound(), Equals, true)
-	c.Check(memo.IsInternal(), Equals, false)
-	c.Check(memo.IsOutbound(), Equals, false)
+	memo, err = ParseMemoWithTHORNames(ctx, k, "+:"+common.SwitchNative.String())
+	c.Assert(err, NotNil) // Should fail - cannot add liquidity to native token
+	c.Check(err.Error(), Equals, "cannot add liquidity with SWITCHLY chain: unknown request")
 
 	_, err = ParseMemoWithTHORNames(ctx, k, "add:BTC.BTC:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:xxxx")
 	c.Assert(err, NotNil)
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("-:%s:25", common.SWTCNative.String()))
+	memo, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("-:%s:25", common.SwitchNative.String()))
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxWithdraw), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetAmount().Uint64(), Equals, uint64(25), Commentf("%d", memo.GetAmount().Uint64()))
 	c.Check(memo.IsInbound(), Equals, true)
 	c.Check(memo.IsInternal(), Equals, false)
 	c.Check(memo.IsOutbound(), Equals, false)
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "=:r:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:87e7")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "=:s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:87e7")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Equal(cosmos.NewUint(870000000)), Equals, true)
 	c.Check(memo.IsInbound(), Equals, true)
 	c.Check(memo.IsInternal(), Equals, false)
 	c.Check(memo.IsOutbound(), Equals, false)
-	c.Check(memo.GetAsset().String(), Equals, "SWITCHLY.SWTC")
+	c.Check(memo.GetAsset().String(), Equals, "SWITCHLY.SWITCH")
 
 	// custom refund address
 	refundAddr := types.GetRandomTHORAddress()
@@ -209,9 +205,9 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	c.Assert(err.Error(), Equals, "total affiliate fee basis points can't be more than 10000")
 
 	// test streaming swap
-	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Equal(cosmos.NewUint(1200)), Equals, true)
@@ -222,9 +218,9 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Check(swapMemo.GetStreamQuantity(), Equals, uint64(20), Commentf("%d", swapMemo.GetStreamQuantity()))
 	c.Check(swapMemo.GetStreamInterval(), Equals, uint64(10))
-	c.Check(swapMemo.String(), Equals, "=:SWITCHLY.SWTC:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20")
+	c.Check(swapMemo.String(), Equals, "=:SWITCHLY.SWITCH:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20")
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a://")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a://")
 	c.Assert(err, IsNil)
 	c.Check(memo.GetSlipLimit().String(), Equals, "0")
 	swapMemo, ok = memo.(SwapMemo)
@@ -233,29 +229,29 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	c.Check(swapMemo.GetStreamInterval(), Equals, uint64(0))
 
 	// wacky lending tests
-	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20abc", common.SWTCNative))
+	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/20abc", common.SwitchNative))
 	c.Assert(err, NotNil)
-	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/////", common.SWTCNative))
+	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/////", common.SwitchNative))
 	c.Assert(err, NotNil)
-	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/-20", common.SWTCNative))
+	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/10/-20", common.SwitchNative))
 	c.Assert(err, NotNil)
-	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/-10/20", common.SWTCNative))
+	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/-10/20", common.SwitchNative))
 	c.Assert(err, NotNil)
-	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/102103980982304982058230492830429384080/20", common.SWTCNative))
+	_, err = ParseMemoWithTHORNames(ctx, k, fmt.Sprintf("=:%s:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1200/102103980982304982058230492830429384080/20", common.SwitchNative))
 	c.Assert(err, NotNil)
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Uint64(), Equals, uint64(0))
 	c.Check(memo.IsInbound(), Equals, true)
 	c.Check(memo.GetDexAggregator(), Equals, "")
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::::123:0x2354234523452345:1234444")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::::123:0x2354234523452345:1234444")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Equal(cosmos.ZeroUint()), Equals, true)
@@ -264,7 +260,7 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	c.Check(memo.GetDexTargetLimit().Equal(cosmos.NewUint(1234444)), Equals, true)
 
 	// test dex agg limit with scientific notation - long number
-	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::::123:0x2354234523452345:1425e18")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "=:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::::123:0x2354234523452345:1425e18")
 	c.Assert(err, IsNil)
 	c.Check(memo.GetDexTargetLimit().Equal(cosmos.NewUintFromString("1425000000000000000000")), Equals, true) // noting the large number overflows `cosmos.NewUint`
 
@@ -329,7 +325,7 @@ func (s *MemoSuite) TestParseWithAbbreviated(c *C) {
 	c.Check(memo.IsInternal(), Equals, false)
 	c.Check(memo.IsOutbound(), Equals, false)
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "$+:BTC.BTC:bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej:45e3:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:1000:aggie:aggtar:55")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "$+:BTC.BTC:bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej:45e3:0x90f2b1ae50e6018230e90a33f98c7844a0ab635a::1000:aggie:aggtar:55")
 	c.Assert(err, IsNil)
 	m, ok := memo.(LoanOpenMemo)
 	c.Assert(ok, Equals, true)
@@ -392,17 +388,15 @@ func (s *MemoSuite) TestParse(c *C) {
 	k.SetTHORName(ctx, name)
 
 	// happy paths
-	memo, err := ParseMemoWithTHORNames(ctx, k, "d:"+common.SWTCNative.String())
+	memo, err := ParseMemoWithTHORNames(ctx, k, "d:"+common.SwitchNative.String())
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxDonate), Equals, true, Commentf("MEMO: %+v", memo))
-	c.Check(memo.String(), Equals, "DONATE:"+common.SWTCNative.String())
+	c.Check(memo.String(), Equals, "DONATE:"+common.SwitchNative.String())
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "ADD:"+common.SWTCNative.String())
-	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
-	c.Check(memo.IsType(TxAdd), Equals, true, Commentf("MEMO: %+v", memo))
-	c.Check(memo.String(), Equals, "+:SWITCHLY.SWITCH")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "ADD:"+common.SwitchNative.String())
+	c.Assert(err, NotNil) // Should fail - cannot add liquidity to native token
+	c.Check(err.Error(), Equals, "cannot add liquidity with SWITCHLY chain: unknown request")
 
 	_, err = ParseMemoWithTHORNames(ctx, k, "ADD:BTC.BTC")
 	c.Assert(err, IsNil)
@@ -443,15 +437,15 @@ func (s *MemoSuite) TestParse(c *C) {
 	fmt.Println(tr2)
 	c.Check(tr2.GetAddress().Equals(ethAddr), Equals, true)
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "WITHDRAW:"+common.SWTCNative.String()+":25")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "WITHDRAW:"+common.SwitchNative.String()+":25")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxWithdraw), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetAmount().Equal(cosmos.NewUint(25)), Equals, true, Commentf("%d", memo.GetAmount().Uint64()))
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:870000000:hello:100")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:870000000:hello:100")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Equal(cosmos.NewUint(870000000)), Equals, true)
@@ -460,16 +454,16 @@ func (s *MemoSuite) TestParse(c *C) {
 	c.Check(memo.GetAffiliates()[0], Equals, "hello")
 	c.Check(memo.GetAffiliatesBasisPoints()[0].Uint64(), Equals, uint64(100))
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Uint64(), Equals, uint64(0))
 
-	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.SWTCNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:")
+	memo, err = ParseMemoWithTHORNames(ctx, k, "SWAP:"+common.SwitchNative.String()+":0x90f2b1ae50e6018230e90a33f98c7844a0ab635a:")
 	c.Assert(err, IsNil)
-	c.Check(memo.GetAsset().String(), Equals, common.SWTCNative.String())
+	c.Check(memo.GetAsset().String(), Equals, common.SwitchNative.String())
 	c.Check(memo.IsType(TxSwap), Equals, true, Commentf("MEMO: %+v", memo))
 	c.Check(memo.GetDestination().String(), Equals, "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a")
 	c.Check(memo.GetSlipLimit().Uint64(), Equals, uint64(0))

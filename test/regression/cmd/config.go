@@ -53,20 +53,20 @@ func init() {
 	keyRing = keyring.NewInMemory(encodingConfig.Codec)
 
 	// Having set the prefixes, derive the module addresses.
-	ModuleAddrTransfer = authtypes.NewModuleAddress("transfer").String() // "tswtc1yl6hdjhmkf37639730gffanpzndzdpmhv07zme"
-	// "transfer" is special, as http://localhost:1317/auth/accounts/tswtc1yl6hdjhmkf37639730gffanpzndzdpmhv07zme
+	ModuleAddrTransfer = authtypes.NewModuleAddress("transfer").String() // "tswitch1yl6hdjhmkf37639730gffanpzndzdpmhv07zme"
+	// "transfer" is special, as http://localhost:1317/auth/accounts/tswitch1yl6hdjhmkf37639730gffanpzndzdpmhv07zme
 	// gets the name from the address, but no address from name from http://localhost:1317/thorchain/balance/module/transfer
-	ModuleAddrThorchain = authtypes.NewModuleAddress("thorchain").String()                    // "tswtc1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp"
-	ModuleAddrAsgard = authtypes.NewModuleAddress("asgard").String()                          // "tswtc1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2"
-	ModuleAddrBond = authtypes.NewModuleAddress("bond").String()                              // "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff"
-	ModuleAddrReserve = authtypes.NewModuleAddress("reserve").String()                        // "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw"
-	ModuleAddrFeeCollector = authtypes.NewModuleAddress("fee_collector").String()             // "tswtc17xpfvakm2amg962yls6f84z3kell8c5ljftt88"
-	ModuleAddrLending = authtypes.NewModuleAddress("lending").String()                        // "tswtc1x0kgm82cnj0vtmzdvz4avk3e7sj427t0al8wky"
-	ModuleAddrAffiliateCollector = authtypes.NewModuleAddress("affiliate_collector").String() // "tswtc1dl7un46w7l7f3ewrnrm6nq58nerjtp0d82uzjg"
-	ModuleAddrTreasury = authtypes.NewModuleAddress("treasury").String()                      // "tswtc1vmafl8f3s6uuzwnxkqz0eza47v6ecn0ttstnny"
-	ModuleAddrRUNEPool = authtypes.NewModuleAddress("rune_pool").String()                     // "tswtc1rzqfv62dzu585607s5awqtgnvvwz5rzhfuaw80"
-	ModuleAddrClaiming = authtypes.NewModuleAddress("tcy_claim").String()                     // "tswtc1ss8rrf3twa20kf9frdyru05dmu2kg9llwwcgag"
-	ModuleAddrTCYStake = authtypes.NewModuleAddress("tcy_stake").String()                     // "tswtc128a8hqnkaxyqv7qwajpggmfyudh64jl3uxmuaf"
+	ModuleAddrThorchain = authtypes.NewModuleAddress("thorchain").String()                    // "tswitch1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp"
+	ModuleAddrAsgard = authtypes.NewModuleAddress("asgard").String()                          // "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2"
+	ModuleAddrBond = authtypes.NewModuleAddress("bond").String()                              // "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff"
+	ModuleAddrReserve = authtypes.NewModuleAddress("reserve").String()                        // "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw"
+	ModuleAddrFeeCollector = authtypes.NewModuleAddress("fee_collector").String()             // "tswitch17xpfvakm2amg962yls6f84z3kell8c5ljftt88"
+	ModuleAddrLending = authtypes.NewModuleAddress("lending").String()                        // "tswitch1x0kgm82cnj0vtmzdvz4avk3e7sj427t0al8wky"
+	ModuleAddrAffiliateCollector = authtypes.NewModuleAddress("affiliate_collector").String() // "tswitch1dl7un46w7l7f3ewrnrm6nq58nerjtp0d82uzjg"
+	ModuleAddrTreasury = authtypes.NewModuleAddress("treasury").String()                      // "tswitch1vmafl8f3s6uuzwnxkqz0eza47v6ecn0ttstnny"
+	ModuleAddrRUNEPool = authtypes.NewModuleAddress("rune_pool").String()                     // "tswitch1rzqfv62dzu585607s5awqtgnvvwz5rzhfuaw80"
+	ModuleAddrClaiming = authtypes.NewModuleAddress("tcy_claim").String()                     // "tswitch1ss8rrf3twa20kf9frdyru05dmu2kg9llwwcgag"
+	ModuleAddrTCYStake = authtypes.NewModuleAddress("tcy_stake").String()                     // "tswitch128a8hqnkaxyqv7qwajpggmfyudh64jl3uxmuaf"
 }
 
 func clientContextAndFactory(routine int) (client.Context, tx.Factory) {

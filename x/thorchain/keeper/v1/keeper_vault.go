@@ -129,7 +129,7 @@ func (k KVStore) getSortedVaultSecurity(ctx cosmos.Context, vaults Vaults, signi
 		// get total value
 		totalValue := cosmos.ZeroUint()
 		for _, coin := range vault.Coins {
-			if coin.IsRune() {
+			if coin.IsSwitch() {
 				continue
 			} else {
 				pool, err := k.GetPool(ctx, coin.Asset)
@@ -161,7 +161,7 @@ func (k KVStore) getSortedVaultSecurity(ctx cosmos.Context, vaults Vaults, signi
 						continue
 					}
 					if item.VaultPubKey.Equals(vault.PubKey) {
-						if item.Coin.IsRune() {
+						if item.Coin.IsSwitch() {
 							totalValue = common.SafeSub(totalValue, item.Coin.Amount)
 						} else {
 							var pool Pool
@@ -173,7 +173,7 @@ func (k KVStore) getSortedVaultSecurity(ctx cosmos.Context, vaults Vaults, signi
 							totalValue = common.SafeSub(totalValue, pool.AssetValueInRune(item.Coin.Amount))
 						}
 					} else if item.ToAddress.Equals(toAddress) {
-						if item.Coin.IsRune() {
+						if item.Coin.IsSwitch() {
 							totalValue = totalValue.Add(item.Coin.Amount)
 						} else {
 							var pool Pool

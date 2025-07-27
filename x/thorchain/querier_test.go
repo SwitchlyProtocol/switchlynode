@@ -1196,8 +1196,8 @@ func (s *QuerierSuite) TestQueryVersion(c *C) {
 }
 
 func (s *QuerierSuite) TestPeerIDFromPubKey(c *C) {
-	// Success example, secp256k1 pubkey from Mocknet node tswtc1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k
-	var mocknetPubKey common.PubKey = "tswtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lw6wrkn"
+	// Success example, secp256k1 pubkey from Mocknet node tswitch1jgnk2mg88m57csrmrlrd6c3qe4lag3e33y2f3k
+	var mocknetPubKey common.PubKey = "tswitchpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5vcflnd"
 	c.Assert(getPeerIDFromPubKey(mocknetPubKey), Equals, "16Uiu2HAm9LeTqHJWSa67eHNZzSz3yKb64dbj7A4V1Ckv9hXyDkQR")
 
 	// Failure example.
@@ -1293,21 +1293,21 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 		addressBTC = "bcrt1qg2px54as9vgzaarkr0zy95hacg3lg4kqz4rrwf"
 		addressTHOR = "tswitch1em3zz5pamuftha9nafr7rsa8u860pjeycw6g3c"
 		values = []string{
-			// "=:r:tswtc12xxg2sevm35q54vjhssqhlf7lq8d2xhmu5k0gr/bcrt1qg2px54as9vgzaarkr0zy95ha^"
-			"3d3a723a7474686f723132787867327365766d3335713534766a68737371686c66376c7138643278686d75356b3067722f62637274317167327078353461733976677a6161726b72307a79393568615e",
+			// "=:s:tswitch1em3zz5pamuftha9nafr7rsa8u860pjeycw6g3c/bcrt1qg2px54as9vgzaarkr0zy95^"
+			"3d3a733a7473776974636831656d337a7a3570616d7566746861396e616672377273613875383630706a65796377366733632f62637274317167327078353461733976677a6161726b72307a7939355e",
 			// 0014 6367336c67346b717a34727277663a3937303030
 			// "cg3lg4kqz4rrwf:97000"
-			"bcrt1qvdnnxmr8x34hz735wfe8we368ymnqvps48zjwg",
+			"bcrt1qdpskxeend3nng6m30g68yunhvcarjdes2aq60d",
 			// 0014 3030303030302f312f313a666f6f3a3530000000
 			// "000000/1/1:foo:50"
-			"bcrt1qxqcrqvpsxqhnzte38fnx7me6x5cqqqqq7z5meh",
+			"bcrt1qxqcrqvpsxqcrqte39ucn5en0duar2vqqdmls6r",
 		}
 	} else {
 		addressBTC = "bc1qk5700y6zwtnjzeh4mffh5qcl46vqgs4lf6rm6m"
 		addressTHOR = "thor14j7zjhnazs85macymj4g0xugr8jhdwg07rh2yy"
 		values = []string{
-			// "=:r:thor14j7zjhnazs85macymj4g0xugr8jhdwg07rh2yy/bc1qk5700y6zwtnjzeh4mffh5qcl46v^"
-			"3d3a723a74686f7231346a377a6a686e617a7338356d6163796d6a34673078756772386a68647767303772683279792f626331716b3537303079367a77746e6a7a6568346d6666683571636c3436765e",
+			// "=:s:thor14j7zjhnazs85macymj4g0xugr8jhdwg07rh2yy/bc1qk5700y6zwtnjzeh4mffh5qcl46v^"
+			"3d3a733a74686f7231346a377a6a686e617a7338356d6163796d6a34673078756772386a68647767303772683279792f626331716b3537303079367a77746e6a7a6568346d6666683571636c3436765e",
 			// 0014 716773346c6636726d366d3a3937303030303030
 			// "qgs4lf6rm6m:97000000"
 			"bc1qw9nhxdrvvcm8ymfkd5arjdesxqcrqvpsndj8fe",
@@ -1319,7 +1319,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 
 	request := types.QueryQuoteSwapRequest{
 		FromAsset:         common.BTCAsset.String(),
-		ToAsset:           common.SWTCNative.String(),
+		ToAsset:           common.SwitchNative.String(),
 		Amount:            "10000000",
 		StreamingInterval: "1",
 		StreamingQuantity: "5",
@@ -1344,7 +1344,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(queryPoolsResp, NotNil)
 
-	memo := fmt.Sprintf("=:r:%s/%s:97000000000/1/1:foo:50", addressTHOR, addressBTC)
+	memo := fmt.Sprintf("=:s:%s/%s:97000000000/1/1:foo:50", addressTHOR, addressBTC)
 	c.Assert(queryPoolsResp.Memo, Equals, memo)
 	c.Assert(len(queryPoolsResp.Vout), Equals, 3)
 
@@ -1383,8 +1383,8 @@ func (s *QuerierSuite) TestQueryCodes(c *C) {
 	c.Assert(code.Code, Equals, "a8f1a38aa518864169e30ab482ea86558a817982a030b8888ea6dfa0cd700128")
 	c.Assert(code.Origin, Equals, "https://thorchain.org")
 	c.Assert(len(code.Deployers), Equals, 2)
-	c.Assert(code.Deployers[0], Equals, "tswitch1nrp4veflhpjnv87akxcpxln5lmc4z4kkdsdpd5")
-	c.Assert(code.Deployers[1], Equals, "tswitch1770gl4x5u7aauzlc7su7j3kl6jgduz2wck29yl")
+	c.Assert(code.Deployers[0], Equals, "tswitch1770gl4x5u7aauzlc7su7j3kl6jgduz2wck29yl")
+	c.Assert(code.Deployers[1], Equals, "tswitch1nrp4veflhpjnv87akxcpxln5lmc4z4kkdsdpd5")
 }
 
 func (s *QuerierSuite) TestNetwork(c *C) {

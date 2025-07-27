@@ -119,7 +119,7 @@ func (m Migrator) Migrate4to5(ctx sdk.Context) error {
 			continue
 		}
 		amount := cosmos.NewUint(slashRefund.amount)
-		refundCoins := common.NewCoins(common.NewCoin(common.SWTCAsset(), amount))
+		refundCoins := common.NewCoins(common.NewCoin(common.SwitchAsset(), amount))
 		if err := m.mgr.Keeper().SendFromModuleToAccount(ctx, ReserveName, recipient, refundCoins); err != nil {
 			ctx.Logger().Error("fail to store migration transfer RUNE from Reserve to recipient", "error", err, "recipient", recipient, "amount", amount)
 		}
@@ -161,7 +161,7 @@ func (m Migrator) Migrate5to6(ctx sdk.Context) error {
 			continue
 		}
 		amount := cosmos.NewUint(slashRefund.amount)
-		refundCoins := common.NewCoins(common.NewCoin(common.SWTCAsset(), amount))
+		refundCoins := common.NewCoins(common.NewCoin(common.SwitchAsset(), amount))
 		if err := m.mgr.Keeper().SendFromModuleToAccount(ctx, ReserveName, recipient, refundCoins); err != nil {
 			ctx.Logger().Error("fail to store migration transfer RUNE from Reserve to recipient",
 				"error", err,

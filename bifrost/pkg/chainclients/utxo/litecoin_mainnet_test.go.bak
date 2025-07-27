@@ -13,7 +13,7 @@ import (
 
 func (s *LitecoinSuite) TestGetAddress(c *C) {
 	ttypes.SetupConfigForTest()
-	pubkey := common.PubKey("swtcpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d")
+	pubkey := common.PubKey("switchpub1addwnpepqdx7khjtlpyhjpjhxcws2kdedkf80l0u7qhk778sy85rfdeg9jwmsqa444d")
 	addr := s.client.GetAddress(pubkey)
 	c.Assert(addr, Equals, "ltc1qycp4dta4wse4825nk9j4wt42357nj3tdn26ezm")
 }

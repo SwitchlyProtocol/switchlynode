@@ -291,7 +291,7 @@ func (vm *SwapQueueVCUR) cleanupFailedPreferredAssetSwap(ctx cosmos.Context, mgr
 	}
 
 	// send rune back to affiliate collector
-	if err := mgr.Keeper().SendFromModuleToModule(ctx, AsgardName, AffiliateCollectorName, common.NewCoins(common.NewCoin(common.SWTCAsset(), runeAmt))); err != nil {
+	if err := mgr.Keeper().SendFromModuleToModule(ctx, AsgardName, AffiliateCollectorName, common.NewCoins(common.NewCoin(common.SwitchAsset(), runeAmt))); err != nil {
 		return fmt.Errorf("failed to send rune back to affiliate collector: %w", err)
 	}
 
@@ -325,7 +325,7 @@ func (vm *SwapQueueVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synthVir
 		targetAsset := item.msg.TargetAsset
 
 		for _, a := range []common.Asset{sourceAsset, targetAsset} {
-			if a.IsRune() {
+			if a.IsSwitch() {
 				continue
 			}
 
@@ -340,7 +340,7 @@ func (vm *SwapQueueVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synthVir
 		}
 
 		nonRuneAsset := sourceAsset
-		if nonRuneAsset.IsRune() {
+		if nonRuneAsset.IsSwitch() {
 			nonRuneAsset = targetAsset
 		}
 		pool := pools[nonRuneAsset]
@@ -357,12 +357,12 @@ func (vm *SwapQueueVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synthVir
 		}
 		vm.getLiquidityFeeAndSlip(ctx, pool, item.msg.Tx.Coins[0], &items[i], virtualDepthMult)
 
-		if sourceAsset.IsRune() || targetAsset.IsRune() {
+		if sourceAsset.IsSwitch() || targetAsset.IsSwitch() {
 			// single swap , stop here
 			continue
 		}
 		// double swap , thus need to convert source coin to RUNE and calculate fee and slip again
-		runeCoin := common.NewCoin(common.SWTCAsset(), pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
+		runeCoin := common.NewCoin(common.SwitchAsset(), pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
 		nonRuneAsset = targetAsset
 		pool = pools[nonRuneAsset]
 		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {
@@ -383,7 +383,7 @@ func (vm *SwapQueueVCUR) getLiquidityFeeAndSlip(ctx cosmos.Context, pool Pool, s
 	// Get our X, x, Y values
 	var X, x, Y cosmos.Uint
 	x = sourceCoin.Amount
-	if sourceCoin.IsRune() {
+	if sourceCoin.IsSwitch() {
 		X = pool.BalanceRune
 		Y = pool.BalanceAsset
 	} else {
@@ -400,7 +400,7 @@ func (vm *SwapQueueVCUR) getLiquidityFeeAndSlip(ctx cosmos.Context, pool Pool, s
 	}
 
 	fee := swapper.CalcLiquidityFee(X, x, Y)
-	if sourceCoin.IsRune() {
+	if sourceCoin.IsSwitch() {
 		fee = pool.AssetValueInRune(fee)
 	}
 	slip := swapper.CalcSwapSlip(X, x)

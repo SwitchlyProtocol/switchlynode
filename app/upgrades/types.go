@@ -16,12 +16,12 @@ import (
 
 // AppKeepers contains references to all keepers required for upgrades
 type AppKeepers struct {
-	SwitchlyprotocolKeeper thorchainKeeper.Keeper
-	AccountKeeper          *authkeeper.AccountKeeper
-	ParamsKeeper           *paramskeeper.Keeper
-	ConsensusParamsKeeper  *consensusparamkeeper.Keeper
-	Codec                  codec.BinaryCodec
-	GetStoreKey            func(string) *storetypes.KVStoreKey
+	SwitchlyKeeper        thorchainKeeper.Keeper
+	AccountKeeper         *authkeeper.AccountKeeper
+	ParamsKeeper          *paramskeeper.Keeper
+	ConsensusParamsKeeper *consensusparamkeeper.Keeper
+	Codec                 codec.BinaryCodec
+	GetStoreKey           func(string) *storetypes.KVStoreKey
 }
 
 type ModuleManager interface {

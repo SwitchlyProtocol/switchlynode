@@ -88,8 +88,15 @@ func (c Chain) IsSWITCHLYChain() bool {
 	return c.Equals(SWITCHLYChain)
 }
 
-func (c Chain) IsBSCChain() bool {
-	return c.Equals(BSCChain)
+// IsTHORChain checks if chain is THORChain (legacy method)
+// NOTE: This method is deprecated, use IsSWITCHLYChain instead
+func (c Chain) IsTHORChain() bool {
+	return c.IsSWITCHLYChain()
+}
+
+// IsSwitchlyChain checks if chain is SwitchlyChain (preferred method)
+func (c Chain) IsSwitchlyChain() bool {
+	return c.Equals(SWITCHLYChain)
 }
 
 // GetEVMChains returns all "EVM" chains connected to SWITCHLYChain
@@ -165,11 +172,11 @@ func (c Chain) GetSigningAlgo() SigningAlgo {
 	return SigningAlgoSecp256k1
 }
 
-// GetGasAsset chain's base asset
+// GetGasAsset return gas asset, only relevant for THORChain
 func (c Chain) GetGasAsset() Asset {
 	switch c {
 	case SWITCHLYChain:
-		return SWTCNative
+		return SwitchNative
 	case BSCChain:
 		return BNBBEP20Asset
 	case BTCChain:

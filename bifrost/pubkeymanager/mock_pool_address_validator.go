@@ -6,7 +6,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common"
 )
 
-var MockPubkey = "swtcpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lxhqhwz"
+var MockPubkey = "switchpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lxhqhwz"
 
 type MockPoolAddressValidator struct{}
 

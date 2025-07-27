@@ -142,7 +142,7 @@ func (t *SmartContractLogParserTestSuite) TestGetTxInItem_DepositEvents(c *C) {
 		Sender: "0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473",
 	}
 	isVaultTransfer, err = parser.GetTxInItem([]*etypes.Log{
-		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44", "0x6c4a2eeb8531e3c18bca51104df7eb2377708263", NativeTokenAddr, big.NewInt(0), "ADD:ETH.ETH:tswtc16dtdvudc97equcxw0qgkvvmm3j8k9w8750gq5l"),
+		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44", "0x6c4a2eeb8531e3c18bca51104df7eb2377708263", NativeTokenAddr, big.NewInt(0), "ADD:ETH.ETH:tswitch16dtdvudc97equcxw0qgkvvmm3j8k9w87mda7pe"),
 	}, txInItem)
 	c.Assert(isVaultTransfer, Equals, false)
 	c.Assert(err, IsNil)
@@ -154,7 +154,7 @@ func (t *SmartContractLogParserTestSuite) TestGetTxInItem_DepositEvents(c *C) {
 		Sender: "0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473",
 	}
 	isVaultTransfer, err = parser.GetTxInItem([]*etypes.Log{
-		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44", "0x6c4a2eeb8531e3c18bca51104df7eb2377708263", errAssetToken, big.NewInt(1024000), "ADD:ETH.ETH:tswtc16dtdvudc97equcxw0qgkvvmm3j8k9w8750gq5l"),
+		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44", "0x6c4a2eeb8531e3c18bca51104df7eb2377708263", errAssetToken, big.NewInt(1024000), "ADD:ETH.ETH:tswitch16dtdvudc97equcxw0qgkvvmm3j8k9w87mda7pe"),
 	}, txInItem)
 	c.Assert(isVaultTransfer, Equals, false)
 	c.Assert(err, IsNil)
@@ -166,12 +166,12 @@ func (t *SmartContractLogParserTestSuite) TestGetTxInItem_DepositEvents(c *C) {
 		Sender: "0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473",
 	}
 	isVaultTransfer, err = parser.GetTxInItem([]*etypes.Log{
-		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44", "0x6c4a2eeb8531e3c18bca51104df7eb2377708263", NativeTokenAddr, big.NewInt(1024000), "ADD:ETH.ETH:tswtc16dtdvudc97equcxw0qgkvvmm3j8k9w8750gq5l"),
+		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44", "0x6c4a2eeb8531e3c18bca51104df7eb2377708263", NativeTokenAddr, big.NewInt(1024000), "ADD:ETH.ETH:tswitch16dtdvudc97equcxw0qgkvvmm3j8k9w87mda7pe"),
 	}, txInItem)
 	c.Assert(err, IsNil)
 	c.Assert(isVaultTransfer, Equals, false)
 	c.Assert(txInItem.To, Equals, "0x6C4a2eEB8531E3C18BcA51104Df7eb2377708263")
-	c.Assert(txInItem.Memo, Equals, "ADD:ETH.ETH:tswtc16dtdvudc97equcxw0qgkvvmm3j8k9w8750gq5l")
+	c.Assert(txInItem.Memo, Equals, "ADD:ETH.ETH:tswitch16dtdvudc97equcxw0qgkvvmm3j8k9w87mda7pe")
 	c.Assert(txInItem.Coins.EqualsEx(common.NewCoins(common.NewCoin(common.ETHAsset, cosmos.NewUint(1024000)))), Equals, true)
 
 	// multiple Deposit events , which has different to address should result in an error
@@ -183,12 +183,12 @@ func (t *SmartContractLogParserTestSuite) TestGetTxInItem_DepositEvents(c *C) {
 			"0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473",
 			NativeTokenAddr,
 			big.NewInt(1024000),
-			"ADD:ETH.ETH:tswtc16dtdvudc97equcxw0qgkvvmm3j8k9w8750gq5l"),
+			"ADD:ETH.ETH:tswitch16dtdvudc97equcxw0qgkvvmm3j8k9w87mda7pe"),
 		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44",
 			"0x6c4a2eeb8531e3c18bca51104df7eb2377708263",
 			NativeTokenAddr,
 			big.NewInt(1024000),
-			"ADD:ETH.ETH:tswtc16dtdvudc97equcxw0qgkvvmm3j8k9w8750gq5l"),
+			"ADD:ETH.ETH:tswitch16dtdvudc97equcxw0qgkvvmm3j8k9w87mda7pe"),
 	}, txInItem)
 	c.Assert(isVaultTransfer, Equals, false)
 	c.Assert(err, NotNil)
@@ -202,7 +202,7 @@ func (t *SmartContractLogParserTestSuite) TestGetTxInItem_DepositEvents(c *C) {
 			"0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473",
 			NativeTokenAddr,
 			big.NewInt(1024000),
-			"ADD:ETH.ETH:tswtc16dtdvudc97equcxw0qgkvvmm3j8k9w8750gq5l"),
+			"ADD:ETH.ETH:tswitch16dtdvudc97equcxw0qgkvvmm3j8k9w87mda7pe"),
 		t.getDepositEvent("0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44",
 			"0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473",
 			NativeTokenAddr,

@@ -32,8 +32,8 @@ func (k *MockThorchainKeyManager) ExportAsKeyStore(password string) (*EncryptedK
 
 func (k *MockThorchainKeyManager) RemoteSign(msg []byte, poolPubKey string) ([]byte, []byte, error) {
 	// this is the key we are using to test TSS keysign result in BTC chain
-	// swtcpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5xqy5rtn
-	if poolPubKey == "swtcpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5xqy5rtn" {
+	// switchpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5xqy5rtn
+	if poolPubKey == "switchpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5xqy5rtn" {
 		msgToSign := base64.StdEncoding.EncodeToString(msg)
 		if msgToSign == "wqYuqkdeLjxtkKjmeAK0fOZygdw8zZgsDaJX7mrqWRE=" {
 			sig, err := getSignature("ku/n0D18euwqkgM0kZn0OVX9+D7wfDBIWBMya1SGxWg=", "fw0sE6osjVN6vQtr9WxFrOpdxizPz9etSTOKGdjDY9A=")
@@ -43,7 +43,7 @@ func (k *MockThorchainKeyManager) RemoteSign(msg []byte, poolPubKey string) ([]b
 			return sig, nil, err
 		}
 	}
-	if poolPubKey == "swtcpub1addwnpepqw2k68efthm08f0f5akhjs6fk5j2pze4wkwt4fmnymf9yd463puruhwcxkd5" {
+	if poolPubKey == "switchpub1addwnpepqw2k68efthm08f0f5akhjs6fk5j2pze4wkwt4fmnymf9yd463puruhwcxkd5" {
 		msgToSign := base64.StdEncoding.EncodeToString(msg)
 		switch msgToSign {
 		case "BMxXf+K+1dYu3qGgvH59GXoxwwFfTnLjB7hHf3qflPk=":
@@ -60,7 +60,7 @@ func (k *MockThorchainKeyManager) RemoteSign(msg []byte, poolPubKey string) ([]b
 			return sig, nil, err
 		}
 	}
-	if poolPubKey == "swtcpub1addwnpepqtvzm6wa6ezgjj9l4sdvzcf64wf0wzs8x9mgjfhjp6tkzcvkyfyqgddpqp4" {
+	if poolPubKey == "switchpub1addwnpepqtvzm6wa6ezgjj9l4sdvzcf64wf0wzs8x9mgjfhjp6tkzcvkyfyqgddpqp4" {
 		msgToSign := base64.StdEncoding.EncodeToString(msg)
 		if msgToSign == "PIZUt687khEYQizRpYbLyQgDw1Ou+xzbSrLQ8fTKiaw=" {
 			sig, err := base64.StdEncoding.DecodeString("HxT9xOyBYuhHfK8iLSbPniJq6u6KYfJVmq28iO+/Sa44ocAuckpzs3g6zBelr4pUaxatoKixAaPt2UtlgPP2sA==")

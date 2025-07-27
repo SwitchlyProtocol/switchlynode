@@ -1,7 +1,7 @@
-FROM registry.gitlab.com/switchlyprotocol/devops/node-launcher:bitcoin-daemon-22.0 as bitcoin
-FROM registry.gitlab.com/switchlyprotocol/devops/node-launcher:bitcoin-cash-daemon-24.0.0 as bitcoin-cash
-FROM registry.gitlab.com/switchlyprotocol/devops/node-launcher:dogecoin-daemon-1.14.5 as dogecoin
-FROM registry.gitlab.com/switchlyprotocol/devops/node-launcher:litecoin-daemon-0.18.1 as litecoin
+FROM registry.gitlab.com/thorchain/devops/node-launcher:bitcoin-daemon-22.0 as bitcoin
+FROM registry.gitlab.com/thorchain/devops/node-launcher:bitcoin-cash-daemon-24.0.0 as bitcoin-cash
+FROM registry.gitlab.com/thorchain/devops/node-launcher:dogecoin-daemon-1.14.5 as dogecoin
+FROM registry.gitlab.com/thorchain/devops/node-launcher:litecoin-daemon-0.18.1 as litecoin
 
 FROM golang:1.23.4 AS build
 

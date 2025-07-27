@@ -58,7 +58,7 @@ func (TssHttpServerTestSuite) TestGetP2pIDHandler(c *C) {
 }
 
 func (TssHttpServerTestSuite) TestKeygenHandler(c *C) {
-	normalKeygenRequest := `{"keys":["tswtcpub1addwnpepqtdklw8tf3anjz7nn5fly3uvq2e67w2apn560s4smmrt9e3x52nt2sj4kw5q", "tswtcpub1addwnpepqtspqyy6gk22u37ztra4hq3hdakc0w0k60sfy849mlml2vrpfr0wv0r5e9k", "tswtcpub1addwnpepq2ryyje5zr09lq7gqptjwnxqsy2vcdngvwd6z7yt5yjcnyj8c8cn5dkzxed", "tswtcpub1addwnpepqfjcw5l4ay5t00c32mmlky7qrppepxzdlkcwfs2fd5u73qrwna0vzqfp7dj6"]}`
+	normalKeygenRequest := `{"keys":["tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3", "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3", "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3", "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3"]}`
 	testCases := []struct {
 		name          string
 		reqProvider   func() *http.Request
@@ -127,13 +127,13 @@ func (TssHttpServerTestSuite) TestKeygenHandler(c *C) {
 
 func (TssHttpServerTestSuite) TestKeysignHandler(c *C) {
 	var normalKeySignRequest string = `{
-    "pool_pub_key": "tswtcpub1addwnpepqtdklw8tf3anjz7nn5fly3uvq2e67w2apn560s4smmrt9e3x52nt2sj4kw5q",
+    "pool_pub_key": "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
     "message": "helloworld",
     "signer_pub_keys": [
-        "tswtcpub1addwnpepqtdklw8tf3anjz7nn5fly3uvq2e67w2apn560s4smmrt9e3x52nt2sj4kw5q",
-        "tswtcpub1addwnpepqtspqyy6gk22u37ztra4hq3hdakc0w0k60sfy849mlml2vrpfr0wv0r5e9k",
-        "tswtcpub1addwnpepq2ryyje5zr09lq7gqptjwnxqsy2vcdngvwd6z7yt5yjcnyj8c8cn5dkzxed",
-        "tswtcpub1addwnpepqfjcw5l4ay5t00c32mmlky7qrppepxzdlkcwfs2fd5u73qrwna0vzqfp7dj6"
+        "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
+        "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
+        "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3",
+        "tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3"
     ]
 }`
 	testCases := []struct {

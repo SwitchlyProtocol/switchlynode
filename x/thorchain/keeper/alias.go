@@ -5,13 +5,13 @@ import (
 )
 
 const (
-	ModuleName   = types.ModuleName
-	ReserveName  = types.ReserveName
-	AsgardName   = types.AsgardName
-	TreasuryName = types.TreasuryName
-	SWTCPoolName = types.SWTCPoolName
-	BondName     = types.BondName
-	StoreKey     = types.StoreKey
+	ModuleName     = types.ModuleName
+	ReserveName    = types.ReserveName
+	AsgardName     = types.AsgardName
+	TreasuryName   = types.TreasuryName
+	SwitchPoolName = types.SwitchPoolName
+	BondName       = types.BondName
+	StoreKey       = types.StoreKey
 
 	ActiveVault = types.VaultStatus_ActiveVault
 

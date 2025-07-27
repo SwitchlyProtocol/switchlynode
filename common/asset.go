@@ -37,12 +37,12 @@ var (
 	XRPAsset = Asset{Chain: XRPChain, Symbol: "XRP", Ticker: "XRP", Synth: false}
 	// XLMAsset XLM
 	XLMAsset = Asset{Chain: StellarChain, Symbol: "XLM", Ticker: "XLM", Synth: false}
-	// SWTCNative SWITCH on switchly
-	SWTCNative  = Asset{Chain: SWITCHLYChain, Symbol: "SWITCH", Ticker: "SWITCH", Synth: false}
-	RUJI        = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
-	TCY         = Asset{Chain: SWITCHLYChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
-	TOR         = Asset{Chain: SWITCHLYChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
-	SWITCHLYBTC = Asset{Chain: SWITCHLYChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
+	// SwitchNative SWITCH on switchly
+	SwitchNative = Asset{Chain: SWITCHLYChain, Symbol: "SWITCH", Ticker: "SWITCH", Synth: false}
+	RUJI         = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
+	TCY          = Asset{Chain: SWITCHLYChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
+	TOR          = Asset{Chain: SWITCHLYChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
+	SWITCHLYBTC  = Asset{Chain: SWITCHLYChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
 )
 
 var _ sdk.CustomProtobufType = (*Asset)(nil)
@@ -112,7 +112,7 @@ func NewAssetWithShortCodesV3_1_0(input string) (Asset, error) {
 	shorts[DOGEAsset.ShortCode()] = DOGEAsset.String()
 	shorts[ETHAsset.ShortCode()] = ETHAsset.String()
 	shorts[LTCAsset.ShortCode()] = LTCAsset.String()
-	shorts[SWTCNative.ShortCode()] = SWTCNative.String()
+	shorts[SwitchNative.ShortCode()] = SwitchNative.String()
 	shorts[BaseETHAsset.ShortCode()] = BaseETHAsset.String()
 	shorts[XRPAsset.ShortCode()] = XRPAsset.String()
 	shorts[XLMAsset.ShortCode()] = XLMAsset.String()
@@ -242,13 +242,13 @@ func (a Asset) IsVaultAsset() bool {
 
 // Check if asset is a derived asset
 func (a Asset) IsDerivedAsset() bool {
-	return !a.Synth && !a.Trade && !a.Secured && a.GetChain().IsSWITCHLYChain() && !a.IsRune() && !a.IsTCY() && !a.IsRUJI()
+	return !a.Synth && !a.Trade && !a.Secured && a.GetChain().IsSWITCHLYChain() && !a.IsSwitch() && !a.IsTCY() && !a.IsRUJI()
 }
 
 // Native return native asset, only relevant on SWITCHLYChain
 func (a Asset) Native() string {
 	switch {
-	case a.IsRune():
+	case a.IsSwitch():
 		return "switch"
 	case a.Equals(TOR):
 		return "tor"
@@ -285,7 +285,7 @@ func (a Asset) String() string {
 func (a Asset) ShortCode() string {
 	switch a.String() {
 	case "SWITCHLY.SWITCH":
-		return "r"
+		return "s" // "s" for SWITCH
 	case "GAIA.ATOM":
 		return "g"
 	case "DOGE.DOGE":
@@ -298,6 +298,8 @@ func (a Asset) ShortCode() string {
 		return "a"
 	case "BTC.BTC":
 		return "b"
+	case "ETH.ETH":
+		return "e"
 	case "BSC.BNB":
 		return "n"
 	case "BASE.ETH":
@@ -320,8 +322,8 @@ func (a Asset) IsGasAsset() bool {
 	return a.Equals(gasAsset)
 }
 
-// SWTCAsset is the SWTC asset
-func SWTCAsset() Asset {
+// SwitchAsset is the SWITCH asset
+func SwitchAsset() Asset {
 	return Asset{
 		Chain:  SWITCHLYChain,
 		Symbol: "SWITCH",
@@ -330,9 +332,20 @@ func SWTCAsset() Asset {
 	}
 }
 
-// IsRune check whether asset is RUNE
+// IsSwitch check whether asset is the native SWITCH token
+func (a Asset) IsSwitch() bool {
+	return a.Equals(SwitchNative)
+}
+
+// IsRune check whether asset is RUNE (legacy method - use IsSwitch instead)
+// NOTE: This method is kept for backward compatibility but delegates to IsSwitch
 func (a Asset) IsRune() bool {
-	return a.Equals(SWTCNative)
+	return a.IsSwitch()
+}
+
+// IsNativeToken is a helper to check if asset is the native token (preferred over IsRune)
+func (a Asset) IsNativeToken() bool {
+	return a.IsSwitch()
 }
 
 // IsTCY is a helper function ,return true only when the asset represent TCY
@@ -345,7 +358,7 @@ func (a Asset) IsRUJI() bool {
 }
 
 // IsNative is a helper function, returns true when the asset is a native
-// asset to SWITCHLYChain (ie swtc, a synth, etc)
+// asset to SWITCHLYChain (ie switch, a synth, etc)
 func (a Asset) IsNative() bool {
 	return a.GetChain().IsSWITCHLYChain()
 }
@@ -383,8 +396,4 @@ func (a *Asset) UnmarshalJSONPB(unmarshal *jsonpb.Unmarshaler, content []byte) e
 // Replace pool name "." with a "-" for Mimir key checking.
 func (a Asset) MimirString() string {
 	return a.Chain.String() + "-" + a.Symbol.String()
-}
-
-func (a Asset) IsSWTC() bool {
-	return a.Equals(SWTCNative)
 }

@@ -155,7 +155,7 @@ func (h UnBondHandler) handleV3_0_0(ctx cosmos.Context, msg MsgUnBond) error {
 		return ErrInternal(err, "fail to unbond")
 	}
 
-	coin := msg.TxIn.Coins.GetCoin(common.SWTCAsset())
+	coin := msg.TxIn.Coins.GetCoin(common.SwitchAsset())
 	if !coin.IsEmpty() {
 		na.Bond = na.Bond.Add(coin.Amount)
 		if err := h.mgr.Keeper().SetNodeAccount(ctx, na); err != nil {

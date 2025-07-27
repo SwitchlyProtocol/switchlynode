@@ -38,7 +38,7 @@ func (s *HandlerSwapSuite) TestValidate(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.OneUint()),
+			common.NewCoin(common.SwitchAsset(), cosmos.OneUint()),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -186,7 +186,7 @@ func (s *HandlerSwapSuite) TestValidation(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(common.One*100)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(common.One*100)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -238,7 +238,7 @@ func (s *HandlerSwapSuite) TestValidationWithStreamingSwap(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(common.One*100)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(common.One*100)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -292,7 +292,7 @@ func (s *HandlerSwapSuite) TestHandle(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.OneUint()),
+			common.NewCoin(common.SwitchAsset(), cosmos.OneUint()),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -316,7 +316,7 @@ func (s *HandlerSwapSuite) TestHandle(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(2*common.One)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2*common.One)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -404,7 +404,7 @@ func (s *HandlerSwapSuite) TestHandleStreamingSwap(c *C) {
 		signerDOGEAddr,
 		signerDOGEAddr,
 		common.Coins{
-			common.NewCoin(common.SWTCAsset(), cosmos.NewUint(2_123400000)),
+			common.NewCoin(common.SwitchAsset(), cosmos.NewUint(2_123400000)),
 		},
 		common.Gas{
 			common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000)),
@@ -608,10 +608,10 @@ func (s *HandlerSwapSuite) TestSwapOutDexIntegration(c *C) {
 	txIn := NewObservedTx(
 		common.NewTx(GetRandomTxHash(), GetRandomTHORAddress(), GetRandomTHORAddress(),
 			common.Coins{
-				common.NewCoin(common.SWTCNative, cosmos.NewUint(2000000000)),
+				common.NewCoin(common.SwitchNative, cosmos.NewUint(2000000000)),
 			},
 			common.Gas{
-				common.NewCoin(common.SWTCNative, cosmos.NewUint(20000000)),
+				common.NewCoin(common.SwitchNative, cosmos.NewUint(20000000)),
 			},
 			swapMemo,
 		),

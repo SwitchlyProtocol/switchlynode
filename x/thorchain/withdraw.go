@@ -170,7 +170,7 @@ func assetToWithdraw(msg MsgWithdrawLiquidity, lp LiquidityProvider, pauseAsym i
 		return msg.Asset
 	}
 	if lp.AssetAddress.IsEmpty() {
-		return common.SWTCAsset()
+		return common.SwitchAsset()
 	}
 	if pauseAsym > 0 {
 		return common.EmptyAsset
@@ -227,7 +227,7 @@ func calculateWithdrawV3_0_0(ctx cosmos.Context, keeper keeper.Keeper, poolAsset
 	remainingRune := common.SafeSub(poolRuneDepth, withdrawRune)
 	var x, X, Y, yAdd cosmos.Uint
 	var isPOL bool
-	if withdrawalAsset.IsRune() {
+	if withdrawalAsset.IsSwitch() || withdrawalAsset.IsSwitch() {
 		// POL withdraws are RUNE-only, so only needing to check for RUNE asymmetric withdraws.
 		polAddress, err := keeper.GetModuleAddress(ReserveName)
 		if err != nil {
@@ -257,7 +257,7 @@ func calculateWithdrawV3_0_0(ctx cosmos.Context, keeper keeper.Keeper, poolAsset
 		outputAmount = outputAmount.Add(liqFee)
 	}
 
-	if withdrawalAsset.IsRune() {
+	if withdrawalAsset.IsSwitch() || withdrawalAsset.IsSwitch() {
 		return outputAmount, cosmos.ZeroUint(), unitAfter, nil
 	}
 	return cosmos.ZeroUint(), outputAmount, unitAfter, nil

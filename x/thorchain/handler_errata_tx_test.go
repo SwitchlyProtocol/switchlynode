@@ -99,7 +99,7 @@ func (s *HandlerErrataTxSuite) TestErrataHandlerHappyPath(c *C) {
 			Chain:       common.ETHChain,
 			FromAddress: addr,
 			Coins: common.Coins{
-				common.NewCoin(common.SWTCAsset(), cosmos.NewUint(30*common.One)),
+				common.NewCoin(common.SwitchAsset(), cosmos.NewUint(30*common.One)),
 			},
 			Memo: fmt.Sprintf("ADD:ETH.ETH:%s", GetRandomRUNEAddress()),
 		},
@@ -409,7 +409,9 @@ func (s *HandlerErrataTxSuite) TestErrataHandlerDifferentError(c *C) {
 				c.Assert(helper.SetNodeAccount(ctx, nodeAccount), IsNil)
 				observedTx := GetRandomObservedTx()
 				observedTx.Tx.Chain = common.BTCChain
-				observedTx.Tx.Memo = "add:BTC:" + observedTx.Tx.FromAddress.String()
+				observedTx.Tx.Memo = "add:BTC.BTC:" + observedTx.Tx.FromAddress.String()
+				// Fix: Set the correct coins for BTC chain
+				observedTx.Tx.Coins = common.Coins{common.NewCoin(common.BTCAsset, cosmos.OneUint())}
 				lp := LiquidityProvider{
 					Asset:         common.BTCAsset,
 					AssetAddress:  GetRandomETHAddress(),
@@ -771,7 +773,7 @@ func (s *HandlerErrataTxSuite) TestObservingSlashing(c *C) {
 			Chain:       common.ETHChain,
 			FromAddress: addr,
 			Coins: common.Coins{
-				common.NewCoin(common.SWTCAsset(), cosmos.NewUint(30*common.One)),
+				common.NewCoin(common.SwitchAsset(), cosmos.NewUint(30*common.One)),
 			},
 			Memo: fmt.Sprintf("ADD:ETH.ETH:%s", GetRandomRUNEAddress()),
 		},

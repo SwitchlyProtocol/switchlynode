@@ -83,7 +83,7 @@ func check(c *C, path []string, cm map[interface{}]interface{}, t reflect.Type) 
 		if strings.HasPrefix(tagPath, "bifrost.signer.block_scanner") {
 			continue
 		}
-		if strings.HasPrefix(tagPath, "bifrost.thorchain.back_off") {
+		if strings.HasPrefix(tagPath, "bifrost.switchly.back_off") {
 			continue
 		}
 		if t.Field(i).Name == "SignerPasswd" {

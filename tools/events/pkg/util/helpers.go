@@ -136,7 +136,7 @@ func Moneybags(usdValue uint64) string {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func RuneValue(height int64, coin common.Coin) float64 {
-	if coin.IsRune() {
+	if coin.IsSwitch() {
 		amt, _ := new(big.Float).Quo(
 			new(big.Float).SetInt(coin.Amount.BigInt()),
 			big.NewFloat(common.One),
@@ -212,7 +212,7 @@ func USDValue(height int64, coin common.Coin) float64 {
 		return float64(coin.Amount.Uint64()) / common.One
 	}
 
-	if coin.IsRune() {
+	if coin.IsSwitch() {
 		network := openapi.NetworkResponse{}
 		err := ThornodeCachedRetryGet("thorchain/network", height, &network)
 		if err != nil {
@@ -304,7 +304,7 @@ func Clout(height int64, address string) common.Coin {
 		cloutScore = cosmos.NewUintFromString(*clout.Score)
 	}
 
-	return common.NewCoin(common.SWTCNative, cloutScore)
+	return common.NewCoin(common.SwitchNative, cloutScore)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

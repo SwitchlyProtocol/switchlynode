@@ -1,10 +1,10 @@
 {
   "name": "test",
-  "owner": "tswtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk",
+  "owner": "tswitch1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk",
   "aliases": [
     {
       "chain": "THOR",
-      "address": "tswtc1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk"
+      "address": "tswitch1r6fd85fz5rr4w6tf3flpc2mdmn7d6znfujwzpk"
     }
   ],
   "expire_block_height": "100000"

@@ -25,7 +25,7 @@ func (s *HandlerDepositSuite) TestValidate(c *C) {
 	addr := GetRandomBech32Addr()
 
 	coins := common.Coins{
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(200*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(200*common.One)),
 	}
 	msg := NewMsgDeposit(coins, fmt.Sprintf("ADD:DOGE.DOGE:%s", GetRandomRUNEAddress()), addr)
 
@@ -49,7 +49,7 @@ func (s *HandlerDepositSuite) TestHandle(c *C) {
 	addr := GetRandomBech32Addr()
 
 	coins := common.Coins{
-		common.NewCoin(common.SWTCNative, cosmos.NewUint(200*common.One)),
+		common.NewCoin(common.SwitchNative, cosmos.NewUint(200*common.One)),
 	}
 
 	FundAccount(c, ctx, k, addr, 300*common.One)
@@ -138,7 +138,7 @@ func (s *HandlerDepositSuite) TestDifferentValidation(c *C) {
 			name: "Insufficient funds should result in an error",
 			messageProvider: func(c *C, ctx cosmos.Context, helper *HandlerDepositTestHelper) cosmos.Msg {
 				return NewMsgDeposit(common.Coins{
-					common.NewCoin(common.SWTCNative, cosmos.NewUint(100)),
+					common.NewCoin(common.SwitchNative, cosmos.NewUint(100)),
 				}, "hello", GetRandomBech32Addr())
 			},
 			validator: func(c *C, ctx cosmos.Context, result *cosmos.Result, err error, helper *HandlerDepositTestHelper, name string) {
@@ -154,7 +154,7 @@ func (s *HandlerDepositSuite) TestDifferentValidation(c *C) {
 				vault := NewVault(ctx.BlockHeight(), ActiveVault, AsgardVault, GetRandomPubKey(), common.Chains{common.DOGEChain, common.SWITCHLYChain}.Strings(), []ChainContract{})
 				c.Check(helper.Keeper.SetVault(ctx, vault), IsNil)
 				return NewMsgDeposit(common.Coins{
-					common.NewCoin(common.SWTCNative, cosmos.NewUint(2*common.One)),
+					common.NewCoin(common.SwitchNative, cosmos.NewUint(2*common.One)),
 				}, "hello", acctAddr)
 			},
 			validator: func(c *C, ctx cosmos.Context, result *cosmos.Result, err error, helper *HandlerDepositTestHelper, name string) {
@@ -184,7 +184,7 @@ func (s *HandlerDepositSuite) TestAddSwap(c *C) {
 		GetRandomTxHash(),
 		GetRandomTHORAddress(),
 		GetRandomTHORAddress(),
-		common.Coins{common.NewCoin(common.SWTCNative, cosmos.NewUint(common.One))},
+		common.Coins{common.NewCoin(common.SwitchNative, cosmos.NewUint(common.One))},
 		common.Gas{
 			{Asset: common.DOGEAsset, Amount: cosmos.NewUint(37500)},
 		},
@@ -207,14 +207,14 @@ func (s *HandlerDepositSuite) TestAddSwap(c *C) {
 	affiliateFeeAddr, err := msg1.GetAffiliateAddress().AccAddress()
 	c.Assert(err, IsNil)
 	acct := mgr.Keeper().GetBalance(ctx, affiliateFeeAddr)
-	c.Assert(acct.AmountOf(common.SWTCNative.Native()).String(), Equals, "0")
+	c.Assert(acct.AmountOf(common.SwitchNative.Native()).String(), Equals, "0")
 
 	handler.addSwap(ctx, *msg1)
 	swap, err = mgr.Keeper().GetSwapQueueItem(ctx, tx.ID, 0)
 	c.Assert(err, IsNil)
 	c.Assert(swap.Tx.Coins[0].Amount.IsZero(), Equals, false)
 	// Check balance after swap, should be the same
-	c.Assert(acct.AmountOf(common.SWTCNative.Native()).String(), Equals, "0")
+	c.Assert(acct.AmountOf(common.SwitchNative.Native()).String(), Equals, "0")
 
 	// affiliate fee not taken on deposit
 	tx.Memo = fmt.Sprintf("=:BTC.BTC:%s::%s:1000", GetRandomBTCAddress().String(), affAddr.String())
@@ -229,7 +229,7 @@ func (s *HandlerDepositSuite) TestAddSwap(c *C) {
 	affiliateFeeAddr2, err := msg2.GetAffiliateAddress().AccAddress()
 	c.Assert(err, IsNil)
 	acct2 := mgr.Keeper().GetBalance(ctx, affiliateFeeAddr2)
-	c.Assert(acct2.AmountOf(common.SWTCNative.Native()).String(), Equals, strconv.FormatInt(0, 10))
+	c.Assert(acct2.AmountOf(common.SwitchNative.Native()).String(), Equals, strconv.FormatInt(0, 10))
 
 	// NONE RUNE , synth asset should be handled correctly
 
@@ -241,7 +241,7 @@ func (s *HandlerDepositSuite) TestAddSwap(c *C) {
 		GetRandomTHORAddress(),
 		common.Coins{common.NewCoin(synthAsset, cosmos.NewUint(common.One))},
 		common.Gas{
-			{Asset: common.SWTCNative, Amount: cosmos.NewUint(200000)},
+			{Asset: common.SwitchNative, Amount: cosmos.NewUint(200000)},
 		},
 		tx.Memo,
 	)
@@ -259,7 +259,7 @@ func (s *HandlerDepositSuite) TestAddSwap(c *C) {
 	affiliateFeeAddr3, err := msg3.GetAffiliateAddress().AccAddress()
 	c.Assert(err, IsNil)
 	acct3 := mgr.Keeper().GetBalance(ctx, affiliateFeeAddr3)
-	c.Assert(acct3.AmountOf(common.SWTCNative.Native()).String(), Equals, strconv.FormatInt(0, 10))
+	c.Assert(acct3.AmountOf(common.SwitchNative.Native()).String(), Equals, strconv.FormatInt(0, 10))
 }
 
 func (s *HandlerDepositSuite) TestTargetModule(c *C) {
@@ -275,8 +275,8 @@ func (s *HandlerDepositSuite) TestTargetModule(c *C) {
 			moduleName: ReserveName,
 			messageProvider: func(c *C, ctx cosmos.Context) *MsgDeposit {
 				addr := GetRandomRUNEAddress()
-				coin := common.NewCoin(common.SWTCAsset(), cosmos.NewUint(20_00000000))
-				return NewMsgDeposit(common.Coins{coin}, "name:test:THOR:"+addr.String(), acctAddr)
+				coin := common.NewCoin(common.SwitchAsset(), cosmos.NewUint(20_00000000))
+				return NewMsgDeposit(common.Coins{coin}, "name:test:SWITCHLY:"+addr.String(), acctAddr)
 			},
 			validator: func(c *C, ctx cosmos.Context, result *cosmos.Result, err error, name string, balDelta cosmos.Uint) {
 				c.Check(err, IsNil, Commentf(name))

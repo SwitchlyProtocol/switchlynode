@@ -26,6 +26,6 @@ switchlynode export --height "$HARDFORK_BLOCK_HEIGHT" >switchlynode_genesis_expo
 switchlynode unsafe-reset-all
 
 # update chain id
-jq --arg CHAIN_ID "$CHAIN_ID" --arg NEW_GENESIS_TIME "$NEW_GENESIS_TIME" '.chain_id=$CHAIN_ID | .genesis_time=$NEW_GENESIS_TIME' switchlyprotocol_genesis_export."$DATE".json >temp.json
+jq --arg CHAIN_ID "$CHAIN_ID" --arg NEW_GENESIS_TIME "$NEW_GENESIS_TIME" '.chain_id=$CHAIN_ID | .genesis_time=$NEW_GENESIS_TIME' switchly_genesis_export."$DATE".json >temp.json
 # copied exported genesis file to the config directory
 cp temp.json ~/.switchlynode/config/genesis.json

@@ -821,12 +821,12 @@ func (vts *ValidatorMgrVCURTestSuite) TestWeightedBondReward(c *C) {
 
 	// The bond hard cap in the test environment is 3 * common.One, both na1 and na2 should have the same reward (3/8ths each)
 	// (5% of 37500000 is 1875000)
-	c.Check(nodeOperator1Balance.AmountOf(common.SWTCNative.Native()).String(), Equals, strconv.FormatInt(1875000, 10))
-	c.Check(nodeOperator2Balance.AmountOf(common.SWTCNative.Native()).String(), Equals, strconv.FormatInt(1875000, 10))
+	c.Check(nodeOperator1Balance.AmountOf(common.SwitchNative.Native()).String(), Equals, strconv.FormatInt(1875000, 10))
+	c.Check(nodeOperator2Balance.AmountOf(common.SwitchNative.Native()).String(), Equals, strconv.FormatInt(1875000, 10))
 
 	// na3.Bond is below the hard cap, it should have a smaller reward accordingly (2/8ths)
 	// (5% of 25000000 is 1250000)
-	c.Check(nodeOperator3Balance.AmountOf(common.SWTCNative.Native()).String(), Equals, strconv.FormatInt(1250000, 10))
+	c.Check(nodeOperator3Balance.AmountOf(common.SwitchNative.Native()).String(), Equals, strconv.FormatInt(1250000, 10))
 }
 
 func (vts *ValidatorMgrVCURTestSuite) TestNodeAccountPreflightCheckMaintenance(c *C) {
@@ -919,7 +919,7 @@ func (vts *ValidatorMgrVCURTestSuite) TestActiveNodeRequestToLeaveShouldBeStandb
 
 		// Add bond to asgard
 		asgard.AddFunds(common.Coins{
-			common.NewCoin(common.SWTCAsset(), na.Bond),
+			common.NewCoin(common.SwitchAsset(), na.Bond),
 		})
 		asgard.Membership = append(asgard.Membership, na.PubKeySet.Secp256k1.String())
 		c.Assert(mgr.Keeper().SetVault(ctx, asgard), IsNil)

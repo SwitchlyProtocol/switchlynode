@@ -37,7 +37,7 @@ func (HandlerLeaveSuite) TestLeaveHandler_NotActiveNodeLeave(c *C) {
 		txID,
 		acc2.BondAddress,
 		GetRandomETHAddress(),
-		common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.ZeroUint())},
+		common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint())},
 		common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),
 		},
@@ -63,7 +63,7 @@ func (HandlerLeaveSuite) TestLeaveHandler_ActiveNodeLeave(c *C) {
 		txID,
 		acc2.BondAddress,
 		GetRandomETHAddress(),
-		common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.ZeroUint())},
+		common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint())},
 		common.Gas{
 			common.NewCoin(common.ETHAsset, cosmos.NewUint(10000)),
 		},
@@ -115,7 +115,7 @@ func (HandlerLeaveSuite) TestLeaveBondProvider(c *C) {
 		txID,
 		bpBelowMin,
 		GetRandomTHORAddress(),
-		common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.ZeroUint())},
+		common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint())},
 		common.Gas{},
 		"",
 	)
@@ -129,7 +129,7 @@ func (HandlerLeaveSuite) TestLeaveBondProvider(c *C) {
 		txID,
 		bpAboveMin,
 		GetRandomTHORAddress(),
-		common.Coins{common.NewCoin(common.SWTCAsset(), cosmos.ZeroUint())},
+		common.Coins{common.NewCoin(common.SwitchAsset(), cosmos.ZeroUint())},
 		common.Gas{},
 		"",
 	)

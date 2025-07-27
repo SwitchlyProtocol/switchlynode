@@ -35,11 +35,11 @@ func (TxOutTestSuite) TestTxOutItemHash(c *C) {
 	item = TxOutItem{
 		Chain:       "ETH",
 		ToAddress:   "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a",
-		VaultPubKey: "tswtcpub1addwnpepqv7kdf473gc4jyls7hlx4rg",
+		VaultPubKey: "tswitchpub1qvuxhg5gl3w2n0mutn84hzthw3p0r6j0p6qrahvsar9vzk4xcpvnwf82j4p",
 		Memo:        "REFUND:9999A5A08D8FCF942E1AAAA01AB1E521B699BA3A009FA0591C011DC1FFDC5E68",
 		InHash:      "9999A5A08D8FCF942E1AAAA01AB1E521B699BA3A009FA0591C011DC1FFDC5E68",
 	}
-	c.Check(item.Hash(), Equals, "7947BD11B6ADC5861B6FFCFA4346786E7C708B1F1A67454F68403A3A647D506B")
+	c.Check(item.Hash(), Equals, "9A6DF3904C4E7E3C3446C7D7E30D420DF35801A147ADC1E115BAFE52C5CFB302")
 }
 
 func (TxOutTestSuite) TestTxOutItemEqualsShouldIgnoreHeight(c *C) {

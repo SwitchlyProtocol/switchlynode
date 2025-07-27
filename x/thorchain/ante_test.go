@@ -96,7 +96,7 @@ func (s *AnteTestSuite) TestAnteHandleMessage(c *C) {
 
 	// fund an addr so it can pass the fee deduction ante
 	FundAccount(c, ctx, k, fromAddr, 200*common.One)
-	coin, err := common.NewCoin(common.SWTCNative, cosmos.NewUint(1*common.One)).Native()
+	coin, err := common.NewCoin(common.SwitchNative, cosmos.NewUint(1*common.One)).Native()
 	c.Assert(err, IsNil)
 
 	goodMsg := types.MsgSend{

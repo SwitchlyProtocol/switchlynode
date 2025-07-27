@@ -7,7 +7,7 @@
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "account_number": "9",
-          "address": "tswtc1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
+          "address": "tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
           "pub_key": {
             "@type": "/cosmos.crypto.secp256k1.PubKey",
             "key": "Ah4wzGUnsQ7oYiei732pv9NLLvufvGFkBtH3zNyhzBZW"
@@ -17,7 +17,7 @@
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "account_number": "12",
-          "address": "tswtc1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
+          "address": "tswitch1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
           "pub_key": {
             "@type": "/cosmos.crypto.secp256k1.PubKey",
             "key": "A6PPnq7Dk7+HQM1VUkqIIT2BjGlyV5tLPgNdIJlkfzfM"
@@ -27,7 +27,7 @@
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "account_number": "6",
-          "address": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
+          "address": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
           "pub_key": null,
           "sequence": "0"
         },
@@ -35,7 +35,7 @@
           "@type": "/cosmos.auth.v1beta1.ModuleAccount",
           "base_account": {
             "account_number": "0",
-            "address": "tswtc1yl6hdjhmkf37639730gffanpzndzdpmhv07zme",
+            "address": "tswitch1yl6hdjhmkf37639730gffanpzndzdpmhv07zme",
             "pub_key": null,
             "sequence": "0"
           },
@@ -48,7 +48,7 @@
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "account_number": "11",
-          "address": "tswtc1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
+          "address": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
           "pub_key": {
             "@type": "/cosmos.crypto.secp256k1.PubKey",
             "key": "AxM8YN2N3Rpv2za31hmhLGUnKldrnrZWjf7/n+IYXyMa"
@@ -59,7 +59,7 @@
           "@type": "/cosmos.auth.v1beta1.ModuleAccount",
           "base_account": {
             "account_number": "1",
-            "address": "tswtc1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
+            "address": "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
             "pub_key": null,
             "sequence": "0"
           },
@@ -69,7 +69,7 @@
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "account_number": "10",
-          "address": "tswtc12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
+          "address": "tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
           "pub_key": {
             "@type": "/cosmos.crypto.secp256k1.PubKey",
             "key": "A8MoqNbfqzaZ7t5peW7avtFHeOJsxPVL+xxj5iD7uuUB"
@@ -80,7 +80,7 @@
           "@type": "/cosmos.auth.v1beta1.ModuleAccount",
           "base_account": {
             "account_number": "2",
-            "address": "tswtc1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp",
+            "address": "tswitch1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp",
             "pub_key": null,
             "sequence": "0"
           },
@@ -94,7 +94,7 @@
           "@type": "/cosmos.auth.v1beta1.ModuleAccount",
           "base_account": {
             "account_number": "3",
-            "address": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+            "address": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
             "pub_key": null,
             "sequence": "0"
           },
@@ -104,7 +104,7 @@
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "account_number": "8",
-          "address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+          "address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
           "pub_key": {
             "@type": "/cosmos.crypto.secp256k1.PubKey",
             "key": "Aw/2MBvAhnLEifCInxlpTjCXxV0I/nE8pI5jNI+Zblx6"
@@ -114,7 +114,7 @@
         {
           "@type": "/cosmos.auth.v1beta1.BaseAccount",
           "account_number": "7",
-          "address": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "pub_key": {
             "@type": "/cosmos.crypto.secp256k1.PubKey",
             "key": "A79mmwQR0zNaJgvyBZyo1g3eKxUQTlINRlNJTUFCRxUj"
@@ -125,7 +125,7 @@
           "@type": "/cosmos.auth.v1beta1.ModuleAccount",
           "base_account": {
             "account_number": "4",
-            "address": "tswtc17xpfvakm2amg962yls6f84z3kell8c5ljftt88",
+            "address": "tswitch17xpfvakm2amg962yls6f84z3kell8c5ljftt88",
             "pub_key": null,
             "sequence": "0"
           },
@@ -136,7 +136,7 @@
           "@type": "/cosmos.auth.v1beta1.ModuleAccount",
           "base_account": {
             "account_number": "5",
-            "address": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+            "address": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
             "pub_key": null,
             "sequence": "0"
           },
@@ -155,7 +155,7 @@
     "bank": {
       "balances": [
         {
-          "address": "tswtc1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
+          "address": "tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
           "coins": [
             {
               "amount": "2500000000000",
@@ -164,7 +164,7 @@
           ]
         },
         {
-          "address": "tswtc1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
+          "address": "tswitch1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
           "coins": [
             {
               "amount": "2500000000000",
@@ -173,7 +173,7 @@
           ]
         },
         {
-          "address": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
+          "address": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
           "coins": [
             {
               "amount": "5000000000000",
@@ -182,7 +182,7 @@
           ]
         },
         {
-          "address": "tswtc1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
+          "address": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
           "coins": [
             {
               "amount": "2500000000000",
@@ -191,7 +191,7 @@
           ]
         },
         {
-          "address": "tswtc1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
+          "address": "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
           "coins": [
             {
               "amount": "200019495154",
@@ -200,7 +200,7 @@
           ]
         },
         {
-          "address": "tswtc12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
+          "address": "tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
           "coins": [
             {
               "amount": "2500000000000",
@@ -209,7 +209,7 @@
           ]
         },
         {
-          "address": "tswtc1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
+          "address": "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw",
           "coins": [
             {
               "amount": "34999980194081",
@@ -218,7 +218,7 @@
           ]
         },
         {
-          "address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+          "address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
           "coins": [
             {
               "amount": "2500000000000",
@@ -227,7 +227,7 @@
           ]
         },
         {
-          "address": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "coins": [
             {
               "amount": "2500000000000",
@@ -236,7 +236,7 @@
           ]
         },
         {
-          "address": "tswtc17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
+          "address": "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff",
           "coins": [
             {
               "amount": "15000000310765",
@@ -274,32 +274,32 @@
       "affiliate_collectors": null,
       "bond_providers": [
         {
-          "node_address": "tswtc12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
+          "node_address": "tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
           "node_operator_fee": "0",
           "providers": []
         },
         {
-          "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+          "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
           "node_operator_fee": "0",
           "providers": []
         },
         {
-          "node_address": "tswtc1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
+          "node_address": "tswitch1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
           "node_operator_fee": "0",
           "providers": []
         },
         {
-          "node_address": "tswtc1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
+          "node_address": "tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
           "node_operator_fee": "0",
           "providers": []
         },
         {
-          "node_address": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "node_address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "node_operator_fee": "0",
           "providers": []
         },
         {
-          "node_address": "tswtc1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
+          "node_address": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
           "node_operator_fee": "0",
           "providers": []
         }
@@ -320,7 +320,7 @@
           "last_add_height": "1",
           "pending_asset": "0",
           "pending_rune": "0",
-          "rune_address": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "rune_address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "rune_deposit_value": "100000000000",
           "units": "100000000000"
         },
@@ -331,7 +331,7 @@
           "last_add_height": "1",
           "pending_asset": "0",
           "pending_rune": "0",
-          "rune_address": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "rune_address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "rune_deposit_value": "100000000000",
           "units": "100000000000"
         }
@@ -362,14 +362,14 @@
         {
           "active_block_height": "1",
           "bond": "2500000000000",
-          "bond_address": "tswtc12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
+          "bond_address": "tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
           "ip_address": "1.1.1.1",
-          "node_address": "tswtc12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
+          "node_address": "tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
           "pub_key_set": {
-            "secp256k1": "tswtcpub1addwnpepq0pj32xkm74ndx0wme5hjmk6hmg5w78zdnz02jlmr337vg8mhtjszk9mhev"
+            "secp256k1": "tswitchpub1addwnpepq0pj32xkm74ndx0wme5hjmk6hmg5w78zdnz02jlmr337vg8mhtjszk9mhev"
           },
           "signer_membership": [
-            "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+            "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
           ],
           "status": "Active",
           "validator_cons_pub_key": "tswtccpub1zcjduepqy52lzz52l3e557ker8ucmuzzjppdq6sjzxg7pxu2rkc9f5sk3khq4qjmag"
@@ -377,14 +377,14 @@
         {
           "active_block_height": "1",
           "bond": "2500000000000",
-          "bond_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+          "bond_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
           "ip_address": "1.1.1.1",
-          "node_address": "tswtc13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
+          "node_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
           "pub_key_set": {
-            "secp256k1": "tswtcpub1addwnpepqv8lvvqmczr893yf7zyf7xtffccf032aprl8z09y3e3nfruedew85n306k5"
+            "secp256k1": "tswitchpub1addwnpepqv8lvvqmczr893yf7zyf7xtffccf032aprl8z09y3e3nfruedew85n306k5"
           },
           "signer_membership": [
-            "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+            "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
           ],
           "status": "Active",
           "validator_cons_pub_key": "tswtccpub1zcjduepqsukty8qkyj4wfrpc8he2hl9fc8m06cfz8ex3ddspzzufw93xxhqqec5sp0"
@@ -392,14 +392,14 @@
         {
           "active_block_height": "1",
           "bond": "2500000000000",
-          "bond_address": "tswtc1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
+          "bond_address": "tswitch1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
           "ip_address": "1.1.1.1",
-          "node_address": "tswtc1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
+          "node_address": "tswitch1pnmhtlt8umryv9h4uz60ylc07x5d6lkxzthqlt",
           "pub_key_set": {
-            "secp256k1": "tswtcpub1addwnpepqw3ul84wcwfmlp6qe424yj5gyy7crrrfwftekje7qdwjpxty0umucg83u4q"
+            "secp256k1": "tswitchpub1addwnpepqw3ul84wcwfmlp6qe424yj5gyy7crrrfwftekje7qdwjpxty0umucg83u4q"
           },
           "signer_membership": [
-            "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+            "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
           ],
           "status": "Active",
           "validator_cons_pub_key": "tswtccpub1zcjduepq69plx6zh7tjdfftg7ht4uc5ej2h2mxwjgr2q2dp550gwn5560ydq4me5rj"
@@ -407,14 +407,14 @@
         {
           "active_block_height": "1",
           "bond": "2500000000000",
-          "bond_address": "tswtc1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
+          "bond_address": "tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
           "ip_address": "1.1.1.1",
-          "node_address": "tswtc1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
+          "node_address": "tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
           "pub_key_set": {
-            "secp256k1": "tswtcpub1addwnpepqg0rpnr9y7csa6rzy73w7ldfhlf5kthmn77xzeqx68mueh9pest9vlvs93k"
+            "secp256k1": "tswitchpub1addwnpepqg0rpnr9y7csa6rzy73w7ldfhlf5kthmn77xzeqx68mueh9pest9vlvs93k"
           },
           "signer_membership": [
-            "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+            "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
           ],
           "status": "Active",
           "validator_cons_pub_key": "tswtccpub1zcjduepqg5jpnfqky744drn57zju056ye7c3vkage67kztdfct4jrx5p50uqyqfkts"
@@ -422,14 +422,14 @@
         {
           "active_block_height": "1",
           "bond": "2500000000000",
-          "bond_address": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "bond_address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "ip_address": "1.1.1.1",
-          "node_address": "tswtc1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "node_address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "pub_key_set": {
-            "secp256k1": "tswtcpub1addwnpepqwlkdxcyz8fnxk3xp0eqt89g6cxau2c4zp89yr2x2dy56s2zgu2jx3pmacu"
+            "secp256k1": "tswitchpub1addwnpepqwlkdxcyz8fnxk3xp0eqt89g6cxau2c4zp89yr2x2dy56s2zgu2jx3pmacu"
           },
           "signer_membership": [
-            "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+            "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
           ],
           "status": "Active",
           "validator_cons_pub_key": "tswtccpub1zcjduepqq75h7uy6qhesh9d3a9tuk0mzrnc46u8rye44ze6peua3zmpfh23q8z37sz"
@@ -437,14 +437,14 @@
         {
           "active_block_height": "1",
           "bond": "2500000000000",
-          "bond_address": "tswtc1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
+          "bond_address": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
           "ip_address": "1.1.1.1",
-          "node_address": "tswtc1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
+          "node_address": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
           "pub_key_set": {
-            "secp256k1": "tswtcpub1addwnpepqvfnccxa3hw35m7mx6mavxdp93jjw2jhdw0tv45dlmlelcsctu335w2yw3u"
+            "secp256k1": "tswitchpub1addwnpepqvfnccxa3hw35m7mx6mavxdp93jjw2jhdw0tv45dlmlelcsctu335w2yw3u"
           },
           "signer_membership": [
-            "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+            "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
           ],
           "status": "Active",
           "validator_cons_pub_key": "tswtccpub1zcjduepqe4ek6z27scfutp6whq5ug2plglertjw7z473nny2yu46r7gxp07s92jckg"
@@ -532,15 +532,15 @@
           ],
           "inbound_tx_count": "3",
           "membership": [
-            "tswtcpub1addwnpepqwlkdxcyz8fnxk3xp0eqt89g6cxau2c4zp89yr2x2dy56s2zgu2jx3pmacu",
-            "tswtcpub1addwnpepqv8lvvqmczr893yf7zyf7xtffccf032aprl8z09y3e3nfruedew85n306k5",
-            "tswtcpub1addwnpepqg0rpnr9y7csa6rzy73w7ldfhlf5kthmn77xzeqx68mueh9pest9vlvs93k",
-            "tswtcpub1addwnpepq0pj32xkm74ndx0wme5hjmk6hmg5w78zdnz02jlmr337vg8mhtjszk9mhev",
-            "tswtcpub1addwnpepqvfnccxa3hw35m7mx6mavxdp93jjw2jhdw0tv45dlmlelcsctu335w2yw3u",
-            "tswtcpub1addwnpepqw3ul84wcwfmlp6qe424yj5gyy7crrrfwftekje7qdwjpxty0umucg83u4q"
+            "tswitchpub1addwnpepqwlkdxcyz8fnxk3xp0eqt89g6cxau2c4zp89yr2x2dy56s2zgu2jx3pmacu",
+            "tswitchpub1addwnpepqv8lvvqmczr893yf7zyf7xtffccf032aprl8z09y3e3nfruedew85n306k5",
+            "tswitchpub1addwnpepqg0rpnr9y7csa6rzy73w7ldfhlf5kthmn77xzeqx68mueh9pest9vlvs93k",
+            "tswitchpub1addwnpepq0pj32xkm74ndx0wme5hjmk6hmg5w78zdnz02jlmr337vg8mhtjszk9mhev",
+            "tswitchpub1addwnpepqvfnccxa3hw35m7mx6mavxdp93jjw2jhdw0tv45dlmlelcsctu335w2yw3u",
+            "tswitchpub1addwnpepqw3ul84wcwfmlp6qe424yj5gyy7crrrfwftekje7qdwjpxty0umucg83u4q"
           ],
           "outbound_tx_count": "1",
-          "pub_key": "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
+          "pub_key": "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
           "routers": null,
           "status": "ActiveVault",
           "type": "AsgardVault"

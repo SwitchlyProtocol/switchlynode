@@ -111,7 +111,7 @@
                     {
                       "blame_data": null,
                       "blame_signature": null,
-                      "pubkey": "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
+                      "pubkey": "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
                     }
                   ],
                   "fail_reason": "doesn't matter",
@@ -128,8 +128,8 @@
                 "height": "1",
                 "id": "0000000000000000000000000000000000000000000000000000000000000001",
                 "memo": "doesn't matter",
-                "pub_key": "tswtcpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
-                "signer": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
+                "pub_key": "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4",
+                "signer": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
               }
             ],
             "non_critical_extension_options": [],
@@ -146,7 +146,7 @@
           "gas_used": "50738",
           "events": [
             {
-              "acc_seq": "tswtc1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m/0",
+              "acc_seq": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m/0",
               "type": "tx"
             },
             {

@@ -500,7 +500,7 @@ func (qs queryServer) queryInboundAddresses(ctx cosmos.Context, _ *types.QueryIn
 	chains := vault.GetChains()
 
 	if len(chains) == 0 {
-		chains = common.Chains{common.SWTCAsset().Chain}
+		chains = common.Chains{common.SwitchAsset().Chain}
 	}
 
 	isGlobalTradingPaused := k.IsGlobalTradingHalted(ctx)
@@ -2851,7 +2851,7 @@ func (qs queryServer) queryOutboundFees(ctx cosmos.Context, asset string) (*type
 	} else {
 		// By default display the outbound fees of RUNE and all external-chain Layer 1 assets.
 		// Even Staged pool Assets can incur outbound fees (from withdraw outbounds).
-		assets = []common.Asset{common.SWTCAsset()}
+		assets = []common.Asset{common.SwitchAsset()}
 		iterator := qs.mgr.Keeper().GetPoolIterator(ctx)
 		for ; iterator.Valid(); iterator.Next() {
 			var pool Pool

@@ -98,7 +98,7 @@ func (gm *GasMgrVCUR) GetAssetOutboundFee(ctx cosmos.Context, asset common.Asset
 	thorchainOutboundFee := gm.keeper.GetOutboundTxFee(ctx)
 
 	// If the asset is native RUNE, return the default native outbound fee.
-	if asset.IsRune() {
+	if asset.IsSwitch() {
 		return thorchainOutboundFee, nil
 	}
 
@@ -373,7 +373,7 @@ func (gm *GasMgrVCUR) ProcessGas(ctx cosmos.Context, keeper keeper.Keeper) {
 			continue
 		}
 		if !gm.gasEvent.Pools[i].RuneAmt.IsZero() {
-			coin := common.NewCoin(common.SWTCNative, gm.gasEvent.Pools[i].RuneAmt)
+			coin := common.NewCoin(common.SwitchNative, gm.gasEvent.Pools[i].RuneAmt)
 			if err := keeper.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.NewCoins(coin)); err != nil {
 				ctx.Logger().Error("fail to transfer funds from reserve to asgard", "pool", gm.gasEvent.Pools[i].Asset, "error", err)
 			} else {

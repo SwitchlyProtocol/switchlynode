@@ -21,7 +21,7 @@ func getSeedAddrs() []string {
 
 func assertBifrostHasSeeds() {
 	// fail if seed file is missing or empty since bifrost will hang
-	seedPath := os.ExpandEnv("$HOME/.thornode/address_book.seed")
+	seedPath := os.ExpandEnv("$HOME/.switchlynode/address_book.seed")
 	fi, err := os.Stat(seedPath)
 	if os.IsNotExist(err) {
 		log.Warn().Msg("no seed file found")

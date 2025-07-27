@@ -23,11 +23,11 @@ func (s *MsgTssPoolSuite) TestMsgTssPool(c *C) {
 	addr, err := pks.Secp256k1.GetThorAddress()
 	c.Assert(err, IsNil)
 	keygenTime := time.Now().Unix()
-	msg, err := NewMsgTssPool(pkStrings, pk, nil, nil, KeygenType_AsgardKeygen, 1, Blame{}, []string{common.SWTCNative.Chain.String()}, addr, keygenTime)
+	msg, err := NewMsgTssPool(pkStrings, pk, nil, nil, KeygenType_AsgardKeygen, 1, Blame{}, []string{common.SwitchNative.Chain.String()}, addr, keygenTime)
 	c.Assert(err, IsNil)
 	EnsureMsgBasicCorrect(msg, c)
 
-	chains := []string{common.SWTCNative.Chain.String()}
+	chains := []string{common.SwitchNative.Chain.String()}
 	c.Check(msg.Chains, DeepEquals, chains)
 
 	// ensure we can set the signer to another valid keygen member
@@ -42,7 +42,7 @@ func (s *MsgTssPoolSuite) TestMsgTssPool(c *C) {
 	msg.Signer = addr
 
 	// duplicated chains should fail
-	msg, err = NewMsgTssPool(pkStrings, pk, nil, nil, KeygenType_AsgardKeygen, 1, Blame{}, []string{common.SWTCNative.Chain.String(), common.SWTCNative.Chain.String()}, addr, keygenTime)
+	msg, err = NewMsgTssPool(pkStrings, pk, nil, nil, KeygenType_AsgardKeygen, 1, Blame{}, []string{common.SwitchNative.Chain.String(), common.SwitchNative.Chain.String()}, addr, keygenTime)
 	c.Assert(err, IsNil)
 	c.Check(msg.ValidateBasic(), NotNil)
 

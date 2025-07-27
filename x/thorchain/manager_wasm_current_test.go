@@ -7,7 +7,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm/ioutils"
 	"github.com/cosmos/cosmos-sdk/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v1/constants"
 	. "gopkg.in/check.v1"
 )
@@ -103,7 +102,7 @@ func (s WasmManagerVCURSuite) TestMigrateCode(c *C) {
 	c.Assert(err, IsNil)
 
 	admin := GetRandomBech32Addr()
-	_, _, err = mgr.WasmManager().InstantiateContract(ctx,
+	contractAddr, _, err := mgr.WasmManager().InstantiateContract(ctx,
 		1,
 		admin,
 		admin,
@@ -114,7 +113,7 @@ func (s WasmManagerVCURSuite) TestMigrateCode(c *C) {
 	c.Assert(err, IsNil)
 
 	_, err = mgr.WasmManager().MigrateContract(ctx,
-		cosmos.MustAccAddressFromBech32("tswitch1hhj7jlq9ecj4u98mnndn709aw8a9w3zwrcr659"),
+		contractAddr,
 		admin,
 		2,
 		[]byte(`{}`),

@@ -137,8 +137,8 @@ func (m *MsgTssPool) ValidateBasic() error {
 	if len(chains) != len(m.Chains) {
 		return cosmos.ErrUnknownRequest("One or more chains were not valid")
 	}
-	if !chains.Has(common.SWTCNative.Chain) {
-		return cosmos.ErrUnknownRequest("must support SWTCNative asset chain")
+	if !chains.Has(common.SwitchNative.Chain) {
+		return cosmos.ErrUnknownRequest("must support SwitchNative asset chain")
 	}
 	if len(chains) != len(chains.Distinct()) {
 		return cosmos.ErrUnknownRequest("cannot have duplicate chains")

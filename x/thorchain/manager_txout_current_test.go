@@ -54,7 +54,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem(c *C) {
 	w := getHandlerTestWrapper(c, 1, true, true)
 	vault := GetRandomVault()
 	vault.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.BCHAsset, cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000*common.One)),
@@ -185,7 +185,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem(c *C) {
 				Chain:     common.SWITCHLYChain,
 				ToAddress: GetRandomRUNEAddress(),
 				InHash:    inTxID,
-				Coin:      common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1000*common.One)),
+				Coin:      common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1000*common.One)),
 			}
 			txOutStore.ClearOutboundItems(w.ctx)
 			success, err = txOutStore.TryAddTxOutItem(w.ctx, w.mgr, item, cosmos.ZeroUint())
@@ -210,7 +210,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem(c *C) {
 				Chain:      common.SWITCHLYChain,
 				ToAddress:  GetRandomRUNEAddress(),
 				InHash:     inTxID,
-				Coin:       common.NewCoin(common.SWTCAsset(), cosmos.NewUint(1000*common.One)),
+				Coin:       common.NewCoin(common.SwitchAsset(), cosmos.NewUint(1000*common.One)),
 			}
 			txOutStore.ClearOutboundItems(w.ctx)
 			success, err = txOutStore.TryAddTxOutItem(w.ctx, w.mgr, item, cosmos.ZeroUint())
@@ -237,7 +237,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_OutboundHeightDoesNotGetOverride(c
 	w := getHandlerTestWrapper(c, 1, true, true)
 	vault := GetRandomVault()
 	vault.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000*common.One)),
 	}
 	c.Assert(w.keeper.SetVault(w.ctx, vault), IsNil)
@@ -295,7 +295,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_OutboundHeightDoesNotGetOverride(c
 	c.Assert(afterVoter.OutboundHeight, Equals, int64(4))
 
 	item.Chain = common.SWITCHLYChain
-	item.Coin = common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One))
+	item.Coin = common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One))
 	item.ToAddress = GetRandomTHORAddress()
 	ok, err = txOutStore.TryAddTxOutItem(w.ctx, w.mgr, item, cosmos.ZeroUint())
 	c.Assert(err, IsNil)
@@ -311,7 +311,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemNotEnoughForFee(c *C) {
 	w := getHandlerTestWrapper(c, 1, true, true)
 	vault := GetRandomVault()
 	vault.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000*common.One)),
 	}
 	c.Assert(w.keeper.SetVault(w.ctx, vault), IsNil)
@@ -471,7 +471,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillNotBeScheduled
 	w := getHandlerTestWrapper(c, 1, true, true)
 	vault := GetRandomVault()
 	vault.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.DOGEAsset, cosmos.NewUint(10000*common.One)),
 	}
 	c.Assert(w.keeper.SetVault(w.ctx, vault), IsNil)
@@ -548,7 +548,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_MultipleOutboundWillNotBeScheduled
 	c.Assert(afterVoter.OutboundHeight, Equals, int64(4))
 
 	item.Chain = common.SWITCHLYChain
-	item.Coin = common.NewCoin(common.SWTCNative, cosmos.NewUint(100*common.One))
+	item.Coin = common.NewCoin(common.SwitchNative, cosmos.NewUint(100*common.One))
 	item.ToAddress = GetRandomTHORAddress()
 	ok, err = txOutStore.TryAddTxOutItem(w.ctx, w.mgr, item, cosmos.ZeroUint())
 	c.Assert(err, IsNil)
@@ -613,7 +613,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemSendingFromRetiredVault(c *C) {
 	activeVault1.Type = AsgardVault
 	activeVault1.Status = ActiveVault
 	activeVault1.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100*common.One)),
 	}
 	c.Assert(w.keeper.SetVault(w.ctx, activeVault1), IsNil)
@@ -622,7 +622,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemSendingFromRetiredVault(c *C) {
 	activeVault2.Type = AsgardVault
 	activeVault2.Status = ActiveVault
 	activeVault2.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(100*common.One)),
 	}
 	c.Assert(w.keeper.SetVault(w.ctx, activeVault2), IsNil)
@@ -631,7 +631,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemSendingFromRetiredVault(c *C) {
 	retiringVault1.Type = AsgardVault
 	retiringVault1.Status = RetiringVault
 	retiringVault1.Coins = common.Coins{
-		common.NewCoin(common.SWTCAsset(), cosmos.NewUint(10000*common.One)),
+		common.NewCoin(common.SwitchAsset(), cosmos.NewUint(10000*common.One)),
 		common.NewCoin(common.ETHAsset, cosmos.NewUint(1000*common.One)),
 	}
 	c.Assert(w.keeper.SetVault(w.ctx, retiringVault1), IsNil)

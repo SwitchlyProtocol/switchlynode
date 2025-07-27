@@ -37,7 +37,7 @@ func MakeEncodingConfig() params.EncodingConfig {
 	return makeEncodingConfig(tempApp)
 }
 
-func makeEncodingConfig(tempApp *SwitchlyProtocolApp) params.EncodingConfig {
+func makeEncodingConfig(tempApp *SwitchlyApp) params.EncodingConfig {
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
