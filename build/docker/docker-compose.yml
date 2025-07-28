@@ -34,6 +34,7 @@ services:
       SIGNER_NAME: switchly
       SIGNER_PASSWD: password
       SWITCHLYNODE_GRPC_ENABLE: true
+      XLM_CONTRACT: CAVLZEEZWWDBBROYGYLL7IXVUFTSLIXV5EOVU6KR467U43SOBZ36UZTY
     logging: &logging
       driver: "json-file"
       options:
