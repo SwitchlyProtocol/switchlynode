@@ -118,7 +118,7 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 	server := httptest.NewServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "switchlyprotocol",
+		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -173,7 +173,7 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 	server := httptest.NewTLSServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "switchlyprotocol",
+		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -212,7 +212,7 @@ func (s *BlockScannerTestSuite) TestBadConnection(c *C) {
 	server := httptest.NewServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "switchlyprotocol",
+		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -273,7 +273,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	server := httptest.NewServer(h)
 	defer server.Close()
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "switchlyprotocol",
+		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -365,7 +365,7 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 	defer server.Close()
 
 	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "switchlyprotocol",
+		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",

@@ -14,7 +14,7 @@ func (k KVStore) InvariantRoutes() []common.InvariantRoute {
 	return []common.InvariantRoute{
 		common.NewInvariantRoute("asgard", AsgardInvariant(k)),
 		common.NewInvariantRoute("bond", BondInvariant(k)),
-		common.NewInvariantRoute("switchlyprotocol", SwitchlyProtocolInvariant(k)),
+		common.NewInvariantRoute("switchly", SwitchlyProtocolInvariant(k)),
 		common.NewInvariantRoute("affiliate", AffilliateCollectorInvariant(k)),
 		common.NewInvariantRoute("pools", PoolsInvariant(k)),
 		common.NewInvariantRoute("streaming_swaps", StreamingSwapsInvariant(k)),

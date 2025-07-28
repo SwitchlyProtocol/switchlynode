@@ -54,7 +54,7 @@ func (s *MemoSuite) SetUpSuite(c *C) {
 	err := ms.LoadLatestVersion()
 	c.Assert(err, IsNil)
 
-	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchlyprotocol"}, false, log.NewNopLogger())
+	ctx := cosmos.NewContext(ms, tmproto.Header{ChainID: "switchly"}, false, log.NewNopLogger())
 	s.ctx = ctx.WithBlockHeight(18)
 
 	encodingConfig := testutil.MakeTestEncodingConfig(
