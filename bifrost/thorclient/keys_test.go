@@ -46,7 +46,7 @@ func (*KeysSuite) setupKeysForTest(c *C) string {
 	cdc := codec.NewProtoCodec(registry)
 	kb, err := cKeys.New(cosmos.KeyringServiceName(), cKeys.BackendFile, thorcliDir, buf, cdc)
 	c.Assert(err, IsNil)
-	_, _, err = kb.NewMnemonic(signerNameForTest, cKeys.English, cmd.SwitchlyProtocolHDPath, signerPasswordForTest, hd.Secp256k1)
+	_, _, err = kb.NewMnemonic(signerNameForTest, cKeys.English, cmd.SwitchlyHDPath, signerPasswordForTest, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	return thorcliDir
 }

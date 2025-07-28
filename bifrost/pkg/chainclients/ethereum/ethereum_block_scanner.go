@@ -753,7 +753,7 @@ func (e *ETHScanner) convertAmount(token string, amt *big.Int) cosmos.Uint {
 	return cosmos.NewUintFromBigInt(amt).QuoUint64(common.One * 100)
 }
 
-// return value 0 means use the default value which is common.SwitchlyProtocolDecimals, use 1e8 as precision
+// return value 0 means use the default value which is common.SwitchlyDecimals, use 1e8 as precision
 func (e *ETHScanner) getTokenDecimalsForSwitchlyProtocol(token string) int64 {
 	if IsETH(token) {
 		return 0
@@ -765,8 +765,8 @@ func (e *ETHScanner) getTokenDecimalsForSwitchlyProtocol(token string) int64 {
 	if tokenMeta.IsEmpty() {
 		return 0
 	}
-	// when the token's precision is more than SwitchlyProtocol , that's fine , just use SwitchlyProtocolDecimals
-	if tokenMeta.Decimal >= common.SwitchlyProtocolDecimals {
+	// when the token's precision is more than SwitchlyProtocol , that's fine , just use SwitchlyDecimals
+	if tokenMeta.Decimal >= common.SwitchlyDecimals {
 		return 0
 	}
 	return int64(tokenMeta.Decimal)

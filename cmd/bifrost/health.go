@@ -123,7 +123,7 @@ func (s *HealthServer) getP2pIDHandler(w http.ResponseWriter, _ *http.Request) {
 func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 	res := &P2PStatusResponse{Peers: make([]P2PStatusPeer, 0)}
 
-	// get switchlyprotocol nodes
+	// get switchly nodes
 	nodesByIP := map[string]openapi.Node{}
 	thornode := config.GetBifrost().Switchly.ChainHost
 	url := fmt.Sprintf("http://%s/switchly/nodes", thornode)
@@ -339,7 +339,7 @@ func (s *HealthServer) chainScanner(w http.ResponseWriter, _ *http.Request) {
 	}
 	wg.Wait()
 
-	// Fetch switchlyprotocol height
+	// Fetch switchly height
 	thornode := config.GetBifrost().Switchly.ChainHost
 	url := fmt.Sprintf("http://%s/switchly/lastblock", thornode)
 	resp, err := http.Get(url)

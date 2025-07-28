@@ -20,14 +20,14 @@ func main() {
 	nw := common.CurrentChainNetwork
 	switch nw {
 	case common.MockNet:
-		fmt.Println("SwitchlyProtocol mocknet:")
+		fmt.Println("Switchly mocknet:")
 		config := cosmos.GetConfig()
 		config.SetBech32PrefixForAccount("tswitch", "tswitchpub")
 		config.SetBech32PrefixForValidator("tswitchv", "tswitchvpub")
 		config.SetBech32PrefixForConsensusNode("tswitchc", "tswitchcpub")
 		config.Seal()
 	case common.MainNet:
-		fmt.Println("SwitchlyProtocol mainnet:")
+		fmt.Println("Switchly mainnet:")
 		config := cosmos.GetConfig()
 		config.SetBech32PrefixForAccount("switch", "switchpub")
 		config.SetBech32PrefixForValidator("switchv", "switchvpub")

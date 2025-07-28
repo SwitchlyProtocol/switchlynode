@@ -44,8 +44,8 @@ func init() {
 	config.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(cmd.Bech32PrefixValAddr, cmd.Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
-	config.SetCoinType(cmd.SwitchlyProtocolCoinType)
-	config.SetFullFundraiserPath(cmd.SwitchlyProtocolHDPath)
+	config.SetCoinType(cmd.SwitchlyCoinType)
+	config.SetFullFundraiserPath(cmd.SwitchlyHDPath)
 	config.Seal()
 
 	// initialize the codec
@@ -236,7 +236,7 @@ func init() {
 		name := strings.Split(m, " ")[0]
 
 		// create pubkey for mnemonic
-		derivedPriv, err := hd.Secp256k1.Derive()(m, "", cmd.SwitchlyProtocolHDPath)
+		derivedPriv, err := hd.Secp256k1.Derive()(m, "", cmd.SwitchlyHDPath)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to derive private key")
 		}
@@ -257,7 +257,7 @@ func init() {
 		}
 
 		// add key to keyring
-		_, err = keyRing.NewAccount(name, m, "", cmd.SwitchlyProtocolHDPath, hd.Secp256k1)
+		_, err = keyRing.NewAccount(name, m, "", cmd.SwitchlyHDPath, hd.Secp256k1)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to add account to keyring")
 		}

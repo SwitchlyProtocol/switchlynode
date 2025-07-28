@@ -18,14 +18,14 @@ import (
 	ckeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
+	"github.com/switchly/switchlynode/v1/bifrost/metrics"
+	"github.com/switchly/switchlynode/v1/bifrost/thorclient"
+	"github.com/switchly/switchlynode/v1/bifrost/thorclient/types"
+	"github.com/switchly/switchlynode/v1/cmd"
+	"github.com/switchly/switchlynode/v1/common"
+	"github.com/switchly/switchlynode/v1/config"
+	"github.com/switchly/switchlynode/v1/constants"
+	"github.com/switchly/switchlynode/v1/x/thorchain"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -64,7 +64,7 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := ckeys.NewInMemory(cdc)
-	_, _, err = kb.NewMnemonic(cfg.SignerName, ckeys.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
+	_, _, err = kb.NewMnemonic(cfg.SignerName, ckeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 
 	s.cfg = cfg
@@ -108,7 +108,7 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
 			c.Assert(err, IsNil)
-		case strings.HasPrefix(r.RequestURI, "/switchlyprotocol/lastblock"):
+		case strings.HasPrefix(r.RequestURI, "/switchly/lastblock"):
 			// NOTE: weird pattern in GetBlockHeight uses first switchlyprotocol height.
 			_, err := w.Write([]byte(lastBlockResult))
 			c.Assert(err, IsNil)
@@ -346,12 +346,12 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
 			c.Assert(err, IsNil)
-		case strings.HasPrefix(r.RequestURI, "/switchlyprotocol/lastblock"):
+		case strings.HasPrefix(r.RequestURI, "/switchly/lastblock"):
 			// Return last observed height for ETH chain
 			resp := fmt.Sprintf(`[{"chain": "ETH", "last_observed_in": %d, "last_signed_out": 0, "thorchain": 150}]`, lastObservedHeight)
 			_, err := w.Write([]byte(resp))
 			c.Assert(err, IsNil)
-		case strings.HasPrefix(r.RequestURI, "/switchlyprotocol/constants"):
+		case strings.HasPrefix(r.RequestURI, "/switchly/constants"):
 			// Return constants used in rollback calculation - note integers WITHOUT quotes
 			resp := `{"int_64_values": {"ObservationDelayFlexibility": 10, "ThorchainBlockTime": 6000000000}}`
 			_, err := w.Write([]byte(resp))

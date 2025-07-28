@@ -50,7 +50,7 @@ func (s *DogecoinSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.SwitchlyProtocolHDPath, password, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.SwitchlyHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.keys = thorclient.NewKeysWithKeybase(kb, bob, password)
 }

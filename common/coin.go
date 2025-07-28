@@ -9,8 +9,8 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
-// SwitchlyProtocolDecimals indicate the number of decimal points used in SwitchlyProtocol
-const SwitchlyProtocolDecimals = 8
+// SwitchlyDecimals indicate the number of decimal points used in Switchly
+const SwitchlyDecimals = 8
 
 // NoCoin is empty Coin
 var NoCoin = Coin{
@@ -82,7 +82,7 @@ func (c Coin) Valid() error {
 	return nil
 }
 
-// IsNative check whether the coin is native on SwitchlyProtocol
+// IsNative check whether the coin is native on Switchly
 func (c Coin) IsNative() bool {
 	return c.Asset.GetChain().Equals(SWITCHLYChain)
 }
@@ -105,7 +105,7 @@ func (c Coin) IsTCY() bool {
 // Native create a new instance of cosmos.Coin
 func (c Coin) Native() (cosmos.Coin, error) {
 	if !c.IsNative() {
-		return cosmos.Coin{}, errors.New("coin is not on switchlyprotocol")
+		return cosmos.Coin{}, errors.New("coin is not on switchly")
 	}
 	return cosmos.NewCoin(
 		c.Asset.Native(),

@@ -87,7 +87,7 @@ func TestObserverRoundTrip(t *testing.T) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err = kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
+	_, _, err = kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	require.NoError(t, err)
 	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 

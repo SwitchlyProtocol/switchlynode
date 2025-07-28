@@ -72,8 +72,8 @@ func InitNetwork() {
 	cfg.SetBech32PrefixForAccount(bech32PrefixAccAddr, bech32PrefixAccPub)
 	cfg.SetBech32PrefixForValidator(bech32PrefixValAddr, bech32PrefixValPub)
 	cfg.SetBech32PrefixForConsensusNode(bech32PrefixConsAddr, bech32PrefixConsPub)
-	cfg.SetCoinType(cmd.SwitchlyProtocolCoinType)
-	cfg.SetPurpose(cmd.SwitchlyProtocolCoinPurpose)
+	cfg.SetCoinType(cmd.SwitchlyCoinType)
+	cfg.SetPurpose(cmd.SwitchlyCoinPurpose)
 	cfg.Seal()
 }
 

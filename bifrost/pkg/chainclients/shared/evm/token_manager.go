@@ -187,7 +187,7 @@ func (h *TokenManager) ConvertSigningAmount(amt *big.Int, token string) *big.Int
 	return amt
 }
 
-// return value 0 means use the default value which is common.SwitchlyProtocolDecimals, use 1e8 as precision
+// return value 0 means use the default value which is common.SwitchlyDecimals, use 1e8 as precision
 func (h *TokenManager) GetTokenDecimalsForSwitchlyProtocol(token string) int64 {
 	if IsNative(token) {
 		return 0
@@ -199,8 +199,8 @@ func (h *TokenManager) GetTokenDecimalsForSwitchlyProtocol(token string) int64 {
 	if tokenMeta.IsEmpty() {
 		return 0
 	}
-	// when the token's precision is more than SwitchlyProtocol , that's fine , just use SwitchlyProtocolDecimals
-	if tokenMeta.Decimal >= common.SwitchlyProtocolDecimals {
+	// when the token's precision is more than SwitchlyProtocol , that's fine , just use SwitchlyDecimals
+	if tokenMeta.Decimal >= common.SwitchlyDecimals {
 		return 0
 	}
 	return int64(tokenMeta.Decimal)

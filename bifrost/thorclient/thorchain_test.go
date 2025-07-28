@@ -175,7 +175,7 @@ func (ThorchainSuite) TestNewThorchainBridge(c *C) {
 		cryptocodec.RegisterInterfaces(registry)
 		cdc := codec.NewProtoCodec(registry)
 		kb := keyring.NewInMemory(cdc)
-		_, _, err := kb.NewMnemonic(cfg.SignerName, keyring.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
+		_, _, err := kb.NewMnemonic(cfg.SignerName, keyring.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 		c.Assert(err, IsNil)
 		sb, err := NewThorchainBridge(cfg, m, NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd))
 		c.Assert(err, errChecker)

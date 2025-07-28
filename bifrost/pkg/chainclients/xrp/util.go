@@ -39,12 +39,12 @@ func fromXrpToThorchain(coin txtypes.CurrencyAmount) (common.Coin, error) {
 	}
 	var exp big.Int
 	// Decimals are more than native THORChain, so divide...
-	if decimals > common.SwitchlyProtocolDecimals {
-		decimalDiff := decimals - common.SwitchlyProtocolDecimals
+	if decimals > common.SwitchlyDecimals {
+		decimalDiff := decimals - common.SwitchlyDecimals
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
-	} else if decimals < common.SwitchlyProtocolDecimals {
+	} else if decimals < common.SwitchlyDecimals {
 		// Decimals are less than native THORChain, so multiply...
-		decimalDiff := common.SwitchlyProtocolDecimals - decimals
+		decimalDiff := common.SwitchlyDecimals - decimals
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
 	return common.Coin{
@@ -63,13 +63,13 @@ func fromThorchainToXrp(coin common.Coin) (txtypes.CurrencyAmount, error) {
 	decimals := asset.XrpDecimals
 	amount := coin.Amount.BigInt()
 	var exp big.Int
-	if decimals > common.SwitchlyProtocolDecimals {
+	if decimals > common.SwitchlyDecimals {
 		// Decimals are more than native THORChain, so multiply...
-		decimalDiff := decimals - common.SwitchlyProtocolDecimals
+		decimalDiff := decimals - common.SwitchlyDecimals
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
-	} else if decimals < common.SwitchlyProtocolDecimals {
+	} else if decimals < common.SwitchlyDecimals {
 		// Decimals are less than native THORChain, so divide...
-		decimalDiff := common.SwitchlyProtocolDecimals - decimals
+		decimalDiff := common.SwitchlyDecimals - decimals
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
 

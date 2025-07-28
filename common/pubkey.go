@@ -215,7 +215,7 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 		if err != nil {
 			return NoAddress, err
 		}
-		// Stellar uses ed25519, but we have secp256k1 from SwitchlyProtocol
+		// Stellar uses ed25519, but we have secp256k1 from Switchly
 		// We need to derive an ed25519 key deterministically from the secp256k1 key
 		// Use SHA-256 hash of the secp256k1 public key as the ed25519 private key seed
 		secp256k1PubKey := pk.Bytes()

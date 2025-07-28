@@ -34,8 +34,8 @@ func NewRootCmd() *cobra.Command {
 	cfg.SetBech32PrefixForValidator(prefix.Bech32PrefixValAddr, prefix.Bech32PrefixValPub)
 	cfg.SetBech32PrefixForConsensusNode(prefix.Bech32PrefixConsAddr, prefix.Bech32PrefixConsPub)
 	cfg.SetAddressVerifier(wasmtypes.VerifyAddressLen())
-	cfg.SetCoinType(prefix.SwitchlyProtocolCoinType)
-	cfg.SetPurpose(prefix.SwitchlyProtocolCoinPurpose)
+	cfg.SetCoinType(prefix.SwitchlyCoinType)
+	cfg.SetPurpose(prefix.SwitchlyCoinPurpose)
 	cfg.Seal()
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
@@ -62,7 +62,7 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd := &cobra.Command{
 		Use:           "switchlynode",
-		Short:         "SwitchlyProtocol Daemon (server)",
+		Short:         "Switchly Daemon (server)",
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs

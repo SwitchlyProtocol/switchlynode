@@ -46,7 +46,7 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
 	kb := cKeys.NewInMemory(cdc)
-	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyProtocolHDPath, cfg.SignerPasswd, hd.Secp256k1)
+	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 	c.Assert(err, IsNil)

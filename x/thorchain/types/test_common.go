@@ -217,8 +217,8 @@ func SetupConfigForTest() {
 	config.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(cmd.Bech32PrefixValAddr, cmd.Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
-	config.SetCoinType(cmd.SwitchlyProtocolCoinType)
-	config.SetPurpose(cmd.SwitchlyProtocolCoinPurpose)
+	config.SetCoinType(cmd.SwitchlyCoinType)
+	config.SetPurpose(cmd.SwitchlyCoinPurpose)
 }
 
 // GetCurrentVersion - intended for unit tests, fetches the current version of

@@ -396,7 +396,7 @@ func (c Chain) InboundNotes() string {
 	case GAIAChain:
 		return "Transfer the inbound_address the asset with the memo. Do not use multi-in, multi-out transactions."
 	case SWITCHLYChain:
-		return "Broadcast a MsgDeposit to the SwitchlyProtocol network with the appropriate memo. Do not use multi-in, multi-out transactions."
+		return "Broadcast a MsgDeposit to the Switchly network with the appropriate memo. Do not use multi-in, multi-out transactions."
 	case XRPChain:
 		return "Transfer the inbound_address the asset with the memo. Only a single memo is supported and only MemoData is used."
 	case StellarChain:

@@ -55,7 +55,7 @@ bifrost:
     retry_interval: 2s
     reschedule_buffer_blocks: 150 # 15 minutes
     block_scanner:
-      chain_id: SwitchlyProtocol
+      chain_id: Switchly
       start_block_height: 0
       block_retry_interval: 10s
       block_height_discover_back_off: 5s
@@ -82,7 +82,7 @@ bifrost:
     btc: &default-chain
       disabled: false
       chain_id: BTC
-      username: switchlyprotocol
+      username: switchly
       password: password
       http_post_mode: 1
       disable_tls: 1

@@ -92,8 +92,8 @@ func main() {
 	cfg.SetBech32PrefixForAccount(cmd.Bech32PrefixAccAddr, cmd.Bech32PrefixAccPub)
 	cfg.SetBech32PrefixForValidator(cmd.Bech32PrefixValAddr, cmd.Bech32PrefixValPub)
 	cfg.SetBech32PrefixForConsensusNode(cmd.Bech32PrefixConsAddr, cmd.Bech32PrefixConsPub)
-	cfg.SetCoinType(cmd.SwitchlyProtocolCoinType)
-	cfg.SetPurpose(cmd.SwitchlyProtocolCoinPurpose)
+	cfg.SetCoinType(cmd.SwitchlyCoinType)
+	cfg.SetPurpose(cmd.SwitchlyCoinPurpose)
 	cfg.Seal()
 
 	// prompt for thornode endpoint
