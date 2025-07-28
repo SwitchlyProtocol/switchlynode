@@ -256,13 +256,13 @@ services:
     image: registry.gitlab.com/thorchain/midgard:develop
     restart: unless-stopped
     environment:
-      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlynode:1317/switchly
+      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlynode:1317/thorchain
       MIDGARD_THORCHAIN_TENDERMINT_URL: http://switchlynode:26657/websocket
-      MIDGARD_SWITCHLYPROTOCOL_THOR_NODE_URL: http://switchlynode:1317/switchly
+      MIDGARD_SWITCHLYPROTOCOL_THOR_NODE_URL: http://switchlynode:1317/thorchain
       MIDGARD_SWITCHLYPROTOCOL_TENDERMINT_URL: http://switchlynode:26657/websocket
       MIDGARD_TIMESCALE_HOST: midgard-db
-      MIDGARD_THORCHAIN_LAST_CHAIN_BACKOFF: ${THOR_BLOCK_TIME:-2s}
-      MIDGARD_SWITCHLYPROTOCOL_LAST_CHAIN_BACKOFF: ${SWITCHLY_BLOCK_TIME:-2s}
+      MIDGARD_THORCHAIN_LAST_CHAIN_BACKOFF: ${BLOCK_TIME:-2s}
+      MIDGARD_SWITCHLYPROTOCOL_LAST_CHAIN_BACKOFF: ${BLOCK_TIME:-2s}
     ports:
       - 8080:8080
     logging: *logging
