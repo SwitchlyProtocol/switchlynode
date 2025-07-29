@@ -147,10 +147,10 @@ create_switchly_user() {
   if [ $? -ne 0 ]; then
     echo "Creating SwitchlyNode Switchly '$SIGNER_NAME' account"
     if [ -n "$SIGNER_SEED_PHRASE" ]; then
-      printf "%s\n%s\n%s\n" "$SIGNER_SEED_PHRASE" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys add "$SIGNER_NAME" --keyring-backend file --algo secp256k1 --recover
+      echo -n "$SIGNER_SEED_PHRASE" > /tmp/mnemonic.txt && printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --recover --source /tmp/mnemonic.txt
       NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
     else
-      printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys add "$SIGNER_NAME" --keyring-backend file --algo secp256k1
+      printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys --keyring-backend file add "$SIGNER_NAME"
       NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
     fi
     export NODE_PUB_KEY_ED25519
