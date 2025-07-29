@@ -15,7 +15,7 @@ PEER_API="${PEER_API:=$PEER}" # the hostname of a seed node API if different
 if [ ! -f ~/.switchlynode/config/genesis.json ]; then
   echo "Setting SwitchlyNode as Validator node"
 
-  create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
+  create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
   init_chain
   rm -rf ~/.switchlynode/config/genesis.json # set in switchlynode render-config
