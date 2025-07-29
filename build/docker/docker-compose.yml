@@ -162,6 +162,7 @@ services:
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
       CHAIN_API: switchlynode:1317
       CHAIN_RPC: switchlynode:26657
+      PEER: switchlynode
       BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode:50051
       BTC_HOST: ${BTC_HOST:-bitcoin:18443}
       DOGE_HOST: ${DOGE_HOST:-dogecoin:18332}
@@ -173,7 +174,6 @@ services:
       GAIA_GRPC_HOST: ${GAIA_GRPC_HOST:-gaia:9090}
       XLM_HOST: ${XLM_HOST:-stellar:8000}
       BLOCK_SCANNER_BACKOFF: ${BLOCK_SCANNER_BACKOFF:-5s}
-      PEER: ${PEER:-}
       BIFROST_METRICS_PPROF_ENABLED: "true"
       BIFROST_SIGNER_BACKUP_KEYSHARES: "true"
       BIFROST_SIGNER_AUTO_OBSERVE: "false"
