@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	// folder name for thorchain thorcli
-	thorchainCliFolderName = `.thornode`
+	// folder name for switchly switchlycli
+	switchlyCliFolderName = `.switchlynode`
 )
 
 // Keys manages all the keys used by thorchain
@@ -76,7 +76,7 @@ func getKeybase(thorchainHome string, reader io.Reader) (ckeys.Keyring, error) {
 		if err != nil {
 			return nil, fmt.Errorf("fail to get current user,err:%w", err)
 		}
-		cliDir = filepath.Join(usr.HomeDir, thorchainCliFolderName)
+		cliDir = filepath.Join(usr.HomeDir, switchlyCliFolderName)
 	}
 
 	registry := codectypes.NewInterfaceRegistry()
