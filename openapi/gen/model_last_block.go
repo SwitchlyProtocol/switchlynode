@@ -19,19 +19,19 @@ type LastBlock struct {
 	Chain string `json:"chain"`
 	LastObservedIn int64 `json:"last_observed_in"`
 	LastSignedOut int64 `json:"last_signed_out"`
-	Thorchain int64 `json:"thorchain"`
+	Switchly int64 `json:"switchly"`
 }
 
 // NewLastBlock instantiates a new LastBlock object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewLastBlock(chain string, lastObservedIn int64, lastSignedOut int64, thorchain int64) *LastBlock {
+func NewLastBlock(chain string, lastObservedIn int64, lastSignedOut int64, switchly int64) *LastBlock {
 	this := LastBlock{}
 	this.Chain = chain
 	this.LastObservedIn = lastObservedIn
 	this.LastSignedOut = lastSignedOut
-	this.Thorchain = thorchain
+	this.Switchly = switchly
 	return &this
 }
 
@@ -115,28 +115,28 @@ func (o *LastBlock) SetLastSignedOut(v int64) {
 	o.LastSignedOut = v
 }
 
-// GetThorchain returns the Thorchain field value
-func (o *LastBlock) GetThorchain() int64 {
+// GetSwitchly returns the Switchly field value
+func (o *LastBlock) GetSwitchly() int64 {
 	if o == nil {
 		var ret int64
 		return ret
 	}
 
-	return o.Thorchain
+	return o.Switchly
 }
 
-// GetThorchainOk returns a tuple with the Thorchain field value
+// GetSwitchlyOk returns a tuple with the Switchly field value
 // and a boolean to check if the value has been set.
-func (o *LastBlock) GetThorchainOk() (*int64, bool) {
+func (o *LastBlock) GetSwitchlyOk() (*int64, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.Thorchain, true
+	return &o.Switchly, true
 }
 
-// SetThorchain sets field value
-func (o *LastBlock) SetThorchain(v int64) {
-	o.Thorchain = v
+// SetSwitchly sets field value
+func (o *LastBlock) SetSwitchly(v int64) {
+	o.Switchly = v
 }
 
 func (o LastBlock) MarshalJSON_deprecated() ([]byte, error) {
@@ -151,7 +151,7 @@ func (o LastBlock) MarshalJSON_deprecated() ([]byte, error) {
 		toSerialize["last_signed_out"] = o.LastSignedOut
 	}
 	if true {
-		toSerialize["thorchain"] = o.Thorchain
+		toSerialize["switchly"] = o.Switchly
 	}
 	return json.Marshal(toSerialize)
 }

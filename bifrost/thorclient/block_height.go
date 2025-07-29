@@ -43,7 +43,7 @@ func (b *thorchainBridge) GetBlockHeight() (int64, error) {
 		return 0, fmt.Errorf("failed to GetThorchainHeight: %w", err)
 	}
 	for _, item := range latestBlocks {
-		return item.Thorchain, nil
+		return item.Switchly, nil
 	}
 	return 0, fmt.Errorf("failed to GetThorchainHeight")
 }

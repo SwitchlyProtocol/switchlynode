@@ -98,8 +98,8 @@ Class | Method | HTTP request | Description
 *NetworkApi* | [**Ban**](docs/NetworkApi.md#ban) | **Get** /thorchain/ban/{address} | 
 *NetworkApi* | [**Constants**](docs/NetworkApi.md#constants) | **Get** /thorchain/constants | 
 *NetworkApi* | [**InboundAddresses**](docs/NetworkApi.md#inboundaddresses) | **Get** /thorchain/inbound_addresses | 
-*NetworkApi* | [**Lastblock**](docs/NetworkApi.md#lastblock) | **Get** /thorchain/lastblock | 
-*NetworkApi* | [**LastblockChain**](docs/NetworkApi.md#lastblockchain) | **Get** /thorchain/lastblock/{chain} | 
+*NetworkApi* | [**Lastblock**](docs/NetworkApi.md#lastblock) | **Get** /switchly/lastblock | 
+*NetworkApi* | [**LastblockChain**](docs/NetworkApi.md#lastblockchain) | **Get** /switchly/lastblock/{chain} | 
 *NetworkApi* | [**Network**](docs/NetworkApi.md#network) | **Get** /thorchain/network | 
 *NetworkApi* | [**OutboundFeeAsset**](docs/NetworkApi.md#outboundfeeasset) | **Get** /thorchain/outbound_fee/{asset} | 
 *NetworkApi* | [**OutboundFees**](docs/NetworkApi.md#outboundfees) | **Get** /thorchain/outbound_fees | 

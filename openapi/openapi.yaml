@@ -678,7 +678,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/InboundAddressesResponse"
 
-  /thorchain/lastblock:
+  /switchly/lastblock:
     parameters:
       - $ref: "#/components/parameters/queryHeight"
     get:
@@ -694,7 +694,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/LastBlockResponse"
 
-  /thorchain/lastblock/{chain}:
+  /switchly/lastblock/{chain}:
     parameters:
       - $ref: "#/components/parameters/queryHeight"
       - $ref: "#/components/parameters/chain"
@@ -2483,7 +2483,7 @@ components:
         - chain
         - last_observed_in
         - last_signed_out
-        - thorchain
+        - switchly
       properties:
         chain:
           type: string
@@ -2493,7 +2493,7 @@ components:
         last_signed_out:
           type: integer
           format: int64
-        thorchain:
+        switchly:
           type: integer
           format: int64
 

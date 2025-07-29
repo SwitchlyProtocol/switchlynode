@@ -7,13 +7,13 @@ Name | Type | Description | Notes
 **Chain** | **string** |  | 
 **LastObservedIn** | **int64** |  | 
 **LastSignedOut** | **int64** |  | 
-**Thorchain** | **int64** |  | 
+**Switchly** | **int64** |  | 
 
 ## Methods
 
 ### NewLastBlock
 
-`func NewLastBlock(chain string, lastObservedIn int64, lastSignedOut int64, thorchain int64, ) *LastBlock`
+`func NewLastBlock(chain string, lastObservedIn int64, lastSignedOut int64, switchly int64, ) *LastBlock`
 
 NewLastBlock instantiates a new LastBlock object
 This constructor will assign default values to properties that have it defined,
@@ -88,24 +88,24 @@ and a boolean to check if the value has been set.
 SetLastSignedOut sets LastSignedOut field to given value.
 
 
-### GetThorchain
+### GetSwitchly
 
-`func (o *LastBlock) GetThorchain() int64`
+`func (o *LastBlock) GetSwitchly() int64`
 
-GetThorchain returns the Thorchain field if non-nil, zero value otherwise.
+GetSwitchly returns the Switchly field if non-nil, zero value otherwise.
 
-### GetThorchainOk
+### GetSwitchlyOk
 
-`func (o *LastBlock) GetThorchainOk() (*int64, bool)`
+`func (o *LastBlock) GetSwitchlyOk() (*int64, bool)`
 
-GetThorchainOk returns a tuple with the Thorchain field if it's non-nil, zero value otherwise
+GetSwitchlyOk returns a tuple with the Switchly field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetThorchain
+### SetSwitchly
 
-`func (o *LastBlock) SetThorchain(v int64)`
+`func (o *LastBlock) SetSwitchly(v int64)`
 
-SetThorchain sets Thorchain field to given value.
+SetSwitchly sets Switchly field to given value.
 
 
 

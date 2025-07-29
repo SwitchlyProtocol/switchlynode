@@ -43,7 +43,7 @@ func TestObserverRoundTrip(t *testing.T) {
 				require.NoError(t, err)
 				_, err = rw.Write(buf)
 				require.NoError(t, err)
-			case strings.HasPrefix(req.RequestURI, "/thorchain/lastblock"):
+			case strings.HasPrefix(req.RequestURI, "/switchly/lastblock"):
 				// NOTE: weird pattern in GetBlockHeight uses first thorchain height.
 				_, err := rw.Write([]byte(`[
           {

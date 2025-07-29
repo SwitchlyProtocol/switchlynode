@@ -48,7 +48,7 @@ asserts:
   - .[0].block_height == ${VAULT_BLOCK_HEIGHT=1}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/lastblock
+endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - .[0].thorchain == ${VAULT_BLOCK_HEIGHT}
   # The templates set the vault block_height to 0,
@@ -151,7 +151,7 @@ asserts:
 # check 2/2 of vault block_height
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/lastblock
+endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - .[0].thorchain == ${HEIGHT=12}
 ---

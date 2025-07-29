@@ -1111,7 +1111,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/lastblock:
+  /switchly/lastblock:
     get:
       description: Returns the last block information for all chains.
       operationId: lastblock
@@ -1135,7 +1135,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/lastblock/{chain}:
+  /switchly/lastblock/{chain}:
     get:
       description: Returns the last block information for the provided chain.
       operationId: lastblockChain
@@ -3686,7 +3686,7 @@ components:
         chain: chain
         last_signed_out: 6
         last_observed_in: 0
-        thorchain: 1
+        switchly: 1
       properties:
         chain:
           type: string
@@ -3696,14 +3696,14 @@ components:
         last_signed_out:
           format: int64
           type: integer
-        thorchain:
+        switchly:
           format: int64
           type: integer
       required:
       - chain
       - last_observed_in
       - last_signed_out
-      - thorchain
+      - switchly
       type: object
     ObservedTx:
       example:

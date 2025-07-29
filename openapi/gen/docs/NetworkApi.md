@@ -7,8 +7,8 @@ Method | HTTP request | Description
 [**Ban**](NetworkApi.md#Ban) | **Get** /thorchain/ban/{address} | 
 [**Constants**](NetworkApi.md#Constants) | **Get** /thorchain/constants | 
 [**InboundAddresses**](NetworkApi.md#InboundAddresses) | **Get** /thorchain/inbound_addresses | 
-[**Lastblock**](NetworkApi.md#Lastblock) | **Get** /thorchain/lastblock | 
-[**LastblockChain**](NetworkApi.md#LastblockChain) | **Get** /thorchain/lastblock/{chain} | 
+[**Lastblock**](NetworkApi.md#Lastblock) | **Get** /switchly/lastblock | 
+[**LastblockChain**](NetworkApi.md#LastblockChain) | **Get** /switchly/lastblock/{chain} | 
 [**Network**](NetworkApi.md#Network) | **Get** /thorchain/network | 
 [**OutboundFeeAsset**](NetworkApi.md#OutboundFeeAsset) | **Get** /thorchain/outbound_fee/{asset} | 
 [**OutboundFees**](NetworkApi.md#OutboundFees) | **Get** /thorchain/outbound_fees | 

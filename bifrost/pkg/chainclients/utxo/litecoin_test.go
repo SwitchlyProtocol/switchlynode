@@ -177,7 +177,7 @@ func (s *LitecoinSuite) SetUpTest(c *C) {
 			}
 		} else if strings.HasPrefix(req.RequestURI, "/thorchain/node/") {
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/nodeaccount/template.json")
-		} else if req.RequestURI == "/thorchain/lastblock" {
+		} else if req.RequestURI == "/switchly/lastblock" {
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/lastblock/ltc.json")
 		} else if strings.HasPrefix(req.RequestURI, "/auth/accounts/") {
 			_, err := rw.Write([]byte(`{ "jsonrpc": "2.0", "id": "", "result": { "height": "0", "result": { "value": { "account_number": "0", "sequence": "0" } } } }`))

@@ -14,7 +14,7 @@ asserts:
 # Check Cosmos-SDK endpoint 'height' parameter.
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/lastblock
+endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - length >= 1
   - .[0].thorchain == ${HEIGHT_1=1}
@@ -30,7 +30,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/lastblock
+endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - length >= 1
   - .[0].thorchain == ${HEIGHT_2=2}

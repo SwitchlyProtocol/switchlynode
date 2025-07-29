@@ -826,7 +826,7 @@ asserts:
 # check stored rollup details
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/lastblock
+endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - .|length >= 1
   - .[0].thorchain == ${HEIGHT=20}

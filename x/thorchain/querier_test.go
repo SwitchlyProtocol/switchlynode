@@ -825,7 +825,7 @@ func (s *QuerierSuite) TestQueryHeights(c *C) {
 
 	// Verify conformance to openapi spec
 	c.Assert(q[0].Chain, Equals, queryChainsLastBlockResp.LastBlocks[0].Chain)
-	c.Assert(q[0].Thorchain, Equals, queryChainsLastBlockResp.LastBlocks[0].Thorchain)
+	c.Assert(q[0].Switchly, Equals, queryChainsLastBlockResp.LastBlocks[0].Switchly)
 }
 
 func (s *QuerierSuite) TestQueryConstantValues(c *C) {

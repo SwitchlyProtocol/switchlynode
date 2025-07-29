@@ -125,7 +125,7 @@ func (s *ObserverSuite) SetUpSuite(c *C) {
 				c.Assert(err, IsNil)
 				_, err = rw.Write(buf)
 				c.Assert(err, IsNil)
-			case strings.HasPrefix(req.RequestURI, "/thorchain/lastblock"):
+			case strings.HasPrefix(req.RequestURI, "/switchly/lastblock"):
 				// NOTE: weird pattern in GetBlockHeight uses first thorchain height.
 				_, err := rw.Write([]byte(`[
           {

@@ -106,11 +106,11 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type QueryClient interface {
 	// Account returns account details for a given address.
-	// As this path does not start with /thorchain/ , it requires an exception in CustomGRPCGatewayRouter
+	// As this path does not start with /switchly/ , it requires an exception in CustomGRPCGatewayRouter
 	// to not drop the height parameter.
 	Account(ctx context.Context, in *QueryAccountRequest, opts ...grpc.CallOption) (*QueryAccountResponse, error)
 	// Balances returns the bank module balances for a given address.
-	// As this path does not start with /thorchain/ , it requires an exception in CustomGRPCGatewayRouter
+	// As this path does not start with /switchly/ , it requires an exception in CustomGRPCGatewayRouter
 	// to not drop the height parameter.
 	Balances(ctx context.Context, in *QueryBalancesRequest, opts ...grpc.CallOption) (*QueryBalancesResponse, error)
 	// Export returns the content of the export file (regression test only).
@@ -929,11 +929,11 @@ func (c *queryClient) Codes(ctx context.Context, in *QueryCodesRequest, opts ...
 // for forward compatibility
 type QueryServer interface {
 	// Account returns account details for a given address.
-	// As this path does not start with /thorchain/ , it requires an exception in CustomGRPCGatewayRouter
+	// As this path does not start with /switchly/ , it requires an exception in CustomGRPCGatewayRouter
 	// to not drop the height parameter.
 	Account(context.Context, *QueryAccountRequest) (*QueryAccountResponse, error)
 	// Balances returns the bank module balances for a given address.
-	// As this path does not start with /thorchain/ , it requires an exception in CustomGRPCGatewayRouter
+	// As this path does not start with /switchly/ , it requires an exception in CustomGRPCGatewayRouter
 	// to not drop the height parameter.
 	Balances(context.Context, *QueryBalancesRequest) (*QueryBalancesResponse, error)
 	// Export returns the content of the export file (regression test only).

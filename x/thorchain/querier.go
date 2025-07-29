@@ -2491,7 +2491,7 @@ func (qs queryServer) queryLastBlockHeights(ctx cosmos.Context, chain string) (*
 			Chain:          c.String(),
 			LastObservedIn: chainHeight,
 			LastSignedOut:  signed,
-			Thorchain:      ctx.BlockHeight(),
+			Switchly:       ctx.BlockHeight(),
 		})
 	}
 

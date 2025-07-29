@@ -400,7 +400,7 @@ func (a *NetworkApiService) LastblockExecute(r ApiLastblockRequest) ([]LastBlock
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/thorchain/lastblock"
+	localVarPath := localBasePath + "/switchly/lastblock"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -512,7 +512,7 @@ func (a *NetworkApiService) LastblockChainExecute(r ApiLastblockChainRequest) ([
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/thorchain/lastblock/{chain}"
+	localVarPath := localBasePath + "/switchly/lastblock/{chain}"
 	localVarPath = strings.Replace(localVarPath, "{"+"chain"+"}", url.PathEscape(parameterToString(r.chain, "")), -1)
 
 	localVarHeaderParams := make(map[string]string)
