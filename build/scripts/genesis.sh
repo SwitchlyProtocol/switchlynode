@@ -22,8 +22,8 @@ genesis_init() {
   create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
   VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
-  NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
-  NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -p --keyring-backend file | switchlynode pubkey)
+  NODE_ADDRESS=$(switchlynode keys show "$SIGNER_NAME" -a --keyring-backend test)
+  NODE_PUB_KEY=$(switchlynode keys show "$SIGNER_NAME" -p --keyring-backend test | switchlynode pubkey)
   VERSION=$(fetch_version)
 
   NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
