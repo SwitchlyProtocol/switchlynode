@@ -45,10 +45,10 @@ genesis_init() {
     add_account tswitch1tyry86qensp4ws4enudkrjrw408x559ghwe7xy switch 5090000000000
 
     # Liquidity Provider accounts (one for each chain)
-    add_account tswitch1ugursz23jha99zeglv9qww8gaxcgz2xjq4qcp9 switch 200000000000000 # cat
+    add_account tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9pxf4cw9 switch 200000000000000 # cat
     add_account tswitch1swe4u2gw9vlze677fgseyka0tu0zgmp2wkdktk switch 200000000000000 # dog
-    add_account tswitch1exgvymgkqf4q7rd9epnpk0t6f3z4z9udkrzane switch 200000000000000 # fox
-    add_account tswitch1pc52j8mzkhp0ywya2vtqhkatkqumpn6h9t2rec switch 200000000000000 # pig
+    add_account tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4gvwq05 switch 200000000000000 # fox
+    add_account tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjne5jzt switch 200000000000000 # pig
 
     # User accounts for smoke tests
     add_account tswitch1vny3kasx3nlh6h8h4w2nw92clj8hncg2v27duw switch 100000000000000 # master
@@ -97,7 +97,7 @@ genesis_init() {
 
   echo "Genesis content"
   cat ~/.switchlynode/config/genesis.json
-  switchlynode validate-genesis
+  switchlynode genesis validate
 }
 
 ########################################################################################
@@ -113,11 +113,6 @@ fi
 switchlynode render-config
 
   # validate genesis
-  echo "Genesis validation:"
   switchlynode genesis validate ~/.switchlynode/config/genesis.json
   
-  echo "DEBUG: About to exec with arguments: $@"
-  echo "DEBUG: Number of arguments: $#"
-  echo "DEBUG: First argument: $1"
-  echo "DEBUG: Second argument: ${2:-NONE}"
   exec "$@"

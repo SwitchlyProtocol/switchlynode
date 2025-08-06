@@ -5,12 +5,11 @@
 set -o pipefail
 
 # set defaults
-PEER="${PEER:=127.0.0.1}"
-PORT="${PORT:=1317}"
+API_HOST="${1:-${PEER:-127.0.0.1:1317}}"
 
-echo "Waiting for SwitchlyNode API to be ready..."
+echo "Waiting for SwitchlyNode API to be ready at $API_HOST..."
 
-until curl -s "$PEER:$PORT/switchly/ping" > /dev/null; do
+until curl -s "$API_HOST/switchly/ping" > /dev/null; do
   echo "SwitchlyNode API not ready, waiting..."
   sleep 5
 done

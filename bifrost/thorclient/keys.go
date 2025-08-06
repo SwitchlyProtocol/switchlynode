@@ -82,7 +82,7 @@ func getKeybase(thorchainHome string, reader io.Reader) (ckeys.Keyring, error) {
 	registry := codectypes.NewInterfaceRegistry()
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
-	return ckeys.New(sdk.KeyringServiceName(), ckeys.BackendFile, cliDir, reader, cdc)
+	return ckeys.New(sdk.KeyringServiceName(), ckeys.BackendTest, cliDir, reader, cdc)
 }
 
 // GetSignerInfo return signer info

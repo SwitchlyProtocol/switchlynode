@@ -74,33 +74,7 @@ init_chain() {
   IFS=","
 
   echo "Init chain"
-  echo "DEBUG: CHAIN_ID is '$CHAIN_ID'"
-  echo "DEBUG: About to run: switchlynode init local --chain-id $CHAIN_ID"
-  
-  # Test the init command with explicit error handling
-  if switchlynode init local --chain-id "$CHAIN_ID" 2>&1; then
-    echo "DEBUG: switchlynode init successful"
-  else
-    echo "ERROR: switchlynode init failed with exit code $?"
-    echo "DEBUG: Trying alternative init syntax..."
-    
-    # Try alternative init command syntax
-    if switchlynode init --chain-id "$CHAIN_ID" local 2>&1; then
-      echo "DEBUG: Alternative init syntax worked"
-    else
-      echo "ERROR: Alternative init also failed"
-      echo "DEBUG: Checking switchlynode init help..."
-      switchlynode init --help | head -10
-      exit 1
-    fi
-  fi
-  
-  echo "DEBUG: About to list keys"
-  if echo "$SIGNER_PASSWD" | switchlynode keys list --keyring-backend file 2>/dev/null; then
-    echo "DEBUG: Keys list successful"
-  else
-    echo "DEBUG: No keys found or keys list failed (this is expected for fresh init)"
-  fi
+  switchlynode init local --chain-id "$CHAIN_ID"
 }
 
 fetch_node_id() {
@@ -142,18 +116,16 @@ create_switchly_user() {
   SIGNER_SEED_PHRASE="$3"
 
   echo "Checking if SwitchlyNode Switchly '$SIGNER_NAME' account exists"
-  echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" --keyring-backend file 1>/dev/null 2>&1
+  switchlynode keys show "$SIGNER_NAME" --keyring-backend test 1>/dev/null 2>&1
   # shellcheck disable=SC2181
   if [ $? -ne 0 ]; then
     echo "Creating SwitchlyNode Switchly '$SIGNER_NAME' account"
     if [ -n "$SIGNER_SEED_PHRASE" ]; then
-      echo -n "$SIGNER_SEED_PHRASE" > /tmp/mnemonic.txt && printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --recover --source /tmp/mnemonic.txt
-      NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
+      printf "%s\n\n" "$SIGNER_SEED_PHRASE" | switchlynode keys add "$SIGNER_NAME" --keyring-backend test --recover
     else
-      printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys --keyring-backend file add "$SIGNER_NAME"
-      NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
+      RESULT=$(switchlynode keys add "$SIGNER_NAME" --keyring-backend test --output json 2>&1)
+      SIGNER_SEED_PHRASE=$(echo "$RESULT" | jq -r '.mnemonic')
     fi
-    export NODE_PUB_KEY_ED25519
   fi
 }
 

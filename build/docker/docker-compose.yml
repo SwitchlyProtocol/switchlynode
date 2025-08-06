@@ -295,11 +295,18 @@ services:
       <<: *switchlynode-environment
       PEER: switchlynode
       SEED: switchlynode-cat
+      SEEDS: switchlynode,switchlynode-fox,switchlynode-pig
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     volumes:
       - "../scripts:/docker/scripts"
       - switchlynode-cat:/root/.switchlynode
     entrypoint: /docker/scripts/validator.sh
+    healthcheck:
+      test: ["CMD", "echo", "cluster node - no healthcheck needed"]
+      interval: 30s
+      timeout: 5s
+      retries: 1
+      start_period: 10s
 
   switchlynode-fox:
     <<: *switchlynode
@@ -314,11 +321,18 @@ services:
       <<: *switchlynode-environment
       PEER: switchlynode
       SEED: switchlynode-fox
+      SEEDS: switchlynode,switchlynode-cat,switchlynode-pig
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     volumes:
       - "../scripts:/docker/scripts"
       - switchlynode-fox:/root/.switchlynode
     entrypoint: /docker/scripts/validator.sh
+    healthcheck:
+      test: ["CMD", "echo", "cluster node - no healthcheck needed"]
+      interval: 30s
+      timeout: 5s
+      retries: 1
+      start_period: 10s
 
   switchlynode-pig:
     <<: *switchlynode
@@ -333,11 +347,18 @@ services:
       <<: *switchlynode-environment
       PEER: switchlynode
       SEED: switchlynode-pig
+      SEEDS: switchlynode,switchlynode-cat,switchlynode-fox
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     volumes:
       - "../scripts:/docker/scripts"
       - switchlynode-pig:/root/.switchlynode
     entrypoint: /docker/scripts/validator.sh
+    healthcheck:
+      test: ["CMD", "echo", "cluster node - no healthcheck needed"]
+      interval: 30s
+      timeout: 5s
+      retries: 1
+      start_period: 10s
 
   # ------------------------------ bifrosts ------------------------------
 
@@ -354,6 +375,7 @@ services:
       CHAIN_API: switchlynode-cat:1317
       CHAIN_RPC: switchlynode-cat:26657
       BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-cat:50051
+
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     ports:
       - 5040
@@ -362,7 +384,7 @@ services:
       - "../scripts:/docker/scripts"
       - bifrost-cat:/var/data/bifrost
       - switchlynode-cat:/root/.switchlynode
-    command: ["bifrost"]
+    command: ["bifrost", "-p"]
 
   bifrost-fox:
     <<: *bifrost
@@ -377,6 +399,7 @@ services:
       CHAIN_API: switchlynode-fox:1317
       CHAIN_RPC: switchlynode-fox:26657
       BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-fox:50051
+
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     ports:
       - 5040
@@ -385,7 +408,7 @@ services:
       - "../scripts:/docker/scripts"
       - bifrost-fox:/var/data/bifrost
       - switchlynode-fox:/root/.switchlynode
-    command: ["bifrost"]
+    command: ["bifrost", "-p"]
 
   bifrost-pig:
     <<: *bifrost
@@ -400,6 +423,7 @@ services:
       CHAIN_API: switchlynode-pig:1317
       CHAIN_RPC: switchlynode-pig:26657
       BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-pig:50051
+
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     ports:
       - 5040
@@ -408,7 +432,7 @@ services:
       - "../scripts:/docker/scripts"
       - bifrost-pig:/var/data/bifrost
       - switchlynode-pig:/root/.switchlynode
-    command: ["bifrost"]
+    command: ["bifrost", "-p"]
 
   ######################################################################################
   # Mock Clients
