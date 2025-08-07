@@ -14,7 +14,6 @@ import (
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	ckeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
@@ -82,7 +81,7 @@ func getKeybase(thorchainHome string, reader io.Reader) (ckeys.Keyring, error) {
 	registry := codectypes.NewInterfaceRegistry()
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
-	return ckeys.New("switchlynode", ckeys.BackendTest, cliDir, reader, cdc)
+	return ckeys.New(sdk.KeyringServiceName(), ckeys.BackendTest, cliDir, reader, cdc)
 }
 
 // GetSignerInfo return signer info
