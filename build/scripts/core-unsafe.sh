@@ -28,14 +28,8 @@ deploy_evm_contracts() {
   wait
 }
 
-init_mocknet() {
-  echo "Debug: init_mocknet() called"
-  echo "Debug: SIGNER_NAME='$SIGNER_NAME'"
-  echo "Debug: SIGNER_PASSWD='$SIGNER_PASSWD'"
-  echo "Debug: SIGNER_SEED_PHRASE='$SIGNER_SEED_PHRASE'"
-  echo "Debug: SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
-  
-  NODE_ADDRESS=$(switchlynode keys show "$SIGNER_NAME" -a --keyring-backend test)
+init_mocknet() {  
+  NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
 
   if [ "$PEER" = "none" ]; then
     echo "Missing PEER"
@@ -48,41 +42,42 @@ init_mocknet() {
     sleep 3
   done
 
-  switchlynode tx switchly deposit 100000000000000 RUNE "bond:$NODE_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=test --chain-id "$CHAIN_ID" --yes
+  printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly deposit 100000000000000 SWITCH "bond:$NODE_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes
 
   # send bond
 
   sleep 2 # wait for switchly to commit a block , otherwise it get the wrong sequence number
 
-  NODE_PUB_KEY=$(switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend=test | switchlynode pubkey)
-  # Generate ed25519 key from mnemonic - following THORChain's approach
-  echo "Debug: core-unsafe SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
-  
-  if [ -z "$SIGNER_SEED_PHRASE" ]; then
-    echo "ERROR: SIGNER_SEED_PHRASE is empty in core-unsafe"
-    exit 1
-  fi
-  
-  NODE_PUB_KEY_ED25519=$(printf "password\n%s\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
-  echo "Debug: core-unsafe Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
+
+  NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend=file | switchlynode pubkey)
+  NODE_PUB_KEY_ED25519=$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)
   VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
 
-  # set node keys
-  until switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=test --chain-id "$CHAIN_ID" --yes; do
-    sleep 5
-  done
+ # set node keys
+  echo "Setting node keys..."
+  SET_KEYS_RESULT=$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes 2>&1)
+  if echo "$SET_KEYS_RESULT" | grep -q "already has pubkey set"; then
+    echo "Node keys already set, continuing..."
+  elif echo "$SET_KEYS_RESULT" | grep -q "code: 0"; then
+    echo "Node keys set successfully"
+  else
+    echo "Failed to set node keys, retrying..."
+    until printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes; do
+      sleep 5
+    done
+  fi
 
   # add IP address
-  sleep 2 # wait for switchlyprotocol to commit a block
+  sleep 2 # wait for switchly to commit a block
 
   NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
-  until switchlynode tx switchly set-ip-address "$NODE_IP_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=test --chain-id "$CHAIN_ID" --yes; do
+  until printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly set-ip-address "$NODE_IP_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes; do
     sleep 5
   done
 
-  sleep 2 # wait for switchlyprotocol to commit a block
+  sleep 2 # wait for switchly to commit a block
   # set node version
-  until switchlynode tx switchly set-version --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=test --chain-id "$CHAIN_ID" --yes; do
+  until printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly set-version --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes; do
     sleep 5
   done
 }
