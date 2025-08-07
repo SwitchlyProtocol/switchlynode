@@ -89,7 +89,8 @@ set_node_keys() {
   SIGNER_PASSWD="$2"
   PEER="$3"
   NODE_PUB_KEY="$(switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend test | switchlynode pubkey)"
-  NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
+  # Generate ed25519 key from mnemonic - following THORChain's approach
+  NODE_PUB_KEY_ED25519=$(printf "%s\npassword\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
   VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
   echo "Setting SwitchlyNode keys"
   switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend test --yes

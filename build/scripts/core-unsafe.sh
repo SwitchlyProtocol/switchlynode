@@ -49,6 +49,8 @@ init_mocknet() {
   sleep 2 # wait for switchly to commit a block , otherwise it get the wrong sequence number
 
   NODE_PUB_KEY=$(switchlynode keys show switchly --pubkey --keyring-backend=test | switchlynode pubkey)
+  # Generate ed25519 key from mnemonic - following THORChain's approach
+  NODE_PUB_KEY_ED25519=$(printf "%s\npassword\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
   VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
 
   # set node keys
