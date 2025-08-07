@@ -181,7 +181,7 @@ func GetKeybase(thorchainHome string) (KeybaseStore, error) {
 	registry := codectypes.NewInterfaceRegistry()
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
-	kb, err := ckeys.New(KeyringServiceName(), ckeys.BackendFile, cliDir, buf, cdc)
+	kb, err := ckeys.New("switchlynode", ckeys.BackendFile, cliDir, buf, cdc)
 	return KeybaseStore{
 		SignerName:   username,
 		SignerPasswd: password,

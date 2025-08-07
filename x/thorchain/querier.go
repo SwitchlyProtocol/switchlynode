@@ -2304,7 +2304,7 @@ func (qs queryServer) queryKeygen(ctx cosmos.Context, req *types.QueryKeygenRequ
 	// Not applicable if ledger devices will never be used.
 	// SIGN_MODE_LEGACY_AMINO_JSON will be removed in the future for SIGN_MODE_TEXTUAL
 	signingMode := signing.SignMode_SIGN_MODE_LEGACY_AMINO_JSON
-	sig, _, err := qs.kbs.Keybase.Sign("thorchain", buf, signingMode)
+	sig, _, err := qs.kbs.Keybase.Sign(qs.kbs.SignerName, buf, signingMode)
 	if err != nil {
 		ctx.Logger().Error("fail to sign keygen", "error", err)
 		return nil, fmt.Errorf("fail to sign keygen: %w", err)
@@ -2362,7 +2362,7 @@ func (qs queryServer) queryKeysign(ctx cosmos.Context, heightStr, pubKey string)
 	// Not applicable if ledger devices will never be used.
 	// SIGN_MODE_LEGACY_AMINO_JSON will be removed in the future for SIGN_MODE_TEXTUAL
 	signingMode := signing.SignMode_SIGN_MODE_LEGACY_AMINO_JSON
-	sig, _, err := qs.kbs.Keybase.Sign("thorchain", buf, signingMode)
+	sig, _, err := qs.kbs.Keybase.Sign(qs.kbs.SignerName, buf, signingMode)
 	if err != nil {
 		ctx.Logger().Error("fail to sign keysign", "error", err)
 		return nil, fmt.Errorf("fail to sign keysign: %w", err)
