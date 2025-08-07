@@ -29,6 +29,12 @@ deploy_evm_contracts() {
 }
 
 init_mocknet() {
+  echo "Debug: init_mocknet() called"
+  echo "Debug: SIGNER_NAME='$SIGNER_NAME'"
+  echo "Debug: SIGNER_PASSWD='$SIGNER_PASSWD'"
+  echo "Debug: SIGNER_SEED_PHRASE='$SIGNER_SEED_PHRASE'"
+  echo "Debug: SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
+  
   NODE_ADDRESS=$(switchlynode keys show "$SIGNER_NAME" -a --keyring-backend test)
 
   if [ "$PEER" = "none" ]; then
@@ -48,7 +54,7 @@ init_mocknet() {
 
   sleep 2 # wait for switchly to commit a block , otherwise it get the wrong sequence number
 
-  NODE_PUB_KEY=$(switchlynode keys show switchly --pubkey --keyring-backend=test | switchlynode pubkey)
+  NODE_PUB_KEY=$(switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend=test | switchlynode pubkey)
   # Generate ed25519 key from mnemonic - following THORChain's approach
   echo "Debug: core-unsafe SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
   

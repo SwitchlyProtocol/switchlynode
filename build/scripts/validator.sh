@@ -16,6 +16,9 @@ if [ ! -f ~/.switchlynode/config/genesis.json ]; then
   echo "Setting SwitchlyNode as Validator node"
 
   create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
+  
+  # Ensure SIGNER_SEED_PHRASE is available to subsequent calls
+  export SIGNER_SEED_PHRASE
 
   init_chain
   rm -rf ~/.switchlynode/config/genesis.json # set in switchlynode render-config
@@ -34,4 +37,5 @@ switchlynode render-config
 
 export SIGNER_NAME
 export SIGNER_PASSWD
+export SIGNER_SEED_PHRASE
 exec switchlynode start
