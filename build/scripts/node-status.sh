@@ -35,6 +35,7 @@ BASE_ENDPOINT="${BIFROST_CHAINS_BASE_RPC_HOST:-http://base-daemon:${BASE_DAEMON_
 GAIA_ENDPOINT="${GAIA_HOST:-http://gaia-daemon:26657}"
 AVALANCHE_ENDPOINT="${AVAX_HOST:-http://avalanche-daemon:9650/ext/bc/C/rpc}"
 XRP_ENDPOINT="${BIFROST_CHAINS_XRP_RPC_HOST:-http://xrp-daemon:${XRP_DAEMON_SERVICE_PORT_RPC:-51234}}"
+STELLAR_ENDPOINT="${XLM_HOST:-http://stellar:8000}"
 
 ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
 JSON=$(curl -sL --fail -m 10 "$API/switchly/node/$ADDRESS")
@@ -151,6 +152,28 @@ if [ "$VALIDATOR" = "true" ]; then
     fi
     XRP_PROGRESS=$(calc_progress "$XRP_SYNC_HEIGHT" "$XRP_HEIGHT")
   fi
+
+  # calculate XLM (Stellar) chain sync progress  
+  if [ "$BIFROST_CHAINS_XLM_DISABLED" != "true" ]; then
+    # Get latest ledger from public Stellar Horizon API
+    XLM_HEIGHT_RESULT=$(curl -sL --fail -m 10 "https://horizon.stellar.org/ledgers?order=desc&limit=1")
+    # Get latest ledger from local Stellar Horizon API
+    XLM_SYNC_HEIGHT_RESULT=$(curl -sL --fail -m 10 "$STELLAR_ENDPOINT/ledgers?order=desc&limit=1")
+    
+    if [ -n "$XLM_HEIGHT_RESULT" ]; then
+      XLM_HEIGHT=$(echo "$XLM_HEIGHT_RESULT" | jq -r '._embedded.records[0].sequence')
+    else
+      XLM_HEIGHT=0
+    fi
+    
+    if [ -n "$XLM_SYNC_HEIGHT_RESULT" ]; then
+      XLM_SYNC_HEIGHT=$(echo "$XLM_SYNC_HEIGHT_RESULT" | jq -r '._embedded.records[0].sequence')
+    else
+      XLM_SYNC_HEIGHT=0
+    fi
+    
+    XLM_PROGRESS=$(calc_progress "$XLM_SYNC_HEIGHT" "$XLM_HEIGHT")
+  fi
 fi
 
 # calculate SWITCHLY chain sync progress
@@ -217,6 +240,8 @@ GAIA_HEIGHT=${GAIA_HEIGHT:=0}
 GAIA_SYNC_HEIGHT=${GAIA_SYNC_HEIGHT:=0}
 BASE_HEIGHT=${BASE_HEIGHT:=0}
 BASE_SYNC_HEIGHT=${BASE_SYNC_HEIGHT:=0}
+XLM_HEIGHT=${XLM_HEIGHT:=0}
+XLM_SYNC_HEIGHT=${XLM_SYNC_HEIGHT:=0}
 
 echo
 printf "%-18s %-10s %-14s %-10s\n" CHAIN SYNC BEHIND TIP
@@ -235,6 +260,9 @@ if [ "$VALIDATOR" = "true" ]; then
   printf "%-18s %-10s %-14s %-10s\n" BASE "$BASE_PROGRESS" "$(format_int $((BASE_SYNC_HEIGHT - BASE_HEIGHT)))" "$(format_int "$BASE_HEIGHT")"
   if [ "$BIFROST_CHAINS_XRP_DISABLED" = "false" ]; then
     printf "%-18s %-10s %-14s %-10s\n" XRP "$XRP_PROGRESS" "$(format_int $((XRP_SYNC_HEIGHT - XRP_HEIGHT)))" "$(format_int "$XRP_HEIGHT")"
+  fi
+  if [ "$BIFROST_CHAINS_XLM_DISABLED" != "true" ]; then
+    printf "%-18s %-10s %-14s %-10s\n" XLM "$XLM_PROGRESS" "$(format_int $((XLM_SYNC_HEIGHT - XLM_HEIGHT)))" "$(format_int "$XLM_HEIGHT")"
   fi
 fi
 
