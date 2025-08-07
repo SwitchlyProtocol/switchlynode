@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	DefaultEd25519KeyName           = `THORChain-ED25519`
-	ThorchainDefaultBIP39PassPhrase = "thorchain"
+	DefaultEd25519KeyName           = `Switchly-ED25519`
+	SwitchlyDefaultBIP39PassPhrase = "switchly"
 	BIP44Prefix                     = "44'/931'/"
 	PartialPath                     = "0'/0/0"
 	FullPath                        = BIP44Prefix + PartialPath
@@ -200,7 +200,7 @@ func mnemonicToEddKey(mnemonic, masterSecret string) ([]byte, error) {
 	if len(words) != 12 && len(words) != 24 {
 		return nil, errors.New("mnemonic length should either be 12 or 24")
 	}
-	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, ThorchainDefaultBIP39PassPhrase)
+	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, SwitchlyDefaultBIP39PassPhrase)
 	if err != nil {
 		return nil, err
 	}

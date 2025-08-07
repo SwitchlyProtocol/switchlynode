@@ -75,6 +75,7 @@ init_chain() {
 
   echo "Init chain"
   switchlynode init local --chain-id "$CHAIN_ID"
+  echo "$SIGNER_PASSWD" | switchlynode keys list --keyring-backend file
 }
 
 fetch_node_id() {
@@ -88,20 +89,11 @@ set_node_keys() {
   SIGNER_NAME="$1"
   SIGNER_PASSWD="$2"
   PEER="$3"
-  NODE_PUB_KEY="$(switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend test | switchlynode pubkey)"
-  # Generate ed25519 key from mnemonic - following THORChain's approach
-  echo "Debug: set_node_keys SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
-  
-  if [ -z "$SIGNER_SEED_PHRASE" ]; then
-    echo "ERROR: SIGNER_SEED_PHRASE is empty in set_node_keys"
-    exit 1
-  fi
-  
-  NODE_PUB_KEY_ED25519=$(printf "password\n%s\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
-  echo "Debug: set_node_keys Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
+  NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend file | switchlynode pubkey)"
+  NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
   VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
   echo "Setting SwitchlyNode keys"
-  switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend test --yes
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend file --yes
 }
 
 set_ip_address() {
@@ -110,37 +102,32 @@ set_ip_address() {
   PEER="$3"
   NODE_IP_ADDRESS="${4:-$(curl -s http://whatismyip.akamai.com)}"
   echo "Setting SwitchlyNode IP address $NODE_IP_ADDRESS"
-  switchlynode tx switchly set-ip-address "$NODE_IP_ADDRESS" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend test --yes
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-ip-address "$NODE_IP_ADDRESS" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend file --yes
 }
 
 fetch_version() {
-  # Try to get version from query, if it fails use a default
-  VERSION=$(switchlynode version --output json 2>/dev/null || echo "3.7.0")
-  echo "$VERSION"
+  switchlynode query switchly version --output json | jq -r .version
 }
 
-create_switchly_user() {
+create_thor_user() {
   SIGNER_NAME="$1"
   SIGNER_PASSWD="$2"
   SIGNER_SEED_PHRASE="$3"
 
-  echo "Checking if SwitchlyNode Switchly '$SIGNER_NAME' account exists"
-  switchlynode keys show "$SIGNER_NAME" --keyring-backend test 1>/dev/null 2>&1
+  echo "Checking if SwitchlyNode '$SIGNER_NAME' account exists"
+  echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" --keyring-backend file 1>/dev/null 2>&1
   # shellcheck disable=SC2181
   if [ $? -ne 0 ]; then
-    echo "Creating SwitchlyNode Switchly '$SIGNER_NAME' account"
+    echo "Creating SwitchlyNode '$SIGNER_NAME' account"
     if [ -n "$SIGNER_SEED_PHRASE" ]; then
-      printf "%s\n\n" "$SIGNER_SEED_PHRASE" | switchlynode keys add "$SIGNER_NAME" --keyring-backend test --recover
+      printf "%s\n%s\n%s\n" "$SIGNER_SEED_PHRASE" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --recover
     else
-      RESULT=$(switchlynode keys add "$SIGNER_NAME" --keyring-backend test --output json 2>&1)
+      sig_pw=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD")
+      RESULT=$(echo "$sig_pw" | switchlynode keys --keyring-backend file add "$SIGNER_NAME" --output json 2>&1)
       SIGNER_SEED_PHRASE=$(echo "$RESULT" | jq -r '.mnemonic')
-      # Export the generated mnemonic for use by other functions
-      export SIGNER_SEED_PHRASE
     fi
   fi
-  
-  # Always export the seed phrase to ensure it's available to subsequent calls
-  export SIGNER_SEED_PHRASE
+  NODE_PUB_KEY_ED25519=$(printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
 }
 
 set_bond_module() {
@@ -195,7 +182,7 @@ set_bsc_contract() {
 }
 
 set_base_contract() {
-  jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts = [{"chain": "BASE", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg CONTRACT "$1" '.app_state.switchly.chain_contracts += [{"chain": "BASE", "router": $CONTRACT}]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
 }
 

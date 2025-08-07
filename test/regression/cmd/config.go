@@ -55,8 +55,8 @@ func init() {
 	// Having set the prefixes, derive the module addresses.
 	ModuleAddrTransfer = authtypes.NewModuleAddress("transfer").String() // "tswitch1yl6hdjhmkf37639730gffanpzndzdpmhv07zme"
 	// "transfer" is special, as http://localhost:1317/auth/accounts/tswitch1yl6hdjhmkf37639730gffanpzndzdpmhv07zme
-	// gets the name from the address, but no address from name from http://localhost:1317/thorchain/balance/module/transfer
-	ModuleAddrThorchain = authtypes.NewModuleAddress("thorchain").String()                    // "tswitch1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp"
+	// gets the name from the address, but no address from name from http://localhost:1317/switchly/balance/module/transfer
+	ModuleAddrThorchain = authtypes.NewModuleAddress("switchly").String()                    // "tswitch1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp"
 	ModuleAddrAsgard = authtypes.NewModuleAddress("asgard").String()                          // "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2"
 	ModuleAddrBond = authtypes.NewModuleAddress("bond").String()                              // "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff"
 	ModuleAddrReserve = authtypes.NewModuleAddress("reserve").String()                        // "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw"
@@ -80,7 +80,7 @@ func clientContextAndFactory(routine int) (client.Context, tx.Factory) {
 	// create cosmos-sdk client context
 	clientCtx := client.Context{
 		Client:            rpcClient,
-		ChainID:           "thorchain",
+		ChainID:           "switchly",
 		Codec:             encodingConfig.Codec,
 		InterfaceRegistry: encodingConfig.InterfaceRegistry,
 		Keyring:           keyRing,
@@ -275,7 +275,7 @@ func init() {
 			// register address to name
 			addressToName[addr.String()] = name
 
-			// register pubkey for thorchain
+			// register pubkey for switchly
 			if chain == common.SWITCHLYChain {
 				templatePubKey[fmt.Sprintf("pubkey_%s", name)] = ecdsaPubKey
 				templateConsPubKey[fmt.Sprintf("cons_pubkey_%s", name)] = edd2519ConsPubKey

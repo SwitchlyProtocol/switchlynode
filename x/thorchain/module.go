@@ -180,9 +180,11 @@ func (am AppModule) BeginBlock(goCtx context.Context) error {
 	// Check/Update the network version before checking the local version
 	if err := am.mgr.LoadManagerIfNecessary(ctx); err != nil {
 		ctx.Logger().Error("fail to get managers", "error", err)
+		return err
 	}
 
 	version := am.mgr.GetVersion()
+	ctx.Logger().Info("Manager versions", "network_version", version.String(), "binary_version", constants.SWVersion.String())
 	localVer := semver.MustParse(constants.SWVersion.String())
 	if version.Major > localVer.Major || version.Minor > localVer.Minor {
 		panic(fmt.Sprintf("Unsupported Version: update your binary (your version: %s, network consensus version: %s)", constants.SWVersion.String(), version.String()))
@@ -190,6 +192,11 @@ func (am AppModule) BeginBlock(goCtx context.Context) error {
 
 	am.mgr.Keeper().ClearObservingAddresses(ctx)
 
+	// Defensive nil check to prevent consensus failure
+	if am.mgr.GasMgr() == nil {
+		ctx.Logger().Error("gas manager is nil after LoadManagerIfNecessary", "version", version.String())
+		return fmt.Errorf("gas manager is nil after LoadManagerIfNecessary (version: %s)", version.String())
+	}
 	am.mgr.GasMgr().BeginBlock()
 	if err := am.mgr.NetworkMgr().BeginBlock(ctx, am.mgr); err != nil {
 		ctx.Logger().Error("fail to begin network manager", "error", err)

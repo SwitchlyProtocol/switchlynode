@@ -22,7 +22,7 @@ const (
 	switchlyCliFolderName = `.switchlynode`
 )
 
-// Keys manages all the keys used by thorchain
+// Keys manages all the keys used by switchly
 type Keys struct {
 	signerName string
 	password   string // TODO this is a bad way , need to fix it
@@ -69,9 +69,9 @@ func GetKeyringKeybase(chainHomeFolder, signerName, password string) (ckeys.Keyr
 }
 
 // getKeybase will create an instance of Keybase
-func getKeybase(thorchainHome string, reader io.Reader) (ckeys.Keyring, error) {
-	cliDir := thorchainHome
-	if len(thorchainHome) == 0 {
+func getKeybase(switchlyHome string, reader io.Reader) (ckeys.Keyring, error) {
+	cliDir := switchlyHome
+	if len(switchlyHome) == 0 {
 		usr, err := user.Current()
 		if err != nil {
 			return nil, fmt.Errorf("fail to get current user,err:%w", err)
@@ -82,7 +82,7 @@ func getKeybase(thorchainHome string, reader io.Reader) (ckeys.Keyring, error) {
 	registry := codectypes.NewInterfaceRegistry()
 	cryptocodec.RegisterInterfaces(registry)
 	cdc := codec.NewProtoCodec(registry)
-	return ckeys.New(sdk.KeyringServiceName(), ckeys.BackendTest, cliDir, reader, cdc)
+	return ckeys.New(sdk.KeyringServiceName(), ckeys.BackendFile, cliDir, reader, cdc)
 }
 
 // GetSignerInfo return signer info

@@ -2,9 +2,6 @@
 
 set -o pipefail
 
-export SIGNER_NAME="${SIGNER_NAME:=switchly}"
-export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
-
 . "$(dirname "$0")/core.sh"
 
 if [ "$NET" = "mocknet" ]; then
@@ -18,25 +15,12 @@ fi
 
 genesis_init() {
   init_chain
-  switchlynode config set client chain-id "$CHAIN_ID" --home ~/.switchlynode
-  create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
+  create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
   VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
-  NODE_ADDRESS=$(switchlynode keys show "$SIGNER_NAME" -a --keyring-backend test)
-  NODE_PUB_KEY=$(switchlynode keys show "$SIGNER_NAME" -p --keyring-backend test | switchlynode pubkey)
+  NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
+  NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -p --keyring-backend file | switchlynode pubkey)
   VERSION=$(fetch_version)
-  
-  # Generate ed25519 key from mnemonic seed phrase - following THORChain's approach
-  echo "Debug: SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
-  echo "Debug: SIGNER_SEED_PHRASE: $SIGNER_SEED_PHRASE"
-  
-  if [ -z "$SIGNER_SEED_PHRASE" ]; then
-    echo "ERROR: SIGNER_SEED_PHRASE is empty or unset"
-    exit 1
-  fi
-  
-  NODE_PUB_KEY_ED25519=$(printf "password\n%s\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
-  echo "Debug: Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
 
   NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
   add_node_account "$NODE_ADDRESS" "$VALIDATOR" "$NODE_PUB_KEY" "$VERSION" "$NODE_ADDRESS" "$NODE_PUB_KEY_ED25519" "$NODE_IP_ADDRESS"
@@ -50,19 +34,19 @@ genesis_init() {
   if [ "$NET" = "mocknet" ]; then
     echo "Setting up accounts"
 
-    # Setup accounts in mocknet
+    # smoke test accounts
     add_account tswitch1c9vr9yvtratlqwhyua24zfpet2zmjvrlvnspg6 switch 5000000000000
     add_account tswitch126g33q5a7f0exms8qrz46qmu6hlrwc32jxgzxp switch 25000000000100
     add_account tswitch18s83m747vmre2ljw45t7dlmju96zmt03humlvj switch 25000000000100
     add_account tswitch1tyry86qensp4ws4enudkrjrw408x559ghwe7xy switch 5090000000000
 
-    # Liquidity Provider accounts (one for each chain)
+    # local cluster accounts (2M RUNE)
     add_account tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9pxf4cw9 switch 200000000000000 # cat
     add_account tswitch1swe4u2gw9vlze677fgseyka0tu0zgmp2wkdktk switch 200000000000000 # dog
     add_account tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4gvwq05 switch 200000000000000 # fox
     add_account tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjne5jzt switch 200000000000000 # pig
 
-    # User accounts for smoke tests
+    # simulation master
     add_account tswitch1vny3kasx3nlh6h8h4w2nw92clj8hncg2v27duw switch 100000000000000 # master
 
     # mint to reserve for mocknet
@@ -109,7 +93,7 @@ genesis_init() {
 
   echo "Genesis content"
   cat ~/.switchlynode/config/genesis.json
-  switchlynode genesis validate
+  switchlynode genesis validate --trace
 }
 
 ########################################################################################
@@ -124,7 +108,6 @@ fi
 # render tendermint and cosmos configuration files
 switchlynode render-config
 
-  # validate genesis
-  switchlynode genesis validate ~/.switchlynode/config/genesis.json
-  
-  exec "$@"
+export SIGNER_NAME
+export SIGNER_PASSWD
+exec switchlynode start

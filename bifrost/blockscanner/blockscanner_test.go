@@ -54,7 +54,7 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	c.Assert(err, IsNil)
 	thorchain.SetupConfigForTest()
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       "localhost",
 		SignerName:      "bob",
 		SignerPasswd:    "password",
@@ -79,17 +79,17 @@ func (s *BlockScannerTestSuite) TearDownSuite(c *C) {
 func (s *BlockScannerTestSuite) TestNewBlockScanner(c *C) {
 	mss := NewMockScannerStorage()
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		StartBlockHeight: 1, // avoids querying thorchain for block height
+		StartBlockHeight: 1, // avoids querying switchly for block height
 	}, mss, nil, nil, DummyFetcher{})
 	c.Check(cbs, IsNil)
 	c.Check(err, NotNil)
 	cbs, err = NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		StartBlockHeight: 1, // avoids querying thorchain for block height
+		StartBlockHeight: 1, // avoids querying switchly for block height
 	}, mss, nil, nil, DummyFetcher{})
 	c.Check(cbs, IsNil)
 	c.Check(err, NotNil)
 	cbs, err = NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		StartBlockHeight: 1, // avoids querying thorchain for block height
+		StartBlockHeight: 1, // avoids querying switchly for block height
 	}, mss, m, s.bridge, DummyFetcher{})
 	c.Check(cbs, NotNil)
 	c.Check(err, IsNil)
@@ -97,7 +97,7 @@ func (s *BlockScannerTestSuite) TestNewBlockScanner(c *C) {
 
 const (
 	blockBadResult  = `{ "jsonrpc": "2.0", "id": "", "result": { "block_meta": { "block_id": { "hash": "D063E5F1562F93D46FD4F01CA24813DD60B919D1C39CC34EF1DBB0EA07D0F7F8"1EB49C7042E5622189EDD4FA" } } } }`
-	lastBlockResult = `[ { "chain": "ETH", "last_observed_in": 1, "last_signed_out": 1, "thorchain": 3 }]`
+	lastBlockResult = `[ { "chain": "ETH", "last_observed_in": 1, "last_signed_out": 1, "switchly": 3 }]`
 )
 
 func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
@@ -128,7 +128,7 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 	c.Assert(err, IsNil)
 
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		StartBlockHeight:           1, // avoids querying thorchain for block height
+		StartBlockHeight:           1, // avoids querying switchly for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
 		HTTPRequestReadTimeout:     time.Second * 30,
@@ -182,7 +182,7 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 	}, s.m, s.keys)
 	c.Assert(err, IsNil)
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		StartBlockHeight:           1, // avoids querying thorchain for block height
+		StartBlockHeight:           1, // avoids querying switchly for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
 		HTTPRequestReadTimeout:     time.Second * 30,
@@ -222,7 +222,7 @@ func (s *BlockScannerTestSuite) TestBadConnection(c *C) {
 	c.Assert(err, IsNil)
 
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		StartBlockHeight:           1, // avoids querying thorchain for block height
+		StartBlockHeight:           1, // avoids querying switchly for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
 		HTTPRequestReadTimeout:     time.Second,
@@ -283,7 +283,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	c.Assert(err, IsNil)
 
 	cbs, err := NewBlockScanner(config.BifrostBlockScannerConfiguration{
-		StartBlockHeight:           1, // avoids querying thorchain for block height
+		StartBlockHeight:           1, // avoids querying switchly for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
 		HTTPRequestReadTimeout:     time.Second * 30,
@@ -348,7 +348,7 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 			c.Assert(err, IsNil)
 		case strings.HasPrefix(r.RequestURI, "/switchly/lastblock"):
 			// Return last observed height for ETH chain
-			resp := fmt.Sprintf(`[{"chain": "ETH", "last_observed_in": %d, "last_signed_out": 0, "thorchain": 150}]`, lastObservedHeight)
+			resp := fmt.Sprintf(`[{"chain": "ETH", "last_observed_in": %d, "last_signed_out": 0, "switchly": 150}]`, lastObservedHeight)
 			_, err := w.Write([]byte(resp))
 			c.Assert(err, IsNil)
 		case strings.HasPrefix(r.RequestURI, "/switchly/constants"):

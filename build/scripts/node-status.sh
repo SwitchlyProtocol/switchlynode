@@ -155,21 +155,16 @@ if [ "$VALIDATOR" = "true" ]; then
 
   # calculate XLM (Stellar) chain sync progress  
   if [ "$BIFROST_CHAINS_XLM_DISABLED" != "true" ]; then
-    # Get latest ledger from public Stellar Horizon API
-    XLM_HEIGHT_RESULT=$(curl -sL --fail -m 10 "https://horizon.stellar.org/ledgers?order=desc&limit=1")
     # Get latest ledger from local Stellar Horizon API
     XLM_SYNC_HEIGHT_RESULT=$(curl -sL --fail -m 10 "$STELLAR_ENDPOINT/ledgers?order=desc&limit=1")
     
-    if [ -n "$XLM_HEIGHT_RESULT" ]; then
-      XLM_HEIGHT=$(echo "$XLM_HEIGHT_RESULT" | jq -r '._embedded.records[0].sequence')
-    else
-      XLM_HEIGHT=0
-    fi
-    
     if [ -n "$XLM_SYNC_HEIGHT_RESULT" ]; then
       XLM_SYNC_HEIGHT=$(echo "$XLM_SYNC_HEIGHT_RESULT" | jq -r '._embedded.records[0].sequence')
+      # For mocknet, local node is the tip, so sync and height are the same
+      XLM_HEIGHT=$XLM_SYNC_HEIGHT
     else
       XLM_SYNC_HEIGHT=0
+      XLM_HEIGHT=0
     fi
     
     XLM_PROGRESS=$(calc_progress "$XLM_SYNC_HEIGHT" "$XLM_HEIGHT")

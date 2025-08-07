@@ -1,18 +1,18 @@
 #!/bin/bash
 
-set -euo pipefail
+set -o pipefail
 
-# set node CLI configuration
-switchlynode config chain-id "$CHAIN_ID"
-switchlynode config keyring-backend file
+export SIGNER_NAME="${SIGNER_NAME:=switchly}"
+export SIGNER_PASSWD="${SIGNER_PASSWD:=password}"
 
-# set defaults
-PEER="${PEER:=none}"
-if [[ "$PEER" == "none" ]]; then
-    echo "Missing PEER"
-    exit 1
+. "$(dirname "$0")/core.sh"
+
+if [ ! -f ~/.switchlynode/config/genesis.json ]; then
+  init_chain
+  rm -rf ~/.switchlynode/config/genesis.json # set in switchlynode render-config
 fi
 
+# render tendermint and cosmos configuration files
 switchlynode render-config
 
 exec switchlynode start

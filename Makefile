@@ -114,7 +114,7 @@ docs-dev: docs-init
 # ------------------------------ Build ------------------------------
 
 build:
-	go build ${BUILD_FLAGS} ${BINARIES}
+	go build -o build/ ${BUILD_FLAGS} ${BINARIES}
 
 install:
 	go install ${BUILD_FLAGS} ${BINARIES}

@@ -294,6 +294,15 @@ func (mgr *Mgrs) GetConstants() constants.ConstantValues {
 // LoadManagerIfNecessary detect whether there are new version available, if it is available then create a new version of Mgr
 func (mgr *Mgrs) LoadManagerIfNecessary(ctx cosmos.Context) error {
 	v := mgr.K.GetLowestActiveVersion(ctx)
+
+	// Handle case where no version is available (fresh genesis)
+	// Use minimum supported version if current version is too low
+	minVersion := semver.MustParse("3.0.0")
+	if v.LT(minVersion) {
+		ctx.Logger().Info("Using minimum supported version", "current", v.String(), "minimum", minVersion.String())
+		v = minVersion
+	}
+
 	if v.Equals(mgr.GetVersion()) {
 		return nil
 	}

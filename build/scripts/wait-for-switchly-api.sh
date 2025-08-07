@@ -2,16 +2,13 @@
 
 # https://docs.docker.com/compose/startup-order/
 
-set -o pipefail
+set -e
 
-# set defaults
-API_HOST="${1:-${PEER:-127.0.0.1:1317}}"
+echo "Waiting for Switchly API..."
 
-echo "Waiting for SwitchlyNode API to be ready at $API_HOST..."
-
-until curl -s "$API_HOST/switchly/ping" > /dev/null; do
-  echo "SwitchlyNode API not ready, waiting..."
-  sleep 5
+until curl -s "$1/switchly/ping" >/dev/null; do
+  # echo "Rest server is unavailable - sleeping"
+  sleep 1
 done
 
-echo "SwitchlyNode API is ready!"
+echo "Switchly API ready"
