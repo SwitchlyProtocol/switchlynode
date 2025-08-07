@@ -23,7 +23,7 @@ if [ ! -f ~/.switchlynode/config/genesis.json ]; then
   if [ "$NET" = "mocknet" ]; then
     init_mocknet
   else
-    NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
+    NODE_ADDRESS=$(switchlynode keys show "$SIGNER_NAME" -a --keyring-backend test)
     echo "Your SwitchlyNode address: $NODE_ADDRESS"
     echo "Send your bond to that address"
   fi
