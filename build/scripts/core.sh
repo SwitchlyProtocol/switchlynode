@@ -90,7 +90,15 @@ set_node_keys() {
   PEER="$3"
   NODE_PUB_KEY="$(switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend test | switchlynode pubkey)"
   # Generate ed25519 key from mnemonic - following THORChain's approach
+  echo "Debug: set_node_keys SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
+  
+  if [ -z "$SIGNER_SEED_PHRASE" ]; then
+    echo "ERROR: SIGNER_SEED_PHRASE is empty in set_node_keys"
+    exit 1
+  fi
+  
   NODE_PUB_KEY_ED25519=$(printf "%s\npassword\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
+  echo "Debug: set_node_keys Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
   VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
   echo "Setting SwitchlyNode keys"
   switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend test --yes
@@ -126,8 +134,13 @@ create_switchly_user() {
     else
       RESULT=$(switchlynode keys add "$SIGNER_NAME" --keyring-backend test --output json 2>&1)
       SIGNER_SEED_PHRASE=$(echo "$RESULT" | jq -r '.mnemonic')
+      # Export the generated mnemonic for use by other functions
+      export SIGNER_SEED_PHRASE
     fi
   fi
+  
+  # Always export the seed phrase to ensure it's available to subsequent calls
+  export SIGNER_SEED_PHRASE
 }
 
 set_bond_module() {

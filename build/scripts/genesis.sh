@@ -27,7 +27,16 @@ genesis_init() {
   VERSION=$(fetch_version)
   
   # Generate ed25519 key from mnemonic seed phrase - following THORChain's approach
+  echo "Debug: SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
+  echo "Debug: SIGNER_SEED_PHRASE: $SIGNER_SEED_PHRASE"
+  
+  if [ -z "$SIGNER_SEED_PHRASE" ]; then
+    echo "ERROR: SIGNER_SEED_PHRASE is empty or unset"
+    exit 1
+  fi
+  
   NODE_PUB_KEY_ED25519=$(printf "%s\npassword\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
+  echo "Debug: Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
 
   NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
   add_node_account "$NODE_ADDRESS" "$VALIDATOR" "$NODE_PUB_KEY" "$VERSION" "$NODE_ADDRESS" "$NODE_PUB_KEY_ED25519" "$NODE_IP_ADDRESS"

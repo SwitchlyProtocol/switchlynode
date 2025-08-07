@@ -50,7 +50,15 @@ init_mocknet() {
 
   NODE_PUB_KEY=$(switchlynode keys show switchly --pubkey --keyring-backend=test | switchlynode pubkey)
   # Generate ed25519 key from mnemonic - following THORChain's approach
+  echo "Debug: core-unsafe SIGNER_SEED_PHRASE length: $(echo "$SIGNER_SEED_PHRASE" | wc -w)"
+  
+  if [ -z "$SIGNER_SEED_PHRASE" ]; then
+    echo "ERROR: SIGNER_SEED_PHRASE is empty in core-unsafe"
+    exit 1
+  fi
+  
   NODE_PUB_KEY_ED25519=$(printf "%s\npassword\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
+  echo "Debug: core-unsafe Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
   VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
 
   # set node keys
