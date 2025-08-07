@@ -97,7 +97,7 @@ set_node_keys() {
     exit 1
   fi
   
-  NODE_PUB_KEY_ED25519=$(printf "%s\npassword\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
+  NODE_PUB_KEY_ED25519=$(printf "password\n%s\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
   echo "Debug: set_node_keys Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
   VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
   echo "Setting SwitchlyNode keys"

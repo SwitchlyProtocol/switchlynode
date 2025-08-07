@@ -35,7 +35,7 @@ genesis_init() {
     exit 1
   fi
   
-  NODE_PUB_KEY_ED25519=$(printf "%s\npassword\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
+  NODE_PUB_KEY_ED25519=$(printf "password\n%s\n" "$SIGNER_SEED_PHRASE" | switchlynode ed25519)
   echo "Debug: Generated NODE_PUB_KEY_ED25519: $NODE_PUB_KEY_ED25519"
 
   NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
