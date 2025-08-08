@@ -599,7 +599,7 @@ services:
       - mocknet-cluster
     image: stellar/quickstart:latest
     restart: unless-stopped
-    command: --standalone --enable-soroban-rpc --testnet
+    command: --testnet --enable-soroban-rpc
     environment:
       BLOCK_TIME: ${BLOCK_TIME:-5}
     ports:
