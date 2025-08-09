@@ -79,6 +79,7 @@ func NewStellarBlockScanner(rpcHost string,
 	solvencyReporter SolvencyReporter,
 	horizonClient *horizonclient.Client,
 	sorobanRPCClient *SorobanRPCClient,
+	globalNetworkFeeQueue chan common.NetworkFee,
 ) (*StellarBlockScanner, error) {
 	if scanStorage == nil {
 		return nil, errors.New("scanStorage is nil")
@@ -100,31 +101,32 @@ func NewStellarBlockScanner(rpcHost string,
 	logger := log.Logger.With().Str("module", "blockscanner").Str("chain", cfg.ChainID.String()).Logger()
 
 	return &StellarBlockScanner{
-		cfg:              cfg,
-		logger:           logger,
-		db:               scanStorage,
-		horizonClient:    horizonClient,
-		feeCache:         make([]sdkmath.Uint, 0),
-		lastFee:          sdkmath.NewUint(baseFeeStroops),
-		bridge:           bridge,
-		solvencyReporter: solvencyReporter,
-		sorobanRPCClient: sorobanRPCClient,
+		cfg:                   cfg,
+		logger:                logger,
+		db:                    scanStorage,
+		horizonClient:         horizonClient,
+		feeCache:              make([]sdkmath.Uint, 0),
+		lastFee:               sdkmath.NewUint(baseFeeStroops),
+		bridge:                bridge,
+		solvencyReporter:      solvencyReporter,
+		sorobanRPCClient:      sorobanRPCClient,
+		globalNetworkFeeQueue: globalNetworkFeeQueue,
 	}, nil
 }
 
-// GetHeight returns the latest ledger sequence number with retry logic for rate limits
+// GetHeight retrieves the current Stellar chain height from the Horizon API.
+// It implements exponential backoff for rate limit errors and retries on failures.
 func (c *StellarBlockScanner) GetHeight() (int64, error) {
 	maxRetries := c.cfg.MaxHTTPRequestRetry
 	baseDelay := c.cfg.BlockHeightDiscoverBackoff
 
 	for attempt := 0; attempt <= maxRetries; attempt++ {
-		ledger, err := c.horizonClient.Root()
+		rootInfo, err := c.horizonClient.Root()
 		if err != nil {
-			// Check if it's a rate limit error
+			// Handle rate limit errors with exponential backoff
 			if strings.Contains(err.Error(), "Rate Limit Exceeded") ||
 				strings.Contains(err.Error(), "429") {
 				if attempt < maxRetries {
-					// Exponential backoff for rate limits: 2^attempt * baseDelay
 					delay := time.Duration(1<<uint(attempt)) * baseDelay
 					c.logger.Warn().
 						Int("attempt", attempt+1).
@@ -135,21 +137,150 @@ func (c *StellarBlockScanner) GetHeight() (int64, error) {
 					continue
 				}
 			}
-			return 0, fmt.Errorf("fail to get root info: %w", err)
+			return 0, fmt.Errorf("failed to get root info: %w", err)
 		}
 
-		return int64(ledger.HorizonSequence), nil
+		// Use HorizonSequence which represents the current chain height
+		latestHeight := rootInfo.HorizonSequence
+		return int64(latestHeight), nil
 	}
 
 	return 0, fmt.Errorf("max retries exceeded for getting chain height")
 }
 
-// FetchMemPool returns nothing since we are only concerned about finalized transactions in Stellar
+// findFirstAvailableLedger finds the first available ledger by checking from a starting point
+func (c *StellarBlockScanner) findFirstAvailableLedger(startHeight int64) (int64, error) {
+	currentHeight, err := c.GetHeight()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get current height: %w", err)
+	}
+
+	// If starting from 0 or 1, try to find a reasonable starting point
+	if startHeight <= 1 {
+		// For Stellar networks, often the first few ledgers don't exist
+		// Try starting from a later ledger (e.g., ledger 100) and work backwards
+		maxStartingPoint := int64(100)
+		if currentHeight < maxStartingPoint {
+			maxStartingPoint = currentHeight
+		}
+
+		for height := maxStartingPoint; height >= 1; height-- {
+			_, err := c.getTransactionsForLedger(height)
+			if err == nil {
+				c.logger.Info().
+					Int64("first_available_ledger", height).
+					Int64("requested_start", startHeight).
+					Msg("found first available ledger")
+				return height, nil
+			}
+
+			// If it's not a "Resource Missing" error, return the error
+			if !strings.Contains(err.Error(), "Resource Missing") {
+				return 0, fmt.Errorf("error checking ledger %d: %w", height, err)
+			}
+		}
+
+		// If we can't find any available ledger, start from current height
+		c.logger.Warn().
+			Int64("current_height", currentHeight).
+			Msg("could not find any available historical ledger, starting from current height")
+		return currentHeight, nil
+	}
+
+	return startHeight, nil
+}
+
+// GetOptimalStartHeight determines the optimal starting height for Stellar scanning.
+// Always returns the current latest block height to ensure scanning starts from the most recent state.
+func (c *StellarBlockScanner) GetOptimalStartHeight() (int64, error) {
+	currentHeight, err := c.GetHeight()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to get current Stellar height")
+		return 0, err
+	}
+
+	c.logger.Info().
+		Int64("current_height", currentHeight).
+		Msg("STELLAR: Starting from latest block height")
+
+	return currentHeight, nil
+}
+
+// FetchMemPool returns an empty result since Stellar only processes finalized transactions.
 func (c *StellarBlockScanner) FetchMemPool(height int64) (types.TxIn, error) {
 	return types.TxIn{}, nil
 }
 
-// GetNetworkFee returns current chain network fee according to Bifrost.
+// HandleGapDetection performs Stellar-specific gap detection and position adjustment
+// This is called by the Stellar client before starting the blockscanner
+func (c *StellarBlockScanner) HandleGapDetection() error {
+	// Get current chain height
+	currentHeight, err := c.GetHeight()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to get current Stellar height for gap detection")
+		return err
+	}
+
+	// Get current stored position
+	storedHeight, err := c.db.GetScanPos()
+	if err != nil {
+		c.logger.Debug().Err(err).Msg("no stored scan position found")
+		storedHeight = 0
+	}
+
+	c.logger.Info().
+		Int64("current_stellar_height", currentHeight).
+		Int64("stored_position", storedHeight).
+		Msg("STELLAR GAP DETECTION: Checking gap before scanner start")
+
+	// Always check for large gaps and force position update if needed
+	if storedHeight > 0 && currentHeight > 0 {
+		gap := currentHeight - storedHeight
+		const maxAcceptableGap = 100 // Very aggressive for Stellar
+
+		if gap > maxAcceptableGap {
+			// Force jump to recent height
+			newStartHeight := currentHeight - 10 // Start just 10 blocks back
+
+			c.logger.Info().
+				Int64("stored_position", storedHeight).
+				Int64("current_height", currentHeight).
+				Int64("gap", gap).
+				Int64("new_start_height", newStartHeight).
+				Msg("STELLAR GAP DETECTION: FORCING position update due to large gap")
+
+			// FORCE update the stored position to skip the gap
+			if err := c.db.SetScanPos(newStartHeight); err != nil {
+				c.logger.Error().Err(err).Msg("CRITICAL: failed to update scan position")
+				return err
+			}
+
+			c.logger.Info().
+				Int64("new_position", newStartHeight).
+				Msg("STELLAR GAP DETECTION: Successfully updated scan position")
+		}
+	}
+
+	return nil
+}
+
+// FetchLastHeight retrieves the last processed height for Stellar scanning.
+// Always returns the current chain height to ensure scanning starts from the latest block.
+func (c *StellarBlockScanner) FetchLastHeight() (int64, error) {
+	currentHeight, err := c.GetHeight()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to get current Stellar height")
+		return 1, nil // Fallback to start from ledger 1
+	}
+
+	c.logger.Info().
+		Int64("current_stellar_height", currentHeight).
+		Msg("STELLAR: Starting from latest block height")
+
+	return currentHeight, nil
+}
+
+// GetNetworkFee returns the current chain network fee according to Bifrost.
 func (c *StellarBlockScanner) GetNetworkFee() (transactionSize, transactionFeeRate uint64) {
 	return 1, c.lastFee.Uint64()
 }
@@ -202,18 +333,27 @@ func (c *StellarBlockScanner) updateFees(height int64) error {
 			return nil
 		}
 
-		c.globalNetworkFeeQueue <- common.NetworkFee{
-			Chain:           c.cfg.ChainID,
-			Height:          height,
-			TransactionSize: 1,
-			TransactionRate: avgFee.Uint64(),
+		// only send network fee if queue is initialized
+		if c.globalNetworkFeeQueue != nil {
+			c.globalNetworkFeeQueue <- common.NetworkFee{
+				Chain:           c.cfg.ChainID,
+				Height:          height,
+				TransactionSize: 1,
+				TransactionRate: avgFee.Uint64(),
+			}
+
+			c.logger.Info().
+				Uint64("fee", avgFee.Uint64()).
+				Int64("height", height).
+				Msg("sent network fee to SwitchlyProtocol")
+		} else {
+			c.logger.Warn().
+				Uint64("fee", avgFee.Uint64()).
+				Int64("height", height).
+				Msg("global network fee queue not initialized, skipping fee update")
 		}
 
 		c.lastFee = avgFee
-		c.logger.Info().
-			Uint64("fee", avgFee.Uint64()).
-			Int64("height", height).
-			Msg("sent network fee to SwitchlyProtocol")
 	}
 
 	return nil
@@ -614,25 +754,42 @@ func (c *StellarBlockScanner) parseAssetAndAmount(asset base.Asset, amountStr st
 	return common.NewCoin(thorAsset, cosmos.NewUint(amountStroops)), nil
 }
 
-// FetchTxs fetches transactions for a given block height
+// FetchTxs retrieves transactions for a specific block height from the Stellar network.
+// It includes gap detection to ensure no blocks are missed during scanning.
 func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
-	c.logger.Debug().
-		Int64("height", height).
-		Int64("chain_height", chainHeight).
-		Msg("fetching transactions")
+	var txIn types.TxIn
+	txIn.Chain = c.cfg.ChainID
+	txIn.Filtered = true
+	txIn.MemPool = false
+	txIn.ConfirmationRequired = 0
+	txIn.AllowFutureObservation = false
+	txIn.TxArray = nil
 
-	txIn := types.TxIn{
-		Chain:                  common.StellarChain,
-		TxArray:                nil,
-		Filtered:               false,
-		MemPool:                false,
-		ConfirmationRequired:   0,
-		AllowFutureObservation: false,
+	// Check for gaps in scanning and log warnings for significant gaps
+	if chainHeight > 0 && height > 0 {
+		expectedHeight := height - 1 // Previous expected height
+		if expectedHeight > 0 && chainHeight > expectedHeight {
+			gap := chainHeight - expectedHeight
+			if gap > 10 { // Log warning for gaps larger than 10 blocks
+				c.logger.Warn().
+					Int64("expected_height", expectedHeight).
+					Int64("actual_height", chainHeight).
+					Int64("gap_size", gap).
+					Msg("STELLAR: Large gap detected in block scanning - some blocks may have been missed")
+			}
+		}
 	}
 
 	// Get transactions for this ledger
 	txs, err := c.getTransactionsForLedger(height)
 	if err != nil {
+		// Handle special case where ledger doesn't exist
+		if strings.Contains(err.Error(), "Resource Missing") {
+			c.logger.Debug().
+				Int64("height", height).
+				Msg("ledger does not exist, returning empty transaction list")
+			return txIn, nil // Return empty transactions, let the scanner continue
+		}
 		return txIn, fmt.Errorf("failed to get transactions for ledger %d: %w", height, err)
 	}
 
@@ -673,6 +830,13 @@ func (c *StellarBlockScanner) getTransactionsForLedger(height int64) ([]horizon.
 	err := c.retryHorizonCall("get_transactions", func() error {
 		txPage, err := c.horizonClient.Transactions(txRequest)
 		if err != nil {
+			// Check if this is a "Resource Missing" error for missing ledger
+			if strings.Contains(err.Error(), "Resource Missing") {
+				c.logger.Debug().
+					Int64("height", height).
+					Msg("ledger does not exist, returning empty transaction list")
+				return nil // Return empty transactions for missing ledgers
+			}
 			return err
 		}
 

@@ -177,6 +177,9 @@ func NewClient(
 		return nil, fmt.Errorf("fail to create scan storage: %w", err)
 	}
 
+	// Create a temporary channel for initialization - will be replaced in Start()
+	tempNetworkFeeQueue := make(chan common.NetworkFee, 100)
+
 	// Initialize Stellar block scanner
 	stellarScanner, err := NewStellarBlockScanner(
 		cfg.RPCHost,
@@ -184,13 +187,16 @@ func NewClient(
 		storage,
 		thorchainBridge,
 		m,
-		nil,
+		nil, // solvency reporter - not used as we use SolvencyCheckRunner
 		horizonClient,
 		sorobanRPCClient,
+		tempNetworkFeeQueue,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stellar scanner: %w", err)
 	}
+
+	// Simple approach: no complex stored height logic needed
 
 	// Get router address from bridge configuration
 	routerAddress := getRouterAddress(thorchainBridge)
@@ -251,11 +257,34 @@ func getRouterAddress(bridge thorclient.ThorchainBridge) string {
 	return ""
 }
 
-// Start Stellar chain client
+// Start initializes and starts the Stellar chain client.
+// It waits for the Stellar node to be fully synced before starting the block scanner
+// to ensure Bifrost starts scanning from the latest block height.
 func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan stypes.ErrataBlock, globalSolvencyQueue chan stypes.Solvency, globalNetworkFeeQueue chan common.NetworkFee) {
 	c.globalSolvencyQueue = globalSolvencyQueue
 	c.stellarScanner.globalNetworkFeeQueue = globalNetworkFeeQueue
 	c.tssKeyManager.Start()
+
+	// Wait for Stellar node to be fully synced before starting block scanner
+	// This ensures Bifrost starts scanning from the latest block height
+	c.logger.Info().Msg("STELLAR: Waiting for Stellar node to be fully synced...")
+
+	syncHeight, err := c.waitForStellarSync()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("STELLAR: Failed to wait for sync completion")
+		return
+	}
+
+	// Set scanner position to the latest synced block height
+	if err := c.storage.SetScanPos(syncHeight); err != nil {
+		c.logger.Error().Err(err).Int64("sync_height", syncHeight).
+			Msg("STELLAR: Failed to set scan position")
+		return
+	}
+
+	c.logger.Info().Int64("sync_height", syncHeight).
+		Msg("STELLAR: Node fully synced! Starting scanner from latest block")
+
 	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
 	go runners.SolvencyCheckRunner(c.GetChain(), c, c.thorchainBridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
@@ -264,6 +293,58 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	if c.routerAddress != "" {
 		c.wg.Add(1)
 		go c.routerHealthMonitor()
+	}
+}
+
+// waitForStellarSync waits for the Stellar node to be fully synced.
+// It continuously checks the current height until it stabilizes (difference <= 2 over 3 seconds).
+// Returns the final synced height or an error if sync detection fails.
+func (c *Client) waitForStellarSync() (int64, error) {
+	const (
+		stabilityCheckDelay = 3 * time.Second
+		pollInterval        = 5 * time.Second
+		maxHeightDifference = 2
+	)
+
+	for {
+		height, err := getCurrentStellarHeight(c.horizonClient)
+		if err != nil {
+			c.logger.Debug().Err(err).Msg("STELLAR: Failed to get current height, retrying...")
+			time.Sleep(pollInterval)
+			continue
+		}
+
+		if height <= 0 {
+			c.logger.Debug().Msg("STELLAR: No height available yet, retrying...")
+			time.Sleep(pollInterval)
+			continue
+		}
+
+		// Verify height stability by checking again after a delay
+		time.Sleep(stabilityCheckDelay)
+		secondHeight, secondErr := getCurrentStellarHeight(c.horizonClient)
+		if secondErr != nil {
+			c.logger.Debug().Err(secondErr).Msg("STELLAR: Failed to verify height stability, retrying...")
+			continue
+		}
+
+		if secondHeight <= 0 {
+			c.logger.Debug().Msg("STELLAR: No height available on second check, retrying...")
+			continue
+		}
+
+		heightDifference := secondHeight - height
+		if heightDifference <= maxHeightDifference {
+			return secondHeight, nil
+		}
+
+		c.logger.Debug().
+			Int64("first_height", height).
+			Int64("second_height", secondHeight).
+			Int64("difference", heightDifference).
+			Msg("STELLAR: Height not stable yet, continuing to wait...")
+
+		time.Sleep(pollInterval)
 	}
 }
 
@@ -285,6 +366,22 @@ func (c *Client) routerHealthMonitor() {
 			return
 		}
 	}
+}
+
+// getCurrentStellarHeight retrieves the current Stellar chain height by querying the latest ledger.
+// Returns the sequence number of the most recent ledger or an error if the query fails.
+func getCurrentStellarHeight(horizonClient *horizonclient.Client) (int64, error) {
+	ledgerRequest := horizonclient.LedgerRequest{Order: horizonclient.OrderDesc, Limit: 1}
+	ledgerPage, err := horizonClient.Ledgers(ledgerRequest)
+	if err != nil {
+		return 0, fmt.Errorf("failed to query ledgers: %w", err)
+	}
+
+	if len(ledgerPage.Embedded.Records) == 0 {
+		return 0, fmt.Errorf("no ledgers found in response")
+	}
+
+	return int64(ledgerPage.Embedded.Records[0].Sequence), nil
 }
 
 // Stop Stellar chain client

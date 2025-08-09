@@ -78,6 +78,9 @@ func (s *StellarClientTestSuite) SetUpSuite(c *C) {
 		HorizonURL: "https://horizon-testnet.stellar.org",
 	}
 
+	// Create mock network fee queue
+	mockNetworkFeeQueue := make(chan common.NetworkFee, 100)
+
 	// Create block scanner
 	scanner, err := NewStellarBlockScanner(
 		"https://horizon-testnet.stellar.org",
@@ -88,6 +91,7 @@ func (s *StellarClientTestSuite) SetUpSuite(c *C) {
 		func(int64) error { return nil }, // mock solvency reporter
 		horizonClient,
 		&SorobanRPCClient{}, // mock soroban client
+		mockNetworkFeeQueue,
 	)
 	c.Assert(err, IsNil)
 

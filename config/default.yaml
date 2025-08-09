@@ -390,6 +390,7 @@ bifrost:
         chain_id: XLM
         gas_price_resolution: 100 # stroop
         observation_flexibility_blocks: 5
+        start_block_height: 1000 # Start from a reasonable height to avoid missing early ledgers
       mempool_tx_id_cache_size: 0
       scanner_leveldb: *default-leveldb
 

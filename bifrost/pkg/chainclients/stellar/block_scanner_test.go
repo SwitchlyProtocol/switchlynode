@@ -43,6 +43,9 @@ func (s *StellarBlockScannerTestSuite) SetUpSuite(c *C) {
 	storage, err := blockscanner.NewBlockScannerStorage("", config.LevelDBOptions{})
 	c.Assert(err, IsNil)
 
+	// Create mock network fee queue
+	mockNetworkFeeQueue := make(chan common.NetworkFee, 100)
+
 	// Create block scanner
 	s.scanner, err = NewStellarBlockScanner(
 		"https://horizon-testnet.stellar.org",
@@ -53,6 +56,7 @@ func (s *StellarBlockScannerTestSuite) SetUpSuite(c *C) {
 		func(int64) error { return nil }, // mock solvency reporter
 		horizonClient,
 		&SorobanRPCClient{}, // mock soroban client
+		mockNetworkFeeQueue,
 	)
 	c.Assert(err, IsNil)
 }
