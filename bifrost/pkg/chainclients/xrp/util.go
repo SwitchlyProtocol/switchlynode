@@ -48,14 +48,14 @@ func fromXrpToThorchain(coin txtypes.CurrencyAmount) (common.Coin, error) {
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
 	return common.Coin{
-		Asset:    asset.THORChainAsset,
+		Asset:    asset.SwitchlyAsset,
 		Amount:   sdkmath.NewUintFromBigInt(amount),
 		Decimals: decimals,
 	}, nil
 }
 
 func fromThorchainToXrp(coin common.Coin) (txtypes.CurrencyAmount, error) {
-	asset, exists := GetAssetByThorchainAsset(coin.Asset)
+	asset, exists := GetAssetBySwitchlyAsset(coin.Asset)
 	if !exists {
 		return nil, fmt.Errorf("asset (%s) does not exist / not whitelisted by client", coin.Asset)
 	}

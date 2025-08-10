@@ -540,7 +540,7 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 				StellarAssetCode:      "UNKNOWN",
 				StellarAssetIssuer:    assetAddress,
 				StellarDecimals:       7, // Default to 7 decimals
-				SwitchlyProtocolAsset: common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"},
+				SwitchlyAsset: common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"},
 			}
 			r.logger.Info().
 				Str("asset_address", assetAddress).
@@ -633,7 +633,7 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		Str("tx_hash", event.TransactionHash).
 		Str("from", fromAddr.String()).
 		Str("to", toAddr.String()).
-		Str("asset", mapping.SwitchlyProtocolAsset.String()).
+						Str("asset", mapping.SwitchlyAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Str("memo", event.Memo).
 		Msg("processed deposit event from Soroban RPC")

@@ -30,8 +30,8 @@ type StellarAssetMapping struct {
 	// Network-specific contract addresses for Soroban tokens
 	ContractAddresses map[StellarNetwork]string // Network -> Contract Address mapping
 
-	// SwitchlyProtocol asset representation
-	SwitchlyProtocolAsset common.Asset
+	// SwitchlyAsset representation
+	SwitchlyAsset common.Asset
 }
 
 // stellarAssetMappings contains the mapping of known Stellar assets to SwitchlyProtocol assets
@@ -47,7 +47,7 @@ var stellarAssetMappings = []StellarAssetMapping{
 			StellarMainnet: "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA",
 			StellarTestnet: "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
 		},
-		SwitchlyProtocolAsset: common.Asset{Chain: common.StellarChain, Symbol: "XLM", Ticker: "XLM"},
+		SwitchlyAsset: common.XLMAsset,
 	},
 
 	// USDC SEP-41 Token
@@ -60,7 +60,7 @@ var stellarAssetMappings = []StellarAssetMapping{
 			StellarMainnet: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
 			StellarTestnet: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
 		},
-		SwitchlyProtocolAsset: common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"},
+		SwitchlyAsset: common.XLMUSDC,
 	},
 }
 
@@ -103,10 +103,10 @@ func GetAssetByStellarAsset(assetType, assetCode, assetIssuer string) (StellarAs
 	return StellarAssetMapping{}, false
 }
 
-// GetAssetBySwitchlyProtocolAsset finds the asset mapping by SwitchlyProtocol asset
-func GetAssetBySwitchlyProtocolAsset(switchlyAsset common.Asset) (StellarAssetMapping, bool) {
+// GetAssetBySwitchlyAsset finds the asset mapping by SwitchlyAsset
+func GetAssetBySwitchlyAsset(switchlyAsset common.Asset) (StellarAssetMapping, bool) {
 	for _, mapping := range stellarAssetMappings {
-		if mapping.SwitchlyProtocolAsset.Equals(switchlyAsset) {
+		if mapping.SwitchlyAsset.Equals(switchlyAsset) {
 			return mapping, true
 		}
 	}
@@ -370,7 +370,7 @@ func (s StellarAssetMapping) ConvertToSwitchlyProtocolAmount(stellarAmount strin
 	switchlyProtocolAmountCosmos := cosmos.NewUintFromString(switchlyProtocolAmount.String())
 
 	return common.Coin{
-		Asset:  s.SwitchlyProtocolAsset,
+		Asset:  s.SwitchlyAsset,
 		Amount: switchlyProtocolAmountCosmos,
 	}, nil
 }

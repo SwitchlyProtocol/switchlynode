@@ -9,22 +9,22 @@ import (
 )
 
 type XrpAssetMapping struct {
-	XrpKind        txtypes.CurrencyKind
-	XrpCurrency    string
-	XrpIssuer      string
-	XrpDecimals    int64
-	THORChainAsset common.Asset
+	XrpKind       txtypes.CurrencyKind
+	XrpCurrency   string
+	XrpIssuer     string
+	XrpDecimals   int64
+	SwitchlyAsset common.Asset
 }
 
 // XrpAssetMappings maps an xrp denom to a THORChain symbol and provides the asset decimals
 // CHANGEME: define assets that should be observed by THORChain here. This also acts a whitelist.
 var XrpAssetMappings = []XrpAssetMapping{
 	{
-		XrpKind:        txtypes.XRP,
-		XrpCurrency:    "",
-		XrpIssuer:      "",
-		XrpDecimals:    6,
-		THORChainAsset: common.XRPAsset,
+		XrpKind:       txtypes.XRP,
+		XrpCurrency:   "",
+		XrpIssuer:     "",
+		XrpDecimals:   6,
+		SwitchlyAsset: common.XRPAsset,
 	},
 }
 
@@ -44,9 +44,9 @@ func GetAssetByXrpCurrency(coin txtypes.CurrencyAmount) (XrpAssetMapping, bool) 
 	return XrpAssetMapping{}, false
 }
 
-func GetAssetByThorchainAsset(asset common.Asset) (XrpAssetMapping, bool) {
+func GetAssetBySwitchlyAsset(asset common.Asset) (XrpAssetMapping, bool) {
 	for _, assetEntry := range XrpAssetMappings {
-		if asset.Equals(assetEntry.THORChainAsset) {
+		if asset.Equals(assetEntry.SwitchlyAsset) {
 			return assetEntry, true
 		}
 	}

@@ -928,7 +928,7 @@ func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, heig
 		Str("tx_hash", event.TransactionHash).
 		Str("from", fromAddr).
 		Str("to", toAddr).
-		Str("asset", mapping.SwitchlyProtocolAsset.String()).
+		Str("asset", mapping.SwitchlyAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Str("memo", event.Memo).
 		Msg("processed router deposit event")
@@ -1062,7 +1062,7 @@ func (c *StellarBlockScanner) processRouterTransferAllowanceEvent(event *RouterE
 		Str("tx_hash", event.TransactionHash).
 		Str("old_vault", oldVault).
 		Str("new_vault", newVault).
-		Str("asset", mapping.SwitchlyProtocolAsset.String()).
+		Str("asset", mapping.SwitchlyAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Str("memo", event.Memo).
 		Msg("processed router transfer allowance event (vault rotation)")

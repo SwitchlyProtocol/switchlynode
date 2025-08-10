@@ -33,7 +33,7 @@ func (s *AssetMappingTestSuite) TestGetAssetByStellarAsset(c *C) {
 	c.Assert(mapping.StellarAssetCode, Equals, "XLM")
 	c.Assert(mapping.StellarAssetIssuer, Equals, "")
 	c.Assert(mapping.StellarDecimals, Equals, 7)
-	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "XLM")
+	c.Assert(string(mapping.SwitchlyAsset.Symbol), Equals, "XLM")
 
 	// Test Soroban USDC token - should use testnet address after network setup
 	SetNetwork(StellarTestnet)
@@ -43,29 +43,29 @@ func (s *AssetMappingTestSuite) TestGetAssetByStellarAsset(c *C) {
 	c.Assert(mapping.StellarAssetCode, Equals, "USDC")
 	c.Assert(mapping.StellarAssetIssuer, Equals, "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA")
 	c.Assert(mapping.StellarDecimals, Equals, 7)
-	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "USDC")
+	c.Assert(string(mapping.SwitchlyAsset.Symbol), Equals, "USDC")
 
 	// Test unknown asset
 	_, found = GetAssetByStellarAsset("contract", "UNKNOWN", "UNKNOWN_ISSUER")
 	c.Assert(found, Equals, false)
 }
 
-func (s *AssetMappingTestSuite) TestGetAssetByTHORChainAsset(c *C) {
+func (s *AssetMappingTestSuite) TestGetAssetBySwitchlyAsset(c *C) {
 	// Test native XLM
-	mapping, found := GetAssetBySwitchlyProtocolAsset(common.Asset{Chain: common.StellarChain, Symbol: "XLM", Ticker: "XLM"})
+	mapping, found := GetAssetBySwitchlyAsset(common.Asset{Chain: common.StellarChain, Symbol: "XLM", Ticker: "XLM"})
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "native")
 
 	// Test Soroban USDC with network-agnostic symbol
 	usdcAsset := common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"}
-	mapping, found = GetAssetBySwitchlyProtocolAsset(usdcAsset)
+	mapping, found = GetAssetBySwitchlyAsset(usdcAsset)
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "contract")
 	c.Assert(mapping.StellarAssetCode, Equals, "USDC")
 
 	// Test unknown asset
 	unknownAsset := common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"}
-	mapping, found = GetAssetBySwitchlyProtocolAsset(unknownAsset)
+	mapping, found = GetAssetBySwitchlyAsset(unknownAsset)
 	c.Assert(found, Equals, false)
 }
 
@@ -75,7 +75,7 @@ func (s *AssetMappingTestSuite) TestGetAssetByAddress(c *C) {
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "native")
 	c.Assert(mapping.StellarAssetCode, Equals, "XLM")
-	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "XLM")
+	c.Assert(string(mapping.SwitchlyAsset.Symbol), Equals, "XLM")
 
 	// Test Soroban USDC by testnet contract address
 	SetNetwork(StellarTestnet)
@@ -83,7 +83,7 @@ func (s *AssetMappingTestSuite) TestGetAssetByAddress(c *C) {
 	c.Assert(found, Equals, true)
 	c.Assert(mapping.StellarAssetType, Equals, "contract")
 	c.Assert(mapping.StellarAssetCode, Equals, "USDC")
-	c.Assert(string(mapping.SwitchlyProtocolAsset.Symbol), Equals, "USDC")
+	c.Assert(string(mapping.SwitchlyAsset.Symbol), Equals, "USDC")
 
 	// Test unknown address
 	_, found = GetAssetByAddress("UNKNOWN_ADDRESS")

@@ -37,6 +37,8 @@ var (
 	XRPAsset = Asset{Chain: XRPChain, Symbol: "XRP", Ticker: "XRP", Synth: false}
 	// XLMAsset XLM
 	XLMAsset = Asset{Chain: StellarChain, Symbol: "XLM", Ticker: "XLM", Synth: false}
+	// XLMUSDC USDC on Stellar
+	XLMUSDC = Asset{Chain: StellarChain, Symbol: "USDC", Ticker: "USDC", Synth: false}
 	// SwitchNative SWITCH on switchly
 	SwitchNative = Asset{Chain: SWITCHLYChain, Symbol: "SWITCH", Ticker: "SWITCH", Synth: false}
 	RUJI         = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
@@ -116,6 +118,7 @@ func NewAssetWithShortCodesV3_1_0(input string) (Asset, error) {
 	shorts[BaseETHAsset.ShortCode()] = BaseETHAsset.String()
 	shorts[XRPAsset.ShortCode()] = XRPAsset.String()
 	shorts[XLMAsset.ShortCode()] = XLMAsset.String()
+	shorts[XLMUSDC.ShortCode()] = XLMUSDC.String()
 
 	long, ok := shorts[input]
 	if ok {
@@ -306,6 +309,8 @@ func (a Asset) ShortCode() string {
 		return "x"
 	case "XLM.XLM":
 		return "m"
+	case "XLM.USDC":
+		return "u"
 	default:
 		return ""
 	}

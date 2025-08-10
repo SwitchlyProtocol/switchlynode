@@ -522,7 +522,7 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 			continue
 		}
 		c.logger.Debug().
-			Str("asset", assetMapping.SwitchlyProtocolAsset.String()).
+			Str("asset", assetMapping.SwitchlyAsset.String()).
 			Str("amount", coin.Amount.String()).
 			Msg("balance converted")
 
@@ -546,8 +546,8 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 	// Support single coin transactions
 	coin := tx.Coins[0]
 
-	// Find the asset mapping for this SwitchlyProtocol asset
-	assetMapping, found := GetAssetBySwitchlyProtocolAsset(coin.Asset)
+	// Find the asset mapping for this SwitchlyAsset
+	assetMapping, found := GetAssetBySwitchlyAsset(coin.Asset)
 	if !found {
 		c.logger.Error().
 			Str("asset", coin.Asset.String()).
@@ -600,8 +600,8 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, c
 	// Support single coin transactions
 	coin := tx.Coins[0]
 
-	// Find the asset mapping for this SwitchlyProtocol asset
-	assetMapping, found := GetAssetBySwitchlyProtocolAsset(coin.Asset)
+	// Find the asset mapping for this SwitchlyAsset
+	assetMapping, found := GetAssetBySwitchlyAsset(coin.Asset)
 	if !found {
 		c.logger.Error().
 			Str("asset", coin.Asset.String()).
