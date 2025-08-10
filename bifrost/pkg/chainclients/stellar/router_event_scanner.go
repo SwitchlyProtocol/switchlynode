@@ -15,6 +15,7 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 	"github.com/stellar/go/protocols/horizon/operations"
 
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
 	"github.com/switchlyprotocol/switchlynode/v1/common"
 	"github.com/switchlyprotocol/switchlynode/v1/config"
@@ -28,6 +29,7 @@ type RouterEventScanner struct {
 	sorobanRPCClient *SorobanRPCClient
 	routerAddress    string
 	retryConfig      RetryConfig
+	bridge           thorclient.ThorchainBridge
 }
 
 // RetryConfig for handling rate limits
@@ -71,6 +73,7 @@ func NewRouterEventScanner(
 	horizonClient *horizonclient.Client,
 	sorobanRPCClient *SorobanRPCClient,
 	routerAddress string,
+	bridge thorclient.ThorchainBridge,
 ) *RouterEventScanner {
 	logger := log.Logger.With().Str("module", "router-event-scanner").Str("chain", cfg.ChainID.String()).Logger()
 
@@ -80,6 +83,7 @@ func NewRouterEventScanner(
 		horizonClient:    horizonClient,
 		sorobanRPCClient: sorobanRPCClient,
 		routerAddress:    routerAddress,
+		bridge:           bridge,
 		retryConfig: RetryConfig{
 			MaxRetries: cfg.MaxHTTPRequestRetry,
 			BaseDelay:  cfg.BlockHeightDiscoverBackoff,
@@ -331,15 +335,57 @@ func (r *RouterEventScanner) processDepositEvent(tx horizon.Transaction, event S
 		return nil, fmt.Errorf("failed to parse to address: %w", err)
 	}
 
+	// Get the vault public key for XLM chain
+	vaultPubKey, err := r.getVaultPubKeyForXLM()
+	if err != nil {
+		r.logger.Warn().Err(err).
+			Str("tx_hash", tx.Hash).
+			Msg("failed to get vault public key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify that we have a valid vault pub key
+	if vaultPubKey.IsEmpty() {
+		r.logger.Warn().
+			Str("tx_hash", tx.Hash).
+			Msg("received empty vault pub key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify we can get a valid XLM address from this vault pub key
+	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	if err != nil {
+		r.logger.Warn().Err(err).
+			Str("tx_hash", tx.Hash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("failed to get XLM address from vault pub key, skipping transaction")
+		return nil, nil
+	}
+
+	if xlmAddress.IsEmpty() {
+		r.logger.Warn().
+			Str("tx_hash", tx.Hash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("vault pub key returned empty XLM address, skipping transaction")
+		return nil, nil
+	}
+
+	r.logger.Debug().
+		Str("tx_hash", tx.Hash).
+		Str("vault_pubkey", vaultPubKey.String()).
+		Str("xlm_address", xlmAddress.String()).
+		Msg("processing deposit event with valid vault pub key")
+
 	// Create TxInItem
 	txInItem := &types.TxInItem{
-		BlockHeight: height,
-		Tx:          tx.Hash,
-		Sender:      fromAddr.String(),
-		To:          toAddr.String(),
-		Coins:       common.Coins{coin},
-		Memo:        depositEvent.Memo,
-		Gas:         common.Gas{coin}, // Use same coin for gas
+		BlockHeight:         height,
+		Tx:                  tx.Hash,
+		Sender:              fromAddr.String(),
+		To:                  toAddr.String(),
+		Coins:               common.Coins{coin},
+		Memo:                depositEvent.Memo,
+		ObservedVaultPubKey: vaultPubKey,
+		Gas:                 common.Gas{coin}, // Use same coin for gas
 	}
 
 	return txInItem, nil
@@ -530,15 +576,57 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		}
 	}
 
+	// Get the vault public key for XLM chain
+	vaultPubKey, err := r.getVaultPubKeyForXLM()
+	if err != nil {
+		r.logger.Warn().Err(err).
+			Str("tx_hash", event.TransactionHash).
+			Msg("failed to get vault public key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify that we have a valid vault pub key
+	if vaultPubKey.IsEmpty() {
+		r.logger.Warn().
+			Str("tx_hash", event.TransactionHash).
+			Msg("received empty vault pub key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify we can get a valid XLM address from this vault pub key
+	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	if err != nil {
+		r.logger.Warn().Err(err).
+			Str("tx_hash", event.TransactionHash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("failed to get XLM address from vault pub key, skipping transaction")
+		return nil, nil
+	}
+
+	if xlmAddress.IsEmpty() {
+		r.logger.Warn().
+			Str("tx_hash", event.TransactionHash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("vault pub key returned empty XLM address, skipping transaction")
+		return nil, nil
+	}
+
+	r.logger.Debug().
+		Str("tx_hash", event.TransactionHash).
+		Str("vault_pubkey", vaultPubKey.String()).
+		Str("xlm_address", xlmAddress.String()).
+		Msg("processing deposit event from Soroban RPC with valid vault pub key")
+
 	// Create TxInItem
 	txInItem := &types.TxInItem{
-		BlockHeight: height,
-		Tx:          event.TransactionHash,
-		Sender:      fromAddr.String(),
-		To:          toAddr.String(),
-		Coins:       common.Coins{coin},
-		Memo:        event.Memo,
-		Gas:         common.Gas{coin}, // Use same coin for gas
+		BlockHeight:         height,
+		Tx:                  event.TransactionHash,
+		Sender:              fromAddr.String(),
+		To:                  toAddr.String(),
+		Coins:               common.Coins{coin},
+		Memo:                event.Memo,
+		ObservedVaultPubKey: vaultPubKey,
+		Gas:                 common.Gas{coin}, // Use same coin for gas
 	}
 
 	r.logger.Info().
@@ -592,4 +680,35 @@ func (r *RouterEventScanner) processReturnVaultAssetsEventFromSoroban(event *Rou
 		Msg("router return vault assets event detected from Soroban RPC")
 
 	return nil, nil
+}
+
+// getVaultPubKeyForXLM retrieves the vault public key for XLM chain from the bridge
+func (r *RouterEventScanner) getVaultPubKeyForXLM() (common.PubKey, error) {
+	if r.bridge == nil {
+		return common.EmptyPubKey, fmt.Errorf("bridge not available")
+	}
+
+	// Get vault public keys from the bridge
+	vaultPubKeyPairs, err := r.bridge.GetAsgardPubKeys()
+	if err != nil {
+		return common.EmptyPubKey, fmt.Errorf("failed to get vault public keys: %w", err)
+	}
+
+	// Find a vault that has a contract for XLM chain
+	for _, vaultPair := range vaultPubKeyPairs {
+		if vaultPair.PubKey.IsEmpty() {
+			continue
+		}
+
+		// Check if this vault has a contract for XLM chain
+		if contractAddr, hasContract := vaultPair.Contracts[common.StellarChain]; hasContract {
+			r.logger.Debug().
+				Str("vault_pubkey", vaultPair.PubKey.String()).
+				Str("xlm_contract", contractAddr.String()).
+				Msg("found vault with XLM chain contract")
+			return vaultPair.PubKey, nil
+		}
+	}
+
+	return common.EmptyPubKey, fmt.Errorf("no vault found with XLM chain contract")
 }

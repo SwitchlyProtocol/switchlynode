@@ -227,13 +227,13 @@ func (s *AssetMappingTestSuite) TestConvertFromTHORChainAmount(c *C) {
 	// Test XLM conversion (8 decimals to 7 decimals)
 	mapping, _ := GetAssetByStellarAsset("native", "XLM", "")
 	amount := mapping.ConvertFromSwitchlyProtocolAmount(cosmos.NewUint(100000000)) // 1 XLM in THORChain units
-	c.Assert(amount, Equals, "10000000")                                    // 1 XLM in stroops
+	c.Assert(amount, Equals, "10000000")                                           // 1 XLM in stroops
 
 	// Test USDC conversion (8 decimals to 7 decimals) - use testnet address
 	SetNetwork(StellarTestnet)
 	mapping, _ = GetAssetByStellarAsset("contract", "USDC", "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA")
 	amount = mapping.ConvertFromSwitchlyProtocolAmount(cosmos.NewUint(100000000)) // 1 USDC in THORChain units
-	c.Assert(amount, Equals, "10000000")                                   // 1 USDC in 7-decimal format
+	c.Assert(amount, Equals, "10000000")                                          // 1 USDC in 7-decimal format
 }
 
 func (s *AssetMappingTestSuite) TestSorobanTokenHelpers(c *C) {

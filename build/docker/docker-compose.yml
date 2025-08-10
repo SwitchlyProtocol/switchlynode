@@ -196,23 +196,32 @@ services:
       BIFROST_CHAINS_BSC_BLOCK_SCANNER_MAX_GAS_LIMIT: 80000
       BIFROST_CHAINS_BASE_BLOCK_SCANNER_MAX_GAS_LIMIT: 80000
 
-      # enable bsc
+      # EVM Chains - DISABLED
       BIFROST_CHAINS_BSC_DISABLED: "true"
       BIFROST_CHAINS_BSC_RPC_HOST: ${BSC_HOST:-http://binance-smart:8545}
-
-      # enable base
       BIFROST_CHAINS_BASE_DISABLED: "true"
       BIFROST_CHAINS_BASE_RPC_HOST: http://base:8545
+      
+      # Ethereum (ETH) - ENABLED
+      BIFROST_CHAINS_ETH_DISABLED: "false"
+      BIFROST_CHAINS_ETH_RPC_HOST: ${ETH_HOST:-http://ethereum:8545}
 
       # enable xrp
       BIFROST_CHAINS_XRP_DISABLED: "true"
       BIFROST_CHAINS_XRP_RPC_HOST: http://xrp:5005
       BIFROST_CHAINS_XRP_CHAIN_NETWORK: "1234"
 
-      # enable xlm
+      # Stellar (XLM) - ENABLED
       BIFROST_CHAINS_XLM_DISABLED: "false"
       BIFROST_CHAINS_XLM_RPC_HOST: http://stellar:8000
       BIFROST_CHAINS_XLM_CHAIN_NETWORK: "testnet"
+      BIFROST_CHAINS_XLM_ROUTER_ADDRESS: "CAVLZEEZWWDBBROYGYLL7IXVUFTSLIXV5EOVU6KR467U43SOBZ36UZTY"
+      
+      # UTXO Chains - DISABLED
+      BIFROST_CHAINS_BTC_DISABLED: "true"
+      BIFROST_CHAINS_LTC_DISABLED: "true"
+      BIFROST_CHAINS_BCH_DISABLED: "true"
+      BIFROST_CHAINS_DOGE_DISABLED: "true"
       
       # xlm rate limiting configurations - more conservative for Horizon API
       BIFROST_CHAINS_XLM_BLOCK_SCANNER_BLOCK_HEIGHT_DISCOVER_BACK_OFF: 15s

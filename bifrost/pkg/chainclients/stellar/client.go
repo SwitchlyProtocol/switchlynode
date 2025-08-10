@@ -179,8 +179,9 @@ func NewClient(
 
 	// Create a temporary channel for initialization - will be replaced in Start()
 	tempNetworkFeeQueue := make(chan common.NetworkFee, 100)
+	tempTxsQueue := make(chan stypes.TxIn, 100)
 
-	// Initialize Stellar block scanner
+	// Create Stellar block scanner
 	stellarScanner, err := NewStellarBlockScanner(
 		cfg.RPCHost,
 		cfg.BlockScanner,
@@ -191,55 +192,55 @@ func NewClient(
 		horizonClient,
 		sorobanRPCClient,
 		tempNetworkFeeQueue,
+		tempTxsQueue,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stellar scanner: %w", err)
 	}
 
-	// Simple approach: no complex stored height logic needed
+	// Create main block scanner
+	blockScanner, err := blockscanner.NewBlockScanner(cfg.BlockScanner, storage, m, thorchainBridge, stellarScanner)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create block scanner: %w", err)
+	}
 
-	// Get router address from bridge configuration
+	// Create signer cache manager
+	signerCacheManager, err := signercache.NewSignerCacheManager(storage.GetInternalDb())
+	if err != nil {
+		return nil, fmt.Errorf("fail to create signer cache manager")
+	}
+
+	// Create router event scanner if router is configured
+	var routerEventScanner *RouterEventScanner
 	routerAddress := getRouterAddress(thorchainBridge)
-
-	// Initialize router event scanner with Soroban RPC client
-	routerEventScanner := NewRouterEventScanner(
-		cfg.BlockScanner,
-		horizonClient,
-		sorobanRPCClient,
-		routerAddress,
-	)
-
-	// Create router-aware scanner wrapper
-	routerAwareScanner := NewRouterAwareStellarScanner(stellarScanner, routerEventScanner)
-
-	c := &Client{
-		logger:             logger,
-		cfg:                cfg,
-		tssKeyManager:      tssKm,
-		thorchainBridge:    thorchainBridge,
-		storage:            storage,
-		wg:                 &sync.WaitGroup{},
-		stopchan:           make(chan struct{}),
-		horizonClient:      horizonClient,
-		networkPassphrase:  networkPassphrase,
-		routerAddress:      routerAddress,
-		routerEventScanner: routerEventScanner,
-		stellarScanner:     stellarScanner,
-		sorobanRPCClient:   sorobanRPCClient,
+	if routerAddress != "" {
+		routerEventScanner = NewRouterEventScanner(
+			cfg.BlockScanner,
+			horizonClient,
+			sorobanRPCClient,
+			routerAddress,
+			thorchainBridge,
+		)
 	}
 
-	// Use router-aware scanner for block scanning
-	c.blockScanner, err = blockscanner.NewBlockScanner(c.cfg.BlockScanner, c.storage, m, c.thorchainBridge, routerAwareScanner)
-	if err != nil {
-		return nil, fmt.Errorf("fail to create block scanner: %w", err)
-	}
-
-	c.signerCacheManager, err = signercache.NewSignerCacheManager(c.storage.GetInternalDb())
-	if err != nil {
-		return nil, fmt.Errorf("fail to create signer cache manager,err: %w", err)
-	}
-
-	return c, nil
+	return &Client{
+		logger:              logger,
+		cfg:                 cfg,
+		tssKeyManager:       tssKm,
+		thorchainBridge:     thorchainBridge,
+		storage:             storage,
+		blockScanner:        blockScanner,
+		signerCacheManager:  signerCacheManager,
+		stellarScanner:      stellarScanner,
+		routerEventScanner:  routerEventScanner,
+		sorobanRPCClient:    sorobanRPCClient,
+		globalSolvencyQueue: make(chan stypes.Solvency, 100),
+		wg:                  &sync.WaitGroup{},
+		stopchan:            make(chan struct{}),
+		horizonClient:       horizonClient,
+		networkPassphrase:   networkPassphrase,
+		routerAddress:       routerAddress,
+	}, nil
 }
 
 func getRouterAddress(bridge thorclient.ThorchainBridge) string {
@@ -263,6 +264,7 @@ func getRouterAddress(bridge thorclient.ThorchainBridge) string {
 func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan stypes.ErrataBlock, globalSolvencyQueue chan stypes.Solvency, globalNetworkFeeQueue chan common.NetworkFee) {
 	c.globalSolvencyQueue = globalSolvencyQueue
 	c.stellarScanner.globalNetworkFeeQueue = globalNetworkFeeQueue
+	c.stellarScanner.globalTxsQueue = globalTxsQueue
 	c.tssKeyManager.Start()
 
 	// Wait for Stellar node to be fully synced before starting block scanner
@@ -276,6 +278,7 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	}
 
 	// Set scanner position to the latest synced block height
+	// This is the initial scan position when the node first syncs
 	if err := c.storage.SetScanPos(syncHeight); err != nil {
 		c.logger.Error().Err(err).Int64("sync_height", syncHeight).
 			Msg("STELLAR: Failed to set scan position")
@@ -283,9 +286,12 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	}
 
 	c.logger.Info().Int64("sync_height", syncHeight).
-		Msg("STELLAR: Node fully synced! Starting scanner from latest block")
+		Msg("STELLAR: Node fully synced! Starting continuous scanner from latest block")
 
-	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
+	// Start the Stellar continuous block scanner instead of the main block scanner
+	// This ensures continuous ingestion every 60 seconds as required
+	c.stellarScanner.Start()
+
 	c.wg.Add(1)
 	go runners.SolvencyCheckRunner(c.GetChain(), c, c.thorchainBridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
 
@@ -384,12 +390,28 @@ func getCurrentStellarHeight(horizonClient *horizonclient.Client) (int64, error)
 	return int64(ledgerPage.Embedded.Records[0].Sequence), nil
 }
 
-// Stop Stellar chain client
+// Stop stops the Stellar chain client and all its components
 func (c *Client) Stop() {
+	c.logger.Info().Msg("STELLAR: Stopping Stellar chain client")
+
+	// Stop the continuous block scanner
+	c.stellarScanner.Stop()
+
+	// Stop the main block scanner if it was started
+	if c.blockScanner != nil {
+		c.blockScanner.Stop()
+	}
+
+	// Stop TSS key manager
 	c.tssKeyManager.Stop()
-	c.blockScanner.Stop()
+
+	// Signal all goroutines to stop
 	close(c.stopchan)
+
+	// Wait for all goroutines to finish
 	c.wg.Wait()
+
+	c.logger.Info().Msg("STELLAR: Stellar chain client stopped")
 }
 
 // GetConfig return the configuration used by Stellar chain client

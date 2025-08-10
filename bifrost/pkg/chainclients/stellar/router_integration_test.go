@@ -85,6 +85,7 @@ func (s *RouterIntegrationTestSuite) SetUpTest(c *C) {
 		horizonClient,
 		sorobanRPCClient,
 		"test-router-address",
+		s.bridge,
 	)
 }
 

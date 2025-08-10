@@ -163,6 +163,12 @@ func NewSorobanRPCClient(cfg config.BifrostChainConfiguration, logger zerolog.Lo
 
 // GetContractEvents retrieves contract events from Soroban RPC
 func (s *SorobanRPCClient) GetContractEvents(ctx context.Context, startLedger uint32, contractIDs []string, eventTypes []string) (*GetEventsResponse, error) {
+	s.logger.Debug().
+		Uint32("start_ledger", startLedger).
+		Strs("contract_ids", contractIDs).
+		Strs("event_types", eventTypes).
+		Msg("Getting contract events from Soroban RPC")
+
 	filters := make([]ContractEventFilter, 0)
 
 	// Create filters for each contract and event type combination
@@ -197,6 +203,10 @@ func (s *SorobanRPCClient) GetContractEvents(ctx context.Context, startLedger ui
 			Msg("Scanning ledger range for events")
 	}
 
+	s.logger.Info().
+		Interface("request", request).
+		Msg("Making RPC request to get contract events")
+
 	rpcReq := SorobanRPCRequest{
 		JSONRpc: "2.0",
 		ID:      1,
@@ -206,13 +216,33 @@ func (s *SorobanRPCClient) GetContractEvents(ctx context.Context, startLedger ui
 
 	var response GetEventsResponse
 	if err := s.makeRPCCall(ctx, rpcReq, &response); err != nil {
+		s.logger.Error().
+			Err(err).
+			Interface("request", request).
+			Msg("Failed to make RPC call")
 		return nil, fmt.Errorf("failed to get contract events: %w", err)
 	}
 
-	s.logger.Debug().
+	s.logger.Info().
 		Int("event_count", len(response.Events)).
 		Uint32("latest_ledger", response.LatestLedger).
-		Msg("Retrieved contract events")
+		Str("latest_ledger_time", response.LatestLedgerTime).
+		Msg("Retrieved contract events from Soroban RPC")
+
+	// Log details of each event for debugging
+	for i, event := range response.Events {
+		s.logger.Debug().
+			Int("event_index", i).
+			Str("event_id", event.ID).
+			Str("contract_id", event.ContractID).
+			Str("tx_hash", event.TransactionHash).
+			Uint32("ledger", event.Ledger).
+			Str("event_type", event.Type).
+			Bool("successful", event.InSuccessfulContractCall).
+			Strs("topics", event.Topic).
+			Str("value", event.Value).
+			Msg("Event details")
+	}
 
 	return &response, nil
 }
@@ -243,6 +273,12 @@ func (s *SorobanRPCClient) makeRPCCall(ctx context.Context, request SorobanRPCRe
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
+	s.logger.Debug().
+		Str("rpc_url", s.rpcURL).
+		Str("method", request.Method).
+		Str("request_body", string(reqBody)).
+		Msg("Making RPC call")
+
 	httpReq, err := retryablehttp.NewRequestWithContext(ctx, "POST", s.rpcURL, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %w", err)
@@ -253,12 +289,27 @@ func (s *SorobanRPCClient) makeRPCCall(ctx context.Context, request SorobanRPCRe
 
 	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
+		s.logger.Error().
+			Err(err).
+			Str("rpc_url", s.rpcURL).
+			Msg("HTTP request failed")
 		return fmt.Errorf("HTTP request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
+	s.logger.Debug().
+		Str("rpc_url", s.rpcURL).
+		Int("status_code", resp.StatusCode).
+		Str("status", resp.Status).
+		Msg("Received HTTP response")
+
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		s.logger.Error().
+			Int("status_code", resp.StatusCode).
+			Str("status", resp.Status).
+			Str("response_body", string(body)).
+			Msg("HTTP error response")
 		return fmt.Errorf("HTTP error %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -267,12 +318,26 @@ func (s *SorobanRPCClient) makeRPCCall(ctx context.Context, request SorobanRPCRe
 		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
+	s.logger.Debug().
+		Str("rpc_url", s.rpcURL).
+		Str("response_body", string(body)).
+		Msg("Received RPC response body")
+
 	var rpcResp SorobanRPCResponse
 	if err := json.Unmarshal(body, &rpcResp); err != nil {
+		s.logger.Error().
+			Err(err).
+			Str("response_body", string(body)).
+			Msg("Failed to unmarshal RPC response")
 		return fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	if rpcResp.Error != nil {
+		s.logger.Error().
+			Int("error_code", rpcResp.Error.Code).
+			Str("error_message", rpcResp.Error.Message).
+			Str("error_data", rpcResp.Error.Data).
+			Msg("RPC error response")
 		return fmt.Errorf("RPC error %d: %s", rpcResp.Error.Code, rpcResp.Error.Message)
 	}
 
@@ -283,14 +348,31 @@ func (s *SorobanRPCClient) makeRPCCall(ctx context.Context, request SorobanRPCRe
 	}
 
 	if err := json.Unmarshal(resultBytes, result); err != nil {
+		s.logger.Error().
+			Err(err).
+			Str("result_json", string(resultBytes)).
+			Msg("Failed to unmarshal result")
 		return fmt.Errorf("failed to unmarshal result: %w", err)
 	}
+
+	s.logger.Debug().
+		Str("rpc_url", s.rpcURL).
+		Str("method", request.Method).
+		Msg("RPC call completed successfully")
 
 	return nil
 }
 
 // ParseContractEvent parses a raw contract event into a RouterEvent
 func (s *SorobanRPCClient) ParseContractEvent(event ContractEvent) (*RouterEvent, error) {
+	s.logger.Debug().
+		Str("event_id", event.ID).
+		Str("tx_hash", event.TransactionHash).
+		Str("event_type", event.Type).
+		Strs("topics", event.Topic).
+		Str("value", event.Value).
+		Msg("Starting to parse contract event")
+
 	// Parse ledger time
 	ledgerTime, err := time.Parse(time.RFC3339, event.LedgerTime)
 	if err != nil {
@@ -306,10 +388,23 @@ func (s *SorobanRPCClient) ParseContractEvent(event ContractEvent) (*RouterEvent
 		LedgerTime:      ledgerTime,
 	}
 
+	s.logger.Debug().
+		Str("event_id", event.ID).
+		Str("event_type", event.Type).
+		Msg("Created base router event")
+
 	// Parse event data based on type
 	switch event.Type {
 	case "contract":
+		s.logger.Debug().
+			Str("event_id", event.ID).
+			Msg("Parsing contract event data")
 		if err := s.parseContractEventData(event, routerEvent); err != nil {
+			s.logger.Warn().
+				Err(err).
+				Str("event_id", event.ID).
+				Str("tx_hash", event.TransactionHash).
+				Msg("Failed to parse contract event data")
 			return nil, fmt.Errorf("failed to parse contract event data: %w", err)
 		}
 	case "system":
@@ -321,11 +416,24 @@ func (s *SorobanRPCClient) ParseContractEvent(event ContractEvent) (*RouterEvent
 		return nil, nil
 	}
 
+	s.logger.Debug().
+		Str("event_id", event.ID).
+		Str("final_type", routerEvent.Type).
+		Str("asset", routerEvent.Asset).
+		Str("amount", routerEvent.Amount).
+		Msg("Finished parsing contract event")
+
 	return routerEvent, nil
 }
 
 // parseContractEventData parses contract-specific event data
 func (s *SorobanRPCClient) parseContractEventData(event ContractEvent, routerEvent *RouterEvent) error {
+	s.logger.Debug().
+		Str("event_id", event.ID).
+		Int("topics_count", len(event.Topic)).
+		Str("event_value", event.Value).
+		Msg("Parsing contract event data")
+
 	// Parse topics (event signature and indexed parameters)
 	if len(event.Topic) > 0 {
 		// First topic contains the event signature as XDR
@@ -337,15 +445,33 @@ func (s *SorobanRPCClient) parseContractEventData(event ContractEvent, routerEve
 			routerEvent.Type = eventSignature
 			s.logger.Debug().Str("event_signature", eventSignature).Msg("Parsed event signature")
 		}
+	} else {
+		s.logger.Debug().Msg("No topics found in event")
 	}
 
 	// Parse event value (the main event data)
 	if event.Value != "" {
+		s.logger.Debug().
+			Str("event_id", event.ID).
+			Str("value", event.Value).
+			Msg("Parsing event value")
 		if err := s.parseEventValue(event.Value, routerEvent); err != nil {
 			s.logger.Warn().Err(err).Str("value", event.Value).Msg("Failed to parse event value")
 			return err
 		}
+	} else {
+		s.logger.Debug().Msg("No event value found")
 	}
+
+	s.logger.Debug().
+		Str("event_id", event.ID).
+		Str("final_type", routerEvent.Type).
+		Str("asset", routerEvent.Asset).
+		Str("amount", routerEvent.Amount).
+		Str("from", routerEvent.FromAddress).
+		Str("to", routerEvent.ToAddress).
+		Str("memo", routerEvent.Memo).
+		Msg("Finished parsing contract event data")
 
 	return nil
 }
@@ -591,10 +717,17 @@ func (s *SorobanRPCClient) GetRouterEvents(ctx context.Context, startLedger uint
 		return nil, fmt.Errorf("failed to get router events: %w", err)
 	}
 
+	s.logger.Debug().
+		Uint32("start_ledger", startLedger).
+		Int("total_events_received", len(response.Events)).
+		Strs("router_addresses", routerAddresses).
+		Msg("Received contract events from Soroban RPC")
+
 	var routerEvents []*RouterEvent
-	for _, event := range response.Events {
+	for i, event := range response.Events {
 		// Log each event for debugging
 		s.logger.Debug().
+			Int("event_index", i).
 			Str("contract_id", event.ContractID).
 			Str("tx_hash", event.TransactionHash).
 			Uint32("ledger", event.Ledger).
@@ -612,7 +745,15 @@ func (s *SorobanRPCClient) GetRouterEvents(ctx context.Context, startLedger uint
 			continue
 		}
 
-		if !s.IsRouterEvent(event, routerAddresses) {
+		// Check if this is a router event
+		isRouter := s.IsRouterEvent(event, routerAddresses)
+		s.logger.Debug().
+			Str("contract_id", event.ContractID).
+			Strs("expected_addresses", routerAddresses).
+			Bool("is_router_event", isRouter).
+			Msg("Router event check")
+
+		if !isRouter {
 			s.logger.Debug().
 				Str("contract_id", event.ContractID).
 				Strs("expected_addresses", routerAddresses).
@@ -624,8 +765,10 @@ func (s *SorobanRPCClient) GetRouterEvents(ctx context.Context, startLedger uint
 		if err != nil {
 			s.logger.Warn().
 				Err(err).
+				Int("event_index", i).
 				Str("event_id", event.ID).
 				Str("tx_hash", event.TransactionHash).
+				Str("event_value", event.Value).
 				Msg("Failed to parse router event")
 			continue
 		}
@@ -641,6 +784,12 @@ func (s *SorobanRPCClient) GetRouterEvents(ctx context.Context, startLedger uint
 				Str("memo", routerEvent.Memo).
 				Msg("Successfully parsed router event")
 			routerEvents = append(routerEvents, routerEvent)
+		} else {
+			s.logger.Warn().
+				Int("event_index", i).
+				Str("event_id", event.ID).
+				Str("tx_hash", event.TransactionHash).
+				Msg("ParseContractEvent returned nil")
 		}
 	}
 

@@ -66,7 +66,7 @@ func LoadChains(thorKeys *thorclient.Keys,
 
 		client, err := loadChain(chain)
 		if err != nil {
-			logger.Error().Err(err).Stringer("chain", chain.ChainID).Msg("failed to load chain")
+			logger.Debug().Err(err).Stringer("chain", chain.ChainID).Msg("failed to load chain")
 			failedChains = append(failedChains, chain.ChainID)
 			continue
 		}
@@ -94,7 +94,7 @@ func LoadChains(thorKeys *thorclient.Keys,
 						close(restart)
 						return
 					} else {
-						logger.Error().Err(err).Stringer("chain", chain).Msg("failed to load chain")
+						logger.Debug().Err(err).Stringer("chain", chain).Msg("failed to load chain")
 					}
 				}
 			}

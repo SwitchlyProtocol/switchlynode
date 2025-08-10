@@ -28,10 +28,10 @@ BUILDTAG?=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 # compiler flags
 VERSION:=$(shell cat version)
 TAG?=mocknet
-ldflags = -X github.com/switchlyprotocol/switchlynode/v1/constants.Version=$(VERSION) \
-      -X github.com/switchlyprotocol/switchlynode/v1/constants.GitCommit=$(COMMIT) \
+ldflags = -X github.com/switchlynode/switchlynode/v1/constants.Version=$(VERSION) \
+      -X github.com/switchlynode/switchlynode/v1/constants.GitCommit=$(COMMIT) \
       -X github.com/cosmos/cosmos-sdk/version.Name=SwitchlyProtocol \
-      -X github.com/cosmos/cosmos-sdk/version.AppName=switchlyprotocol \
+      -X github.com/cosmos/cosmos-sdk/version.AppName=switchlynode \
       -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
       -X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
       -X github.com/cosmos/cosmos-sdk/version.BuildTags=$(TAG) \
@@ -50,7 +50,7 @@ ifndef CI
 DOCKER_TTY_ARGS=-it
 endif
 
-HTTPS_GIT := github.com/switchlyprotocol/switchlynode.git
+HTTPS_GIT := github.com/switchlynode/switchlynode.git
 
 ########################################################################################
 # Targets
@@ -181,11 +181,11 @@ test-race:
 test-regression:
 	@docker run --rm -it \
 		-v $(shell pwd):/app \
-		-w /app switchlyprotocol-regtest sh -c 'make _test-regression'
+		-w /app switchlynode-regtest sh -c 'make _test-regression'
 
 _test-regression:
 	@docker build -f build/docker/Dockerfile.regtest \
-		-t switchlyprotocol-regtest \
+		-t switchlynode-regtest \
 		--build-arg TAG=mocknet .
 
 test-regression-coverage:
@@ -194,9 +194,9 @@ test-regression-coverage:
 # internal target used in docker build - version pinned for consistent app hashes
 _build-test-regression:
 	@go install -ldflags '$(ldflags)' -tags=mocknet,regtest ./cmd/switchlynode
-	@go build -ldflags '$(ldflags) -X github.com/switchlyprotocol/switchlynode/v1/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X github.com/switchlynode/switchlynode/v1/constants.Version=9.999.0' \
 		-cover -tags=mocknet,regtest -o /regtest/cover-switchlynode ./cmd/switchlynode
-	@go build -ldflags '$(ldflags) -X github.com/switchlyprotocol/switchlynode/v1/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X github.com/switchlynode/switchlynode/v1/constants.Version=9.999.0' \
 		-tags mocknet -o /regtest/regtest ./test/regression/cmd
 
 # internal target used in test run
@@ -215,17 +215,17 @@ test-simulation:
 	@docker run --rm -it \
 		-v $(shell pwd):/app \
 		-w /app \
-		switchlyprotocol-simtest sh -c 'make _test-simulation'
+		switchlynode-simtest sh -c 'make _test-simulation'
 
 test-simulation-coverage:
 	@docker run --rm -it \
 		-v $(shell pwd):/app \
 		-w /app \
-		switchlyprotocol-simtest sh -c 'make _test-simulation'
+		switchlynode-simtest sh -c 'make _test-simulation'
 
 _test-simulation-build:
 	@docker build -f build/docker/Dockerfile.simtest \
-		-t switchlyprotocol-simtest \
+		-t switchlynode-simtest \
 		--build-arg TAG=mocknet .
 
 # internal target used in test run
@@ -262,7 +262,7 @@ ps-mocknet:
 	@docker compose -f build/docker/docker-compose.yml --profile mocknet --profile midgard ps
 
 logs-mocknet:
-	@docker compose -f build/docker/docker-compose.yml --profile mocknet logs -f switchlyprotocol bifrost
+	@docker compose -f build/docker/docker-compose.yml --profile mocknet logs -f switchlynode bifrost
 
 reset-mocknet: stop-mocknet run-mocknet
 
@@ -303,14 +303,14 @@ docker-gitlab-login:
 	docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
 
 docker-gitlab-push:
-	./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode ${BRANCH} $(shell cat version) \
+	./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode ${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}
-	docker push registry.gitlab.com/switchlyprotocol/switchlynode:${GITREF}
+	docker push registry.gitlab.com/switchlynode/switchlynode:${GITREF}
 
 docker-gitlab-build:
 	docker build \
-		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode ${BRANCH} $(shell cat version)) \
-		-t registry.gitlab.com/switchlyprotocol/switchlynode:${GITREF} \
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode ${BRANCH} $(shell cat version)) \
+		-t registry.gitlab.com/switchlynode/switchlynode:${GITREF} \
 		-f build/docker/Dockerfile .
 
 ########################################################################################
@@ -319,34 +319,34 @@ docker-gitlab-build:
 
 thorscan-build:
 	@docker build tools/thorscan -f tools/thorscan/Dockerfile \
-		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode thorscan-${BRANCH} $(shell cat version))
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version))
 
 thorscan-gitlab-push: docker-gitlab-login
-	@./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode thorscan-${BRANCH} $(shell cat version) \
+	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}
 
 events-build:
 	@docker build . -f tools/events/Dockerfile \
-		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode events-${BRANCH} $(shell cat version))
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode events-${BRANCH} $(shell cat version))
 
 events-gitlab-push: docker-gitlab-login
-	@./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode events-${BRANCH} $(shell cat version) \
+	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode events-${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}
 
 docker-gitlab-build-thorscan:
 	docker build \
-		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode thorscan-${BRANCH} $(shell cat version)) \
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version)) \
 		-f build/docker/Dockerfile.thorscan .
 
 docker-gitlab-push-thorscan:
-	@./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode thorscan-${BRANCH} $(shell cat version) \
+	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}
 
 docker-gitlab-build-events:
 	docker build \
-		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode events-${BRANCH} $(shell cat version)) \
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode events-${BRANCH} $(shell cat version)) \
 		-f tools/events/Dockerfile .
 
 docker-gitlab-push-events:
-	@./build/docker/semver_tags.sh registry.gitlab.com/switchlyprotocol/switchlynode events-${BRANCH} $(shell cat version) \
+	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode events-${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}

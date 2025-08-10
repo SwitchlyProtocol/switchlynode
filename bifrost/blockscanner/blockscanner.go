@@ -300,61 +300,86 @@ func (b *BlockScanner) scanBlocks() {
 				time.Sleep(b.cfg.BlockHeightDiscoverBackoff)
 				continue
 			}
-			txIn, err := b.chainScanner.FetchTxs(currentBlock, chainHeight)
-			if err != nil {
-				// don't log an error if its because the block doesn't exist yet
-				if !errors.Is(err, btypes.ErrUnavailableBlock) {
-					b.logger.Error().Err(err).Int64("block height", currentBlock).Msg("fail to get RPCBlock")
+
+			// CRITICAL FIX: Process all available blocks sequentially instead of skipping
+			// Calculate how many blocks we can process in this iteration
+			blocksToProcess := chainHeight - currentBlock + 1
+			if blocksToProcess > 10 { // Limit to prevent overwhelming the system
+				blocksToProcess = 10
+			}
+
+			// Process blocks sequentially to ensure no transactions are missed
+			for i := int64(0); i < blocksToProcess; i++ {
+				blockToProcess := currentBlock + i
+
+				txIn, err := b.chainScanner.FetchTxs(blockToProcess, chainHeight)
+				if err != nil {
+					// don't log an error if its because the block doesn't exist yet
+					if !errors.Is(err, btypes.ErrUnavailableBlock) {
+						b.logger.Error().Err(err).Int64("block height", blockToProcess).Msg("fail to get RPCBlock")
+						b.healthy.Store(false)
+					}
+					// If we can't get this block, stop processing more blocks
+					break
+				}
+
+				ms := b.cfg.ChainID.ApproximateBlockMilliseconds()
+
+				// determine how often we compare THORNode network fee to Bifrost network fee.
+				// General goal is about once per day.
+				mod := ((24 * 60 * 60 * 1000) + ms - 1) / ms
+				if blockToProcess%mod == 0 {
+					b.updateStaleNetworkFee(blockToProcess)
+				}
+
+				// determine how often we print a info log line for scanner
+				// progress. General goal is about once per minute
+				mod = (60_000 + ms - 1) / ms
+				// enable this one , so we could see how far it is behind
+				if blockToProcess%mod == 0 || !b.healthy.Load() {
+					b.logger.Info().
+						Int64("block height", blockToProcess).
+						Int("txs", len(txIn.TxArray)).
+						Int64("gap", chainHeight-blockToProcess).
+						Bool("healthy", b.healthy.Load()).
+						Msg("scan block")
+				}
+
+				// CRITICAL FIX: Update the previous block to the current processed block
+				// This ensures we don't skip any blocks in the next iteration
+				atomic.StoreInt64(&b.previousBlock, blockToProcess)
+
+				// consider 3 blocks or the configured lag time behind tip as healthy
+				lagDuration := time.Duration((chainHeight-blockToProcess)*ms) * time.Millisecond
+				if chainHeight-blockToProcess <= 3 || lagDuration < b.cfg.MaxHealthyLag {
+					b.healthy.Store(true)
+				} else {
 					b.healthy.Store(false)
 				}
-				time.Sleep(b.cfg.BlockHeightDiscoverBackoff)
-				continue
-			}
+				b.logger.Debug().Msgf("the gap is %d , healthy: %+v", chainHeight-blockToProcess, b.healthy.Load())
 
-			ms := b.cfg.ChainID.ApproximateBlockMilliseconds()
-
-			// determine how often we compare THORNode network fee to Bifrost network fee.
-			// General goal is about once per day.
-			mod := ((24 * 60 * 60 * 1000) + ms - 1) / ms
-			if currentBlock%mod == 0 {
-				b.updateStaleNetworkFee(currentBlock)
-			}
-
-			// determine how often we print a info log line for scanner
-			// progress. General goal is about once per minute
-			mod = (60_000 + ms - 1) / ms
-			// enable this one , so we could see how far it is behind
-			if currentBlock%mod == 0 || !b.healthy.Load() {
-				b.logger.Info().
-					Int64("block height", currentBlock).
-					Int("txs", len(txIn.TxArray)).
-					Int64("gap", chainHeight-currentBlock).
-					Bool("healthy", b.healthy.Load()).
-					Msg("scan block")
-			}
-			atomic.AddInt64(&b.previousBlock, 1)
-
-			// consider 3 blocks or the configured lag time behind tip as healthy
-			lagDuration := time.Duration((chainHeight-currentBlock)*ms) * time.Millisecond
-			if chainHeight-currentBlock <= 3 || lagDuration < b.cfg.MaxHealthyLag {
-				b.healthy.Store(true)
-			} else {
-				b.healthy.Store(false)
-			}
-			b.logger.Debug().Msgf("the gap is %d , healthy: %+v", chainHeight-currentBlock, b.healthy.Load())
-
-			b.metrics.GetCounter(metrics.TotalBlockScanned).Inc()
-			if len(txIn.TxArray) > 0 {
-				select {
-				case <-b.stopChan:
-					return
-				case b.globalTxsQueue <- txIn:
+				b.metrics.GetCounter(metrics.TotalBlockScanned).Inc()
+				if len(txIn.TxArray) > 0 {
+					select {
+					case <-b.stopChan:
+						return
+					case b.globalTxsQueue <- txIn:
+					}
 				}
 			}
-			if err = b.scannerStorage.SetScanPos(b.previousBlock); err != nil {
+
+			// Update scan position in storage to match the last processed block
+			// This ensures we don't lose track of our scanning progress
+			lastProcessedBlock := atomic.LoadInt64(&b.previousBlock)
+			if err = b.scannerStorage.SetScanPos(lastProcessedBlock); err != nil {
 				b.logger.Error().Err(err).Msg("fail to save block scan pos")
 				// alert!!
 				continue
+			}
+
+			// Small delay to prevent overwhelming the system
+			if blocksToProcess > 1 {
+				time.Sleep(100 * time.Millisecond)
 			}
 		}
 	}

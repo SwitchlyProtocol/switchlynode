@@ -14,7 +14,7 @@ import (
 var (
 	GitCommit       = "null"  // sha1 revision used to build the program
 	BuildTime       = "null"  // when the executable was built
-	Version         = "0.1.0" // software version
+	Version         = "3.0.0" // software version
 	int64Overrides  = map[ConstantName]int64{}
 	boolOverrides   = map[ConstantName]bool{}
 	stringOverrides = map[ConstantName]string{}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
 	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
 	"github.com/switchlyprotocol/switchlynode/v1/common"
 	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
@@ -46,6 +47,9 @@ func (s *StellarBlockScannerTestSuite) SetUpSuite(c *C) {
 	// Create mock network fee queue
 	mockNetworkFeeQueue := make(chan common.NetworkFee, 100)
 
+	// Create mock transactions queue
+	mockTxsQueue := make(chan types.TxIn, 100)
+
 	// Create block scanner
 	s.scanner, err = NewStellarBlockScanner(
 		"https://horizon-testnet.stellar.org",
@@ -57,6 +61,7 @@ func (s *StellarBlockScannerTestSuite) SetUpSuite(c *C) {
 		horizonClient,
 		&SorobanRPCClient{}, // mock soroban client
 		mockNetworkFeeQueue,
+		mockTxsQueue,
 	)
 	c.Assert(err, IsNil)
 }

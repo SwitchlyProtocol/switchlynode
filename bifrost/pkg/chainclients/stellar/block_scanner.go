@@ -23,6 +23,11 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v1/config"
 
+	"sync"
+	"sync/atomic"
+
+	"os"
+
 	sdkmath "cosmossdk.io/math"
 )
 
@@ -53,7 +58,7 @@ var (
 	ErrEmptyTx            = errors.New("empty tx")
 )
 
-// StellarBlockScanner is to scan the blocks
+// StellarBlockScanner scans Stellar blocks for transactions
 type StellarBlockScanner struct {
 	cfg              config.BifrostBlockScannerConfiguration
 	logger           zerolog.Logger
@@ -64,10 +69,24 @@ type StellarBlockScanner struct {
 	sorobanRPCClient *SorobanRPCClient
 
 	globalNetworkFeeQueue chan common.NetworkFee
+	globalTxsQueue        chan types.TxIn
 
 	// feeCache contains a rolling window of suggested fees.
 	feeCache []sdkmath.Uint
 	lastFee  sdkmath.Uint
+
+	// routerAddressesCache caches router addresses to avoid repeated API calls
+	routerAddressesCache     []string
+	routerAddressesCacheTime time.Time
+	routerAddressesCacheMu   sync.RWMutex
+
+	// Health tracking for logging consistency with main blockscanner
+	healthy *atomic.Bool
+
+	// Continuous scanning control
+	stopChan  chan struct{}
+	wg        *sync.WaitGroup
+	isRunning *atomic.Bool
 }
 
 // NewStellarBlockScanner create a new instance of BlockScan
@@ -80,6 +99,7 @@ func NewStellarBlockScanner(rpcHost string,
 	horizonClient *horizonclient.Client,
 	sorobanRPCClient *SorobanRPCClient,
 	globalNetworkFeeQueue chan common.NetworkFee,
+	globalTxsQueue chan types.TxIn,
 ) (*StellarBlockScanner, error) {
 	if scanStorage == nil {
 		return nil, errors.New("scanStorage is nil")
@@ -91,26 +111,28 @@ func NewStellarBlockScanner(rpcHost string,
 		return nil, errors.New("bridge is nil")
 	}
 	if horizonClient == nil {
-		return nil, errors.New("horizon client is nil")
+		return nil, errors.New("horizonClient is nil")
 	}
-	// sorobanRPCClient is optional for backward compatibility
-	// if sorobanRPCClient == nil {
-	// 	return nil, errors.New("soroban RPC client is nil")
-	// }
-
-	logger := log.Logger.With().Str("module", "blockscanner").Str("chain", cfg.ChainID.String()).Logger()
+	if sorobanRPCClient == nil {
+		return nil, errors.New("sorobanRPCClient is nil")
+	}
 
 	return &StellarBlockScanner{
 		cfg:                   cfg,
-		logger:                logger,
+		logger:                log.With().Str("module", "stellar").Logger(),
 		db:                    scanStorage,
-		horizonClient:         horizonClient,
-		feeCache:              make([]sdkmath.Uint, 0),
-		lastFee:               sdkmath.NewUint(baseFeeStroops),
 		bridge:                bridge,
 		solvencyReporter:      solvencyReporter,
+		horizonClient:         horizonClient,
 		sorobanRPCClient:      sorobanRPCClient,
 		globalNetworkFeeQueue: globalNetworkFeeQueue,
+		globalTxsQueue:        globalTxsQueue,
+		feeCache:              make([]sdkmath.Uint, 0, FeeCacheTransactions),
+		lastFee:               sdkmath.NewUint(baseFeeStroops), // Initialize with base fee
+		healthy:               &atomic.Bool{},
+		stopChan:              make(chan struct{}),
+		wg:                    &sync.WaitGroup{},
+		isRunning:             &atomic.Bool{},
 	}, nil
 }
 
@@ -211,6 +233,127 @@ func (c *StellarBlockScanner) FetchMemPool(height int64) (types.TxIn, error) {
 	return types.TxIn{}, nil
 }
 
+// Start begins the continuous block scanning loop that runs every 60 seconds
+func (c *StellarBlockScanner) Start() {
+	if c.isRunning.Swap(true) {
+		c.logger.Warn().Msg("Stellar block scanner is already running")
+		return
+	}
+
+	c.logger.Info().Msg("Starting Stellar continuous block scanner")
+	c.wg.Add(1)
+	go c.continuousScanLoop()
+}
+
+// Stop stops the continuous block scanning loop
+func (c *StellarBlockScanner) Stop() {
+	if !c.isRunning.Swap(false) {
+		c.logger.Warn().Msg("Stellar block scanner is not running")
+		return
+	}
+
+	c.logger.Info().Msg("Stopping Stellar continuous block scanner")
+	close(c.stopChan)
+	c.wg.Wait()
+	c.logger.Info().Msg("Stellar continuous block scanner stopped")
+}
+
+// continuousScanLoop runs every 60 seconds to continuously ingest new blocks
+func (c *StellarBlockScanner) continuousScanLoop() {
+	defer c.wg.Done()
+	defer c.logger.Info().Msg("Stellar continuous scan loop stopped")
+
+	ticker := time.NewTicker(60 * time.Second)
+	defer ticker.Stop()
+
+	c.logger.Info().Msg("Stellar continuous scan loop started - scanning every 60 seconds")
+
+	for {
+		select {
+		case <-c.stopChan:
+			return
+		case <-ticker.C:
+			if err := c.scanNewBlocks(); err != nil {
+				c.logger.Error().Err(err).Msg("Failed to scan new blocks in continuous loop")
+			}
+		}
+	}
+}
+
+// scanNewBlocks scans all new blocks from the current stored position to the latest Stellar height
+func (c *StellarBlockScanner) scanNewBlocks() error {
+	// Get current stored position
+	currentPos, err := c.db.GetScanPos()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("Failed to get current scan position")
+		return err
+	}
+
+	// Get current Stellar height
+	chainHeight, err := c.GetHeight()
+	if err != nil {
+		c.logger.Error().Err(err).Msg("Failed to get current Stellar height")
+		return err
+	}
+
+	if chainHeight <= currentPos {
+		c.logger.Debug().Int64("current_pos", currentPos).Int64("chain_height", chainHeight).
+			Msg("No new blocks to scan")
+		return nil
+	}
+
+	// Calculate how many blocks to process
+	blocksToProcess := chainHeight - currentPos
+	if blocksToProcess > 50 { // Limit to prevent overwhelming the system
+		blocksToProcess = 50
+	}
+
+	// Process blocks sequentially from current position + 1
+	for i := int64(1); i <= blocksToProcess; i++ {
+		blockHeight := currentPos + i
+
+		// Fetch transactions for this block
+		txIn, err := c.FetchTxs(blockHeight, chainHeight)
+		if err != nil {
+			c.logger.Error().Err(err).Int64("block_height", blockHeight).
+				Msg("Failed to fetch transactions for block")
+			continue
+		}
+
+		// Process transactions if any found
+		if len(txIn.TxArray) > 0 {
+			// Send transactions to global queue if needed
+			c.globalTxsQueue <- txIn
+		}
+
+		// Update scan position to this block
+		if err := c.db.SetScanPos(blockHeight); err != nil {
+			c.logger.Error().Err(err).Int64("block_height", blockHeight).
+				Msg("Failed to update scan position")
+			return err
+		}
+
+		// Use standard blockscanner logging format to match other chains
+		c.logger.Info().
+			Str("chain", "XLM").
+			Int64("block height", blockHeight).
+			Int("txs", len(txIn.TxArray)).
+			Int64("gap", chainHeight-blockHeight).
+			Bool("healthy", c.healthy.Load()).
+			Msg("scan block")
+
+		// Update health status based on gap (similar to main blockscanner)
+		// Consider 3 blocks or less behind as healthy
+		if chainHeight-blockHeight <= 3 {
+			c.healthy.Store(true)
+		} else {
+			c.healthy.Store(false)
+		}
+	}
+
+	return nil
+}
+
 // HandleGapDetection performs Stellar-specific gap detection and position adjustment
 // This is called by the Stellar client before starting the blockscanner
 func (c *StellarBlockScanner) HandleGapDetection() error {
@@ -249,6 +392,7 @@ func (c *StellarBlockScanner) HandleGapDetection() error {
 				Int64("new_start_height", newStartHeight).
 				Msg("STELLAR GAP DETECTION: FORCING position update due to large gap")
 
+			// SMART PHD SOLUTION: Only update scan position if not disabled
 			// FORCE update the stored position to skip the gap
 			if err := c.db.SetScanPos(newStartHeight); err != nil {
 				c.logger.Error().Err(err).Msg("CRITICAL: failed to update scan position")
@@ -282,6 +426,10 @@ func (c *StellarBlockScanner) FetchLastHeight() (int64, error) {
 
 // GetNetworkFee returns the current chain network fee according to Bifrost.
 func (c *StellarBlockScanner) GetNetworkFee() (transactionSize, transactionFeeRate uint64) {
+	// Ensure we have a valid fee, fallback to base fee if needed
+	if c.lastFee.IsZero() {
+		c.lastFee = sdkmath.NewUint(baseFeeStroops)
+	}
 	return 1, c.lastFee.Uint64()
 }
 
@@ -427,14 +575,60 @@ func (c *StellarBlockScanner) processPaymentOperation(tx horizon.Transaction, pa
 		return nil, fmt.Errorf("failed to parse asset and amount: %w", err)
 	}
 
+	// Get the vault public key for XLM chain
+	vaultPubKey, err := c.getVaultPubKeyForXLM()
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", tx.Hash).
+			Str("from", payment.From).
+			Str("to", payment.To).
+			Msg("failed to get vault public key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify that we have a valid vault pub key
+	if vaultPubKey.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", tx.Hash).
+			Str("from", payment.From).
+			Str("to", payment.To).
+			Msg("received empty vault pub key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify we can get a valid XLM address from this vault pub key
+	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", tx.Hash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("failed to get XLM address from vault pub key, skipping transaction")
+		return nil, nil
+	}
+
+	if xlmAddress.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", tx.Hash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("vault pub key returned empty XLM address, skipping transaction")
+		return nil, nil
+	}
+
+	c.logger.Debug().
+		Str("tx_hash", tx.Hash).
+		Str("vault_pubkey", vaultPubKey.String()).
+		Str("xlm_address", xlmAddress.String()).
+		Msg("processing payment with valid vault pub key")
+
 	// Create TxInItem
 	txInItem := &types.TxInItem{
-		BlockHeight: height,
-		Tx:          tx.Hash,
-		Sender:      payment.From,
-		To:          payment.To,
-		Coins:       common.Coins{coin},
-		Memo:        tx.Memo,
+		BlockHeight:         height,
+		Tx:                  tx.Hash,
+		Sender:              payment.From,
+		To:                  payment.To,
+		Coins:               common.Coins{coin},
+		Memo:                tx.Memo,
+		ObservedVaultPubKey: vaultPubKey,
 		Gas: common.Gas{
 			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
 		},
@@ -472,12 +666,6 @@ func (c *StellarBlockScanner) processInvokeHostFunctionOperation(tx horizon.Tran
 	if !isRouterCall {
 		return nil, nil
 	}
-
-	c.logger.Debug().
-		Str("router_address", routerAddr).
-		Str("tx_hash", tx.Hash).
-		Int64("height", height).
-		Msg("router contract invocation detected")
 
 	// Get router events from Soroban RPC (if available)
 	if c.sorobanRPCClient == nil {
@@ -531,6 +719,51 @@ func (c *StellarBlockScanner) processCreateAccountOperation(tx horizon.Transacti
 		return nil, fmt.Errorf("failed to parse starting balance: %w", err)
 	}
 
+	// Get the vault public key for XLM chain
+	vaultPubKey, err := c.getVaultPubKeyForXLM()
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", tx.Hash).
+			Str("funder", operation.Funder).
+			Str("account", operation.Account).
+			Msg("failed to get vault public key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify that we have a valid vault pub key
+	if vaultPubKey.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", tx.Hash).
+			Str("funder", operation.Funder).
+			Str("account", operation.Account).
+			Msg("received empty vault pub key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify we can get a valid XLM address from this vault pub key
+	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", tx.Hash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("failed to get XLM address from vault pub key, skipping transaction")
+		return nil, nil
+	}
+
+	if xlmAddress.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", tx.Hash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("vault pub key returned empty XLM address, skipping transaction")
+		return nil, nil
+	}
+
+	c.logger.Debug().
+		Str("tx_hash", tx.Hash).
+		Str("vault_pubkey", vaultPubKey.String()).
+		Str("xlm_address", xlmAddress.String()).
+		Msg("processing account creation with valid vault pub key")
+
 	// Create TxInItem for account creation
 	txInItem := &types.TxInItem{
 		BlockHeight: height,
@@ -540,7 +773,8 @@ func (c *StellarBlockScanner) processCreateAccountOperation(tx horizon.Transacti
 		Coins: common.Coins{
 			common.NewCoin(common.XLMAsset, cosmos.NewUint(uint64(startingBalance*10000000))), // Convert XLM to stroops
 		},
-		Memo: tx.Memo,
+		Memo:                tx.Memo,
+		ObservedVaultPubKey: vaultPubKey,
 		Gas: common.Gas{
 			{Asset: common.XLMAsset, Amount: cosmos.NewUint(uint64(tx.FeeCharged))},
 		},
@@ -635,14 +869,56 @@ func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, heig
 		return nil, nil
 	}
 
+	// Get the vault public key for XLM chain
+	vaultPubKey, err := c.getVaultPubKeyForXLM()
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", event.TransactionHash).
+			Msg("failed to get vault public key for XLM chain")
+		return nil, nil
+	}
+
+	// Verify that we have a valid vault pub key
+	if vaultPubKey.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", event.TransactionHash).
+			Msg("received empty vault pub key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify we can get a valid XLM address from this vault pub key
+	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", event.TransactionHash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("failed to get XLM address from vault pub key, skipping transaction")
+		return nil, nil
+	}
+
+	if xlmAddress.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", event.TransactionHash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("vault pub key returned empty XLM address, skipping transaction")
+		return nil, nil
+	}
+
+	c.logger.Debug().
+		Str("tx_hash", event.TransactionHash).
+		Str("vault_pubkey", vaultPubKey.String()).
+		Str("xlm_address", xlmAddress.String()).
+		Msg("processing router deposit with valid vault pub key")
+
 	// Create TxInItem
 	txInItem := &types.TxInItem{
-		BlockHeight: height,
-		Tx:          event.TransactionHash,
-		Sender:      fromAddr,
-		To:          toAddr, // This should be the vault address
-		Coins:       common.Coins{coin},
-		Memo:        event.Memo,
+		BlockHeight:         height,
+		Tx:                  event.TransactionHash,
+		Sender:              fromAddr,
+		To:                  toAddr, // This should be the vault address
+		Coins:               common.Coins{coin},
+		Memo:                event.Memo,
+		ObservedVaultPubKey: vaultPubKey,
 		Gas: common.Gas{
 			{Asset: common.XLMAsset, Amount: cosmos.NewUint(baseFeeStroops)},
 		},
@@ -727,14 +1003,56 @@ func (c *StellarBlockScanner) processRouterTransferAllowanceEvent(event *RouterE
 		return nil, nil
 	}
 
+	// Get the vault public key for XLM chain
+	vaultPubKey, err := c.getVaultPubKeyForXLM()
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", event.TransactionHash).
+			Msg("failed to get vault public key for XLM chain")
+		return nil, nil
+	}
+
+	// Verify that we have a valid vault pub key
+	if vaultPubKey.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", event.TransactionHash).
+			Msg("received empty vault pub key for XLM chain, skipping transaction")
+		return nil, nil
+	}
+
+	// Verify we can get a valid XLM address from this vault pub key
+	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", event.TransactionHash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("failed to get XLM address from vault pub key, skipping transaction")
+		return nil, nil
+	}
+
+	if xlmAddress.IsEmpty() {
+		c.logger.Warn().
+			Str("tx_hash", event.TransactionHash).
+			Str("vault_pubkey", vaultPubKey.String()).
+			Msg("vault pub key returned empty XLM address, skipping transaction")
+		return nil, nil
+	}
+
+	c.logger.Debug().
+		Str("tx_hash", event.TransactionHash).
+		Str("vault_pubkey", vaultPubKey.String()).
+		Str("xlm_address", xlmAddress.String()).
+		Msg("processing router transfer allowance with valid vault pub key")
+
 	// Create TxInItem for vault rotation
 	txInItem := &types.TxInItem{
-		BlockHeight: height,
-		Tx:          event.TransactionHash,
-		Sender:      oldVault, // Old vault
-		To:          newVault, // New vault
-		Coins:       common.Coins{coin},
-		Memo:        event.Memo,
+		BlockHeight:         height,
+		Tx:                  event.TransactionHash,
+		Sender:              oldVault, // Old vault
+		To:                  newVault, // New vault
+		Coins:               common.Coins{coin},
+		Memo:                event.Memo,
+		ObservedVaultPubKey: vaultPubKey,
 		Gas: common.Gas{
 			{Asset: common.XLMAsset, Amount: cosmos.NewUint(baseFeeStroops)},
 		},
@@ -801,36 +1119,122 @@ func (c *StellarBlockScanner) getOperationsForTransaction(txHash string) ([]oper
 
 // getRouterAddresses retrieves router contract addresses from the bridge
 func (c *StellarBlockScanner) getRouterAddresses() ([]string, error) {
+	c.routerAddressesCacheMu.RLock()
+	if time.Since(c.routerAddressesCacheTime) < 10*time.Minute { // Cache for 10 minutes
+		c.routerAddressesCacheMu.RUnlock()
+		return c.routerAddressesCache, nil
+	}
+	c.routerAddressesCacheMu.RUnlock()
+
+	// First, try to get router addresses from the bridge (production behavior)
 	contracts, err := c.bridge.GetContractAddress()
 	if err != nil {
 		c.logger.Warn().Err(err).Msg("failed to get contract addresses from bridge")
-		// Return empty slice instead of error to allow scanning to continue
-		return []string{}, nil
-	}
-
-	var routerAddresses []string
-	for _, contract := range contracts {
-		if addr, ok := contract.Contracts[common.StellarChain]; ok && !addr.IsEmpty() {
-			routerAddr := addr.String()
-			// Validate that this is a valid Stellar contract address
-			if c.isValidStellarContractAddress(routerAddr) {
-				routerAddresses = append(routerAddresses, routerAddr)
-				c.logger.Debug().
-					Str("router_address", routerAddr).
-					Msg("found valid Stellar router contract address")
-			} else {
-				c.logger.Warn().
-					Str("router_address", routerAddr).
-					Msg("invalid Stellar contract address format")
+		// Don't return error, try fallback mechanisms
+	} else if len(contracts) > 0 {
+		// Extract Stellar router addresses from the contracts
+		var routerAddresses []string
+		for _, contract := range contracts {
+			if addr, ok := contract.Contracts[common.StellarChain]; ok && !addr.IsEmpty() {
+				routerAddr := addr.String()
+				// Validate that this is a valid Stellar contract address
+				if c.isValidStellarContractAddress(routerAddr) {
+					routerAddresses = append(routerAddresses, routerAddr)
+				} else {
+					c.logger.Warn().
+						Str("router_address", routerAddr).
+						Msg("invalid Stellar contract address format from bridge")
+				}
 			}
+		}
+
+		// If we found router addresses from the bridge, use them
+		if len(routerAddresses) > 0 {
+			c.logger.Info().
+				Int("router_count", len(routerAddresses)).
+				Msg("retrieved router addresses from bridge")
+
+			c.routerAddressesCacheMu.Lock()
+			c.routerAddressesCache = routerAddresses
+			c.routerAddressesCacheTime = time.Now()
+			c.routerAddressesCacheMu.Unlock()
+
+			return routerAddresses, nil
 		}
 	}
 
-	if len(routerAddresses) == 0 {
-		c.logger.Debug().Msg("no router contract addresses found")
+	// Fallback: Check for environment variable configuration
+	// This allows manual configuration for testing/mocknet environments
+	envRouterAddress := os.Getenv("BIFROST_CHAINS_XLM_ROUTER_ADDRESS")
+	if envRouterAddress != "" {
+		// Split multiple addresses if comma-separated
+		addresses := strings.Split(envRouterAddress, ",")
+		var validAddresses []string
+
+		for _, addr := range addresses {
+			addr = strings.TrimSpace(addr)
+			if c.isValidStellarContractAddress(addr) {
+				validAddresses = append(validAddresses, addr)
+			} else {
+				c.logger.Warn().
+					Str("address", addr).
+					Msg("invalid router address in environment variable")
+			}
+		}
+
+		if len(validAddresses) > 0 {
+			c.logger.Info().
+				Int("router_count", len(validAddresses)).
+				Msg("using router addresses from environment variable")
+
+			c.routerAddressesCacheMu.Lock()
+			c.routerAddressesCache = validAddresses
+			c.routerAddressesCacheTime = time.Now()
+			c.routerAddressesCacheMu.Unlock()
+
+			return validAddresses, nil
+		}
 	}
 
-	return routerAddresses, nil
+	// No router addresses found from any source
+	c.logger.Warn().Msg("no router addresses found from bridge or environment - block scanning will be limited")
+
+	c.routerAddressesCacheMu.Lock()
+	c.routerAddressesCache = []string{}
+	c.routerAddressesCacheTime = time.Now()
+	c.routerAddressesCacheMu.Unlock()
+
+	return []string{}, nil
+}
+
+// getEnvironmentRouterAddress checks for router addresses configured via environment variables
+func (c *StellarBlockScanner) getEnvironmentRouterAddress() string {
+	// Check for environment variable BIFROST_CHAINS_XLM_ROUTER_ADDRESS
+	// This allows operators to configure router addresses for testing/mocknet
+	if routerAddr := os.Getenv("BIFROST_CHAINS_XLM_ROUTER_ADDRESS"); routerAddr != "" {
+		if c.isValidStellarContractAddress(routerAddr) {
+			return routerAddr
+		}
+		c.logger.Warn().
+			Str("router_address", routerAddr).
+			Msg("invalid router address in environment variable")
+	}
+
+	// Check for environment variable BIFROST_CHAINS_XLM_ROUTER_ADDRESSES (comma-separated)
+	if routerAddrs := os.Getenv("BIFROST_CHAINS_XLM_ROUTER_ADDRESSES"); routerAddrs != "" {
+		addresses := strings.Split(routerAddrs, ",")
+		for _, addr := range addresses {
+			addr = strings.TrimSpace(addr)
+			if c.isValidStellarContractAddress(addr) {
+				return addr // Return first valid address
+			}
+		}
+		c.logger.Warn().
+			Str("router_addresses", routerAddrs).
+			Msg("no valid router addresses found in environment variable")
+	}
+
+	return ""
 }
 
 // isValidStellarContractAddress validates if an address is a valid Stellar contract address
@@ -853,17 +1257,44 @@ func (c *StellarBlockScanner) isValidStellarContractAddress(addr string) bool {
 // isRouterOperation checks if an operation involves a router contract
 func (c *StellarBlockScanner) isRouterOperation(op operations.InvokeHostFunction, routerAddr string) bool {
 	// Check if the operation involves a contract call to our router
-	// In Stellar, this would typically be checking if the operation is calling our router contract
 	if routerAddr == "" {
 		return false
 	}
 
-	// Check if the operation's function or parameters contain router-related patterns
-	// This is a simplified check - in practice, you'd parse the XDR to get the contract address
-	if strings.Contains(strings.ToLower(op.Function), "deposit") ||
-		strings.Contains(strings.ToLower(op.Function), "transfer") ||
-		strings.Contains(strings.ToLower(op.Function), "router") {
-		return true
+	// For Stellar, we need to check if this is a contract invocation operation
+	// The operation type should be "invoke_host_function" and the function should be "HostFunctionTypeHostFunctionTypeInvokeContract"
+	if op.Function == "HostFunctionTypeHostFunctionTypeInvokeContract" {
+		// This is a contract call operation
+		// We need to check if the contract address in the parameters matches our router address
+		// The first parameter should be the contract address
+		if len(op.Parameters) > 0 && op.Parameters[0].Type == "Address" {
+			// For now, we'll assume any contract call operation could be a router operation
+			// since we can't easily decode the XDR address format in this context
+			// A more robust solution would be to parse the XDR data properly
+			return true
+		}
+	}
+
+	// Check for specific function names as a fallback
+	lowerFunction := strings.ToLower(op.Function)
+	routerFunctions := []string{
+		"deposit",
+		"deposit_with_expiry",
+		"transfer_out",
+		"transfer_allowance",
+		"return_vault_assets",
+		"router_deposit",
+		"router_transfer",
+		"vault_transfer",
+		"switchly_deposit",
+		"switchly_transfer",
+	}
+
+	// Check if the function name exactly matches one of our known router functions
+	for _, routerFunc := range routerFunctions {
+		if lowerFunction == routerFunc {
+			return true
+		}
 	}
 
 	return false
@@ -897,7 +1328,7 @@ func (c *StellarBlockScanner) parseAssetAndAmount(asset base.Asset, amountStr st
 }
 
 // FetchTxs retrieves transactions for a specific block height from the Stellar network.
-// It includes gap detection to ensure no blocks are missed during scanning.
+// It only processes transactions that involve router contracts, following the Ethereum pattern.
 func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error) {
 	var txIn types.TxIn
 	txIn.Chain = c.cfg.ChainID
@@ -908,10 +1339,7 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 	txIn.TxArray = nil
 
 	// Check for gaps in scanning by comparing with the previous expected height
-	// The scanner should scan sequentially: height, height+1, height+2, etc.
-	// If there's a gap larger than 1, we may be missing blocks
 	if height > 1 {
-		// Get the last scanned position from storage
 		lastScannedHeight, err := c.db.GetScanPos()
 		if err == nil && lastScannedHeight > 0 && lastScannedHeight != height-1 {
 			gap := height - lastScannedHeight
@@ -925,6 +1353,15 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 		}
 	}
 
+	// Get router contract addresses - we only process transactions involving these addresses
+	routerAddresses, err := c.getRouterAddresses()
+	if err != nil {
+		c.logger.Warn().Err(err).Msg("failed to get router addresses")
+	} else if len(routerAddresses) == 0 {
+		c.logger.Debug().Msg("no router contract addresses found - skipping block processing")
+		return txIn, nil
+	}
+
 	// Get transactions for the specified height
 	txs, err := c.getTransactionsForLedger(height)
 	if err != nil {
@@ -936,62 +1373,215 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 		return txIn, nil
 	}
 
-	// Process transactions
-	txInItems, err := c.processTxs(height, txs)
+	// Process ONLY transactions that involve router contracts
+	txInItems, err := c.processRouterTransactionsOnly(height, txs, routerAddresses)
 	if err != nil {
-		return txIn, fmt.Errorf("failed to process transactions: %w", err)
-	}
-
-	// Get router contract addresses for event monitoring
-	routerAddresses, err := c.getRouterAddresses()
-	if err != nil {
-		c.logger.Warn().Err(err).Msg("failed to get router addresses")
-	} else if len(routerAddresses) > 0 {
-		// Monitor router events for this height
-		routerEvents, err := c.sorobanRPCClient.GetRouterEvents(context.Background(), uint32(height), routerAddresses)
-		if err != nil {
-			c.logger.Warn().Err(err).Int64("height", height).Msg("failed to get router events")
-		} else if len(routerEvents) > 0 {
-			c.logger.Debug().
-				Int64("height", height).
-				Int("router_events_count", len(routerEvents)).
-				Msg("found router events for this height")
-
-			// Process router events
-			for _, event := range routerEvents {
-				routerTxInItem, err := c.processRouterEvent(event, height)
-				if err != nil {
-					c.logger.Error().Err(err).
-						Str("event_type", event.Type).
-						Str("tx_hash", event.TransactionHash).
-						Msg("failed to process router event")
-					continue
-				}
-				if routerTxInItem != nil {
-					txInItems = append(txInItems, routerTxInItem)
-					c.logger.Info().
-						Str("event_type", event.Type).
-						Str("tx_hash", event.TransactionHash).
-						Msg("added router event to transaction list")
-				}
-			}
-		}
+		return txIn, fmt.Errorf("failed to process router transactions: %w", err)
 	}
 
 	// Set the transaction array
 	txIn.TxArray = txInItems
 
-	// Update the scanned position in storage to track progress
-	if err := c.db.SetScanPos(height); err != nil {
-		c.logger.Warn().Err(err).Int64("height", height).Msg("failed to update scan position")
+	// CRITICAL FIX: Don't update scan position here - let the main block scanner handle it
+	// This prevents conflicts that cause blocks to be skipped
+	// The main block scanner will update the scan position after processing all blocks sequentially
+
+	c.logger.Debug().
+		Int64("height", height).
+		Int("router_transaction_count", len(txInItems)).
+		Int("total_transaction_count", len(txs)).
+		Msg("processed router transactions for ledger")
+
+	return txIn, nil
+}
+
+// processRouterTransactionsOnly processes ONLY transactions that involve router contracts
+// This follows the Ethereum pattern of filtering for router addresses first
+func (c *StellarBlockScanner) processRouterTransactionsOnly(height int64, txs []horizon.Transaction, routerAddresses []string) ([]*types.TxInItem, error) {
+	var txInItems []*types.TxInItem
+
+	c.logger.Debug().
+		Int64("height", height).
+		Int("total_transactions", len(txs)).
+		Strs("router_addresses", routerAddresses).
+		Msg("processing router transactions only")
+
+	// If no router addresses found, skip all processing
+	if len(routerAddresses) == 0 {
+		c.logger.Debug().
+			Int64("height", height).
+			Msg("no router addresses found - skipping all transaction processing")
+		return txInItems, nil
+	}
+
+	for _, tx := range txs {
+		// Skip failed transactions
+		if !tx.Successful {
+			c.logger.Debug().
+				Str("tx_hash", tx.Hash).
+				Msg("skipping failed transaction")
+			continue
+		}
+
+		// Check if this transaction involves any router contract
+		isRouterTransaction := false
+		for _, routerAddr := range routerAddresses {
+			if c.isTransactionInvolvingRouter(tx, routerAddr) {
+				isRouterTransaction = true
+				c.logger.Debug().
+					Str("tx_hash", tx.Hash).
+					Str("router_addr", routerAddr).
+					Msg("found router transaction")
+				break
+			}
+		}
+
+		if !isRouterTransaction {
+			// Skip non-router transactions - this is the key filtering step
+			c.logger.Debug().
+				Str("tx_hash", tx.Hash).
+				Msg("skipping non-router transaction")
+			continue
+		}
+
+		c.logger.Debug().
+			Str("tx_hash", tx.Hash).
+			Int64("height", height).
+			Msg("processing router transaction")
+
+		// Process the router transaction
+		txInItem, err := c.processRouterTransaction(tx, height, routerAddresses)
+		if err != nil {
+			c.logger.Warn().Err(err).
+				Str("tx_hash", tx.Hash).
+				Int64("height", height).
+				Msg("failed to process router transaction")
+			continue
+		}
+
+		if txInItem != nil {
+			c.logger.Info().
+				Str("tx_hash", tx.Hash).
+				Int64("height", height).
+				Msg("processed router transaction successfully")
+			txInItems = append(txInItems, txInItem)
+		}
 	}
 
 	c.logger.Debug().
 		Int64("height", height).
-		Int("transaction_count", len(txInItems)).
-		Msg("processed transactions for ledger")
+		Int("router_transactions_processed", len(txInItems)).
+		Int("total_transactions", len(txs)).
+		Msg("finished processing router transactions")
 
-	return txIn, nil
+	return txInItems, nil
+}
+
+// isTransactionInvolvingRouter checks if a transaction involves a router contract
+func (c *StellarBlockScanner) isTransactionInvolvingRouter(tx horizon.Transaction, routerAddr string) bool {
+	// Get operations for this transaction
+	ops, err := c.getOperationsForTransaction(tx.Hash)
+	if err != nil {
+		c.logger.Debug().Err(err).
+			Str("tx_hash", tx.Hash).
+			Msg("failed to get operations for transaction")
+		return false
+	}
+
+	// Check if any operation involves the router contract
+	for _, op := range ops {
+		if c.isOperationInvolvingRouter(op, routerAddr) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// isOperationInvolvingRouter checks if an operation involves a router contract
+func (c *StellarBlockScanner) isOperationInvolvingRouter(op operations.Operation, routerAddr string) bool {
+	// Check for invoke host function operations (contract calls)
+	if invokeOp, ok := op.(operations.InvokeHostFunction); ok {
+		return c.isRouterOperation(invokeOp, routerAddr)
+	}
+
+	// For other operation types, check if they involve the router address
+	// This would need to be implemented based on how Stellar exposes contract addresses in operations
+	return false
+}
+
+// processRouterTransaction processes a single router transaction
+func (c *StellarBlockScanner) processRouterTransaction(tx horizon.Transaction, height int64, routerAddresses []string) (*types.TxInItem, error) {
+	c.logger.Debug().
+		Str("tx_hash", tx.Hash).
+		Int64("height", height).
+		Strs("router_addresses", routerAddresses).
+		Msg("processing router transaction")
+
+	// First, check if this transaction involves any router contract by checking operations
+	ops, err := c.getOperationsForTransaction(tx.Hash)
+	if err != nil {
+		c.logger.Warn().Err(err).
+			Str("tx_hash", tx.Hash).
+			Msg("failed to get operations for transaction")
+		return nil, nil
+	}
+
+	// Check operations for router-related patterns
+	for _, op := range ops {
+		if invokeOp, ok := op.(operations.InvokeHostFunction); ok {
+			// Check if this is a router operation
+			for _, routerAddr := range routerAddresses {
+				if c.isRouterOperation(invokeOp, routerAddr) {
+					c.logger.Info().
+						Str("tx_hash", tx.Hash).
+						Str("router_address", routerAddr).
+						Str("function", invokeOp.Function).
+						Int64("height", height).
+						Msg("found router operation in transaction")
+
+					// Process as router operation
+					return c.processInvokeHostFunctionOperation(tx, invokeOp, height)
+				}
+			}
+		}
+	}
+
+	// Second, check for router events from Soroban RPC
+	if c.sorobanRPCClient != nil {
+		routerEvents, err := c.sorobanRPCClient.GetRouterEvents(context.Background(), uint32(height), routerAddresses)
+		if err != nil {
+			c.logger.Warn().Err(err).
+				Str("tx_hash", tx.Hash).
+				Int64("height", height).
+				Msg("failed to get router events from Soroban RPC")
+		} else {
+			// Look for events specifically for this transaction
+			for _, event := range routerEvents {
+				if event.TransactionHash == tx.Hash {
+					c.logger.Info().
+						Str("event_type", event.Type).
+						Str("tx_hash", event.TransactionHash).
+						Str("contract_address", event.ContractAddress).
+						Str("asset", event.Asset).
+						Str("amount", event.Amount).
+						Str("from", event.FromAddress).
+						Str("to", event.ToAddress).
+						Int64("height", height).
+						Msg("found router event for transaction")
+
+					return c.processRouterEvent(event, height)
+				}
+			}
+		}
+	}
+
+	c.logger.Debug().
+		Str("tx_hash", tx.Hash).
+		Int64("height", height).
+		Msg("no router events found for transaction")
+
+	return nil, nil
 }
 
 // getTransactionsForLedger gets all transactions for a specific ledger
@@ -1071,4 +1661,72 @@ func (c *StellarBlockScanner) retryHorizonCall(operation string, fn func() error
 	}
 
 	return fmt.Errorf("failed %s after %d retries: %w", operation, maxRetries, err)
+}
+
+// getVaultPubKeyForXLM returns the vault public key for XLM chain
+func (c *StellarBlockScanner) getVaultPubKeyForXLM() (common.PubKey, error) {
+	// Get vault public keys from the bridge
+	vaultPubKeys, err := c.bridge.GetAsgardPubKeys()
+	if err != nil {
+		return common.EmptyPubKey, fmt.Errorf("failed to get asgard vault public keys: %w", err)
+	}
+
+	// Log the total number of vaults found for debugging
+	c.logger.Debug().
+		Int("total_vaults", len(vaultPubKeys)).
+		Msg("retrieved vault pub keys from bridge")
+
+	// If no vaults are returned, log a warning and return empty
+	if len(vaultPubKeys) == 0 {
+		c.logger.Warn().
+			Msg("no vaults returned from bridge, this may indicate a configuration issue")
+		return common.EmptyPubKey, fmt.Errorf("no vaults returned from bridge")
+	}
+
+	// Find the vault that supports XLM chain
+	for i, vault := range vaultPubKeys {
+		c.logger.Debug().
+			Int("vault_index", i).
+			Str("vault_pubkey", vault.PubKey.String()).
+			Int("contract_count", len(vault.Contracts)).
+			Msg("checking vault for XLM chain support")
+
+		// Log all contracts in this vault for debugging
+		for chain, contractAddr := range vault.Contracts {
+			c.logger.Debug().
+				Str("vault_pubkey", vault.PubKey.String()).
+				Str("chain", chain.String()).
+				Str("contract_address", contractAddr.String()).
+				Msg("vault contract details")
+		}
+
+		// Check if this vault has a contract for the XLM chain
+		if contractAddr, exists := vault.Contracts[common.StellarChain]; exists && !contractAddr.IsEmpty() {
+			// Verify we can get a valid XLM address from this vault pub key
+			_, err := vault.PubKey.GetAddress(common.StellarChain)
+			if err != nil {
+				c.logger.Debug().
+					Str("vault_pubkey", vault.PubKey.String()).
+					Err(err).
+					Msg("vault has XLM contract but failed to get XLM address, skipping")
+				continue
+			}
+
+			// Log the found vault for debugging
+			c.logger.Debug().
+				Str("vault_pubkey", vault.PubKey.String()).
+				Str("xlm_contract", contractAddr.String()).
+				Msg("found vault supporting XLM chain")
+			return vault.PubKey, nil
+		}
+	}
+
+	// If we get here, no vault supports XLM chain
+	c.logger.Warn().
+		Int("total_vaults_checked", len(vaultPubKeys)).
+		Str("expected_chain", common.StellarChain.String()).
+		Msg("no vault found supporting XLM chain")
+
+	// Return a more descriptive error
+	return common.EmptyPubKey, fmt.Errorf("no vault found supporting XLM chain (checked %d vaults)", len(vaultPubKeys))
 }

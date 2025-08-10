@@ -127,24 +127,18 @@ func GetAssetByAddress(address string) (StellarAssetMapping, bool) {
 
 	// Check if it's a Soroban contract address (starts with 'C' and is 56 chars)
 	if len(address) == 56 && strings.HasPrefix(address, "C") {
-		// Look for contract token by current network's contract address
+		// Look for any asset (including native XLM) that has this contract address
 		for _, mapping := range stellarAssetMappings {
-			if mapping.StellarAssetType == "contract" {
-				// Check if this address matches the current network's contract address
-				if currentAddr, exists := mapping.ContractAddresses[currentNetwork]; exists && currentAddr == address {
+			// Check if this address matches any network's contract address
+			for _, contractAddr := range mapping.ContractAddresses {
+				if contractAddr == address {
 					// Return a copy with the correct issuer set for current network
 					networkMapping := mapping
-					networkMapping.StellarAssetIssuer = address
-					return networkMapping, true
-				}
-				// Also check other networks in case we're looking up a different network's address
-				for _, contractAddr := range mapping.ContractAddresses {
-					if contractAddr == address {
-						// Return a copy with the correct issuer set
-						networkMapping := mapping
+					// For native XLM, we need to set the issuer to the contract address
+					if mapping.StellarAssetType == "native" {
 						networkMapping.StellarAssetIssuer = address
-						return networkMapping, true
 					}
+					return networkMapping, true
 				}
 			}
 		}
