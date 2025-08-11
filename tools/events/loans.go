@@ -237,7 +237,7 @@ func setMidgardLoanFees(height int64, fields *util.OrderedMap, txid string) {
 
 	// set fields
 	fields.Set("Liquidity Fee", fmt.Sprintf(
-		"%f RUNE (%s)",
+							"%f SWITCH (%s)",
 		float64(liquidityFee.Uint64())/common.One,
 		util.FormatUSD(float64(liquidityFee.Uint64())/common.One),
 	))

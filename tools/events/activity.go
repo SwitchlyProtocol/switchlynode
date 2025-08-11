@@ -146,7 +146,7 @@ func LargeUnconfirmedInbounds(block *thorscan.BlockResponse) {
 				)
 				fields.Set(fmt.Sprintf("Clout (%s)", tx.Tx.FromAddress),
 					fmt.Sprintf(
-						"%f RUNE (%s)",
+						"%f SWITCH (%s)",
 						float64(fromClout.Amount.Uint64())/common.One,
 						util.FormatUSD(fromCloutUSD),
 					),
@@ -249,7 +249,7 @@ func LargeStreamingSwaps(block *thorscan.BlockResponse) {
 			cloutFields.Set(
 				fmt.Sprintf("Clout (%s)", toAddress),
 				fmt.Sprintf(
-					"%f RUNE (%s)",
+					"%f SWITCH (%s)",
 					float64(toClout.Amount.Uint64())/common.One,
 					util.FormatUSD(toCloutUSD),
 				),
@@ -753,7 +753,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 			switch m := msg.(type) {
 			case *thorchain.MsgSend:
 				for _, coin := range m.Amount {
-					if coin.Denom == "rune" {
+					if coin.Denom == "switch" {
 						amount = coin.Amount.Uint64()
 					}
 				}
@@ -761,7 +761,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 				toAddr = m.ToAddress.String()
 			case *bank.MsgSend:
 				for _, coin := range m.Amount {
-					if coin.Denom == "rune" {
+					if coin.Denom == "switch" {
 						amount = coin.Amount.Uint64()
 					}
 				}
@@ -772,7 +772,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 			}
 
 			// skip small transfers
-			if amount < config.Get().Thresholds.RuneTransferValue*common.One {
+			if amount < config.Get().Thresholds.SwitchTransferValue*common.One {
 				continue
 			}
 
@@ -786,7 +786,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 			matches := reMemoMigration.FindStringSubmatch(txWithMemo.GetMemo())
 			if len(matches) > 0 {
 				title := fmt.Sprintf(
-					"External Migration `%s` (%s RUNE)",
+					"External Migration `%s` (%s SWITCH)",
 					txWithMemo.GetMemo(), util.FormatLocale(amount/common.One),
 				)
 				fields.Set(
@@ -799,7 +799,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 
 			// otherwise this is just a large transfer
 			title := fmt.Sprintf(
-				"Large Transfer >> %s RUNE (%s)",
+				"Large Transfer >> %s SWITCH (%s)",
 				util.FormatLocale(amount/common.One),
 				util.USDValueString(block.Header.Height, common.NewCoin(common.SwitchNative, cosmos.NewUint(amount))),
 			)
@@ -985,7 +985,7 @@ func NewNode(block *thorscan.BlockResponse) {
 					}
 
 					for _, coin := range msg.Amount {
-						if coin.Denom == "rune" {
+						if coin.Denom == "switch" {
 							amount = coin.Amount.Uint64()
 						}
 					}
@@ -997,7 +997,7 @@ func NewNode(block *thorscan.BlockResponse) {
 					}
 
 					for _, coin := range msg.Amount {
-						if coin.Denom == "rune" {
+						if coin.Denom == "switch" {
 							amount = coin.Amount.Uint64()
 						}
 					}
@@ -1012,7 +1012,7 @@ func NewNode(block *thorscan.BlockResponse) {
 				fields.Set("Hash", tx.Hash)
 				fields.Set("Operator", fmt.Sprintf("`%s`", operator))
 				fields.Set("Node", fmt.Sprintf("`%s`", event["address"][len(event["address"])-4:]))
-				fields.Set("Amount", fmt.Sprintf("%s RUNE", util.FormatLocale(float64(amount)/common.One)))
+				fields.Set("Amount", fmt.Sprintf("%s SWITCH", util.FormatLocale(float64(amount)/common.One)))
 				notify.Notify(config.Get().Notifications.Activity, title, block.Header.Height, nil, notify.Info, fields)
 			}
 		}
@@ -1055,7 +1055,7 @@ txs:
 					}
 
 					for _, coin := range msg.Amount {
-						if coin.Denom == "rune" {
+						if coin.Denom == "switch" {
 							amount = coin.Amount.Uint64()
 						}
 					}
@@ -1071,7 +1071,7 @@ txs:
 					}
 
 					for _, coin := range msg.Amount {
-						if coin.Denom == "rune" {
+						if coin.Denom == "switch" {
 							amount = coin.Amount.Uint64()
 						}
 					}

@@ -109,8 +109,8 @@ type Config struct {
 		// addresses to avoid noise from addresses with a history of trust.
 		USDValue uint64 `mapstructure:"usd_value"`
 
-		// RuneTransferValue is the threshold for a RUNE transfer that triggers an alert.
-		RuneTransferValue uint64 `mapstructure:"rune_value"`
+			// SwitchTransferValue is the threshold for a SWITCH transfer that triggers an alert.
+	SwitchTransferValue uint64 `mapstructure:"switch_value"`
 
 		// SwapDelta contains thresholds for USD value and percent change of a swap. The
 		// alert will fire if both thresholds are met.
@@ -209,7 +209,7 @@ func init() {
 
 	// thresholds
 	config.Thresholds.USDValue = 150_000
-	config.Thresholds.RuneTransferValue = 1_000_000
+	config.Thresholds.SwitchTransferValue = 1_000_000
 	config.Thresholds.SwapDelta.USDValue = 50_000
 	config.Thresholds.SwapDelta.BasisPoints = 500
 	config.Thresholds.Security.USDValue = 3_000_000
