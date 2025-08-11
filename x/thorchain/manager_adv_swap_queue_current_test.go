@@ -31,12 +31,12 @@ func (s AdvSwapQueueVCURSuite) TestScoreMsgs(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
-	pool.BalanceRune = cosmos.NewUint(143166 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(143166 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 	pool = NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(73708333 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(73708333 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
@@ -256,14 +256,14 @@ func (s AdvSwapQueueVCURSuite) TestFetchQueue(c *C) {
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.BalanceAsset = cosmos.NewUint(2088519094783)
-	pool.BalanceRune = cosmos.NewUint(199019591474591)
+	pool.BalanceSwitch = cosmos.NewUint(199019591474591)
 	pool.Status = PoolAvailable
 	c.Check(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	pool = NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(97645470445)
-	pool.BalanceRune = cosmos.NewUint(798072095218642)
+	pool.BalanceSwitch = cosmos.NewUint(798072095218642)
 	pool.Status = PoolAvailable
 	c.Check(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
@@ -417,14 +417,14 @@ func (s AdvSwapQueueVCURSuite) TestEndBlock(c *C) {
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.BalanceAsset = cosmos.NewUint(2088519094783)
-	pool.BalanceRune = cosmos.NewUint(199019591474591)
+	pool.BalanceSwitch = cosmos.NewUint(199019591474591)
 	pool.Status = PoolAvailable
 	c.Check(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	pool = NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(97645470445)
-	pool.BalanceRune = cosmos.NewUint(798072095218642)
+	pool.BalanceSwitch = cosmos.NewUint(798072095218642)
 	pool.Status = PoolAvailable
 	c.Check(mgr.Keeper().SetPool(ctx, pool), IsNil)
 

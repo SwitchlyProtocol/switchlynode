@@ -21,22 +21,22 @@ func (s *InvariantsSuite) TestAsgardInvariant(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(1000)
-	pool.PendingInboundRune = cosmos.NewUint(100)
+	pool.BalanceSwitch = cosmos.NewUint(1000)
+	pool.PendingInboundSwitch = cosmos.NewUint(100)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
 	// derived asset pools are not included in expectations
 	pool = NewPool()
 	pool.Asset = common.BTCAsset.GetDerivedAsset()
-	pool.BalanceRune = cosmos.NewUint(666)
-	pool.PendingInboundRune = cosmos.NewUint(777)
+	pool.BalanceSwitch = cosmos.NewUint(666)
+	pool.PendingInboundSwitch = cosmos.NewUint(777)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
 	// savers pools are not included in expectations
 	pool = NewPool()
 	pool.Asset = common.BTCAsset.GetSyntheticAsset()
-	pool.BalanceRune = cosmos.NewUint(666)
-	pool.PendingInboundRune = cosmos.NewUint(777)
+	pool.BalanceSwitch = cosmos.NewUint(666)
+	pool.PendingInboundSwitch = cosmos.NewUint(777)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
 	swapMsg := MsgSwap{

@@ -528,7 +528,7 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 
 	// if we have an asset address and no asset amount, put the rune pending
 	if stage && pendingAssetAmt.IsZero() {
-		pool.PendingInboundRune = pool.PendingInboundRune.Add(addRuneAmount)
+		pool.PendingInboundSwitch = pool.PendingInboundSwitch.Add(addRuneAmount)
 		su.PendingRune = pendingRuneAmt
 		su.PendingTxID = requestTxHash
 		h.mgr.Keeper().SetLiquidityProvider(ctx, su)
@@ -560,16 +560,16 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 		return nil
 	}
 
-	pool.PendingInboundRune = common.SafeSub(pool.PendingInboundRune, su.PendingRune)
+	pool.PendingInboundSwitch = common.SafeSub(pool.PendingInboundSwitch, su.PendingRune)
 	pool.PendingInboundAsset = common.SafeSub(pool.PendingInboundAsset, su.PendingAsset)
 	su.PendingAsset = cosmos.ZeroUint()
 	su.PendingRune = cosmos.ZeroUint()
 	su.PendingTxID = ""
 
-	ctx.Logger().Info("pre add liquidity", "pool", pool.Asset, "rune", pool.BalanceRune, "asset", pool.BalanceAsset, "LP units", pool.LPUnits, "synth units", pool.SynthUnits)
+	ctx.Logger().Info("pre add liquidity", "pool", pool.Asset, "rune", pool.BalanceSwitch, "asset", pool.BalanceAsset, "LP units", pool.LPUnits, "synth units", pool.SynthUnits)
 	ctx.Logger().Info("adding liquidity", "rune", addRuneAmount, "asset", addAssetAmount)
 
-	balanceRune := pool.BalanceRune
+	balanceRune := pool.BalanceSwitch
 	balanceAsset := pool.BalanceAsset
 
 	oldPoolUnits := pool.GetPoolUnits()
@@ -588,10 +588,10 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 	poolRune := balanceRune.Add(pendingRuneAmt)
 	poolAsset := balanceAsset.Add(pendingAssetAmt)
 	pool.LPUnits = pool.LPUnits.Add(liquidityUnits)
-	pool.BalanceRune = poolRune
+	pool.BalanceSwitch = poolRune
 	pool.BalanceAsset = poolAsset
-	ctx.Logger().Info("post add liquidity", "pool", pool.Asset, "rune", pool.BalanceRune, "asset", pool.BalanceAsset, "LP units", pool.LPUnits, "synth units", pool.SynthUnits, "add liquidity units", liquidityUnits)
-	if (pool.BalanceRune.IsZero() && !asset.IsSyntheticAsset()) || pool.BalanceAsset.IsZero() {
+	ctx.Logger().Info("post add liquidity", "pool", pool.Asset, "rune", pool.BalanceSwitch, "asset", pool.BalanceAsset, "LP units", pool.LPUnits, "synth units", pool.SynthUnits, "add liquidity units", liquidityUnits)
+	if (pool.BalanceSwitch.IsZero() && !asset.IsSyntheticAsset()) || pool.BalanceAsset.IsZero() {
 		return ErrInternal(err, "pool cannot have zero rune or asset balance")
 	}
 
@@ -611,10 +611,10 @@ func (h AddLiquidityHandler) addLiquidity(ctx cosmos.Context,
 	su.Units = su.Units.Add(liquidityUnits)
 	if pool.Status == PoolAvailable {
 		if su.AssetDepositValue.IsZero() && su.RuneDepositValue.IsZero() {
-			su.RuneDepositValue = common.GetSafeShare(su.Units, pool.GetPoolUnits(), pool.BalanceRune)
+			su.RuneDepositValue = common.GetSafeShare(su.Units, pool.GetPoolUnits(), pool.BalanceSwitch)
 			su.AssetDepositValue = common.GetSafeShare(su.Units, pool.GetPoolUnits(), pool.BalanceAsset)
 		} else {
-			su.RuneDepositValue = su.RuneDepositValue.Add(common.GetSafeShare(liquidityUnits, pool.GetPoolUnits(), pool.BalanceRune))
+			su.RuneDepositValue = su.RuneDepositValue.Add(common.GetSafeShare(liquidityUnits, pool.GetPoolUnits(), pool.BalanceSwitch))
 			su.AssetDepositValue = su.AssetDepositValue.Add(common.GetSafeShare(liquidityUnits, pool.GetPoolUnits(), pool.BalanceAsset))
 		}
 	}
@@ -671,7 +671,7 @@ func (h AddLiquidityHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.U
 		if p.Asset.IsDerivedAsset() {
 			continue
 		}
-		total = total.Add(p.BalanceRune)
+		total = total.Add(p.BalanceSwitch)
 	}
 	return total, nil
 }

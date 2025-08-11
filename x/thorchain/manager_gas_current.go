@@ -176,8 +176,8 @@ func (gm *GasMgrVCUR) GetAssetOutboundFee(ctx cosmos.Context, asset common.Asset
 		return fee, nil
 	}
 
-	if gasPool.BalanceAsset.IsZero() || gasPool.BalanceRune.IsZero() {
-		ctx.Logger().Error("fail to calculate fee as gas pool balance is zero, returning 0 fee", "pool", gasPool.Asset.String(), "rune", gasPool.BalanceRune.String(), "asset", gasPool.BalanceAsset.String())
+	if gasPool.BalanceAsset.IsZero() || gasPool.BalanceSwitch.IsZero() {
+		ctx.Logger().Error("fail to calculate fee as gas pool balance is zero, returning 0 fee", "pool", gasPool.Asset.String(), "rune", gasPool.BalanceSwitch.String(), "asset", gasPool.BalanceAsset.String())
 		return cosmos.ZeroUint(), nil
 	}
 
@@ -192,8 +192,8 @@ func (gm *GasMgrVCUR) GetAssetOutboundFee(ctx cosmos.Context, asset common.Asset
 	if err != nil {
 		return cosmos.ZeroUint(), err
 	}
-	if assetPool.BalanceAsset.IsZero() || assetPool.BalanceRune.IsZero() {
-		ctx.Logger().Error("fail to calculate fee as asset pool balance is zero, returning 0 fee", "pool", assetPool.Asset.String(), "rune", assetPool.BalanceRune.String(), "asset", assetPool.BalanceAsset.String())
+	if assetPool.BalanceAsset.IsZero() || assetPool.BalanceSwitch.IsZero() {
+		ctx.Logger().Error("fail to calculate fee as asset pool balance is zero, returning 0 fee", "pool", assetPool.Asset.String(), "rune", assetPool.BalanceSwitch.String(), "asset", assetPool.BalanceAsset.String())
 		return cosmos.ZeroUint(), nil
 	}
 
@@ -231,7 +231,7 @@ func (gm *GasMgrVCUR) getRuneInAssetValue(ctx cosmos.Context, transactionFee cos
 		ctx.Logger().Error("fail to get pool", "asset", asset, "error", err)
 		return transactionFee
 	}
-	if pool.BalanceAsset.Equal(cosmos.ZeroUint()) || pool.BalanceRune.Equal(cosmos.ZeroUint()) {
+	if pool.BalanceAsset.Equal(cosmos.ZeroUint()) || pool.BalanceSwitch.Equal(cosmos.ZeroUint()) {
 		return transactionFee
 	}
 
@@ -377,7 +377,7 @@ func (gm *GasMgrVCUR) ProcessGas(ctx cosmos.Context, keeper keeper.Keeper) {
 			if err := keeper.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.NewCoins(coin)); err != nil {
 				ctx.Logger().Error("fail to transfer funds from reserve to asgard", "pool", gm.gasEvent.Pools[i].Asset, "error", err)
 			} else {
-				pool.BalanceRune = pool.BalanceRune.Add(gm.gasEvent.Pools[i].RuneAmt)
+				pool.BalanceSwitch = pool.BalanceSwitch.Add(gm.gasEvent.Pools[i].RuneAmt)
 			}
 		}
 		pool.BalanceAsset = common.SafeSub(pool.BalanceAsset, gm.gasEvent.Pools[i].AssetAmt)

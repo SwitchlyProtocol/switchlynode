@@ -42,7 +42,7 @@ func (s *NetworkManagerVCURTestSuite) TestUpdateNetwork(c *C) {
 
 	p := NewPool()
 	p.Asset = common.ETHAsset
-	p.BalanceRune = cosmos.NewUint(common.One * 100)
+	p.BalanceSwitch = cosmos.NewUint(common.One * 100)
 	p.BalanceAsset = cosmos.NewUint(common.One * 100)
 	p.Status = PoolAvailable
 	c.Assert(helper.SetPool(ctx, p), IsNil)
@@ -506,14 +506,14 @@ func (*NetworkManagerVCURTestSuite) TestGetAvailablePoolsRune(c *C) {
 	networkMgr := newNetworkMgrVCUR(helper, mgr.TxOutStore(), mgr.EventMgr())
 	p := NewPool()
 	p.Asset = common.ETHAsset
-	p.BalanceRune = cosmos.NewUint(common.One * 100)
+	p.BalanceSwitch = cosmos.NewUint(common.One * 100)
 	p.BalanceAsset = cosmos.NewUint(common.One * 100)
 	p.Status = PoolAvailable
 	c.Assert(helper.SetPool(ctx, p), IsNil)
 	pools, totalLiquidity, err := getAvailablePoolsRune(ctx, networkMgr.k)
 	c.Assert(err, IsNil)
 	c.Assert(pools, HasLen, 1)
-	c.Assert(totalLiquidity.Equal(p.BalanceRune), Equals, true)
+	c.Assert(totalLiquidity.Equal(p.BalanceSwitch), Equals, true)
 }
 
 func (*NetworkManagerVCURTestSuite) TestPayPoolRewards(c *C) {
@@ -523,7 +523,7 @@ func (*NetworkManagerVCURTestSuite) TestPayPoolRewards(c *C) {
 	networkMgr := newNetworkMgrVCUR(helper, mgr.TxOutStore(), mgr.EventMgr())
 	p := NewPool()
 	p.Asset = common.ETHAsset
-	p.BalanceRune = cosmos.NewUint(common.One * 100)
+	p.BalanceSwitch = cosmos.NewUint(common.One * 100)
 	p.BalanceAsset = cosmos.NewUint(common.One * 100)
 	p.Status = PoolAvailable
 	c.Assert(helper.SetPool(ctx, p), IsNil)
@@ -552,7 +552,7 @@ func (s *NetworkManagerVCURTestSuite) TestSaverYieldFunc(c *C) {
 	// first pool
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	pool.LPUnits = cosmos.NewUint(100)
 	pool.CalcUnits(coin.Amount)
@@ -584,7 +584,7 @@ func (s *NetworkManagerVCURTestSuite) TestSaverYieldCall(c *C) {
 	// layer 1 pool
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	pool.LPUnits = cosmos.NewUint(100)
 	pool.CalcUnits(coin.Amount)
@@ -636,14 +636,14 @@ func (s *NetworkManagerVCURTestSuite) TestRagnarokPool(c *C) {
 	retireVault.Chains = common.Chains{common.ETHChain, common.BTCChain}.Strings()
 	btcPool := NewPool()
 	btcPool.Asset = common.BTCAsset
-	btcPool.BalanceRune = cosmos.NewUint(1000 * common.One)
+	btcPool.BalanceSwitch = cosmos.NewUint(1000 * common.One)
 	btcPool.BalanceAsset = cosmos.NewUint(10 * common.One)
 	btcPool.LPUnits = cosmos.NewUint(1600)
 	btcPool.Status = PoolAvailable
 	c.Assert(k.SetPool(ctx, btcPool), IsNil)
 	ethPool := NewPool()
 	ethPool.Asset = common.ETHAsset
-	ethPool.BalanceRune = cosmos.NewUint(1000 * common.One)
+	ethPool.BalanceSwitch = cosmos.NewUint(1000 * common.One)
 	ethPool.BalanceAsset = cosmos.NewUint(10 * common.One)
 	ethPool.LPUnits = cosmos.NewUint(1600)
 	ethPool.Status = PoolAvailable
@@ -731,7 +731,7 @@ func (s *NetworkManagerVCURTestSuite) TestRagnarokPool(c *C) {
 	usdcAsset, err := common.NewAsset("ETH.USDC-0X9999999999999999999999999999999999999999")
 	c.Assert(err, IsNil)
 	usdcPool.Asset = usdcAsset
-	usdcPool.BalanceRune = cosmos.NewUint(1000 * common.One)
+	usdcPool.BalanceSwitch = cosmos.NewUint(1000 * common.One)
 	usdcPool.BalanceAsset = cosmos.NewUint(10 * common.One)
 	usdcPool.LPUnits = cosmos.NewUint(1600)
 	usdcPool.Status = PoolAvailable
@@ -790,7 +790,7 @@ func (*NetworkManagerVCURTestSuite) TestPOLLiquidityAdd(c *C) {
 
 	btcPool := NewPool()
 	btcPool.Asset = common.BTCAsset
-	btcPool.BalanceRune = cosmos.NewUint(2000 * common.One)
+	btcPool.BalanceSwitch = cosmos.NewUint(2000 * common.One)
 	btcPool.BalanceAsset = cosmos.NewUint(20 * common.One)
 	btcPool.LPUnits = cosmos.NewUint(1600)
 	c.Assert(mgr.Keeper().SetPool(ctx, btcPool), IsNil)
@@ -820,7 +820,7 @@ func (*NetworkManagerVCURTestSuite) TestPOLLiquidityAdd(c *C) {
 	// not enough balance in the reserve module
 	max = cosmos.NewUint(1000000)
 	util = cosmos.NewUint(50_000)
-	btcPool.BalanceRune = cosmos.NewUint(90000000000 * common.One)
+	btcPool.BalanceSwitch = cosmos.NewUint(90000000000 * common.One)
 	c.Assert(net.addPOLLiquidity(ctx, btcPool, polAddress, asgardAddress, signer, max, util, target, mgr), IsNil)
 	lp, err = mgr.Keeper().GetLiquidityProvider(ctx, btcPool.Asset, polAddress)
 	c.Assert(err, IsNil)
@@ -846,7 +846,7 @@ func (*NetworkManagerVCURTestSuite) TestPOLLiquidityWithdraw(c *C) {
 
 	btcPool := NewPool()
 	btcPool.Asset = common.BTCAsset
-	btcPool.BalanceRune = cosmos.NewUint(2000 * common.One)
+	btcPool.BalanceSwitch = cosmos.NewUint(2000 * common.One)
 	btcPool.BalanceAsset = cosmos.NewUint(20 * common.One)
 	btcPool.LPUnits = cosmos.NewUint(1600)
 	c.Assert(mgr.Keeper().SetPool(ctx, btcPool), IsNil)
@@ -926,7 +926,7 @@ func (*NetworkManagerVCURTestSuite) TestFairMergePOLCycle(c *C) {
 	// create dummy eth pool
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	pool.Status = PoolAvailable
 	pool.LPUnits = cosmos.NewUint(100 * common.One)
@@ -935,7 +935,7 @@ func (*NetworkManagerVCURTestSuite) TestFairMergePOLCycle(c *C) {
 
 	btcPool := NewPool()
 	btcPool.Asset = common.BTCAsset
-	btcPool.BalanceRune = cosmos.NewUint(100 * common.One)
+	btcPool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	btcPool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	btcPool.Status = PoolAvailable
 	btcPool.LPUnits = cosmos.NewUint(100 * common.One)
@@ -1127,7 +1127,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssets(c *C) {
 	pool := NewPool()
 	pool.Asset = ethBusd
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(187493559385369)
+	pool.BalanceSwitch = cosmos.NewUint(187493559385369)
 	pool.BalanceAsset = cosmos.NewUint(925681680182301)
 	pool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
@@ -1138,7 +1138,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssets(c *C) {
 	pool = NewPool()
 	pool.Asset = eth
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(110119961610327)
+	pool.BalanceSwitch = cosmos.NewUint(110119961610327)
 	pool.BalanceAsset = cosmos.NewUint(2343330836117)
 	pool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
@@ -1150,7 +1150,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssets(c *C) {
 	bscPool := NewPool()
 	bscPool.Asset = bscBnb
 	bscPool.Status = PoolAvailable
-	bscPool.BalanceRune = cosmos.NewUint(510119961610327)
+	bscPool.BalanceSwitch = cosmos.NewUint(510119961610327)
 	bscPool.BalanceAsset = cosmos.NewUint(4343330836117)
 	bscPool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, bscPool), IsNil)
@@ -1161,12 +1161,12 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssets(c *C) {
 	usd, err := mgr.Keeper().GetPool(ctx, common.TOR)
 	c.Assert(err, IsNil)
 	c.Check(usd.BalanceAsset.Uint64(), Equals, uint64(925681680182301), Commentf("%d", usd.BalanceAsset.Uint64()))
-	c.Check(usd.BalanceRune.Uint64(), Equals, uint64(187493559385369), Commentf("%d", usd.BalanceRune.Uint64()))
+	c.Check(usd.BalanceSwitch.Uint64(), Equals, uint64(187493559385369), Commentf("%d", usd.BalanceSwitch.Uint64()))
 	dbnb, _ := common.NewAsset("SWITCHLY.BNB")
 	bnbPool, err := mgr.Keeper().GetPool(ctx, dbnb)
 	c.Assert(err, IsNil)
 	c.Check(bnbPool.BalanceAsset.Uint64(), Equals, uint64(4343330836117), Commentf("%d", bnbPool.BalanceAsset.Uint64()))
-	c.Check(bnbPool.BalanceRune.Uint64(), Equals, uint64(510119961610327), Commentf("%d", bnbPool.BalanceRune.Uint64()))
+	c.Check(bnbPool.BalanceSwitch.Uint64(), Equals, uint64(510119961610327), Commentf("%d", bnbPool.BalanceSwitch.Uint64()))
 
 	// happy path, but some trade volume triggers a lower pool depth
 	newctx := ctx.WithBlockHeight(ctx.BlockHeight() - 1)
@@ -1178,7 +1178,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssets(c *C) {
 	c.Assert(err, IsNil)
 	c.Check(usd.Status.String(), Equals, "Available")
 	c.Check(usd.BalanceAsset.Uint64(), Equals, uint64(694261260136726), Commentf("%d", usd.BalanceAsset.Uint64()))
-	c.Check(usd.BalanceRune.Uint64(), Equals, uint64(140620169539027), Commentf("%d", usd.BalanceRune.Uint64()))
+	c.Check(usd.BalanceSwitch.Uint64(), Equals, uint64(140620169539027), Commentf("%d", usd.BalanceSwitch.Uint64()))
 
 	// unhappy path, too much liquidity fees collected in the anchor pools, goes to 1% depth
 	err = mgr.Keeper().AddToSwapSlip(newctx, ethBusd, cosmos.NewInt(10_000))
@@ -1189,13 +1189,13 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssets(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(usd.Status.String(), Equals, "Available")
 	c.Assert(usd.BalanceAsset.Uint64(), Equals, uint64(9256816801824), Commentf("%d", usd.BalanceAsset.Uint64()))
-	c.Assert(usd.BalanceRune.Uint64(), Equals, uint64(1874935593854), Commentf("%d", usd.BalanceRune.Uint64()))
+	c.Assert(usd.BalanceSwitch.Uint64(), Equals, uint64(1874935593854), Commentf("%d", usd.BalanceSwitch.Uint64()))
 	// ensure layer1 bnb pool is NOT suspended
 	bnbPool, err = mgr.Keeper().GetPool(ctx, ethBusd)
 	c.Assert(err, IsNil)
 	c.Assert(bnbPool.Status.String(), Equals, "Available")
 	c.Assert(bnbPool.BalanceAsset.Uint64(), Equals, uint64(925681680182301), Commentf("%d", bnbPool.BalanceAsset.Uint64()))
-	c.Assert(bnbPool.BalanceRune.Uint64(), Equals, uint64(187493559385369), Commentf("%d", bnbPool.BalanceRune.Uint64()))
+	c.Assert(bnbPool.BalanceSwitch.Uint64(), Equals, uint64(187493559385369), Commentf("%d", bnbPool.BalanceSwitch.Uint64()))
 }
 
 func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssetsBasisPoints(c *C) {
@@ -1213,7 +1213,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssetsBasisPoints(c *C) {
 	pool := NewPool()
 	pool.Asset = ethBusd
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(187493559385369)
+	pool.BalanceSwitch = cosmos.NewUint(187493559385369)
 	pool.BalanceAsset = cosmos.NewUint(925681680182301)
 	pool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
@@ -1226,7 +1226,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssetsBasisPoints(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(usd.Status.String(), Equals, "Available")
 	c.Check(usd.BalanceAsset.Uint64(), Equals, uint64(1851363360364602), Commentf("%d", usd.BalanceAsset.Uint64()))
-	c.Check(usd.BalanceRune.Uint64(), Equals, uint64(374987118770738), Commentf("%d", usd.BalanceRune.Uint64()))
+	c.Check(usd.BalanceSwitch.Uint64(), Equals, uint64(374987118770738), Commentf("%d", usd.BalanceSwitch.Uint64()))
 
 	// test that DerivedDepthBasisPts set to zero will cause the pools to
 	// become suspended
@@ -1237,7 +1237,7 @@ func (s *NetworkManagerVCURTestSuite) TestSpawnDerivedAssetsBasisPoints(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(usd.Status.String(), Equals, "Suspended")
 	c.Assert(usd.BalanceAsset.Uint64(), Equals, uint64(1851363360364602), Commentf("%d", usd.BalanceAsset.Uint64()))
-	c.Assert(usd.BalanceRune.Uint64(), Equals, uint64(374987118770738), Commentf("%d", usd.BalanceRune.Uint64()))
+	c.Assert(usd.BalanceSwitch.Uint64(), Equals, uint64(374987118770738), Commentf("%d", usd.BalanceSwitch.Uint64()))
 }
 
 func (s *NetworkManagerVCURTestSuite) TestFetchMeanSlip(c *C) {
@@ -1272,7 +1272,7 @@ func (s *NetworkManagerVCURTestSuite) TestFetchMeanSlip(c *C) {
 	// create corresponding pool
 	pool := NewPool()
 	pool.Asset = asset
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	pool.LPUnits = cosmos.NewUint(100)
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)

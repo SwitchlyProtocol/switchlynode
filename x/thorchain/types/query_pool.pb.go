@@ -81,11 +81,11 @@ type QueryPoolResponse struct {
 	Status              string `protobuf:"bytes,3,opt,name=status,proto3" json:"status"`
 	Decimals            int64  `protobuf:"varint,4,opt,name=decimals,proto3" json:"decimals,omitempty"`
 	PendingInboundAsset string `protobuf:"bytes,5,opt,name=pending_inbound_asset,json=pendingInboundAsset,proto3" json:"pending_inbound_asset"`
-	PendingInboundRune  string `protobuf:"bytes,6,opt,name=pending_inbound_rune,json=pendingInboundRune,proto3" json:"pending_inbound_rune"`
+	PendingInboundSwitch string `protobuf:"bytes,6,opt,name=pending_inbound_switch,json=pendingInboundSwitch,proto3" json:"pending_inbound_switch"`
 	BalanceAsset        string `protobuf:"bytes,7,opt,name=balance_asset,json=balanceAsset,proto3" json:"balance_asset"`
-	BalanceRune         string `protobuf:"bytes,8,opt,name=balance_rune,json=balanceRune,proto3" json:"balance_rune"`
-	// the USD (TOR) price of the asset in 1e8
-	AssetTorPrice string `protobuf:"bytes,9,opt,name=asset_tor_price,json=assetTorPrice,proto3" json:"asset_tor_price"`
+	BalanceSwitch       string `protobuf:"bytes,8,opt,name=balance_switch,json=balanceSwitch,proto3" json:"balance_switch"`
+	// the USD (SWITCH) price of the asset in 1e8
+	AssetSwitchPrice string `protobuf:"bytes,9,opt,name=asset_switch_price,json=assetSwitchPrice,proto3" json:"asset_switch_price"`
 	// the total pool units, this is the sum of LP and synth units
 	PoolUnits string `protobuf:"bytes,10,opt,name=pool_units,json=poolUnits,proto3" json:"pool_units"`
 	// the total pool liquidity provider units
@@ -186,9 +186,9 @@ func (m *QueryPoolResponse) GetPendingInboundAsset() string {
 	return ""
 }
 
-func (m *QueryPoolResponse) GetPendingInboundRune() string {
+func (m *QueryPoolResponse) GetPendingInboundSwitch() string {
 	if m != nil {
-		return m.PendingInboundRune
+		return m.PendingInboundSwitch
 	}
 	return ""
 }
@@ -200,16 +200,16 @@ func (m *QueryPoolResponse) GetBalanceAsset() string {
 	return ""
 }
 
-func (m *QueryPoolResponse) GetBalanceRune() string {
+func (m *QueryPoolResponse) GetBalanceSwitch() string {
 	if m != nil {
-		return m.BalanceRune
+		return m.BalanceSwitch
 	}
 	return ""
 }
 
-func (m *QueryPoolResponse) GetAssetTorPrice() string {
+func (m *QueryPoolResponse) GetAssetSwitchPrice() string {
 	if m != nil {
-		return m.AssetTorPrice
+		return m.AssetSwitchPrice
 	}
 	return ""
 }
@@ -656,17 +656,17 @@ func (m *QueryPoolResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x52
 	}
-	if len(m.AssetTorPrice) > 0 {
-		i -= len(m.AssetTorPrice)
-		copy(dAtA[i:], m.AssetTorPrice)
-		i = encodeVarintQueryPool(dAtA, i, uint64(len(m.AssetTorPrice)))
+	if len(m.AssetSwitchPrice) > 0 {
+		i -= len(m.AssetSwitchPrice)
+		copy(dAtA[i:], m.AssetSwitchPrice)
+		i = encodeVarintQueryPool(dAtA, i, uint64(len(m.AssetSwitchPrice)))
 		i--
 		dAtA[i] = 0x4a
 	}
-	if len(m.BalanceRune) > 0 {
-		i -= len(m.BalanceRune)
-		copy(dAtA[i:], m.BalanceRune)
-		i = encodeVarintQueryPool(dAtA, i, uint64(len(m.BalanceRune)))
+	if len(m.BalanceSwitch) > 0 {
+		i -= len(m.BalanceSwitch)
+		copy(dAtA[i:], m.BalanceSwitch)
+		i = encodeVarintQueryPool(dAtA, i, uint64(len(m.BalanceSwitch)))
 		i--
 		dAtA[i] = 0x42
 	}
@@ -677,10 +677,10 @@ func (m *QueryPoolResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x3a
 	}
-	if len(m.PendingInboundRune) > 0 {
-		i -= len(m.PendingInboundRune)
-		copy(dAtA[i:], m.PendingInboundRune)
-		i = encodeVarintQueryPool(dAtA, i, uint64(len(m.PendingInboundRune)))
+	if len(m.PendingInboundSwitch) > 0 {
+		i -= len(m.PendingInboundSwitch)
+		copy(dAtA[i:], m.PendingInboundSwitch)
+		i = encodeVarintQueryPool(dAtA, i, uint64(len(m.PendingInboundSwitch)))
 		i--
 		dAtA[i] = 0x32
 	}
@@ -840,7 +840,7 @@ func (m *QueryPoolResponse) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovQueryPool(uint64(l))
 	}
-	l = len(m.PendingInboundRune)
+	l = len(m.PendingInboundSwitch)
 	if l > 0 {
 		n += 1 + l + sovQueryPool(uint64(l))
 	}
@@ -848,11 +848,11 @@ func (m *QueryPoolResponse) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovQueryPool(uint64(l))
 	}
-	l = len(m.BalanceRune)
+	l = len(m.BalanceSwitch)
 	if l > 0 {
 		n += 1 + l + sovQueryPool(uint64(l))
 	}
-	l = len(m.AssetTorPrice)
+	l = len(m.AssetSwitchPrice)
 	if l > 0 {
 		n += 1 + l + sovQueryPool(uint64(l))
 	}
@@ -1243,7 +1243,7 @@ func (m *QueryPoolResponse) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PendingInboundRune", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PendingInboundSwitch", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1271,7 +1271,7 @@ func (m *QueryPoolResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.PendingInboundRune = string(dAtA[iNdEx:postIndex])
+			m.PendingInboundSwitch = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
@@ -1307,7 +1307,7 @@ func (m *QueryPoolResponse) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 8:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BalanceRune", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field BalanceSwitch", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1335,11 +1335,11 @@ func (m *QueryPoolResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.BalanceRune = string(dAtA[iNdEx:postIndex])
+			m.BalanceSwitch = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 9:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AssetTorPrice", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetSwitchPrice", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1367,7 +1367,7 @@ func (m *QueryPoolResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.AssetTorPrice = string(dAtA[iNdEx:postIndex])
+			m.AssetSwitchPrice = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 10:
 			if wireType != 2 {

@@ -93,7 +93,7 @@ func (s *HandlerObservedTxInSuite) TestFailure(c *C) {
 	keeper := &TestObservedTxInFailureKeeper{
 		pool: Pool{
 			Asset:        common.ETHAsset,
-			BalanceRune:  cosmos.NewUint(200),
+			BalanceSwitch:  cosmos.NewUint(200),
 			BalanceAsset: cosmos.NewUint(300),
 		},
 	}
@@ -234,7 +234,7 @@ func (s *HandlerObservedTxInSuite) testHandleWithConfirmation(c *C) {
 		vault: vault,
 		pool: Pool{
 			Asset:        common.ETHAsset,
-			BalanceRune:  cosmos.NewUint(200),
+			BalanceSwitch:  cosmos.NewUint(200),
 			BalanceAsset: cosmos.NewUint(300),
 		},
 		vaultExists: true,
@@ -373,7 +373,7 @@ func (s *HandlerObservedTxInSuite) testHandleWithVersion(c *C) {
 		vault: vault,
 		pool: Pool{
 			Asset:        common.ETHAsset,
-			BalanceRune:  cosmos.NewUint(200),
+			BalanceSwitch:  cosmos.NewUint(200),
 			BalanceAsset: cosmos.NewUint(300),
 		},
 		vaultExists: true,
@@ -435,7 +435,7 @@ func (s *HandlerObservedTxInSuite) TestMigrateMemo(c *C) {
 		vault: vault,
 		pool: Pool{
 			Asset:        common.ETHAsset,
-			BalanceRune:  cosmos.NewUint(200),
+			BalanceSwitch:  cosmos.NewUint(200),
 			BalanceAsset: cosmos.NewUint(300),
 		},
 		vaultExists: true,
@@ -521,7 +521,7 @@ func setupAnLegitObservedTx(ctx cosmos.Context, helper *ObservedTxInHandlerTestH
 	c.Assert(helper.SetVault(ctx, vault), IsNil)
 	p := NewPool()
 	p.Asset = common.ETHAsset
-	p.BalanceRune = cosmos.NewUint(100 * common.One)
+	p.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	p.BalanceAsset = cosmos.NewUint(100 * common.One)
 	p.Status = PoolAvailable
 	c.Assert(helper.Keeper.SetPool(ctx, p), IsNil)

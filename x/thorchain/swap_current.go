@@ -268,10 +268,10 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 	// Get our X, x, Y values
 	var X, Y cosmos.Uint
 	if source.IsSwitch() {
-		X = pool.BalanceRune
+		X = pool.BalanceSwitch
 		Y = pool.BalanceAsset
 	} else {
-		Y = pool.BalanceRune
+		Y = pool.BalanceSwitch
 		X = pool.BalanceAsset
 	}
 	x := amount
@@ -310,7 +310,7 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		return cosmos.ZeroUint(), evt, errSwapFailNotEnoughBalance
 	}
 
-	ctx.Logger().Info("pre swap", "pool", pool.Asset, "rune", pool.BalanceRune, "asset", pool.BalanceAsset, "lp units", pool.LPUnits, "synth units", pool.SynthUnits)
+	ctx.Logger().Info("pre swap", "pool", pool.Asset, "rune", pool.BalanceSwitch, "asset", pool.BalanceAsset, "lp units", pool.LPUnits, "synth units", pool.SynthUnits)
 
 	// Burning of input synth or derived pool input (Asset or RUNE).
 	if source.IsSyntheticAsset() || pool.Asset.IsDerivedAsset() {
@@ -352,13 +352,13 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 	// Use pool fields here rather than X and Y as synthVirtualDepthMult could affect X and Y.
 	// Only alter BalanceAsset when the non-RUNE asset isn't a synth.
 	if source.IsSwitch() {
-		pool.BalanceRune = pool.BalanceRune.Add(x)
+		pool.BalanceSwitch = pool.BalanceSwitch.Add(x)
 		if !target.IsSyntheticAsset() {
 			pool.BalanceAsset = common.SafeSub(pool.BalanceAsset, emitAssets)
 		}
 	} else {
 		// The target should be RUNE.
-		pool.BalanceRune = common.SafeSub(pool.BalanceRune, emitAssets)
+		pool.BalanceSwitch = common.SafeSub(pool.BalanceSwitch, emitAssets)
 		if !source.IsSyntheticAsset() {
 			pool.BalanceAsset = pool.BalanceAsset.Add(x)
 		}
@@ -384,7 +384,7 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		// Deduct LiquidityFeeInRune from the pool's RUNE depth and send it to the Reserve Module to be system income.
 		// (So that the liquidity fee isn't used for later swaps in the same block.)
 		if !swapEvt.LiquidityFeeInRune.IsZero() {
-			pool.BalanceRune = common.SafeSub(pool.BalanceRune, swapEvt.LiquidityFeeInRune)
+			pool.BalanceSwitch = common.SafeSub(pool.BalanceSwitch, swapEvt.LiquidityFeeInRune)
 			liqFeeCoin := common.NewCoin(common.SwitchNative, swapEvt.LiquidityFeeInRune)
 
 			targetModule := ReserveName
@@ -411,7 +411,7 @@ func (s *SwapperVCUR) swapOne(ctx cosmos.Context,
 		}
 	}
 
-	ctx.Logger().Info("post swap", "pool", pool.Asset, "rune", pool.BalanceRune, "asset", pool.BalanceAsset, "lp units", pool.LPUnits, "synth units", pool.SynthUnits, "emit asset", emitAssets)
+	ctx.Logger().Info("post swap", "pool", pool.Asset, "rune", pool.BalanceSwitch, "asset", pool.BalanceAsset, "lp units", pool.LPUnits, "synth units", pool.SynthUnits, "emit asset", emitAssets)
 
 	// Even for a Derived Asset pool, set the pool so the txout manager's GetFee for toi.Coin.Asset uses updated balances.
 	if err := keeper.SetPool(ctx, pool); err != nil {

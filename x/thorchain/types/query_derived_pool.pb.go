@@ -80,7 +80,7 @@ type QueryDerivedPoolResponse struct {
 	Status       string `protobuf:"bytes,2,opt,name=status,proto3" json:"status"`
 	Decimals     int64  `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
 	BalanceAsset string `protobuf:"bytes,4,opt,name=balance_asset,json=balanceAsset,proto3" json:"balance_asset"`
-	BalanceRune  string `protobuf:"bytes,5,opt,name=balance_rune,json=balanceRune,proto3" json:"balance_rune"`
+	BalanceRune  string `protobuf:"bytes,5,opt,name=balance_switch,json=balanceRune,proto3" json:"balance_switch"`
 	// the depth of the derived virtual pool relative to L1 pool (in basis points)
 	DerivedDepthBps string `protobuf:"bytes,6,opt,name=derived_depth_bps,json=derivedDepthBps,proto3" json:"derived_depth_bps"`
 }

@@ -45,7 +45,7 @@ func (lp LiquidityProvider) GetRuneRedeemValue(pool Pool, synthSupply cosmos.Uin
 
 	bigInt := &big.Int{}
 	lpUnits := lp.Units.BigInt()
-	poolRuneDepth := pool.BalanceRune.BigInt()
+	poolRuneDepth := pool.BalanceSwitch.BigInt()
 	num := bigInt.Mul(lpUnits, poolRuneDepth)
 
 	pool.CalcUnits(synthSupply)

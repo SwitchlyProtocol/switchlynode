@@ -144,13 +144,13 @@ func processErrataTxAttestation(
 	}
 
 	// subtract amounts from pool balances
-	if runeCoin.Amount.GT(pool.BalanceRune) {
-		runeCoin.Amount = pool.BalanceRune
+	if runeCoin.Amount.GT(pool.BalanceSwitch) {
+		runeCoin.Amount = pool.BalanceSwitch
 	}
 	if assetCoin.Amount.GT(pool.BalanceAsset) {
 		assetCoin.Amount = pool.BalanceAsset
 	}
-	pool.BalanceRune = common.SafeSub(pool.BalanceRune, runeCoin.Amount)
+	pool.BalanceSwitch = common.SafeSub(pool.BalanceSwitch, runeCoin.Amount)
 	pool.BalanceAsset = common.SafeSub(pool.BalanceAsset, assetCoin.Amount)
 	if memo.IsType(TxAdd) {
 		// trunk-ignore(golangci-lint/govet): shadow
@@ -246,7 +246,7 @@ func processErrataOutboundTx(ctx cosmos.Context, k keeper.Keeper, eventMgr Event
 					return fmt.Errorf("fail to get pool(%s): %w", coin.Asset, err)
 				}
 				runeValue := p.AssetValueInRune(coin.Amount)
-				p.BalanceRune = p.BalanceRune.Add(runeValue)
+				p.BalanceSwitch = p.BalanceSwitch.Add(runeValue)
 				p.BalanceAsset = common.SafeSub(p.BalanceAsset, coin.Amount)
 				// trunk-ignore(golangci-lint/govet): shadow
 				if err := k.SendFromModuleToModule(ctx, ReserveName, AsgardName, common.Coins{

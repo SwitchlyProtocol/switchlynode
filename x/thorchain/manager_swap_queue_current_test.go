@@ -32,17 +32,17 @@ func (s SwapQueueVCURSuite) TestScoreMsgs(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.ATOMAsset
-	pool.BalanceRune = cosmos.NewUint(143166 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(143166 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 	pool = NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(73708333 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(73708333 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 	pool = NewPool()
 	pool.Asset = common.ETHAsset
-	pool.BalanceRune = cosmos.NewUint(1000 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(1000 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	pool.Status = PoolStaged
 	c.Assert(k.SetPool(ctx, pool), IsNil)
@@ -321,7 +321,7 @@ func (s SwapQueueVCURSuite) TestStreamingSwapOutbounds(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
-	pool.BalanceRune = cosmos.NewUint(143166 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(143166 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 	pool.Asset = common.ETHAsset

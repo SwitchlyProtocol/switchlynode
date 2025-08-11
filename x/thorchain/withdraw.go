@@ -46,14 +46,14 @@ func withdrawV3_0_0(ctx cosmos.Context, msg MsgWithdrawLiquidity, mgr Manager) (
 
 	}
 
-	poolRune := pool.BalanceRune
+	poolRune := pool.BalanceSwitch
 	poolAsset := pool.BalanceAsset
 	originalLiquidityProviderUnits := lp.Units
 	fLiquidityProviderUnit := lp.Units
 	if lp.Units.IsZero() {
 		if !lp.PendingRune.IsZero() || !lp.PendingAsset.IsZero() {
 			mgr.Keeper().RemoveLiquidityProvider(ctx, lp)
-			pool.PendingInboundRune = common.SafeSub(pool.PendingInboundRune, lp.PendingRune)
+			pool.PendingInboundSwitch = common.SafeSub(pool.PendingInboundSwitch, lp.PendingRune)
 			pool.PendingInboundAsset = common.SafeSub(pool.PendingInboundAsset, lp.PendingAsset)
 			if err := mgr.Keeper().SetPool(ctx, pool); err != nil {
 				ctx.Logger().Error("failed to save pool pending inbound funds", "error", err)
@@ -79,7 +79,7 @@ func withdrawV3_0_0(ctx cosmos.Context, msg MsgWithdrawLiquidity, mgr Manager) (
 	assetToWithdraw := assetToWithdraw(msg, lp, pauseAsym)
 
 	if pool.Status == PoolAvailable && lp.RuneDepositValue.IsZero() && lp.AssetDepositValue.IsZero() {
-		lp.RuneDepositValue = lp.RuneDepositValue.Add(common.GetSafeShare(lp.Units, pool.GetPoolUnits(), pool.BalanceRune))
+		lp.RuneDepositValue = lp.RuneDepositValue.Add(common.GetSafeShare(lp.Units, pool.GetPoolUnits(), pool.BalanceSwitch))
 		lp.AssetDepositValue = lp.AssetDepositValue.Add(common.GetSafeShare(lp.Units, pool.GetPoolUnits(), pool.BalanceAsset))
 	}
 
@@ -124,10 +124,10 @@ func withdrawV3_0_0(ctx cosmos.Context, msg MsgWithdrawLiquidity, mgr Manager) (
 	ctx.Logger().Info("client withdraw", "RUNE", withdrawRune, "asset", withDrawAsset, "units left", unitAfter)
 	// update pool
 	pool.LPUnits = common.SafeSub(pool.LPUnits, common.SafeSub(fLiquidityProviderUnit, unitAfter))
-	pool.BalanceRune = common.SafeSub(poolRune, withdrawRune)
+	pool.BalanceSwitch = common.SafeSub(poolRune, withdrawRune)
 	pool.BalanceAsset = common.SafeSub(poolAsset, withDrawAsset)
 
-	ctx.Logger().Info("pool after withdraw", "pool unit", pool.GetPoolUnits(), "balance RUNE", pool.BalanceRune, "balance asset", pool.BalanceAsset)
+	ctx.Logger().Info("pool after withdraw", "pool unit", pool.GetPoolUnits(), "balance RUNE", pool.BalanceSwitch, "balance asset", pool.BalanceAsset)
 
 	lp.LastWithdrawHeight = ctx.BlockHeight()
 	maxPts := cosmos.NewUint(uint64(MaxWithdrawBasisPoints))
@@ -141,7 +141,7 @@ func withdrawV3_0_0(ctx cosmos.Context, msg MsgWithdrawLiquidity, mgr Manager) (
 	}
 
 	// Create a pool event if THORNode have no rune or assets
-	if (pool.BalanceAsset.IsZero() || pool.BalanceRune.IsZero()) && !pool.Asset.IsSyntheticAsset() {
+	if (pool.BalanceAsset.IsZero() || pool.BalanceSwitch.IsZero()) && !pool.Asset.IsSyntheticAsset() {
 		poolEvt := NewEventPool(pool.Asset, PoolStaged)
 		if err := mgr.EventMgr().EmitEvent(ctx, poolEvt); nil != err {
 			ctx.Logger().Error("fail to emit pool event", "error", err)

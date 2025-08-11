@@ -660,8 +660,8 @@ func (tos *TxOutStorageVCUR) prepareTxOutItem(ctx cosmos.Context, toi TxOutItem)
 
 					var poolDeduct cosmos.Uint
 					runeFee = pool.RuneDisbursementForAssetAdd(assetFee)
-					if runeFee.GT(pool.BalanceRune) {
-						poolDeduct = pool.BalanceRune
+					if runeFee.GT(pool.BalanceSwitch) {
+						poolDeduct = pool.BalanceSwitch
 					} else {
 						poolDeduct = runeFee
 					}
@@ -669,7 +669,7 @@ func (tos *TxOutStorageVCUR) prepareTxOutItem(ctx cosmos.Context, toi TxOutItem)
 					if !outputs[i].Coin.Asset.IsSyntheticAsset() {
 						pool.BalanceAsset = pool.BalanceAsset.Add(assetFee) // Add Asset fee to Pool
 					}
-					pool.BalanceRune = common.SafeSub(pool.BalanceRune, poolDeduct) // Deduct Rune from Pool
+					pool.BalanceSwitch = common.SafeSub(pool.BalanceSwitch, poolDeduct) // Deduct Rune from Pool
 					fee := common.NewFee(common.Coins{common.NewCoin(outputs[i].Coin.Asset, assetFee)}, poolDeduct)
 					feeEvents = append(feeEvents, NewEventFee(outputs[i].InHash, fee, cosmos.ZeroUint()))
 				}

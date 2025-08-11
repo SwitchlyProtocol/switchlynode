@@ -56,7 +56,7 @@ func (s *HandlerDepositSuite) TestHandle(c *C) {
 	pool := NewPool()
 	pool.Asset = common.DOGEAsset
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.Status = PoolAvailable
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 	msg := NewMsgDeposit(coins, "ADD:DOGE.DOGE", addr)

@@ -20,7 +20,7 @@ type DerivedPool struct {
 	Status string `json:"status"`
 	Decimals *int64 `json:"decimals,omitempty"`
 	BalanceAsset string `json:"balance_asset"`
-	BalanceRune string `json:"balance_rune"`
+	BalanceSwitch string `json:"balance_switch"`
 	// the depth of the derived virtual pool relative to L1 pool (in basis points)
 	DerivedDepthBps string `json:"derived_depth_bps"`
 }
@@ -34,7 +34,7 @@ func NewDerivedPool(asset string, status string, balanceAsset string, balanceRun
 	this.Asset = asset
 	this.Status = status
 	this.BalanceAsset = balanceAsset
-	this.BalanceRune = balanceRune
+	this.BalanceSwitch = balanceRune
 	this.DerivedDepthBps = derivedDepthBps
 	return &this
 }
@@ -151,28 +151,28 @@ func (o *DerivedPool) SetBalanceAsset(v string) {
 	o.BalanceAsset = v
 }
 
-// GetBalanceRune returns the BalanceRune field value
-func (o *DerivedPool) GetBalanceRune() string {
+// GetBalanceSwitch returns the BalanceSwitch field value
+func (o *DerivedPool) GetBalanceSwitch() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.BalanceRune
+	return o.BalanceSwitch
 }
 
-// GetBalanceRuneOk returns a tuple with the BalanceRune field value
+// GetBalanceSwitchOk returns a tuple with the BalanceSwitch field value
 // and a boolean to check if the value has been set.
-func (o *DerivedPool) GetBalanceRuneOk() (*string, bool) {
+func (o *DerivedPool) GetBalanceSwitchOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.BalanceRune, true
+	return &o.BalanceSwitch, true
 }
 
-// SetBalanceRune sets field value
-func (o *DerivedPool) SetBalanceRune(v string) {
-	o.BalanceRune = v
+// SetBalanceSwitch sets field value
+func (o *DerivedPool) SetBalanceSwitch(v string) {
+	o.BalanceSwitch = v
 }
 
 // GetDerivedDepthBps returns the DerivedDepthBps field value
@@ -214,7 +214,7 @@ func (o DerivedPool) MarshalJSON_deprecated() ([]byte, error) {
 		toSerialize["balance_asset"] = o.BalanceAsset
 	}
 	if true {
-		toSerialize["balance_rune"] = o.BalanceRune
+		toSerialize["balance_switch"] = o.BalanceSwitch
 	}
 	if true {
 		toSerialize["derived_depth_bps"] = o.DerivedDepthBps

@@ -63,7 +63,7 @@ func (s *HandlerLoanRepaymentSuite) TestLoanRepaymentHandleWithTOR(c *C) {
 	pool.Asset = common.BTCAsset
 	pool.LPUnits = cosmos.NewUint(346168413758888)
 	pool.BalanceAsset = cosmos.NewUint(64394417894)
-	pool.BalanceRune = cosmos.NewUint(523467094850166)
+	pool.BalanceSwitch = cosmos.NewUint(523467094850166)
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	signer := GetRandomBech32Addr()
@@ -119,7 +119,7 @@ func (s *HandlerLoanRepaymentSuite) TestLoanRepaymentHandleWithSwap(c *C) {
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(83830778633)
-	pool.BalanceRune = cosmos.NewUint(1022440798362209)
+	pool.BalanceSwitch = cosmos.NewUint(1022440798362209)
 	pool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
@@ -127,7 +127,7 @@ func (s *HandlerLoanRepaymentSuite) TestLoanRepaymentHandleWithSwap(c *C) {
 	busd := NewPool()
 	busd.Asset, _ = common.NewAsset("ETH.BUSD-BD1")
 	busd.Status = PoolAvailable
-	busd.BalanceRune = cosmos.NewUint(433267688964312)
+	busd.BalanceSwitch = cosmos.NewUint(433267688964312)
 	busd.BalanceAsset = cosmos.NewUint(314031308608965)
 	busd.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, busd), IsNil)

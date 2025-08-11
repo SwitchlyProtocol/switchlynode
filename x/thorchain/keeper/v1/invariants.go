@@ -41,7 +41,7 @@ func AsgardInvariant(k KVStore) common.Invariant {
 			case !pool.Asset.IsDerivedAsset():
 				coin := common.NewCoin(
 					common.SwitchNative,
-					pool.BalanceRune.Add(pool.PendingInboundRune),
+					pool.BalanceSwitch.Add(pool.PendingInboundSwitch),
 				)
 				poolCoins = poolCoins.Add(coin)
 
@@ -275,7 +275,7 @@ func PoolsInvariant(k KVStore) common.Invariant {
 			}
 
 			check(pool.LPUnits, lpUnits, "units")
-			check(pool.PendingInboundRune, lpPendingRune, "pending rune")
+			check(pool.PendingInboundSwitch, lpPendingRune, "pending rune")
 			check(pool.PendingInboundAsset, lpPendingAsset, "pending asset")
 		}
 

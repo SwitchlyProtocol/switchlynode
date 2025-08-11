@@ -21,14 +21,14 @@ func (s *PoolMgrVCURSuite) TestEnableNextPool(c *C) {
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
 	pool = NewPool()
 	pool.Asset = common.BTCAsset // gas pool should be enabled by default
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(50 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(50 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(50 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
@@ -37,7 +37,7 @@ func (s *PoolMgrVCURSuite) TestEnableNextPool(c *C) {
 	pool = NewPool()
 	pool.Asset = usdcAsset
 	pool.Status = PoolStaged
-	pool.BalanceRune = cosmos.NewUint(40 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(40 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(40 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
@@ -46,7 +46,7 @@ func (s *PoolMgrVCURSuite) TestEnableNextPool(c *C) {
 	pool = NewPool()
 	pool.Asset = xmrAsset
 	pool.Status = PoolStaged
-	pool.BalanceRune = cosmos.NewUint(40 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(40 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(0 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
@@ -56,7 +56,7 @@ func (s *PoolMgrVCURSuite) TestEnableNextPool(c *C) {
 	pool = NewPool()
 	pool.Asset = usdAsset
 	pool.Status = PoolStaged
-	pool.BalanceRune = cosmos.NewUint(140 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(140 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(0 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
@@ -80,7 +80,7 @@ func (s *PoolMgrVCURSuite) TestEnableNextPool(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(pool.IsEmpty(), Equals, false)
 	c.Check(pool.Status, Equals, PoolStaged)
-	c.Check(pool.BalanceRune.Uint64(), Equals, uint64(30*common.One))
+	c.Check(pool.BalanceSwitch.Uint64(), Equals, uint64(30*common.One))
 }
 
 func (s *PoolMgrVCURSuite) TestAbandonPool(c *C) {
@@ -91,7 +91,7 @@ func (s *PoolMgrVCURSuite) TestAbandonPool(c *C) {
 	pool := NewPool()
 	pool.Asset = usdAsset
 	pool.Status = PoolStaged
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
@@ -154,7 +154,7 @@ func (s *PoolMgrVCURSuite) TestAbandonPool(c *C) {
 	// check pool was deleted
 	pool, err = k.GetPool(ctx, usdAsset)
 	c.Assert(err, IsNil)
-	c.Assert(pool.BalanceRune.IsZero(), Equals, true)
+	c.Assert(pool.BalanceSwitch.IsZero(), Equals, true)
 	c.Assert(pool.BalanceAsset.IsZero(), Equals, true)
 
 	// check vault remove pool asset
@@ -181,14 +181,14 @@ func (s *PoolMgrVCURSuite) TestDemotePoolWithLowLiquidityFees(c *C) {
 	pool := NewPool()
 	pool.Asset = usdAsset
 	pool.Status = PoolStaged
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 
 	poolETH := NewPool()
 	poolETH.Asset = common.ETHAsset
 	poolETH.Status = PoolAvailable
-	poolETH.BalanceRune = cosmos.NewUint(100000 * common.One)
+	poolETH.BalanceSwitch = cosmos.NewUint(100000 * common.One)
 	poolETH.BalanceAsset = cosmos.NewUint(100000 * common.One)
 	c.Assert(k.SetPool(ctx, poolETH), IsNil)
 
@@ -197,7 +197,7 @@ func (s *PoolMgrVCURSuite) TestDemotePoolWithLowLiquidityFees(c *C) {
 	poolUsdc := NewPool()
 	poolUsdc.Asset = ethUsdc
 	poolUsdc.Status = PoolAvailable
-	poolUsdc.BalanceRune = cosmos.NewUint(100000 * common.One)
+	poolUsdc.BalanceSwitch = cosmos.NewUint(100000 * common.One)
 	poolUsdc.BalanceAsset = cosmos.NewUint(100000 * common.One)
 	c.Assert(k.SetPool(ctx, poolUsdc), IsNil)
 
@@ -229,7 +229,7 @@ func (s *PoolMgrVCURSuite) TestDemotePoolWithLowLiquidityFees(c *C) {
 	// check pool was deleted
 	pool, err = k.GetPool(ctx, usdAsset)
 	c.Assert(err, IsNil)
-	c.Assert(pool.BalanceRune.IsZero(), Equals, true)
+	c.Assert(pool.BalanceSwitch.IsZero(), Equals, true)
 	c.Assert(pool.BalanceAsset.IsZero(), Equals, true)
 
 	// check vault remove pool asset
@@ -262,9 +262,9 @@ func (s *PoolMgrVCURSuite) TestPoolMeetTradingVolumeCriteria(c *C) {
 	asset := common.BTCAsset
 
 	pool := Pool{
-		Asset:        asset,
-		BalanceAsset: cosmos.NewUint(1000 * common.One),
-		BalanceRune:  cosmos.NewUint(1000 * common.One),
+		Asset:         asset,
+		BalanceAsset:  cosmos.NewUint(1000 * common.One),
+		BalanceSwitch: cosmos.NewUint(1000 * common.One),
 	}
 
 	minFee := cosmos.ZeroUint()
@@ -379,9 +379,9 @@ func (s *PoolMgrVCURSuite) TestCommitPendingLiquidity(c *C) {
 
 	pool := NewPool()
 	pool.Asset = asset
-	pool.BalanceRune = cosmos.NewUint(100_000)
+	pool.BalanceSwitch = cosmos.NewUint(100_000)
 	pool.BalanceAsset = cosmos.NewUint(100_000)
-	pool.PendingInboundRune = cosmos.OneUint()
+	pool.PendingInboundSwitch = cosmos.OneUint()
 	pool.PendingInboundAsset = cosmos.OneUint()
 	pool.LPUnits = cosmos.NewUint(1000)
 	c.Check(mgr.Keeper().SetPool(ctx, pool), IsNil)
@@ -421,7 +421,7 @@ func (s *PoolMgrVCURSuite) TestCommitPendingLiquidity(c *C) {
 
 	pool, err = mgr.Keeper().GetPool(ctx, pool.Asset)
 	c.Assert(err, IsNil)
-	c.Check(pool.BalanceRune.Uint64(), Equals, uint64(100_501), Commentf("%d", pool.BalanceRune.Uint64()))
+	c.Check(pool.BalanceSwitch.Uint64(), Equals, uint64(100_501), Commentf("%d", pool.BalanceSwitch.Uint64()))
 	c.Check(pool.BalanceAsset.Uint64(), Equals, uint64(100_600), Commentf("%d", pool.BalanceAsset.Uint64()))
 
 	lp, err := mgr.Keeper().GetLiquidityProvider(ctx, pool.Asset, lp1.GetAddress())

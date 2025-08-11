@@ -71,7 +71,7 @@ func (s *ThorchainSuite) TestLiquidityProvision(c *C) {
 	// check pool is now empty
 	pool, err = keeper.GetPool(ctx, common.ETHAsset)
 	c.Assert(err, IsNil)
-	c.Check(pool.BalanceRune.IsZero(), Equals, true)
+	c.Check(pool.BalanceSwitch.IsZero(), Equals, true)
 	remainGas := uint64(37500)
 	c.Check(pool.BalanceAsset.Uint64(), Equals, remainGas) // leave a little behind for gas
 	c.Check(pool.LPUnits.IsZero(), Equals, true)
@@ -88,7 +88,7 @@ func (s *ThorchainSuite) TestLiquidityProvision(c *C) {
 	// check pool is NOT empty
 	pool, err = keeper.GetPool(ctx, common.ETHAsset)
 	c.Assert(err, IsNil)
-	c.Check(pool.BalanceRune.Equal(cosmos.NewUint(200*common.One)), Equals, true)
+	c.Check(pool.BalanceSwitch.Equal(cosmos.NewUint(200*common.One)), Equals, true)
 	c.Check(pool.BalanceAsset.Equal(cosmos.NewUint(20000000000+remainGas)), Equals, true, Commentf("%d", pool.BalanceAsset.Uint64()))
 	c.Check(pool.LPUnits.IsZero(), Equals, false)
 }
@@ -109,7 +109,7 @@ func (s *ThorchainSuite) TestChurn(c *C) {
 		TransactionFeeRate: 25000,
 	}), IsNil)
 	c.Assert(mgr.Keeper().SetPool(ctx, Pool{
-		BalanceRune:  cosmos.NewUint(common.One),
+		BalanceSwitch:  cosmos.NewUint(common.One),
 		BalanceAsset: cosmos.NewUint(common.One),
 		Asset:        common.ETHAsset,
 		LPUnits:      cosmos.NewUint(common.One),

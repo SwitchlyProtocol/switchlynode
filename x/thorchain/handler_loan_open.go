@@ -152,7 +152,7 @@ func (h LoanOpenHandler) validateV3_0_0(ctx cosmos.Context, msg MsgLoanOpen) err
 		ctx.Logger().Error("fail to get pool", "error", err)
 		return err
 	}
-	totalAvailableRuneForPool := common.GetSafeShare(pool.BalanceRune, totalRune, totalAvailableRuneForProtocol)
+	totalAvailableRuneForPool := common.GetSafeShare(pool.BalanceSwitch, totalRune, totalAvailableRuneForProtocol)
 	totalAvailableAssetForPool := pool.RuneValueInAsset(totalAvailableRuneForPool)
 	if totalCollateral.Add(msg.CollateralAmount).GT(totalAvailableAssetForPool) {
 		return fmt.Errorf("no availability (%d/%d), lending unavailable", totalCollateral.Add(msg.CollateralAmount).Uint64(), totalAvailableAssetForPool.Uint64())
@@ -352,7 +352,7 @@ func (h LoanOpenHandler) getPoolCR(ctx cosmos.Context, pool Pool, collateralAmou
 		return cosmos.ZeroUint(), fmt.Errorf("no liquidity, lending unavailable")
 	}
 
-	totalAvailableRuneForPool := common.GetSafeShare(pool.BalanceRune, totalRune, totalAvailableRuneForProtocol)
+	totalAvailableRuneForPool := common.GetSafeShare(pool.BalanceSwitch, totalRune, totalAvailableRuneForProtocol)
 	totalAvailableAssetForPool := pool.RuneValueInAsset(totalAvailableRuneForPool)
 	if totalCollateral.Add(collateralAmount).GT(totalAvailableAssetForPool) {
 		return cosmos.ZeroUint(), fmt.Errorf("no availability (%d/%d), lending unavailable", totalCollateral.Add(collateralAmount).Uint64(), totalAvailableAssetForPool.Uint64())
@@ -524,7 +524,7 @@ func (h LoanOpenHandler) getTotalLiquidityRUNELoanPools(ctx cosmos.Context) (cos
 		if val <= 0 {
 			continue
 		}
-		total = total.Add(p.BalanceRune)
+		total = total.Add(p.BalanceSwitch)
 	}
 	return total, nil
 }
@@ -550,7 +550,7 @@ func (h LoanOpenHandler) GetLoanCollateralRemainingForPool(ctx cosmos.Context, p
 		return cosmos.ZeroUint(), err
 	}
 
-	totalAvailableRuneForPool := common.GetSafeShare(pool.BalanceRune, totalRune, totalAvailableRuneForProtocol)
+	totalAvailableRuneForPool := common.GetSafeShare(pool.BalanceSwitch, totalRune, totalAvailableRuneForProtocol)
 	totalAvailableAssetForPool := pool.RuneValueInAsset(totalAvailableRuneForPool)
 
 	loanCollateralRemainingForPool := common.SafeSub(totalAvailableAssetForPool, totalCollateral)

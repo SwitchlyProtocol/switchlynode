@@ -145,12 +145,12 @@ func (vm *NetworkMgrVCUR) GetAvailableAnchorsAndDepths(
 		if p.Status != PoolAvailable {
 			continue
 		}
-		if p.BalanceRune.IsZero() || p.BalanceAsset.IsZero() {
+		if p.BalanceSwitch.IsZero() || p.BalanceAsset.IsZero() {
 			continue
 		}
 
 		availableAnchors = append(availableAnchors, anchorAsset)
-		runeDepths = append(runeDepths, p.BalanceRune)
+		runeDepths = append(runeDepths, p.BalanceSwitch)
 	}
 
 	return availableAnchors, runeDepths
@@ -337,16 +337,16 @@ func (vm *NetworkMgrVCUR) SpawnDerivedAsset(ctx cosmos.Context, asset common.Ass
 	assetDepth := runeDepth.Mul(price).QuoUint64(uint64(constants.DollarMulti * common.One))
 
 	// emit an event for midgard
-	runeAmt := common.SafeSub(runeDepth, derivedPool.BalanceRune)
+	runeAmt := common.SafeSub(runeDepth, derivedPool.BalanceSwitch)
 	assetAmt := common.SafeSub(assetDepth, derivedPool.BalanceAsset)
 	assetAdd, runeAdd := true, true
 	if derivedPool.BalanceAsset.GT(assetDepth) {
 		assetAdd = false
 		assetAmt = common.SafeSub(derivedPool.BalanceAsset, assetDepth)
 	}
-	if derivedPool.BalanceRune.GT(runeDepth) {
+	if derivedPool.BalanceSwitch.GT(runeDepth) {
 		runeAdd = false
-		runeAmt = common.SafeSub(derivedPool.BalanceRune, runeDepth)
+		runeAmt = common.SafeSub(derivedPool.BalanceSwitch, runeDepth)
 	}
 
 	// Only emit an EventPoolBalanceChanged if there's a balance change.
@@ -355,7 +355,7 @@ func (vm *NetworkMgrVCUR) SpawnDerivedAsset(ctx cosmos.Context, asset common.Ass
 		emitPoolBalanceChangedEvent(ctx, mod, "derived pool adjustment", mgr)
 
 		derivedPool.BalanceAsset = assetDepth
-		derivedPool.BalanceRune = runeDepth
+		derivedPool.BalanceSwitch = runeDepth
 	}
 
 	ctx.Logger().Debug("SpawnDerivedAsset",
@@ -714,7 +714,7 @@ func (vm *NetworkMgrVCUR) migrateFunds(ctx cosmos.Context, mgr Manager) error {
 								return fmt.Errorf("fail to transfer RUNE from reserve to asgard,err:%w", err)
 							}
 						}
-						p.BalanceRune = p.BalanceRune.Add(runeAmt)
+						p.BalanceSwitch = p.BalanceSwitch.Add(runeAmt)
 						p.BalanceAsset = common.SafeSub(p.BalanceAsset, coin.Amount)
 						if err := vm.k.SetPool(ctx, p); err != nil {
 							return fmt.Errorf("fail to save pool: %w", err)
@@ -963,7 +963,7 @@ func (mv *NetworkMgrVCUR) fetchPOLPools(ctx cosmos.Context, mgr Manager) (Pools,
 			continue
 		}
 
-		if pool.BalanceRune.IsZero() {
+		if pool.BalanceSwitch.IsZero() {
 			continue
 		}
 
@@ -1016,7 +1016,7 @@ func (vm *NetworkMgrVCUR) addPOLLiquidity(
 		move = maxMovement
 	}
 
-	runeAmt := common.GetSafeShare(move, cosmos.NewUint(1000_000), pool.BalanceRune)
+	runeAmt := common.GetSafeShare(move, cosmos.NewUint(1000_000), pool.BalanceSwitch)
 	if runeAmt.IsZero() {
 		return nil
 	}
@@ -1097,12 +1097,12 @@ func (vm *NetworkMgrVCUR) removePOLLiquidity(
 		move = maxMovement
 	}
 
-	runeAmt := common.GetSafeShare(move, cosmos.NewUint(1000_000), pool.BalanceRune)
+	runeAmt := common.GetSafeShare(move, cosmos.NewUint(1000_000), pool.BalanceSwitch)
 	if runeAmt.IsZero() {
 		return nil
 	}
 	maxBps := cosmos.NewUint(constants.MaxBasisPts)
-	lpRune := common.GetSafeShare(lp.Units, pool.GetPoolUnits(), pool.BalanceRune).MulUint64(2)
+	lpRune := common.GetSafeShare(lp.Units, pool.GetPoolUnits(), pool.BalanceSwitch).MulUint64(2)
 	basisPts := common.GetSafeShare(runeAmt, lpRune, maxBps)
 
 	// if the move is smaller than 1 basis point of the position, withdraw 1 basis point
@@ -1458,10 +1458,10 @@ func (vm *NetworkMgrVCUR) withdrawLiquidity(ctx cosmos.Context, pool Pool, na No
 
 	// If any RUNE remains in the pool (such as if the last withdraw were Asset-address-only),
 	// transfer it to the Reserve to prevent broken-invariant Pool Module oversolvency.
-	remainingRune := common.NewCoin(common.SwitchNative, pool.BalanceRune)
-	pool.BalanceRune = cosmos.ZeroUint()
-	remainingRune.Amount = remainingRune.Amount.Add(pool.PendingInboundRune)
-	pool.PendingInboundRune = cosmos.ZeroUint()
+	remainingRune := common.NewCoin(common.SwitchNative, pool.BalanceSwitch)
+	pool.BalanceSwitch = cosmos.ZeroUint()
+	remainingRune.Amount = remainingRune.Amount.Add(pool.PendingInboundSwitch)
+	pool.PendingInboundSwitch = cosmos.ZeroUint()
 	if !remainingRune.IsEmpty() {
 		if err := vm.k.SendFromModuleToModule(ctx, AsgardName, ReserveName, common.NewCoins(remainingRune)); err != nil {
 			// Still proceed to suspend the pool, but log the error.
@@ -1639,7 +1639,7 @@ func (vm *NetworkMgrVCUR) UpdateNetwork(ctx cosmos.Context, constAccessor consta
 		for _, pool := range availablePools {
 			var amt, fees cosmos.Uint
 			if totalLiquidityFees.IsZero() {
-				amt = common.GetSafeShare(pool.BalanceRune, availablePoolsRune, totalPoolRewards)
+				amt = common.GetSafeShare(pool.BalanceSwitch, availablePoolsRune, totalPoolRewards)
 				fees = cosmos.ZeroUint()
 			} else {
 				var err error
@@ -1697,7 +1697,7 @@ func (vm *NetworkMgrVCUR) payPoolRewards(ctx cosmos.Context, poolRewards []cosmo
 		if reward.IsZero() {
 			continue
 		}
-		pools[i].BalanceRune = pools[i].BalanceRune.Add(reward)
+		pools[i].BalanceSwitch = pools[i].BalanceSwitch.Add(reward)
 		if err := vm.k.SetPool(ctx, pools[i]); err != nil {
 			return fmt.Errorf("fail to set pool: %w", err)
 		}
@@ -1914,11 +1914,11 @@ func (vm *NetworkMgrVCUR) redeemSynthAssetToReserve(ctx cosmos.Context, p Pool) 
 	runeValue := p.AssetValueInRune(totalSupply)
 
 	// Never send more RUNE from the Pool Module than the Pool has available to send.
-	if runeValue.GT(p.BalanceRune) {
-		runeValue = p.BalanceRune
+	if runeValue.GT(p.BalanceSwitch) {
+		runeValue = p.BalanceSwitch
 	}
 
-	p.BalanceRune = common.SafeSub(p.BalanceRune, runeValue)
+	p.BalanceSwitch = common.SafeSub(p.BalanceSwitch, runeValue)
 	// Here didn't set synth unit to zero , but `GetTotalSupply` will check pool ragnarok status
 	// with GetPoolRagnarokStart, then the synth supply will return zero.
 	if err := vm.k.SetPool(ctx, p); err != nil {
@@ -2116,7 +2116,7 @@ func (vm *NetworkMgrVCUR) claimingSwapRuneToTCY(ctx cosmos.Context, mgr Manager)
 	}
 
 	assetDisbursement := pool.AssetDisbursementForRuneAdd(claimingRuneBalance)
-	pool.BalanceRune = pool.BalanceRune.Add(claimingRuneBalance)
+	pool.BalanceSwitch = pool.BalanceSwitch.Add(claimingRuneBalance)
 	pool.BalanceAsset = common.SafeSub(pool.BalanceAsset, assetDisbursement)
 
 	if err = vm.k.SetPool(ctx, pool); err != nil {

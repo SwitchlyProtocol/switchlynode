@@ -520,7 +520,7 @@ func (s *SlashingVCURSuite) TestSlashVault(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	pool.Status = PoolAvailable
 
@@ -529,7 +529,7 @@ func (s *SlashingVCURSuite) TestSlashVault(c *C) {
 	asgardBeforeSlash := mgr.Keeper().GetRuneBalanceOfModule(ctx, AsgardName)
 	bondBeforeSlash := mgr.Keeper().GetRuneBalanceOfModule(ctx, BondName)
 	reserveBeforeSlash := mgr.Keeper().GetRuneBalanceOfModule(ctx, ReserveName)
-	poolBeforeSlash := pool.BalanceRune
+	poolBeforeSlash := pool.BalanceSwitch
 
 	err = slasher.SlashVault(ctx, vault.PubKey, common.NewCoins(common.NewCoin(common.BTCAsset, cosmos.NewUint(common.One))), mgr)
 	c.Assert(err, IsNil)
@@ -544,7 +544,7 @@ func (s *SlashingVCURSuite) TestSlashVault(c *C) {
 
 	pool, err = mgr.Keeper().GetPool(ctx, pool.Asset)
 	c.Assert(err, IsNil)
-	poolAfterSlash := pool.BalanceRune
+	poolAfterSlash := pool.BalanceSwitch
 
 	// ensure pool's change is in sync with asgard's change
 	c.Assert(asgardAfterSlash.Sub(asgardBeforeSlash).Uint64(), Equals, poolAfterSlash.Sub(poolBeforeSlash).Uint64(), Commentf("%d", "pool/asgard rune mismatch"))
@@ -600,7 +600,7 @@ func (s *SlashingVCURSuite) TestUpdatePoolFromSlash(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(1000 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(1000 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	pool.Status = PoolAvailable
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
@@ -613,7 +613,7 @@ func (s *SlashingVCURSuite) TestUpdatePoolFromSlash(c *C) {
 	pool, err := mgr.Keeper().GetPool(ctx, common.BTCAsset)
 	c.Assert(err, IsNil)
 	c.Assert(pool.BalanceAsset.Uint64(), Equals, uint64(750*common.One))
-	c.Assert(pool.BalanceRune.Uint64(), Equals, uint64(1500*common.One))
+	c.Assert(pool.BalanceSwitch.Uint64(), Equals, uint64(1500*common.One))
 }
 
 func (s *SlashingVCURSuite) TestNetworkShouldNotSlashMorethanVaultAmount(c *C) {
@@ -638,7 +638,7 @@ func (s *SlashingVCURSuite) TestNetworkShouldNotSlashMorethanVaultAmount(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	pool.Status = PoolAvailable
 
@@ -647,7 +647,7 @@ func (s *SlashingVCURSuite) TestNetworkShouldNotSlashMorethanVaultAmount(c *C) {
 	asgardBeforeSlash := mgr.Keeper().GetRuneBalanceOfModule(ctx, AsgardName)
 	bondBeforeSlash := mgr.Keeper().GetRuneBalanceOfModule(ctx, BondName)
 	reserveBeforeSlash := mgr.Keeper().GetRuneBalanceOfModule(ctx, ReserveName)
-	poolBeforeSlash := pool.BalanceRune
+	poolBeforeSlash := pool.BalanceSwitch
 
 	// vault only has 0.5 BTC , however the outbound is 1 BTC , make sure we don't over slash the vault
 	err := slasher.SlashVault(ctx, vault.PubKey, common.NewCoins(common.NewCoin(common.BTCAsset, cosmos.NewUint(common.One))), mgr)
@@ -663,7 +663,7 @@ func (s *SlashingVCURSuite) TestNetworkShouldNotSlashMorethanVaultAmount(c *C) {
 
 	pool, err = mgr.Keeper().GetPool(ctx, pool.Asset)
 	c.Assert(err, IsNil)
-	poolAfterSlash := pool.BalanceRune
+	poolAfterSlash := pool.BalanceSwitch
 
 	// ensure pool's change is in sync with asgard's change
 	c.Assert(asgardAfterSlash.Sub(asgardBeforeSlash).Uint64(), Equals, poolAfterSlash.Sub(poolBeforeSlash).Uint64(), Commentf("%d", "pool/asgard rune mismatch"))
@@ -712,7 +712,7 @@ func (s *SlashingVCURSuite) TestNetworkShouldNotSlashMorethanVaultAmount(c *C) {
 	c.Assert(val, Equals, int64(18), Commentf("%d", val))
 
 	// Attempt to slash more than node has, pool should only be deducted what was successfully slashed
-	pool.BalanceRune = cosmos.NewUint(4000 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(4000 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(4000 * common.One)
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
@@ -737,7 +737,7 @@ func (s *SlashingVCURSuite) TestNetworkShouldNotSlashMorethanVaultAmount(c *C) {
 	c.Assert(err, IsNil)
 
 	// Even though the total rune value to slash is 3000, the node only has 1000 RUNE bonded, so only slash and credit that much to the pool's rune side
-	c.Assert(updatedPool.BalanceRune.Uint64(), Equals, cosmos.NewUint(5000*common.One).Uint64())
+	c.Assert(updatedPool.BalanceSwitch.Uint64(), Equals, cosmos.NewUint(5000*common.One).Uint64())
 	// But deduct full stolen amount from asset side
 	c.Assert(updatedPool.BalanceAsset.Uint64(), Equals, cosmos.NewUint(2000*common.One).Uint64())
 }

@@ -134,7 +134,7 @@ func (s *HelperSuite) TestDollarsPerRune(c *C) {
 	pool := NewPool()
 	pool.Asset = busd
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(85515078103667)
+	pool.BalanceSwitch = cosmos.NewUint(85515078103667)
 	pool.BalanceAsset = cosmos.NewUint(709802235538353)
 	pool.Decimals = 8
 	c.Assert(k.SetPool(ctx, pool), IsNil)
@@ -149,7 +149,7 @@ func (s *HelperSuite) TestDollarsPerRune(c *C) {
 	pool = NewPool()
 	pool.Asset = usdc
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(85515078103667)
+	pool.BalanceSwitch = cosmos.NewUint(85515078103667)
 	pool.BalanceAsset = cosmos.NewUint(709802235538353)
 	pool.Decimals = 8
 	c.Assert(k.SetPool(ctx, pool), IsNil)
@@ -219,14 +219,14 @@ func newAddGasFeeTestHelper(c *C) addGasFeeTestHelper {
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.Status = PoolAvailable
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	poolBTC := NewPool()
 	poolBTC.Asset = common.BTCAsset
 	poolBTC.BalanceAsset = cosmos.NewUint(100 * common.One)
-	poolBTC.BalanceRune = cosmos.NewUint(100 * common.One)
+	poolBTC.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	poolBTC.Status = PoolAvailable
 	c.Assert(mgr.Keeper().SetPool(ctx, poolBTC), IsNil)
 
@@ -380,7 +380,7 @@ func (s *HelperSuite) TestIsSynthMintPause(c *C) {
 	pool := types.Pool{
 		Asset:        common.BTCAsset,
 		BalanceAsset: cosmos.NewUint(100 * common.One),
-		BalanceRune:  cosmos.NewUint(100 * common.One),
+		BalanceSwitch:  cosmos.NewUint(100 * common.One),
 	}
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
@@ -495,7 +495,7 @@ func (s *HelperSuite) TestPOLPoolValue(c *C) {
 
 	btcPool := NewPool()
 	btcPool.Asset = common.BTCAsset
-	btcPool.BalanceRune = cosmos.NewUint(2000 * common.One)
+	btcPool.BalanceSwitch = cosmos.NewUint(2000 * common.One)
 	btcPool.BalanceAsset = cosmos.NewUint(20 * common.One)
 	btcPool.LPUnits = cosmos.NewUint(1600)
 	c.Assert(mgr.Keeper().SetPool(ctx, btcPool), IsNil)
@@ -702,7 +702,7 @@ func (HandlerSuite) TestWillSwapSucceed(c *C) {
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(100_000 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100_000 * common.One)
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
 	pool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
@@ -710,7 +710,7 @@ func (HandlerSuite) TestWillSwapSucceed(c *C) {
 	pool2 := NewPool()
 	pool2.Asset = common.ETHAsset
 	pool2.Status = PoolAvailable
-	pool2.BalanceRune = cosmos.NewUint(100_000 * common.One)
+	pool2.BalanceSwitch = cosmos.NewUint(100_000 * common.One)
 	pool2.BalanceAsset = cosmos.NewUint(1000 * common.One)
 	pool2.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool2), IsNil)

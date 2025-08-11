@@ -504,10 +504,10 @@ var (
 	fd_QueryPoolResponse_status                    protoreflect.FieldDescriptor
 	fd_QueryPoolResponse_decimals                  protoreflect.FieldDescriptor
 	fd_QueryPoolResponse_pending_inbound_asset     protoreflect.FieldDescriptor
-	fd_QueryPoolResponse_pending_inbound_rune      protoreflect.FieldDescriptor
+	fd_QueryPoolResponse_pending_inbound_switch      protoreflect.FieldDescriptor
 	fd_QueryPoolResponse_balance_asset             protoreflect.FieldDescriptor
-	fd_QueryPoolResponse_balance_rune              protoreflect.FieldDescriptor
-	fd_QueryPoolResponse_asset_tor_price           protoreflect.FieldDescriptor
+	fd_QueryPoolResponse_balance_switch              protoreflect.FieldDescriptor
+	fd_QueryPoolResponse_asset_switch_price           protoreflect.FieldDescriptor
 	fd_QueryPoolResponse_pool_units                protoreflect.FieldDescriptor
 	fd_QueryPoolResponse_LP_units                  protoreflect.FieldDescriptor
 	fd_QueryPoolResponse_synth_units               protoreflect.FieldDescriptor
@@ -533,10 +533,10 @@ func init() {
 	fd_QueryPoolResponse_status = md_QueryPoolResponse.Fields().ByName("status")
 	fd_QueryPoolResponse_decimals = md_QueryPoolResponse.Fields().ByName("decimals")
 	fd_QueryPoolResponse_pending_inbound_asset = md_QueryPoolResponse.Fields().ByName("pending_inbound_asset")
-	fd_QueryPoolResponse_pending_inbound_rune = md_QueryPoolResponse.Fields().ByName("pending_inbound_rune")
+	fd_QueryPoolResponse_pending_inbound_switch = md_QueryPoolResponse.Fields().ByName("pending_inbound_switch")
 	fd_QueryPoolResponse_balance_asset = md_QueryPoolResponse.Fields().ByName("balance_asset")
-	fd_QueryPoolResponse_balance_rune = md_QueryPoolResponse.Fields().ByName("balance_rune")
-	fd_QueryPoolResponse_asset_tor_price = md_QueryPoolResponse.Fields().ByName("asset_tor_price")
+	fd_QueryPoolResponse_balance_switch = md_QueryPoolResponse.Fields().ByName("balance_switch")
+	fd_QueryPoolResponse_asset_switch_price = md_QueryPoolResponse.Fields().ByName("asset_switch_price")
 	fd_QueryPoolResponse_pool_units = md_QueryPoolResponse.Fields().ByName("pool_units")
 	fd_QueryPoolResponse_LP_units = md_QueryPoolResponse.Fields().ByName("LP_units")
 	fd_QueryPoolResponse_synth_units = md_QueryPoolResponse.Fields().ByName("synth_units")
@@ -651,7 +651,7 @@ func (x *fastReflection_QueryPoolResponse) Range(f func(protoreflect.FieldDescri
 	}
 	if x.PendingInboundRune != "" {
 		value := protoreflect.ValueOfString(x.PendingInboundRune)
-		if !f(fd_QueryPoolResponse_pending_inbound_rune, value) {
+		if !f(fd_QueryPoolResponse_pending_inbound_switch, value) {
 			return
 		}
 	}
@@ -663,13 +663,13 @@ func (x *fastReflection_QueryPoolResponse) Range(f func(protoreflect.FieldDescri
 	}
 	if x.BalanceRune != "" {
 		value := protoreflect.ValueOfString(x.BalanceRune)
-		if !f(fd_QueryPoolResponse_balance_rune, value) {
+		if !f(fd_QueryPoolResponse_balance_switch, value) {
 			return
 		}
 	}
 	if x.AssetTorPrice != "" {
 		value := protoreflect.ValueOfString(x.AssetTorPrice)
-		if !f(fd_QueryPoolResponse_asset_tor_price, value) {
+		if !f(fd_QueryPoolResponse_asset_switch_price, value) {
 			return
 		}
 	}
@@ -788,13 +788,13 @@ func (x *fastReflection_QueryPoolResponse) Has(fd protoreflect.FieldDescriptor) 
 		return x.Decimals != int64(0)
 	case "types.QueryPoolResponse.pending_inbound_asset":
 		return x.PendingInboundAsset != ""
-	case "types.QueryPoolResponse.pending_inbound_rune":
+	case "types.QueryPoolResponse.pending_inbound_switch":
 		return x.PendingInboundRune != ""
 	case "types.QueryPoolResponse.balance_asset":
 		return x.BalanceAsset != ""
-	case "types.QueryPoolResponse.balance_rune":
+	case "types.QueryPoolResponse.balance_switch":
 		return x.BalanceRune != ""
-	case "types.QueryPoolResponse.asset_tor_price":
+	case "types.QueryPoolResponse.asset_switch_price":
 		return x.AssetTorPrice != ""
 	case "types.QueryPoolResponse.pool_units":
 		return x.PoolUnits != ""
@@ -852,13 +852,13 @@ func (x *fastReflection_QueryPoolResponse) Clear(fd protoreflect.FieldDescriptor
 		x.Decimals = int64(0)
 	case "types.QueryPoolResponse.pending_inbound_asset":
 		x.PendingInboundAsset = ""
-	case "types.QueryPoolResponse.pending_inbound_rune":
+	case "types.QueryPoolResponse.pending_inbound_switch":
 		x.PendingInboundRune = ""
 	case "types.QueryPoolResponse.balance_asset":
 		x.BalanceAsset = ""
-	case "types.QueryPoolResponse.balance_rune":
+	case "types.QueryPoolResponse.balance_switch":
 		x.BalanceRune = ""
-	case "types.QueryPoolResponse.asset_tor_price":
+	case "types.QueryPoolResponse.asset_switch_price":
 		x.AssetTorPrice = ""
 	case "types.QueryPoolResponse.pool_units":
 		x.PoolUnits = ""
@@ -921,16 +921,16 @@ func (x *fastReflection_QueryPoolResponse) Get(descriptor protoreflect.FieldDesc
 	case "types.QueryPoolResponse.pending_inbound_asset":
 		value := x.PendingInboundAsset
 		return protoreflect.ValueOfString(value)
-	case "types.QueryPoolResponse.pending_inbound_rune":
+	case "types.QueryPoolResponse.pending_inbound_switch":
 		value := x.PendingInboundRune
 		return protoreflect.ValueOfString(value)
 	case "types.QueryPoolResponse.balance_asset":
 		value := x.BalanceAsset
 		return protoreflect.ValueOfString(value)
-	case "types.QueryPoolResponse.balance_rune":
+	case "types.QueryPoolResponse.balance_switch":
 		value := x.BalanceRune
 		return protoreflect.ValueOfString(value)
-	case "types.QueryPoolResponse.asset_tor_price":
+	case "types.QueryPoolResponse.asset_switch_price":
 		value := x.AssetTorPrice
 		return protoreflect.ValueOfString(value)
 	case "types.QueryPoolResponse.pool_units":
@@ -1008,13 +1008,13 @@ func (x *fastReflection_QueryPoolResponse) Set(fd protoreflect.FieldDescriptor, 
 		x.Decimals = value.Int()
 	case "types.QueryPoolResponse.pending_inbound_asset":
 		x.PendingInboundAsset = value.Interface().(string)
-	case "types.QueryPoolResponse.pending_inbound_rune":
+	case "types.QueryPoolResponse.pending_inbound_switch":
 		x.PendingInboundRune = value.Interface().(string)
 	case "types.QueryPoolResponse.balance_asset":
 		x.BalanceAsset = value.Interface().(string)
-	case "types.QueryPoolResponse.balance_rune":
+	case "types.QueryPoolResponse.balance_switch":
 		x.BalanceRune = value.Interface().(string)
-	case "types.QueryPoolResponse.asset_tor_price":
+	case "types.QueryPoolResponse.asset_switch_price":
 		x.AssetTorPrice = value.Interface().(string)
 	case "types.QueryPoolResponse.pool_units":
 		x.PoolUnits = value.Interface().(string)
@@ -1076,14 +1076,14 @@ func (x *fastReflection_QueryPoolResponse) Mutable(fd protoreflect.FieldDescript
 		panic(fmt.Errorf("field decimals of message types.QueryPoolResponse is not mutable"))
 	case "types.QueryPoolResponse.pending_inbound_asset":
 		panic(fmt.Errorf("field pending_inbound_asset of message types.QueryPoolResponse is not mutable"))
-	case "types.QueryPoolResponse.pending_inbound_rune":
-		panic(fmt.Errorf("field pending_inbound_rune of message types.QueryPoolResponse is not mutable"))
+	case "types.QueryPoolResponse.pending_inbound_switch":
+		panic(fmt.Errorf("field pending_inbound_switch of message types.QueryPoolResponse is not mutable"))
 	case "types.QueryPoolResponse.balance_asset":
 		panic(fmt.Errorf("field balance_asset of message types.QueryPoolResponse is not mutable"))
-	case "types.QueryPoolResponse.balance_rune":
-		panic(fmt.Errorf("field balance_rune of message types.QueryPoolResponse is not mutable"))
-	case "types.QueryPoolResponse.asset_tor_price":
-		panic(fmt.Errorf("field asset_tor_price of message types.QueryPoolResponse is not mutable"))
+	case "types.QueryPoolResponse.balance_switch":
+		panic(fmt.Errorf("field balance_switch of message types.QueryPoolResponse is not mutable"))
+	case "types.QueryPoolResponse.asset_switch_price":
+		panic(fmt.Errorf("field asset_switch_price of message types.QueryPoolResponse is not mutable"))
 	case "types.QueryPoolResponse.pool_units":
 		panic(fmt.Errorf("field pool_units of message types.QueryPoolResponse is not mutable"))
 	case "types.QueryPoolResponse.LP_units":
@@ -1137,13 +1137,13 @@ func (x *fastReflection_QueryPoolResponse) NewField(fd protoreflect.FieldDescrip
 		return protoreflect.ValueOfInt64(int64(0))
 	case "types.QueryPoolResponse.pending_inbound_asset":
 		return protoreflect.ValueOfString("")
-	case "types.QueryPoolResponse.pending_inbound_rune":
+	case "types.QueryPoolResponse.pending_inbound_switch":
 		return protoreflect.ValueOfString("")
 	case "types.QueryPoolResponse.balance_asset":
 		return protoreflect.ValueOfString("")
-	case "types.QueryPoolResponse.balance_rune":
+	case "types.QueryPoolResponse.balance_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryPoolResponse.asset_tor_price":
+	case "types.QueryPoolResponse.asset_switch_price":
 		return protoreflect.ValueOfString("")
 	case "types.QueryPoolResponse.pool_units":
 		return protoreflect.ValueOfString("")
@@ -3351,11 +3351,11 @@ type QueryPoolResponse struct {
 	Status              string `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
 	Decimals            int64  `protobuf:"varint,4,opt,name=decimals,proto3" json:"decimals,omitempty"`
 	PendingInboundAsset string `protobuf:"bytes,5,opt,name=pending_inbound_asset,json=pendingInboundAsset,proto3" json:"pending_inbound_asset,omitempty"`
-	PendingInboundRune  string `protobuf:"bytes,6,opt,name=pending_inbound_rune,json=pendingInboundRune,proto3" json:"pending_inbound_rune,omitempty"`
+	PendingInboundRune  string `protobuf:"bytes,6,opt,name=pending_inbound_switch,json=pendingInboundRune,proto3" json:"pending_inbound_switch,omitempty"`
 	BalanceAsset        string `protobuf:"bytes,7,opt,name=balance_asset,json=balanceAsset,proto3" json:"balance_asset,omitempty"`
-	BalanceRune         string `protobuf:"bytes,8,opt,name=balance_rune,json=balanceRune,proto3" json:"balance_rune,omitempty"`
+	BalanceRune         string `protobuf:"bytes,8,opt,name=balance_switch,json=balanceRune,proto3" json:"balance_switch,omitempty"`
 	// the USD (TOR) price of the asset in 1e8
-	AssetTorPrice string `protobuf:"bytes,9,opt,name=asset_tor_price,json=assetTorPrice,proto3" json:"asset_tor_price,omitempty"`
+	AssetTorPrice string `protobuf:"bytes,9,opt,name=asset_switch_price,json=assetTorPrice,proto3" json:"asset_switch_price,omitempty"`
 	// the total pool units, this is the sum of LP and synth units
 	PoolUnits string `protobuf:"bytes,10,opt,name=pool_units,json=poolUnits,proto3" json:"pool_units,omitempty"`
 	// the total pool liquidity provider units

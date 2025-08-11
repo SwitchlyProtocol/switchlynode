@@ -384,7 +384,7 @@ func (s TxOutStoreVCURSuite) TestCalcTxOutHeight(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
-	pool.BalanceRune = cosmos.NewUint(90527581399649)
+	pool.BalanceSwitch = cosmos.NewUint(90527581399649)
 	pool.BalanceAsset = cosmos.NewUint(1402011488988)
 	c.Assert(keeper.SetPool(ctx, pool), IsNil)
 
@@ -566,7 +566,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemInteractionWithPool(c *C) {
 	c.Assert(err, IsNil)
 	// Set unequal values for the pool balances for this test.
 	pool.BalanceAsset = cosmos.NewUint(50 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.Asset = common.DOGEAsset
 	err = w.keeper.SetPool(w.ctx, pool)
 	c.Assert(err, IsNil)
@@ -603,7 +603,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItemInteractionWithPool(c *C) {
 	//   R_1 = R_0 - R_0 * a / (A_0 + a)  // slip formula
 	//       = 100e8 - 100e8 * (20e8 - 1999925000) / (50e8 + (20e8 - 1999925000)) = 9999850002
 	c.Assert(pool.BalanceAsset.Equal(cosmos.NewUint(5000075000)), Equals, true, Commentf("%d", pool.BalanceAsset.Uint64()))
-	c.Assert(pool.BalanceRune.Equal(cosmos.NewUint(9999850002)), Equals, true, Commentf("%d", pool.BalanceRune.Uint64()))
+	c.Assert(pool.BalanceSwitch.Equal(cosmos.NewUint(9999850002)), Equals, true, Commentf("%d", pool.BalanceSwitch.Uint64()))
 }
 
 func (s TxOutStoreVCURSuite) TestAddOutTxItemSendingFromRetiredVault(c *C) {
@@ -746,7 +746,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_SecurityVersusOutboundNumber(c *C)
 	pool, err := w.keeper.GetPool(w.ctx, common.ETHAsset)
 	c.Assert(err, IsNil)
 	pool.BalanceAsset = cosmos.NewUint(1653258402395)
-	pool.BalanceRune = cosmos.NewUint(248680012786574)
+	pool.BalanceSwitch = cosmos.NewUint(248680012786574)
 	pool.Asset = common.ETHAsset
 	err = w.keeper.SetPool(w.ctx, pool)
 	c.Assert(err, IsNil)
@@ -754,7 +754,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_SecurityVersusOutboundNumber(c *C)
 	pool, err = w.keeper.GetPool(w.ctx, assetEthTwt)
 	c.Assert(err, IsNil)
 	pool.BalanceAsset = cosmos.NewUint(89359597473914)
-	pool.BalanceRune = cosmos.NewUint(46962864904253)
+	pool.BalanceSwitch = cosmos.NewUint(46962864904253)
 	err = w.keeper.SetPool(w.ctx, pool)
 	c.Assert(err, NotNil)
 	pool.Asset = assetEthTwt
@@ -764,7 +764,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_SecurityVersusOutboundNumber(c *C)
 	pool, err = w.keeper.GetPool(w.ctx, common.BTCAsset)
 	c.Assert(err, IsNil)
 	pool.BalanceAsset = cosmos.NewUint(80362018825)
-	pool.BalanceRune = cosmos.NewUint(837898672769246)
+	pool.BalanceSwitch = cosmos.NewUint(837898672769246)
 	err = w.keeper.SetPool(w.ctx, pool)
 	c.Assert(err, NotNil)
 	pool.Asset = common.BTCAsset
@@ -774,7 +774,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_SecurityVersusOutboundNumber(c *C)
 	pool, err = w.keeper.GetPool(w.ctx, common.ATOMAsset)
 	c.Assert(err, IsNil)
 	pool.BalanceAsset = cosmos.NewUint(694112527552)
-	pool.BalanceRune = cosmos.NewUint(612691971161372)
+	pool.BalanceSwitch = cosmos.NewUint(612691971161372)
 	err = w.keeper.SetPool(w.ctx, pool)
 	c.Assert(err, NotNil)
 	pool.Asset = common.ATOMAsset
@@ -899,7 +899,7 @@ func (s TxOutStoreVCURSuite) TestAddOutTxItem_VaultStatusVersusOutboundNumber(c 
 	pool, err := w.keeper.GetPool(w.ctx, common.ETHAsset)
 	c.Assert(err, IsNil)
 	pool.BalanceAsset = cosmos.NewUint(500 * common.One)
-	pool.BalanceRune = cosmos.NewUint(75_000 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(75_000 * common.One)
 	pool.Asset = common.ETHAsset
 	err = w.keeper.SetPool(w.ctx, pool)
 	c.Assert(err, IsNil)

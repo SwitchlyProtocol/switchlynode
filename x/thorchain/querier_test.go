@@ -1271,7 +1271,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 	poolBTC := NewPool()
 	poolBTC.Asset = common.BTCAsset
 	poolBTC.BalanceAsset = cosmos.NewUint(1_000_000_000)
-	poolBTC.BalanceRune = cosmos.NewUint(10_000_000_000_000)
+	poolBTC.BalanceSwitch = cosmos.NewUint(10_000_000_000_000)
 	poolBTC.LPUnits = cosmos.NewUint(100)
 
 	err := s.mgr.Keeper().SetPool(s.ctx, poolBTC)
@@ -1280,7 +1280,7 @@ func (s *QuerierSuite) TestQuerySwap(c *C) {
 	poolETH := NewPool()
 	poolETH.Asset = common.ETHAsset
 	poolETH.BalanceAsset = cosmos.NewUint(100_000_000_000)
-	poolETH.BalanceRune = cosmos.NewUint(10_000_000_000_000)
+	poolETH.BalanceSwitch = cosmos.NewUint(10_000_000_000_000)
 	poolETH.LPUnits = cosmos.NewUint(100)
 
 	err = s.mgr.Keeper().SetPool(s.ctx, poolETH)
@@ -1400,7 +1400,7 @@ func (s *QuerierSuite) TestNetwork(c *C) {
 	pool := NewPool()
 	pool.Asset = ethBusd
 	pool.Status = PoolAvailable
-	pool.BalanceRune = cosmos.NewUint(500_000_00000000)
+	pool.BalanceSwitch = cosmos.NewUint(500_000_00000000)
 	pool.BalanceAsset = cosmos.NewUint(4_556_123_00000000)
 	pool.Decimals = 8
 	err = s.k.SetPool(s.ctx, pool)

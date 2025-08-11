@@ -150,21 +150,21 @@ func (vm *SwapQueueAdvVCUR) checkFeelessSwap(pools Pools, pair tradePair, indexR
 			return false
 		}
 		one := cosmos.NewUint(common.One)
-		runeAmt := common.GetSafeShare(one, sourcePool.BalanceAsset, sourcePool.BalanceRune)
-		emit := common.GetSafeShare(runeAmt, targetPool.BalanceRune, targetPool.BalanceAsset)
+		runeAmt := common.GetSafeShare(one, sourcePool.BalanceAsset, sourcePool.BalanceSwitch)
+		emit := common.GetSafeShare(runeAmt, targetPool.BalanceSwitch, targetPool.BalanceAsset)
 		ratio = vm.getRatio(one, emit)
 	case pair.source.IsSwitch():
 		pool, ok := pools.Get(pair.target.GetLayer1Asset())
 		if !ok {
 			return false
 		}
-		ratio = vm.getRatio(pool.BalanceRune, pool.BalanceAsset)
+		ratio = vm.getRatio(pool.BalanceSwitch, pool.BalanceAsset)
 	case pair.target.IsSwitch():
 		pool, ok := pools.Get(pair.source.GetLayer1Asset())
 		if !ok {
 			return false
 		}
-		ratio = vm.getRatio(pool.BalanceAsset, pool.BalanceRune)
+		ratio = vm.getRatio(pool.BalanceAsset, pool.BalanceSwitch)
 	}
 	return cosmos.NewUint(indexRatio).GT(ratio)
 }
@@ -194,20 +194,20 @@ func (vm *SwapQueueAdvVCUR) checkWithFeeSwap(ctx cosmos.Context, pools Pools, ms
 		if !ok {
 			return false
 		}
-		emit = swapper.CalcAssetEmission(sourcePool.BalanceAsset, source.Amount, sourcePool.BalanceRune)
-		emit = swapper.CalcAssetEmission(targetPool.BalanceRune, emit, targetPool.BalanceAsset)
+		emit = swapper.CalcAssetEmission(sourcePool.BalanceAsset, source.Amount, sourcePool.BalanceSwitch)
+		emit = swapper.CalcAssetEmission(targetPool.BalanceSwitch, emit, targetPool.BalanceAsset)
 	case source.IsSwitch():
 		pool, ok := pools.Get(target.Asset.GetLayer1Asset())
 		if !ok {
 			return false
 		}
-		emit = swapper.CalcAssetEmission(pool.BalanceRune, source.Amount, pool.BalanceAsset)
+		emit = swapper.CalcAssetEmission(pool.BalanceSwitch, source.Amount, pool.BalanceAsset)
 	case target.IsSwitch():
 		pool, ok := pools.Get(source.Asset.GetLayer1Asset())
 		if !ok {
 			return false
 		}
-		emit = swapper.CalcAssetEmission(pool.BalanceAsset, source.Amount, pool.BalanceRune)
+		emit = swapper.CalcAssetEmission(pool.BalanceAsset, source.Amount, pool.BalanceSwitch)
 	}
 
 	// txout manager has fees as well, that might fail the swap. That is NOT
@@ -507,7 +507,7 @@ func (vm *SwapQueueAdvVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synth
 			poolAsset = targetAsset
 		}
 		pool := pools[poolAsset]
-		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {
+		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceSwitch.IsZero() || pool.BalanceAsset.IsZero() {
 			continue
 		}
 		virtualDepthMult := int64(10_000)
@@ -524,7 +524,7 @@ func (vm *SwapQueueAdvVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synth
 		runeCoin := common.NewCoin(common.SwitchNative, pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
 		poolAsset = targetAsset
 		pool = pools[poolAsset]
-		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {
+		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceSwitch.IsZero() || pool.BalanceAsset.IsZero() {
 			continue
 		}
 		virtualDepthMult = int64(10_000)
@@ -543,10 +543,10 @@ func (vm *SwapQueueAdvVCUR) getLiquidityFeeAndSlip(ctx cosmos.Context, pool Pool
 	var X, x, Y cosmos.Uint
 	x = sourceCoin.Amount
 	if sourceCoin.IsSwitch() {
-		X = pool.BalanceRune
+		X = pool.BalanceSwitch
 		Y = pool.BalanceAsset
 	} else {
-		Y = pool.BalanceRune
+		Y = pool.BalanceSwitch
 		X = pool.BalanceAsset
 	}
 

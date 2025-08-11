@@ -40,7 +40,7 @@ func (mfp *MockWithdrawKeeper) GetPool(_ cosmos.Context, _ common.Asset) (Pool, 
 	}
 	if mfp.suspendedPool {
 		return Pool{
-			BalanceRune:  cosmos.ZeroUint(),
+			BalanceSwitch:  cosmos.ZeroUint(),
 			BalanceAsset: cosmos.ZeroUint(),
 			Asset:        common.ETHAsset,
 			LPUnits:      cosmos.ZeroUint(),
@@ -106,12 +106,12 @@ func (HandlerWithdrawSuite) TestWithdrawHandler(c *C) {
 		keeper:            keeper,
 		activeNodeAccount: activeNodeAccount,
 		currentPool: Pool{
-			BalanceRune:         cosmos.ZeroUint(),
+			BalanceSwitch:         cosmos.ZeroUint(),
 			BalanceAsset:        cosmos.ZeroUint(),
 			Asset:               common.ETHAsset,
 			LPUnits:             cosmos.ZeroUint(),
 			SynthUnits:          cosmos.ZeroUint(),
-			PendingInboundRune:  cosmos.ZeroUint(),
+			PendingInboundSwitch:  cosmos.ZeroUint(),
 			PendingInboundAsset: cosmos.ZeroUint(),
 			Status:              PoolAvailable,
 		},
@@ -164,7 +164,7 @@ func (HandlerWithdrawSuite) TestAsymmetricWithdraw(c *C) {
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.ZeroUint()
-	pool.BalanceRune = cosmos.ZeroUint()
+	pool.BalanceSwitch = cosmos.ZeroUint()
 	pool.Status = PoolAvailable
 	c.Assert(keeper.SetPool(ctx, pool), IsNil)
 	// Happy path , this is a round trip , first we provide liquidity, then we withdraw
@@ -285,7 +285,7 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_mockFailScenarios(c *C) {
 	activeNodeAccount := GetRandomValidatorNode(NodeActive)
 	ctx, k := setupKeeperForTest(c)
 	currentPool := Pool{
-		BalanceRune:  cosmos.ZeroUint(),
+		BalanceSwitch:  cosmos.ZeroUint(),
 		BalanceAsset: cosmos.ZeroUint(),
 		Asset:        common.ETHAsset,
 		LPUnits:      cosmos.ZeroUint(),
@@ -388,10 +388,10 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_outboundFailures(c *C) {
 	pool := Pool{
 		Asset:               asset,
 		BalanceAsset:        cosmos.NewUint(10000),
-		BalanceRune:         cosmos.NewUint(10000),
+		BalanceSwitch:         cosmos.NewUint(10000),
 		LPUnits:             cosmos.NewUint(1000),
 		SynthUnits:          cosmos.ZeroUint(),
-		PendingInboundRune:  cosmos.ZeroUint(),
+		PendingInboundSwitch:  cosmos.ZeroUint(),
 		PendingInboundAsset: cosmos.ZeroUint(),
 		Status:              PoolAvailable,
 	}
@@ -475,7 +475,7 @@ func (s *HandlerWithdrawSuite) TestFairMergeAddAndWithdrawLiquidityHandlerSavers
 	c.Assert(err, IsNil)
 	pool := NewPool()
 	pool.Asset = common.AVAXAsset
-	pool.BalanceRune = cosmos.NewUint(219911755050746)
+	pool.BalanceSwitch = cosmos.NewUint(219911755050746)
 	pool.BalanceAsset = cosmos.NewUint(2189430478930)
 	pool.LPUnits = cosmos.NewUint(104756821848147)
 	pool.Status = PoolAvailable
@@ -509,7 +509,7 @@ func (s *HandlerWithdrawSuite) TestFairMergeAddAndWithdrawLiquidityHandlerSavers
 
 	pool, err = mgr.Keeper().GetPool(ctx, common.AVAXAsset)
 	c.Assert(err, IsNil)
-	c.Check(pool.BalanceRune.Uint64(), Equals, uint64(2_199_049_46419930), Commentf("%d", pool.BalanceRune.Uint64()))
+	c.Check(pool.BalanceSwitch.Uint64(), Equals, uint64(2_199_049_46419930), Commentf("%d", pool.BalanceSwitch.Uint64()))
 	c.Check(pool.BalanceAsset.Uint64(), Equals, uint64(2199430478930), Commentf("%d", pool.BalanceAsset.Uint64()))
 
 	lp, err := mgr.Keeper().GetLiquidityProvider(ctx, common.AVAXAsset.GetSyntheticAsset(), avaxAddr)

@@ -32,7 +32,7 @@ func (k *TestSwapKeeper) GetPool(ctx cosmos.Context, asset common.Asset) (thorch
 	}
 	if asset.Equals(common.BCHAsset) {
 		return thorchaintypes.Pool{
-			BalanceRune:  cosmos.NewUint(100).MulUint64(common.One),
+			BalanceSwitch:  cosmos.NewUint(100).MulUint64(common.One),
 			BalanceAsset: cosmos.NewUint(100).MulUint64(common.One),
 			LPUnits:      cosmos.NewUint(100).MulUint64(common.One),
 			SynthUnits:   cosmos.ZeroUint(),
@@ -41,7 +41,7 @@ func (k *TestSwapKeeper) GetPool(ctx cosmos.Context, asset common.Asset) (thorch
 		}, nil
 	}
 	return thorchaintypes.Pool{
-		BalanceRune:  cosmos.NewUint(100).MulUint64(common.One),
+		BalanceSwitch:  cosmos.NewUint(100).MulUint64(common.One),
 		BalanceAsset: cosmos.NewUint(100).MulUint64(common.One),
 		LPUnits:      cosmos.NewUint(100).MulUint64(common.One),
 		SynthUnits:   cosmos.ZeroUint(),

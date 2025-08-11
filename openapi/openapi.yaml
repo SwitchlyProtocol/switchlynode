@@ -1667,10 +1667,10 @@ components:
         - asset
         - status
         - pending_inbound_asset
-        - pending_inbound_rune
+        - pending_inbound_switch
         - balance_asset
-        - balance_rune
-        - asset_tor_price
+        - balance_switch
+        - asset_switch_price
         - pool_units
         - LP_units
         - synth_units
@@ -1702,16 +1702,16 @@ components:
         pending_inbound_asset:
           type: string
           example: "101713319"
-        pending_inbound_rune:
+        pending_inbound_switch:
           type: string
           example: "464993836"
         balance_asset:
           type: string
           example: "3197744873"
-        balance_rune:
+        balance_switch:
           type: string
           example: "13460619152985"
-        asset_tor_price:
+        asset_switch_price:
           type: string
           example: "123456"
           description: the USD (TOR) price of the asset in 1e8
@@ -1781,7 +1781,7 @@ components:
         - asset
         - status
         - balance_asset
-        - balance_rune
+        - balance_switch
         - derived_depth_bps
       properties:
         asset:
@@ -1797,7 +1797,7 @@ components:
         balance_asset:
           type: string
           example: "3197744873"
-        balance_rune:
+        balance_switch:
           type: string
           example: "13460619152985"
         derived_depth_bps:

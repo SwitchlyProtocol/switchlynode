@@ -21,11 +21,11 @@ type Pool struct {
 	Status string `json:"status"`
 	Decimals *int64 `json:"decimals,omitempty"`
 	PendingInboundAsset string `json:"pending_inbound_asset"`
-	PendingInboundRune string `json:"pending_inbound_rune"`
+	PendingInboundSwitch string `json:"pending_inbound_switch"`
 	BalanceAsset string `json:"balance_asset"`
-	BalanceRune string `json:"balance_rune"`
-	// the USD (TOR) price of the asset in 1e8
-	AssetTorPrice string `json:"asset_tor_price"`
+	BalanceSwitch string `json:"balance_switch"`
+	// the USD (SWITCH) price of the asset in 1e8
+	AssetSwitchPrice string `json:"asset_switch_price"`
 	// the total pool units, this is the sum of LP and synth units
 	PoolUnits string `json:"pool_units"`
 	// the total pool liquidity provider units
@@ -67,10 +67,10 @@ func NewPool(asset string, status string, pendingInboundAsset string, pendingInb
 	this.Asset = asset
 	this.Status = status
 	this.PendingInboundAsset = pendingInboundAsset
-	this.PendingInboundRune = pendingInboundRune
+	this.PendingInboundSwitch = pendingInboundRune
 	this.BalanceAsset = balanceAsset
-	this.BalanceRune = balanceRune
-	this.AssetTorPrice = assetTorPrice
+	this.BalanceSwitch = balanceRune
+	this.AssetSwitchPrice = assetTorPrice
 	this.PoolUnits = poolUnits
 	this.LPUnits = lPUnits
 	this.SynthUnits = synthUnits
@@ -232,28 +232,28 @@ func (o *Pool) SetPendingInboundAsset(v string) {
 	o.PendingInboundAsset = v
 }
 
-// GetPendingInboundRune returns the PendingInboundRune field value
-func (o *Pool) GetPendingInboundRune() string {
+// GetPendingInboundSwitch returns the PendingInboundSwitch field value
+func (o *Pool) GetPendingInboundSwitch() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.PendingInboundRune
+	return o.PendingInboundSwitch
 }
 
-// GetPendingInboundRuneOk returns a tuple with the PendingInboundRune field value
+// GetPendingInboundSwitchOk returns a tuple with the PendingInboundSwitch field value
 // and a boolean to check if the value has been set.
-func (o *Pool) GetPendingInboundRuneOk() (*string, bool) {
+func (o *Pool) GetPendingInboundSwitchOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.PendingInboundRune, true
+	return &o.PendingInboundSwitch, true
 }
 
-// SetPendingInboundRune sets field value
-func (o *Pool) SetPendingInboundRune(v string) {
-	o.PendingInboundRune = v
+// SetPendingInboundSwitch sets field value
+func (o *Pool) SetPendingInboundSwitch(v string) {
+	o.PendingInboundSwitch = v
 }
 
 // GetBalanceAsset returns the BalanceAsset field value
@@ -280,52 +280,52 @@ func (o *Pool) SetBalanceAsset(v string) {
 	o.BalanceAsset = v
 }
 
-// GetBalanceRune returns the BalanceRune field value
-func (o *Pool) GetBalanceRune() string {
+// GetBalanceSwitch returns the BalanceSwitch field value
+func (o *Pool) GetBalanceSwitch() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.BalanceRune
+	return o.BalanceSwitch
 }
 
-// GetBalanceRuneOk returns a tuple with the BalanceRune field value
+// GetBalanceSwitchOk returns a tuple with the BalanceSwitch field value
 // and a boolean to check if the value has been set.
-func (o *Pool) GetBalanceRuneOk() (*string, bool) {
+func (o *Pool) GetBalanceSwitchOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.BalanceRune, true
+	return &o.BalanceSwitch, true
 }
 
-// SetBalanceRune sets field value
-func (o *Pool) SetBalanceRune(v string) {
-	o.BalanceRune = v
+// SetBalanceSwitch sets field value
+func (o *Pool) SetBalanceSwitch(v string) {
+	o.BalanceSwitch = v
 }
 
-// GetAssetTorPrice returns the AssetTorPrice field value
-func (o *Pool) GetAssetTorPrice() string {
+// GetAssetSwitchPrice returns the AssetSwitchPrice field value
+func (o *Pool) GetAssetSwitchPrice() string {
 	if o == nil {
 		var ret string
 		return ret
 	}
 
-	return o.AssetTorPrice
+	return o.AssetSwitchPrice
 }
 
-// GetAssetTorPriceOk returns a tuple with the AssetTorPrice field value
+// GetAssetSwitchPriceOk returns a tuple with the AssetSwitchPrice field value
 // and a boolean to check if the value has been set.
-func (o *Pool) GetAssetTorPriceOk() (*string, bool) {
+func (o *Pool) GetAssetSwitchPriceOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
-	return &o.AssetTorPrice, true
+	return &o.AssetSwitchPrice, true
 }
 
-// SetAssetTorPrice sets field value
-func (o *Pool) SetAssetTorPrice(v string) {
-	o.AssetTorPrice = v
+// SetAssetSwitchPrice sets field value
+func (o *Pool) SetAssetSwitchPrice(v string) {
+	o.AssetSwitchPrice = v
 }
 
 // GetPoolUnits returns the PoolUnits field value
@@ -714,16 +714,16 @@ func (o Pool) MarshalJSON_deprecated() ([]byte, error) {
 		toSerialize["pending_inbound_asset"] = o.PendingInboundAsset
 	}
 	if true {
-		toSerialize["pending_inbound_rune"] = o.PendingInboundRune
+		toSerialize["pending_inbound_switch"] = o.PendingInboundSwitch
 	}
 	if true {
 		toSerialize["balance_asset"] = o.BalanceAsset
 	}
 	if true {
-		toSerialize["balance_rune"] = o.BalanceRune
+		toSerialize["balance_switch"] = o.BalanceSwitch
 	}
 	if true {
-		toSerialize["asset_tor_price"] = o.AssetTorPrice
+		toSerialize["asset_switch_price"] = o.AssetSwitchPrice
 	}
 	if true {
 		toSerialize["pool_units"] = o.PoolUnits

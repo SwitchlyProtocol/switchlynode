@@ -81,7 +81,7 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 
 	// set pool
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceRune:  cosmos.NewUint(100 * common.One),
+		BalanceSwitch:  cosmos.NewUint(100 * common.One),
 		BalanceAsset: cosmos.NewUint(100 * common.One),
 		Asset:        common.AVAXAsset,
 		Status:       PoolAvailable,
@@ -102,7 +102,7 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 	c.Assert(fee.Uint64(), Equals, uint64(70*50*2))
 
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceRune:  cosmos.NewUint(100 * common.One),
+		BalanceSwitch:  cosmos.NewUint(100 * common.One),
 		BalanceAsset: cosmos.NewUint(100 * common.One),
 		Asset:        common.BTCAsset,
 		Status:       PoolAvailable,
@@ -116,7 +116,7 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 
 	// change the pool balance
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceRune:  cosmos.NewUint(500 * common.One),
+		BalanceSwitch:  cosmos.NewUint(500 * common.One),
 		BalanceAsset: cosmos.NewUint(100 * common.One),
 		Asset:        common.BTCAsset,
 		Status:       PoolAvailable,
@@ -142,7 +142,7 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 	busdAsset, err := common.NewAsset("BSC.BUSD-BD1")
 	c.Assert(err, IsNil)
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceRune:  cosmos.NewUint(500 * common.One),
+		BalanceSwitch:  cosmos.NewUint(500 * common.One),
 		BalanceAsset: cosmos.NewUint(500 * common.One),
 		Decimals:     8,
 		Asset:        busdAsset,
@@ -191,7 +191,7 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 	btcUsd, err := common.NewAsset("BTC.USDC")
 	c.Assert(err, IsNil)
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceRune:  cosmos.NewUint(500 * common.One),
+		BalanceSwitch:  cosmos.NewUint(500 * common.One),
 		BalanceAsset: cosmos.NewUint(200 * common.One),
 		Asset:        btcUsd,
 		Status:       PoolAvailable,
@@ -241,7 +241,7 @@ func (GasManagerTestSuiteVCUR) TestDifferentValidations(c *C) {
 	p := NewPool()
 	p.Asset = common.ATOMAsset
 	p.BalanceAsset = cosmos.NewUint(common.One * 100)
-	p.BalanceRune = cosmos.NewUint(common.One * 100)
+	p.BalanceSwitch = cosmos.NewUint(common.One * 100)
 	p.Status = PoolAvailable
 	c.Assert(helper.Keeper.SetPool(ctx, p), IsNil)
 	gasMgr.AddGasAsset(common.EmptyAsset, common.Gas{

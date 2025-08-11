@@ -344,7 +344,7 @@ func (vm *SwapQueueVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synthVir
 			nonRuneAsset = targetAsset
 		}
 		pool := pools[nonRuneAsset]
-		if pool.IsEmpty() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {
+		if pool.IsEmpty() || pool.BalanceSwitch.IsZero() || pool.BalanceAsset.IsZero() {
 			continue
 		}
 		// synths may be redeemed on unavailable pools, score them
@@ -365,7 +365,7 @@ func (vm *SwapQueueVCUR) scoreMsgs(ctx cosmos.Context, items swapItems, synthVir
 		runeCoin := common.NewCoin(common.SwitchNative, pool.AssetValueInRune(item.msg.Tx.Coins[0].Amount))
 		nonRuneAsset = targetAsset
 		pool = pools[nonRuneAsset]
-		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceRune.IsZero() || pool.BalanceAsset.IsZero() {
+		if pool.IsEmpty() || !pool.IsAvailable() || pool.BalanceSwitch.IsZero() || pool.BalanceAsset.IsZero() {
 			continue
 		}
 		virtualDepthMult = int64(10_000)
@@ -384,10 +384,10 @@ func (vm *SwapQueueVCUR) getLiquidityFeeAndSlip(ctx cosmos.Context, pool Pool, s
 	var X, x, Y cosmos.Uint
 	x = sourceCoin.Amount
 	if sourceCoin.IsSwitch() {
-		X = pool.BalanceRune
+		X = pool.BalanceSwitch
 		Y = pool.BalanceAsset
 	} else {
-		Y = pool.BalanceRune
+		Y = pool.BalanceSwitch
 		X = pool.BalanceAsset
 	}
 

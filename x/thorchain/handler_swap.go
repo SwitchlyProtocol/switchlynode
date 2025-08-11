@@ -221,7 +221,7 @@ func (h SwapHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSwap) error {
 				if err != nil {
 					ctx.Logger().Error("fail to fetch pool for swap simulation", "error", err)
 				} else {
-					runeAmount = swapper.CalcAssetEmission(sourcePool.BalanceAsset, sourceCoin.Amount, sourcePool.BalanceRune)
+					runeAmount = swapper.CalcAssetEmission(sourcePool.BalanceAsset, sourceCoin.Amount, sourcePool.BalanceSwitch)
 				}
 			}
 			// rune --> synth swap
@@ -229,7 +229,7 @@ func (h SwapHandler) validateV3_0_0(ctx cosmos.Context, msg MsgSwap) error {
 			if err != nil {
 				ctx.Logger().Error("fail to fetch pool for swap simulation", "error", err)
 			} else {
-				targetAmount = swapper.CalcAssetEmission(targetPool.BalanceRune, runeAmount, targetPool.BalanceAsset)
+				targetAmount = swapper.CalcAssetEmission(targetPool.BalanceSwitch, runeAmount, targetPool.BalanceAsset)
 			}
 		}
 		err = isSynthMintPaused(ctx, h.mgr, target, targetAmount)
@@ -496,7 +496,7 @@ func (h SwapHandler) getTotalLiquidityRUNE(ctx cosmos.Context) (cosmos.Uint, err
 		if p.Asset.IsDerivedAsset() {
 			continue
 		}
-		total = total.Add(p.BalanceRune)
+		total = total.Add(p.BalanceSwitch)
 	}
 	return total, nil
 }

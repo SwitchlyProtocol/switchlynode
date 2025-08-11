@@ -38,12 +38,12 @@ func NewWithdrawTestKeeper(keeper keeper.Keeper) *WithdrawTestKeeper {
 func getWithdrawTestKeeper2(c *C, ctx cosmos.Context, k keeper.Keeper, runeAddress common.Address) keeper.Keeper {
 	store := NewWithdrawTestKeeper(k)
 	pool := Pool{
-		BalanceRune:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Asset:        common.ETHAsset,
-		LPUnits:      cosmos.NewUint(200 * common.One),
-		SynthUnits:   cosmos.ZeroUint(),
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Asset:         common.ETHAsset,
+		LPUnits:       cosmos.NewUint(200 * common.One),
+		SynthUnits:    cosmos.ZeroUint(),
+		Status:        PoolAvailable,
 	}
 	c.Assert(store.SetPool(ctx, pool), IsNil)
 	lp := LiquidityProvider{
@@ -70,12 +70,12 @@ func (k *WithdrawTestKeeper) GetPool(ctx cosmos.Context, asset common.Asset) (ty
 		return p, nil
 	}
 	return types.Pool{
-		BalanceRune:  cosmos.NewUint(100).MulUint64(common.One),
-		BalanceAsset: cosmos.NewUint(100).MulUint64(common.One),
-		LPUnits:      cosmos.NewUint(100).MulUint64(common.One),
-		SynthUnits:   cosmos.ZeroUint(),
-		Status:       PoolAvailable,
-		Asset:        asset,
+		BalanceSwitch: cosmos.NewUint(100).MulUint64(common.One),
+		BalanceAsset:  cosmos.NewUint(100).MulUint64(common.One),
+		LPUnits:       cosmos.NewUint(100).MulUint64(common.One),
+		SynthUnits:    cosmos.ZeroUint(),
+		Status:        PoolAvailable,
+		Asset:         asset,
 	}, nil
 }
 
@@ -572,11 +572,11 @@ func (WithdrawSuite) TestWithdrawPendingRuneOrAsset(c *C) {
 	accountAddr := GetRandomValidatorNode(NodeActive).NodeAddress
 	ctx, mgr := setupManagerForTest(c)
 	pool := Pool{
-		BalanceRune:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Asset:        common.ETHAsset,
-		LPUnits:      cosmos.NewUint(200 * common.One),
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Asset:         common.ETHAsset,
+		LPUnits:       cosmos.NewUint(200 * common.One),
+		Status:        PoolAvailable,
 	}
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 	lp := LiquidityProvider{
@@ -638,12 +638,12 @@ func (s *WithdrawSuite) TestWithdrawPendingLiquidityShouldRoundToPoolDecimals(c 
 	accountAddr := GetRandomValidatorNode(NodeActive).NodeAddress
 	ctx, mgr := setupManagerForTest(c)
 	pool := Pool{
-		BalanceRune:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Asset:        common.ETHAsset,
-		LPUnits:      cosmos.NewUint(200 * common.One),
-		Status:       PoolAvailable,
-		Decimals:     int64(6),
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Asset:         common.ETHAsset,
+		LPUnits:       cosmos.NewUint(200 * common.One),
+		Status:        PoolAvailable,
+		Decimals:      int64(6),
 	}
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 	v := GetCurrentVersion()
@@ -680,12 +680,12 @@ func (s *WithdrawSuite) TestWithdrawPendingLiquidityShouldRoundToPoolDecimals(c 
 func getWithdrawTestKeeper(c *C, ctx cosmos.Context, k keeper.Keeper, runeAddress common.Address) keeper.Keeper {
 	store := NewWithdrawTestKeeper(k)
 	pool := Pool{
-		BalanceRune:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Asset:        common.ETHAsset,
-		LPUnits:      cosmos.NewUint(100 * common.One),
-		SynthUnits:   cosmos.ZeroUint(),
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Asset:         common.ETHAsset,
+		LPUnits:       cosmos.NewUint(100 * common.One),
+		SynthUnits:    cosmos.ZeroUint(),
+		Status:        PoolAvailable,
 	}
 	c.Assert(store.SetPool(ctx, pool), IsNil)
 	lp := LiquidityProvider{
@@ -715,11 +715,11 @@ func (WithdrawSuite) TestWithdrawSynth(c *C) {
 	c.Assert(mgr.Keeper().SendFromModuleToModule(ctx, ModuleName, AsgardName, common.NewCoins(coin)), IsNil)
 
 	pool := Pool{
-		BalanceRune:  cosmos.ZeroUint(),
-		BalanceAsset: coin.Amount,
-		Asset:        asset,
-		LPUnits:      cosmos.NewUint(200 * common.One),
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.ZeroUint(),
+		BalanceAsset:  coin.Amount,
+		Asset:         asset,
+		LPUnits:       cosmos.NewUint(200 * common.One),
+		Status:        PoolAvailable,
 	}
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 	lp := LiquidityProvider{
@@ -751,7 +751,7 @@ func (WithdrawSuite) TestWithdrawSynth(c *C) {
 
 	pool, err = mgr.Keeper().GetPool(ctx, asset)
 	c.Assert(err, IsNil)
-	c.Check(pool.BalanceRune.Uint64(), Equals, uint64(0), Commentf("%d", pool.BalanceRune.Uint64()))
+	c.Check(pool.BalanceSwitch.Uint64(), Equals, uint64(0), Commentf("%d", pool.BalanceSwitch.Uint64()))
 	c.Check(pool.BalanceAsset.Uint64(), Equals, uint64(75*common.One), Commentf("%d", pool.BalanceAsset.Uint64()))
 	c.Check(pool.LPUnits.Uint64(), Equals, uint64(150*common.One), Commentf("%d", pool.LPUnits.Uint64())) // LP units did decreased
 }
@@ -766,11 +766,11 @@ func (WithdrawSuite) TestWithdrawSynthSingleLP(c *C) {
 	c.Assert(mgr.Keeper().SendFromModuleToModule(ctx, ModuleName, AsgardName, common.NewCoins(coin)), IsNil)
 
 	pool := Pool{
-		BalanceRune:  cosmos.ZeroUint(),
-		BalanceAsset: coin.Amount,
-		Asset:        asset,
-		LPUnits:      cosmos.NewUint(200 * common.One),
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.ZeroUint(),
+		BalanceAsset:  coin.Amount,
+		Asset:         asset,
+		LPUnits:       cosmos.NewUint(200 * common.One),
+		Status:        PoolAvailable,
 	}
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 	lp := LiquidityProvider{
@@ -802,7 +802,7 @@ func (WithdrawSuite) TestWithdrawSynthSingleLP(c *C) {
 
 	pool, err = mgr.Keeper().GetPool(ctx, asset)
 	c.Check(err, IsNil)
-	c.Check(pool.BalanceRune.Uint64(), Equals, uint64(0), Commentf("%d", pool.BalanceRune.Uint64()))
+	c.Check(pool.BalanceSwitch.Uint64(), Equals, uint64(0), Commentf("%d", pool.BalanceSwitch.Uint64()))
 	c.Check(pool.BalanceAsset.Uint64(), Equals, uint64(0), Commentf("%d", pool.BalanceAsset.Uint64()))
 	c.Check(pool.LPUnits.Uint64(), Equals, uint64(0), Commentf("%d", pool.LPUnits.Uint64())) // LP units did decreased
 }

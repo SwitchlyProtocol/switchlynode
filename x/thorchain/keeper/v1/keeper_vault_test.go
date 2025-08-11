@@ -71,7 +71,7 @@ func (s *KeeperVaultSuite) TestVaultSorBySecurity(c *C) {
 	// Create Pools
 	pool1 := NewPool()
 	pool1.Asset = common.ETHAsset
-	pool1.BalanceRune = cosmos.NewUint(common.One * 100)
+	pool1.BalanceSwitch = cosmos.NewUint(common.One * 100)
 	pool1.BalanceAsset = cosmos.NewUint(common.One * 100)
 	c.Assert(k.SetPool(ctx, pool1), IsNil)
 
@@ -142,7 +142,7 @@ func (s *KeeperVaultSuite) TestGetMostSecureStrict(c *C) {
 
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
-	pool.BalanceRune = cosmos.NewUint(common.One * 100)
+	pool.BalanceSwitch = cosmos.NewUint(common.One * 100)
 	pool.BalanceAsset = cosmos.NewUint(common.One * 100)
 	c.Assert(k.SetPool(ctx, pool), IsNil)
 

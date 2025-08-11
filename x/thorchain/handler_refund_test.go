@@ -124,8 +124,8 @@ func newRefundTxHandlerTestHelper(c *C) refundTxHandlerTestHelper {
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
-	pool.LPUnits = pool.BalanceRune
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
+	pool.LPUnits = pool.BalanceSwitch
 
 	version := GetCurrentVersion()
 	asgardVault := GetRandomVault()
@@ -414,6 +414,6 @@ func (s *HandlerRefundSuite) TestOutboundTxHandlerInvalidObservedTxVoterShouldSl
 	pool, err = helper.keeper.GetPool(helper.ctx, common.ETHAsset)
 	c.Assert(err, IsNil)
 	newBalance := cosmos.NewUint(10099933501)
-	c.Assert(pool.BalanceRune, DeepEquals, newBalance)
+	c.Assert(pool.BalanceSwitch, DeepEquals, newBalance)
 	c.Assert(pool.BalanceAsset, DeepEquals, poolETH)
 }

@@ -53,7 +53,7 @@ func (HandlerDonateSuite) TestDonate(c *C) {
 	c.Assert(err, IsNil)
 	afterPool, err := w.keeper.GetPool(w.ctx, common.DOGEAsset)
 	c.Assert(err, IsNil)
-	c.Assert(afterPool.BalanceRune.String(), Equals, prePool.BalanceRune.Add(msg.RuneAmount).String())
+	c.Assert(afterPool.BalanceSwitch.String(), Equals, prePool.BalanceSwitch.Add(msg.RuneAmount).String())
 	c.Assert(afterPool.BalanceAsset.String(), Equals, prePool.BalanceAsset.Add(msg.AssetAmount).String())
 
 	msgBan := NewMsgBan(GetRandomBech32Addr(), w.activeNodeAccount.NodeAddress)

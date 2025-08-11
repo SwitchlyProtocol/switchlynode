@@ -622,7 +622,7 @@ func (s *SlasherVCUR) DecSlashPoints(ctx cosmos.Context, point int64, addresses 
 // updatePoolFromSlash updates a pool's depths and emits appropriate events after a slash
 func (s *SlasherVCUR) updatePoolFromSlash(ctx cosmos.Context, pool types.Pool, stolenAsset common.Coin, runeCreditAmt cosmos.Uint, mgr Manager) {
 	pool.BalanceAsset = common.SafeSub(pool.BalanceAsset, stolenAsset.Amount)
-	pool.BalanceRune = pool.BalanceRune.Add(runeCreditAmt)
+	pool.BalanceSwitch = pool.BalanceSwitch.Add(runeCreditAmt)
 	if err := s.keeper.SetPool(ctx, pool); err != nil {
 		ctx.Logger().Error("fail to save pool for slash", "asset", pool.Asset, "error", err)
 	}

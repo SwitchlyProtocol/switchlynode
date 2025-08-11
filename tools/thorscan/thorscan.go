@@ -56,7 +56,7 @@ var httpClient *http.Client
 // -------------------------------------------------------------------------------------
 
 func getBlock(height int64) (*BlockResponse, error) {
-	url := APIEndpoint + "/thorchain/block"
+	url := APIEndpoint + "/switchly/block"
 	if height > 0 {
 		url += "?height=" + strconv.FormatInt(height, 10)
 	}

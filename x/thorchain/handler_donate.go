@@ -80,7 +80,7 @@ func (h DonateHandler) handleV3_0_0(ctx cosmos.Context, msg MsgDonate) error {
 		return cosmos.ErrUnknownRequest(fmt.Sprintf("pool %s not exist", msg.Asset.String()))
 	}
 	pool.BalanceAsset = pool.BalanceAsset.Add(msg.AssetAmount)
-	pool.BalanceRune = pool.BalanceRune.Add(msg.RuneAmount)
+	pool.BalanceSwitch = pool.BalanceSwitch.Add(msg.RuneAmount)
 
 	if err = h.mgr.Keeper().SetPool(ctx, pool); err != nil {
 		return ErrInternal(err, fmt.Sprintf("fail to set pool(%s)", pool))

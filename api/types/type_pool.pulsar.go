@@ -16,7 +16,7 @@ import (
 
 var (
 	md_Pool                       protoreflect.MessageDescriptor
-	fd_Pool_balance_rune          protoreflect.FieldDescriptor
+	fd_Pool_balance_switch          protoreflect.FieldDescriptor
 	fd_Pool_balance_asset         protoreflect.FieldDescriptor
 	fd_Pool_asset                 protoreflect.FieldDescriptor
 	fd_Pool_LP_units              protoreflect.FieldDescriptor
@@ -24,14 +24,14 @@ var (
 	fd_Pool_status_since          protoreflect.FieldDescriptor
 	fd_Pool_decimals              protoreflect.FieldDescriptor
 	fd_Pool_synth_units           protoreflect.FieldDescriptor
-	fd_Pool_pending_inbound_rune  protoreflect.FieldDescriptor
+	fd_Pool_pending_inbound_switch  protoreflect.FieldDescriptor
 	fd_Pool_pending_inbound_asset protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_types_type_pool_proto_init()
 	md_Pool = File_types_type_pool_proto.Messages().ByName("Pool")
-	fd_Pool_balance_rune = md_Pool.Fields().ByName("balance_rune")
+	fd_Pool_balance_switch = md_Pool.Fields().ByName("balance_switch")
 	fd_Pool_balance_asset = md_Pool.Fields().ByName("balance_asset")
 	fd_Pool_asset = md_Pool.Fields().ByName("asset")
 	fd_Pool_LP_units = md_Pool.Fields().ByName("LP_units")
@@ -39,7 +39,7 @@ func init() {
 	fd_Pool_status_since = md_Pool.Fields().ByName("status_since")
 	fd_Pool_decimals = md_Pool.Fields().ByName("decimals")
 	fd_Pool_synth_units = md_Pool.Fields().ByName("synth_units")
-	fd_Pool_pending_inbound_rune = md_Pool.Fields().ByName("pending_inbound_rune")
+	fd_Pool_pending_inbound_switch = md_Pool.Fields().ByName("pending_inbound_switch")
 	fd_Pool_pending_inbound_asset = md_Pool.Fields().ByName("pending_inbound_asset")
 }
 
@@ -110,7 +110,7 @@ func (x *fastReflection_Pool) Interface() protoreflect.ProtoMessage {
 func (x *fastReflection_Pool) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.BalanceRune != "" {
 		value := protoreflect.ValueOfString(x.BalanceRune)
-		if !f(fd_Pool_balance_rune, value) {
+		if !f(fd_Pool_balance_switch, value) {
 			return
 		}
 	}
@@ -158,7 +158,7 @@ func (x *fastReflection_Pool) Range(f func(protoreflect.FieldDescriptor, protore
 	}
 	if x.PendingInboundRune != "" {
 		value := protoreflect.ValueOfString(x.PendingInboundRune)
-		if !f(fd_Pool_pending_inbound_rune, value) {
+		if !f(fd_Pool_pending_inbound_switch, value) {
 			return
 		}
 	}
@@ -183,7 +183,7 @@ func (x *fastReflection_Pool) Range(f func(protoreflect.FieldDescriptor, protore
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_Pool) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "types.Pool.balance_rune":
+	case "types.Pool.balance_switch":
 		return x.BalanceRune != ""
 	case "types.Pool.balance_asset":
 		return x.BalanceAsset != ""
@@ -199,7 +199,7 @@ func (x *fastReflection_Pool) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.Decimals != int64(0)
 	case "types.Pool.synth_units":
 		return x.SynthUnits != ""
-	case "types.Pool.pending_inbound_rune":
+	case "types.Pool.pending_inbound_switch":
 		return x.PendingInboundRune != ""
 	case "types.Pool.pending_inbound_asset":
 		return x.PendingInboundAsset != ""
@@ -219,7 +219,7 @@ func (x *fastReflection_Pool) Has(fd protoreflect.FieldDescriptor) bool {
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Pool) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "types.Pool.balance_rune":
+	case "types.Pool.balance_switch":
 		x.BalanceRune = ""
 	case "types.Pool.balance_asset":
 		x.BalanceAsset = ""
@@ -235,7 +235,7 @@ func (x *fastReflection_Pool) Clear(fd protoreflect.FieldDescriptor) {
 		x.Decimals = int64(0)
 	case "types.Pool.synth_units":
 		x.SynthUnits = ""
-	case "types.Pool.pending_inbound_rune":
+	case "types.Pool.pending_inbound_switch":
 		x.PendingInboundRune = ""
 	case "types.Pool.pending_inbound_asset":
 		x.PendingInboundAsset = ""
@@ -255,7 +255,7 @@ func (x *fastReflection_Pool) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_Pool) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "types.Pool.balance_rune":
+	case "types.Pool.balance_switch":
 		value := x.BalanceRune
 		return protoreflect.ValueOfString(value)
 	case "types.Pool.balance_asset":
@@ -279,7 +279,7 @@ func (x *fastReflection_Pool) Get(descriptor protoreflect.FieldDescriptor) proto
 	case "types.Pool.synth_units":
 		value := x.SynthUnits
 		return protoreflect.ValueOfString(value)
-	case "types.Pool.pending_inbound_rune":
+	case "types.Pool.pending_inbound_switch":
 		value := x.PendingInboundRune
 		return protoreflect.ValueOfString(value)
 	case "types.Pool.pending_inbound_asset":
@@ -305,7 +305,7 @@ func (x *fastReflection_Pool) Get(descriptor protoreflect.FieldDescriptor) proto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_Pool) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "types.Pool.balance_rune":
+	case "types.Pool.balance_switch":
 		x.BalanceRune = value.Interface().(string)
 	case "types.Pool.balance_asset":
 		x.BalanceAsset = value.Interface().(string)
@@ -321,7 +321,7 @@ func (x *fastReflection_Pool) Set(fd protoreflect.FieldDescriptor, value protore
 		x.Decimals = value.Int()
 	case "types.Pool.synth_units":
 		x.SynthUnits = value.Interface().(string)
-	case "types.Pool.pending_inbound_rune":
+	case "types.Pool.pending_inbound_switch":
 		x.PendingInboundRune = value.Interface().(string)
 	case "types.Pool.pending_inbound_asset":
 		x.PendingInboundAsset = value.Interface().(string)
@@ -350,8 +350,8 @@ func (x *fastReflection_Pool) Mutable(fd protoreflect.FieldDescriptor) protorefl
 			x.Asset = new(common.Asset)
 		}
 		return protoreflect.ValueOfMessage(x.Asset.ProtoReflect())
-	case "types.Pool.balance_rune":
-		panic(fmt.Errorf("field balance_rune of message types.Pool is not mutable"))
+	case "types.Pool.balance_switch":
+		panic(fmt.Errorf("field balance_switch of message types.Pool is not mutable"))
 	case "types.Pool.balance_asset":
 		panic(fmt.Errorf("field balance_asset of message types.Pool is not mutable"))
 	case "types.Pool.LP_units":
@@ -364,8 +364,8 @@ func (x *fastReflection_Pool) Mutable(fd protoreflect.FieldDescriptor) protorefl
 		panic(fmt.Errorf("field decimals of message types.Pool is not mutable"))
 	case "types.Pool.synth_units":
 		panic(fmt.Errorf("field synth_units of message types.Pool is not mutable"))
-	case "types.Pool.pending_inbound_rune":
-		panic(fmt.Errorf("field pending_inbound_rune of message types.Pool is not mutable"))
+	case "types.Pool.pending_inbound_switch":
+		panic(fmt.Errorf("field pending_inbound_switch of message types.Pool is not mutable"))
 	case "types.Pool.pending_inbound_asset":
 		panic(fmt.Errorf("field pending_inbound_asset of message types.Pool is not mutable"))
 	default:
@@ -381,7 +381,7 @@ func (x *fastReflection_Pool) Mutable(fd protoreflect.FieldDescriptor) protorefl
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_Pool) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "types.Pool.balance_rune":
+	case "types.Pool.balance_switch":
 		return protoreflect.ValueOfString("")
 	case "types.Pool.balance_asset":
 		return protoreflect.ValueOfString("")
@@ -398,7 +398,7 @@ func (x *fastReflection_Pool) NewField(fd protoreflect.FieldDescriptor) protoref
 		return protoreflect.ValueOfInt64(int64(0))
 	case "types.Pool.synth_units":
 		return protoreflect.ValueOfString("")
-	case "types.Pool.pending_inbound_rune":
+	case "types.Pool.pending_inbound_switch":
 		return protoreflect.ValueOfString("")
 	case "types.Pool.pending_inbound_asset":
 		return protoreflect.ValueOfString("")
@@ -1052,7 +1052,7 @@ type Pool struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BalanceRune         string        `protobuf:"bytes,1,opt,name=balance_rune,json=balanceRune,proto3" json:"balance_rune,omitempty"`
+	BalanceRune         string        `protobuf:"bytes,1,opt,name=balance_switch,json=balanceRune,proto3" json:"balance_switch,omitempty"`
 	BalanceAsset        string        `protobuf:"bytes,2,opt,name=balance_asset,json=balanceAsset,proto3" json:"balance_asset,omitempty"`
 	Asset               *common.Asset `protobuf:"bytes,3,opt,name=asset,proto3" json:"asset,omitempty"`
 	LPUnits             string        `protobuf:"bytes,4,opt,name=LP_units,json=LPUnits,proto3" json:"LP_units,omitempty"`
@@ -1060,7 +1060,7 @@ type Pool struct {
 	StatusSince         int64         `protobuf:"varint,10,opt,name=status_since,json=statusSince,proto3" json:"status_since,omitempty"`
 	Decimals            int64         `protobuf:"varint,6,opt,name=decimals,proto3" json:"decimals,omitempty"`
 	SynthUnits          string        `protobuf:"bytes,7,opt,name=synth_units,json=synthUnits,proto3" json:"synth_units,omitempty"`
-	PendingInboundRune  string        `protobuf:"bytes,8,opt,name=pending_inbound_rune,json=pendingInboundRune,proto3" json:"pending_inbound_rune,omitempty"`
+	PendingInboundRune  string        `protobuf:"bytes,8,opt,name=pending_inbound_switch,json=pendingInboundRune,proto3" json:"pending_inbound_switch,omitempty"`
 	PendingInboundAsset string        `protobuf:"bytes,9,opt,name=pending_inbound_asset,json=pendingInboundAsset,proto3" json:"pending_inbound_asset,omitempty"`
 }
 

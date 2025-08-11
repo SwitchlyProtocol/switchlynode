@@ -66,7 +66,7 @@ func (pm *PoolMgrVCUR) cyclePools(ctx cosmos.Context, maxAvailablePools, minRune
 	minPoolLiquidityFee := mgr.Keeper().GetConfigInt64(ctx, constants.MinimumPoolLiquidityFee)
 	// quick func to check the validity of a pool
 	validPool := func(pool Pool) bool {
-		if pool.BalanceAsset.IsZero() || pool.BalanceRune.IsZero() || pool.BalanceRune.LT(minRuneDepth) {
+		if pool.BalanceAsset.IsZero() || pool.BalanceSwitch.IsZero() || pool.BalanceSwitch.LT(minRuneDepth) {
 			return false
 		}
 		return true
@@ -118,7 +118,7 @@ func (pm *PoolMgrVCUR) cyclePools(ctx cosmos.Context, maxAvailablePools, minRune
 			}
 			// reset the pool rolling liquidity fee to zero
 			mgr.Keeper().ResetRollingPoolLiquidityFee(ctx, pool.Asset)
-			if pool.BalanceRune.LT(choppingBlock.BalanceRune) || choppingBlock.IsEmpty() {
+			if pool.BalanceSwitch.LT(choppingBlock.BalanceSwitch) || choppingBlock.IsEmpty() {
 				// omit pools that are gas assets from being on the chopping
 				// block, removing these pool requires a chain ragnarok, and
 				// cannot be handled individually
@@ -127,11 +127,11 @@ func (pm *PoolMgrVCUR) cyclePools(ctx cosmos.Context, maxAvailablePools, minRune
 		case PoolStaged:
 			// deduct staged pool rune fee
 			fee := cosmos.NewUint(uint64(stagedPoolCost))
-			if fee.GT(pool.BalanceRune) {
-				fee = pool.BalanceRune
+			if fee.GT(pool.BalanceSwitch) {
+				fee = pool.BalanceSwitch
 			}
 			if !fee.IsZero() {
-				pool.BalanceRune = common.SafeSub(pool.BalanceRune, fee)
+				pool.BalanceSwitch = common.SafeSub(pool.BalanceSwitch, fee)
 				if err := mgr.Keeper().SetPool(ctx, pool); err != nil {
 					ctx.Logger().Error("fail to save pool", "pool", pool.Asset, "err", err)
 				}
@@ -150,7 +150,7 @@ func (pm *PoolMgrVCUR) cyclePools(ctx cosmos.Context, maxAvailablePools, minRune
 			// the process of being created (race condition). We can safely
 			// assume, if a pool has asset, but no rune, it should be
 			// abandoned.
-			if pool.BalanceRune.IsZero() && !pool.BalanceAsset.IsZero() {
+			if pool.BalanceSwitch.IsZero() && !pool.BalanceAsset.IsZero() {
 				// the staged pool no longer has any rune, abandon the pool
 				// and liquidity provider, and burn the asset (via zero'ing
 				// the vaults for the asset, and churning away from the
@@ -158,8 +158,8 @@ func (pm *PoolMgrVCUR) cyclePools(ctx cosmos.Context, maxAvailablePools, minRune
 				ctx.Logger().Info("burning pool", "pool", pool.Asset)
 
 				// Transfer any pending RUNE to the Reserve so it isn't left in the Pool Module after pool deletion
-				if !pool.PendingInboundRune.IsZero() {
-					if err := mgr.Keeper().AddPoolFeeToReserve(ctx, pool.PendingInboundRune); err != nil {
+				if !pool.PendingInboundSwitch.IsZero() {
+					if err := mgr.Keeper().AddPoolFeeToReserve(ctx, pool.PendingInboundSwitch); err != nil {
 						ctx.Logger().Error("fail to transfer pending inbound rune to reserve during pool burning", "from pool", pool.Asset, "err", err)
 					}
 				}
@@ -177,7 +177,7 @@ func (pm *PoolMgrVCUR) cyclePools(ctx cosmos.Context, maxAvailablePools, minRune
 				// remove asset from Vault
 				pm.removeAssetFromVault(ctx, pool.Asset, mgr)
 
-			} else if validPool(pool) && onDeck.BalanceRune.LT(pool.BalanceRune) {
+			} else if validPool(pool) && onDeck.BalanceSwitch.LT(pool.BalanceSwitch) {
 				onDeck = pool
 			}
 		}
@@ -187,7 +187,7 @@ func (pm *PoolMgrVCUR) cyclePools(ctx cosmos.Context, maxAvailablePools, minRune
 		// if we've hit our max available pools, and the onDeck pool is less
 		// than the chopping block pool, then we do make no changes, by
 		// resetting the variables
-		if onDeck.BalanceRune.LTE(choppingBlock.BalanceRune) {
+		if onDeck.BalanceSwitch.LTE(choppingBlock.BalanceSwitch) {
 			onDeck = NewPool()        // reset
 			choppingBlock = NewPool() // reset
 		}
@@ -317,7 +317,7 @@ func (pm *PoolMgrVCUR) cleanupPendingLiquidity(ctx cosmos.Context, mgr Manager) 
 			continue
 		}
 		// no need to commit pending liquidity when there is none, quick exit
-		if pool.PendingInboundRune.IsZero() && pool.PendingInboundAsset.IsZero() {
+		if pool.PendingInboundSwitch.IsZero() && pool.PendingInboundAsset.IsZero() {
 			continue
 		}
 		if mgr.Keeper().IsChainHalted(ctx, pool.Asset.GetChain()) || mgr.Keeper().IsLPPaused(ctx, pool.Asset.GetChain()) {
@@ -489,7 +489,7 @@ func (pm *PoolMgrVCUR) commitPendingLiquidity(ctx cosmos.Context, pool Pool, mgr
 	cleanedAsset := cosmos.ZeroUint()
 
 	// no need to commit pending liquidity when there is none, quick exit
-	if pool.PendingInboundRune.IsZero() && pool.PendingInboundAsset.IsZero() {
+	if pool.PendingInboundSwitch.IsZero() && pool.PendingInboundAsset.IsZero() {
 		return nil
 	}
 

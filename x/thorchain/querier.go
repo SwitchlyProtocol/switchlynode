@@ -1375,7 +1375,7 @@ func (qs queryServer) queryPool(ctx cosmos.Context, req *types.QueryPoolRequest)
 
 	runeDepth, _, _ := qs.mgr.NetworkMgr().CalcAnchor(ctx, qs.mgr, asset)
 	dpool, _ := qs.mgr.Keeper().GetPool(ctx, asset.GetDerivedAsset())
-	dbps := common.GetUncappedShare(dpool.BalanceRune, runeDepth, cosmos.NewUint(constants.MaxBasisPts))
+	dbps := common.GetUncappedShare(dpool.BalanceSwitch, runeDepth, cosmos.NewUint(constants.MaxBasisPts))
 	if dpool.Status != PoolAvailable {
 		dbps = cosmos.ZeroUint()
 	}
@@ -1402,18 +1402,18 @@ func (qs queryServer) queryPool(ctx cosmos.Context, req *types.QueryPoolRequest)
 	}
 
 	p := types.QueryPoolResponse{
-		Asset:               pool.Asset.String(),
-		ShortCode:           pool.Asset.ShortCode(),
-		Status:              pool.Status.String(),
-		Decimals:            pool.Decimals,
-		PendingInboundAsset: pool.PendingInboundAsset.String(),
-		PendingInboundRune:  pool.PendingInboundRune.String(),
-		BalanceAsset:        pool.BalanceAsset.String(),
-		BalanceRune:         pool.BalanceRune.String(),
-		PoolUnits:           pool.GetPoolUnits().String(),
-		LPUnits:             pool.LPUnits.String(),
-		SynthUnits:          pool.SynthUnits.String(),
-		TradingHalted:       tradingHalted,
+		Asset:                pool.Asset.String(),
+		ShortCode:            pool.Asset.ShortCode(),
+		Status:               pool.Status.String(),
+		Decimals:             pool.Decimals,
+		PendingInboundAsset:  pool.PendingInboundAsset.String(),
+		PendingInboundSwitch: pool.PendingInboundSwitch.String(),
+		BalanceAsset:         pool.BalanceAsset.String(),
+		BalanceSwitch:        pool.BalanceSwitch.String(),
+		PoolUnits:            pool.GetPoolUnits().String(),
+		LPUnits:              pool.LPUnits.String(),
+		SynthUnits:           pool.SynthUnits.String(),
+		TradingHalted:        tradingHalted,
 	}
 	p.SynthSupply = synthSupply.String()
 	p.SaversDepth = saversDepth.String()
@@ -1427,9 +1427,9 @@ func (qs queryServer) queryPool(ctx cosmos.Context, req *types.QueryPoolRequest)
 	p.DerivedDepthBps = dbps.String()
 	p.LoanCr = cr.String()
 
-	if !pool.BalanceAsset.IsZero() && !pool.BalanceRune.IsZero() {
+	if !pool.BalanceAsset.IsZero() && !pool.BalanceSwitch.IsZero() {
 		dollarsPerRune := dollarsPerRuneIgnoreHalt(ctx, qs.mgr.Keeper())
-		p.AssetTorPrice = dollarsPerRune.Mul(pool.BalanceRune).Quo(pool.BalanceAsset).String()
+		p.AssetSwitchPrice = dollarsPerRune.Mul(pool.BalanceSwitch).Quo(pool.BalanceAsset).String()
 	}
 
 	return &p, nil
@@ -1501,7 +1501,7 @@ func (qs queryServer) queryPools(ctx cosmos.Context, _ *types.QueryPoolsRequest)
 
 		runeDepth, _, _ := qs.mgr.NetworkMgr().CalcAnchor(ctx, qs.mgr, pool.Asset)
 		dpool, _ := qs.mgr.Keeper().GetPool(ctx, pool.Asset.GetDerivedAsset())
-		dbps := common.GetUncappedShare(dpool.BalanceRune, runeDepth, cosmos.NewUint(constants.MaxBasisPts))
+		dbps := common.GetUncappedShare(dpool.BalanceSwitch, runeDepth, cosmos.NewUint(constants.MaxBasisPts))
 		if dpool.Status != PoolAvailable {
 			dbps = cosmos.ZeroUint()
 		}
@@ -1532,18 +1532,18 @@ func (qs queryServer) queryPools(ctx cosmos.Context, _ *types.QueryPoolsRequest)
 		}
 
 		p := types.QueryPoolResponse{
-			Asset:               pool.Asset.String(),
-			ShortCode:           pool.Asset.ShortCode(),
-			Status:              pool.Status.String(),
-			Decimals:            pool.Decimals,
-			PendingInboundAsset: pool.PendingInboundAsset.String(),
-			PendingInboundRune:  pool.PendingInboundRune.String(),
-			BalanceAsset:        pool.BalanceAsset.String(),
-			BalanceRune:         pool.BalanceRune.String(),
-			PoolUnits:           pool.GetPoolUnits().String(),
-			LPUnits:             pool.LPUnits.String(),
-			SynthUnits:          pool.SynthUnits.String(),
-			TradingHalted:       tradingHalted,
+			Asset:                pool.Asset.String(),
+			ShortCode:            pool.Asset.ShortCode(),
+			Status:               pool.Status.String(),
+			Decimals:             pool.Decimals,
+			PendingInboundAsset:  pool.PendingInboundAsset.String(),
+			PendingInboundSwitch: pool.PendingInboundSwitch.String(),
+			BalanceAsset:         pool.BalanceAsset.String(),
+			BalanceSwitch:        pool.BalanceSwitch.String(),
+			PoolUnits:            pool.GetPoolUnits().String(),
+			LPUnits:              pool.LPUnits.String(),
+			SynthUnits:           pool.SynthUnits.String(),
+			TradingHalted:        tradingHalted,
 		}
 
 		p.SynthSupply = synthSupply.String()
@@ -1558,8 +1558,8 @@ func (qs queryServer) queryPools(ctx cosmos.Context, _ *types.QueryPoolsRequest)
 		p.DerivedDepthBps = dbps.String()
 		p.LoanCr = cr.String()
 
-		if !pool.BalanceAsset.IsZero() && !pool.BalanceRune.IsZero() {
-			p.AssetTorPrice = dollarsPerRune.Mul(pool.BalanceRune).Quo(pool.BalanceAsset).String()
+		if !pool.BalanceAsset.IsZero() && !pool.BalanceSwitch.IsZero() {
+			p.AssetSwitchPrice = dollarsPerRune.Mul(pool.BalanceSwitch).Quo(pool.BalanceAsset).String()
 		}
 
 		pools = append(pools, &p)
@@ -1664,13 +1664,13 @@ func (qs queryServer) queryDerivedPool(ctx cosmos.Context, req *types.QueryDeriv
 	runeDepth := sdkmath.ZeroUint()
 	for _, anchor := range qs.mgr.Keeper().GetAnchors(ctx, asset) {
 		aPool, _ := qs.mgr.Keeper().GetPool(ctx, anchor)
-		runeDepth = runeDepth.Add(aPool.BalanceRune)
+		runeDepth = runeDepth.Add(aPool.BalanceSwitch)
 	}
 
 	dpool, _ := qs.mgr.Keeper().GetPool(ctx, asset.GetDerivedAsset())
 	dbps := cosmos.ZeroUint()
 	if dpool.Status == PoolAvailable {
-		dbps = common.GetUncappedShare(dpool.BalanceRune, runeDepth, cosmos.NewUint(constants.MaxBasisPts))
+		dbps = common.GetUncappedShare(dpool.BalanceSwitch, runeDepth, cosmos.NewUint(constants.MaxBasisPts))
 	}
 
 	p := types.QueryDerivedPoolResponse{
@@ -1678,7 +1678,7 @@ func (qs queryServer) queryDerivedPool(ctx cosmos.Context, req *types.QueryDeriv
 		Status:       dpool.Status.String(),
 		Decimals:     dpool.Decimals,
 		BalanceAsset: dpool.BalanceAsset.String(),
-		BalanceRune:  dpool.BalanceRune.String(),
+		BalanceRune:  dpool.BalanceSwitch.String(),
 	}
 	p.DerivedDepthBps = dbps.String()
 
@@ -1703,7 +1703,7 @@ func (qs queryServer) queryDerivedPools(ctx cosmos.Context, _ *types.QueryDerive
 		dbps := cosmos.ZeroUint()
 		if dpool.Status == PoolAvailable {
 			dbps = common.GetUncappedShare(
-				dpool.BalanceRune,
+				dpool.BalanceSwitch,
 				runeDepth,
 				cosmos.NewUint(constants.MaxBasisPts),
 			)
@@ -1714,7 +1714,7 @@ func (qs queryServer) queryDerivedPools(ctx cosmos.Context, _ *types.QueryDerive
 			Status:       dpool.Status.String(),
 			Decimals:     dpool.Decimals,
 			BalanceAsset: dpool.BalanceAsset.String(),
-			BalanceRune:  dpool.BalanceRune.String(),
+			BalanceRune:  dpool.BalanceSwitch.String(),
 		}
 		p.DerivedDepthBps = dbps.String()
 
@@ -2864,7 +2864,7 @@ func (qs queryServer) queryOutboundFees(ctx cosmos.Context, asset string) (*type
 				// of SwitchlyChain Assets other than RUNE.
 				continue
 			}
-			if pool.BalanceAsset.IsZero() || pool.BalanceRune.IsZero() {
+			if pool.BalanceAsset.IsZero() || pool.BalanceSwitch.IsZero() {
 				// A Layer 1 Asset's pool must have both depths be non-zero
 				// for any outbound fee withholding or gas reimbursement to take place.
 				// (This can take place even if the PoolUnits are zero and all liquidity is synths.)
@@ -3427,7 +3427,7 @@ func dollarsPerRuneIgnoreHalt(ctx cosmos.Context, k keeper.Keeper) cosmos.Uint {
 		if !pool.IsAvailable() {
 			continue
 		}
-		// value := common.GetUncappedShare(pool.BalanceAsset, pool.BalanceRune, cosmos.NewUint(common.One))
+		// value := common.GetUncappedShare(pool.BalanceAsset, pool.BalanceSwitch, cosmos.NewUint(common.One))
 		value := pool.RuneValueInAsset(cosmos.NewUint(constants.DollarMulti * common.One))
 
 		if !value.IsZero() {

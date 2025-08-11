@@ -184,7 +184,7 @@ func RuneValue(height int64, coin common.Coin) float64 {
 		if pool.Asset != asset.GetLayer1Asset().String() {
 			continue
 		}
-		runeBalance := cosmos.NewUintFromString(pool.BalanceRune)
+		runeBalance := cosmos.NewUintFromString(pool.BalanceSwitch)
 		assetBalance := cosmos.NewUintFromString(pool.BalanceAsset)
 
 		runePerAsset := new(big.Float).Quo(
@@ -242,7 +242,7 @@ func USDValue(height int64, coin common.Coin) float64 {
 		if pool.Asset != asset.GetLayer1Asset().String() {
 			continue
 		}
-		price := cosmos.NewUintFromString(pool.AssetTorPrice)
+		price := cosmos.NewUintFromString(pool.AssetSwitchPrice)
 		return float64(coin.Amount.Uint64()) / common.One * float64(price.Uint64()) / common.One
 	}
 

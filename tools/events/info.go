@@ -623,7 +623,7 @@ func TORAnchorDrift(block *thorscan.BlockResponse) {
 			log.Panic().Err(err).Msg("failed to parse pool asset")
 		}
 		if mimirs[fmt.Sprintf("TORANCHOR-%s", asset.MimirString())] > 0 {
-			price := cosmos.NewUintFromString(pool.AssetTorPrice)
+			price := cosmos.NewUintFromString(pool.AssetSwitchPrice)
 			if price.LT(minPrice) {
 				minPrice = price
 			}
@@ -642,8 +642,8 @@ func TORAnchorDrift(block *thorscan.BlockResponse) {
 
 	// sort tor pools by price
 	sort.Slice(torPools, func(i, j int) bool {
-		iPrice := cosmos.NewUintFromString(torPools[i].AssetTorPrice)
-		jPrice := cosmos.NewUintFromString(torPools[j].AssetTorPrice)
+		iPrice := cosmos.NewUintFromString(torPools[i].AssetSwitchPrice)
+		jPrice := cosmos.NewUintFromString(torPools[j].AssetSwitchPrice)
 		return iPrice.LT(jPrice)
 	})
 
@@ -661,7 +661,7 @@ func TORAnchorDrift(block *thorscan.BlockResponse) {
 		if len(shortAsset) < maxFieldLenth {
 			shortAsset = strings.Repeat(" ", maxFieldLenth-len(shortAsset)) + shortAsset
 		}
-		price := float64(cosmos.NewUintFromString(pool.AssetTorPrice).Uint64()) / common.One
+		price := float64(cosmos.NewUintFromString(pool.AssetSwitchPrice).Uint64()) / common.One
 		fields.Set(shortAsset, util.FormatUSD(price))
 	}
 

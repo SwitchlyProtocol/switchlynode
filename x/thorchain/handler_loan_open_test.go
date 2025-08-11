@@ -37,13 +37,13 @@ func (s *HandlerLoanSuite) TestLoanValidate(c *C) {
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.BalanceAsset = cosmos.NewUint(1483635061994)
-	pool.BalanceRune = cosmos.NewUint(271672185683320)
+	pool.BalanceSwitch = cosmos.NewUint(271672185683320)
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	pool = NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(91654142078)
-	pool.BalanceRune = cosmos.NewUint(1290645477848949)
+	pool.BalanceSwitch = cosmos.NewUint(1290645477848949)
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	// reduce the supply of rune
@@ -94,7 +94,7 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(83830778633)
-	pool.BalanceRune = cosmos.NewUint(1022440798362209)
+	pool.BalanceSwitch = cosmos.NewUint(1022440798362209)
 	pool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
@@ -104,7 +104,7 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToBTC(c *C) {
 	busdPool.Asset = busd
 	busdPool.Status = PoolAvailable
 	busdPool.BalanceAsset = cosmos.NewUint(433267688964312)
-	busdPool.BalanceRune = cosmos.NewUint(314031308608965)
+	busdPool.BalanceSwitch = cosmos.NewUint(314031308608965)
 	busdPool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, busdPool), IsNil)
 	mgr.Keeper().SetMimir(ctx, "TorAnchor-ETH-BUSD-BD1", 1) // enable BUSD pool as a TOR anchor
@@ -168,7 +168,7 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToTOR(c *C) {
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(83830778633)
-	pool.BalanceRune = cosmos.NewUint(1022440798362209)
+	pool.BalanceSwitch = cosmos.NewUint(1022440798362209)
 	pool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
@@ -178,7 +178,7 @@ func (s *HandlerLoanSuite) TestLoanOpenHandleToTOR(c *C) {
 	busdPool.Asset = busd
 	busdPool.Status = PoolAvailable
 	busdPool.BalanceAsset = cosmos.NewUint(433267688964312)
-	busdPool.BalanceRune = cosmos.NewUint(314031308608965)
+	busdPool.BalanceSwitch = cosmos.NewUint(314031308608965)
 	busdPool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, busdPool), IsNil)
 	mgr.Keeper().SetMimir(ctx, "TorAnchor-ETH-BUSD-BD1", 1) // enable BUSD pool as a TOR anchor
@@ -234,7 +234,7 @@ func (s *HandlerLoanSuite) TestLoanSwapFails(c *C) {
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(83830778633)
-	pool.BalanceRune = cosmos.NewUint(1022440798362209)
+	pool.BalanceSwitch = cosmos.NewUint(1022440798362209)
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 
 	// generate derived asset pool for btc
@@ -247,7 +247,7 @@ func (s *HandlerLoanSuite) TestLoanSwapFails(c *C) {
 	busdPool.Asset = busd
 	busdPool.Status = PoolAvailable
 	busdPool.BalanceAsset = cosmos.NewUint(433267688964312)
-	busdPool.BalanceRune = cosmos.NewUint(314031308608965)
+	busdPool.BalanceSwitch = cosmos.NewUint(314031308608965)
 	busdPool.Decimals = 8
 	c.Assert(mgr.Keeper().SetPool(ctx, busdPool), IsNil)
 	mgr.Keeper().SetMimir(ctx, "TorAnchor-ETH-BUSD-BD1", 1) // enable BUSD pool as a TOR anchor

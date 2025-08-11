@@ -289,7 +289,7 @@ func fuzzyAssetMatch(ctx cosmos.Context, keeper keeper.Keeper, origAsset common.
 		return origAsset
 	}
 	// Only check BalanceRune after checking the error so that no panic if there were an error.
-	if !pool.BalanceRune.IsZero() {
+	if !pool.BalanceSwitch.IsZero() {
 		return origAsset
 	}
 
@@ -323,7 +323,7 @@ func fuzzyAssetMatch(ctx cosmos.Context, keeper keeper.Keeper, origAsset common.
 		// check if no symbol given (ie "USDT" or "USDT-")
 		if hasNoSymbol {
 			// Use LTE rather than LT so this function can only return origAsset or a match
-			if winner.BalanceRune.LTE(pool.BalanceRune) {
+			if winner.BalanceSwitch.LTE(pool.BalanceSwitch) {
 				winner = pool
 			}
 			continue
@@ -331,7 +331,7 @@ func fuzzyAssetMatch(ctx cosmos.Context, keeper keeper.Keeper, origAsset common.
 
 		if strings.HasSuffix(strings.ToLower(pool.Asset.Symbol.String()), symbol) {
 			// Use LTE rather than LT so this function can only return origAsset or a match
-			if winner.BalanceRune.LTE(pool.BalanceRune) {
+			if winner.BalanceSwitch.LTE(pool.BalanceSwitch) {
 				winner = pool
 			}
 			continue

@@ -198,7 +198,7 @@ func (s *HandlerObservedTxOutSuite) TestHandle(c *C) {
 		txInVoter: NewObservedTxVoter(txInHash, make(ObservedTxs, 0)),
 		pool: Pool{
 			Asset:        common.ETHAsset,
-			BalanceRune:  cosmos.NewUint(200_000),
+			BalanceSwitch:  cosmos.NewUint(200_000),
 			BalanceAsset: cosmos.NewUint(300_000),
 		},
 		vaultExists: true,
@@ -295,7 +295,7 @@ func (s *HandlerObservedTxOutSuite) TestHandleFailedTransaction(c *C) {
 		txInVoter: NewObservedTxVoter(txInHash, make(ObservedTxs, 0)),
 		pool: Pool{
 			Asset:        common.ETHAsset,
-			BalanceRune:  cosmos.NewUint(200_000),
+			BalanceSwitch:  cosmos.NewUint(200_000),
 			BalanceAsset: cosmos.NewUint(300_000),
 		},
 		vaultExists: true,
@@ -389,7 +389,7 @@ func (s *HandlerObservedTxOutSuite) TestHandleStolenFundsInvalidMemo(c *C) {
 		voter: NewObservedTxVoter(tx.ID, make(ObservedTxs, 0)),
 		pool: Pool{
 			Asset:        common.ETHAsset,
-			BalanceRune:  cosmos.NewUint(200 * common.One),
+			BalanceSwitch:  cosmos.NewUint(200 * common.One),
 			BalanceAsset: cosmos.NewUint(300 * common.One),
 		},
 		vaultExists: true,
@@ -497,7 +497,7 @@ func setupAnObservedTxOut(ctx cosmos.Context, helper *HandlerObservedTxOutTestHe
 	c.Assert(helper.SetVault(ctx, vault), IsNil)
 	p := NewPool()
 	p.Asset = common.ETHAsset
-	p.BalanceRune = cosmos.NewUint(100 * common.One)
+	p.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	p.BalanceAsset = cosmos.NewUint(100 * common.One)
 	p.Status = PoolAvailable
 	c.Assert(helper.Keeper.SetPool(ctx, p), IsNil)

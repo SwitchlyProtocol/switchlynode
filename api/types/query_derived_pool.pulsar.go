@@ -503,7 +503,7 @@ var (
 	fd_QueryDerivedPoolResponse_status            protoreflect.FieldDescriptor
 	fd_QueryDerivedPoolResponse_decimals          protoreflect.FieldDescriptor
 	fd_QueryDerivedPoolResponse_balance_asset     protoreflect.FieldDescriptor
-	fd_QueryDerivedPoolResponse_balance_rune      protoreflect.FieldDescriptor
+	fd_QueryDerivedPoolResponse_balance_switch      protoreflect.FieldDescriptor
 	fd_QueryDerivedPoolResponse_derived_depth_bps protoreflect.FieldDescriptor
 )
 
@@ -514,7 +514,7 @@ func init() {
 	fd_QueryDerivedPoolResponse_status = md_QueryDerivedPoolResponse.Fields().ByName("status")
 	fd_QueryDerivedPoolResponse_decimals = md_QueryDerivedPoolResponse.Fields().ByName("decimals")
 	fd_QueryDerivedPoolResponse_balance_asset = md_QueryDerivedPoolResponse.Fields().ByName("balance_asset")
-	fd_QueryDerivedPoolResponse_balance_rune = md_QueryDerivedPoolResponse.Fields().ByName("balance_rune")
+	fd_QueryDerivedPoolResponse_balance_switch = md_QueryDerivedPoolResponse.Fields().ByName("balance_switch")
 	fd_QueryDerivedPoolResponse_derived_depth_bps = md_QueryDerivedPoolResponse.Fields().ByName("derived_depth_bps")
 }
 
@@ -609,7 +609,7 @@ func (x *fastReflection_QueryDerivedPoolResponse) Range(f func(protoreflect.Fiel
 	}
 	if x.BalanceRune != "" {
 		value := protoreflect.ValueOfString(x.BalanceRune)
-		if !f(fd_QueryDerivedPoolResponse_balance_rune, value) {
+		if !f(fd_QueryDerivedPoolResponse_balance_switch, value) {
 			return
 		}
 	}
@@ -642,7 +642,7 @@ func (x *fastReflection_QueryDerivedPoolResponse) Has(fd protoreflect.FieldDescr
 		return x.Decimals != int64(0)
 	case "types.QueryDerivedPoolResponse.balance_asset":
 		return x.BalanceAsset != ""
-	case "types.QueryDerivedPoolResponse.balance_rune":
+	case "types.QueryDerivedPoolResponse.balance_switch":
 		return x.BalanceRune != ""
 	case "types.QueryDerivedPoolResponse.derived_depth_bps":
 		return x.DerivedDepthBps != ""
@@ -670,7 +670,7 @@ func (x *fastReflection_QueryDerivedPoolResponse) Clear(fd protoreflect.FieldDes
 		x.Decimals = int64(0)
 	case "types.QueryDerivedPoolResponse.balance_asset":
 		x.BalanceAsset = ""
-	case "types.QueryDerivedPoolResponse.balance_rune":
+	case "types.QueryDerivedPoolResponse.balance_switch":
 		x.BalanceRune = ""
 	case "types.QueryDerivedPoolResponse.derived_depth_bps":
 		x.DerivedDepthBps = ""
@@ -702,7 +702,7 @@ func (x *fastReflection_QueryDerivedPoolResponse) Get(descriptor protoreflect.Fi
 	case "types.QueryDerivedPoolResponse.balance_asset":
 		value := x.BalanceAsset
 		return protoreflect.ValueOfString(value)
-	case "types.QueryDerivedPoolResponse.balance_rune":
+	case "types.QueryDerivedPoolResponse.balance_switch":
 		value := x.BalanceRune
 		return protoreflect.ValueOfString(value)
 	case "types.QueryDerivedPoolResponse.derived_depth_bps":
@@ -736,7 +736,7 @@ func (x *fastReflection_QueryDerivedPoolResponse) Set(fd protoreflect.FieldDescr
 		x.Decimals = value.Int()
 	case "types.QueryDerivedPoolResponse.balance_asset":
 		x.BalanceAsset = value.Interface().(string)
-	case "types.QueryDerivedPoolResponse.balance_rune":
+	case "types.QueryDerivedPoolResponse.balance_switch":
 		x.BalanceRune = value.Interface().(string)
 	case "types.QueryDerivedPoolResponse.derived_depth_bps":
 		x.DerivedDepthBps = value.Interface().(string)
@@ -768,8 +768,8 @@ func (x *fastReflection_QueryDerivedPoolResponse) Mutable(fd protoreflect.FieldD
 		panic(fmt.Errorf("field decimals of message types.QueryDerivedPoolResponse is not mutable"))
 	case "types.QueryDerivedPoolResponse.balance_asset":
 		panic(fmt.Errorf("field balance_asset of message types.QueryDerivedPoolResponse is not mutable"))
-	case "types.QueryDerivedPoolResponse.balance_rune":
-		panic(fmt.Errorf("field balance_rune of message types.QueryDerivedPoolResponse is not mutable"))
+	case "types.QueryDerivedPoolResponse.balance_switch":
+		panic(fmt.Errorf("field balance_switch of message types.QueryDerivedPoolResponse is not mutable"))
 	case "types.QueryDerivedPoolResponse.derived_depth_bps":
 		panic(fmt.Errorf("field derived_depth_bps of message types.QueryDerivedPoolResponse is not mutable"))
 	default:
@@ -793,7 +793,7 @@ func (x *fastReflection_QueryDerivedPoolResponse) NewField(fd protoreflect.Field
 		return protoreflect.ValueOfInt64(int64(0))
 	case "types.QueryDerivedPoolResponse.balance_asset":
 		return protoreflect.ValueOfString("")
-	case "types.QueryDerivedPoolResponse.balance_rune":
+	case "types.QueryDerivedPoolResponse.balance_switch":
 		return protoreflect.ValueOfString("")
 	case "types.QueryDerivedPoolResponse.derived_depth_bps":
 		return protoreflect.ValueOfString("")
@@ -2200,7 +2200,7 @@ type QueryDerivedPoolResponse struct {
 	Status       string `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	Decimals     int64  `protobuf:"varint,3,opt,name=decimals,proto3" json:"decimals,omitempty"`
 	BalanceAsset string `protobuf:"bytes,4,opt,name=balance_asset,json=balanceAsset,proto3" json:"balance_asset,omitempty"`
-	BalanceRune  string `protobuf:"bytes,5,opt,name=balance_rune,json=balanceRune,proto3" json:"balance_rune,omitempty"`
+	BalanceRune  string `protobuf:"bytes,5,opt,name=balance_switch,json=balanceRune,proto3" json:"balance_switch,omitempty"`
 	// the depth of the derived virtual pool relative to L1 pool (in basis points)
 	DerivedDepthBps string `protobuf:"bytes,6,opt,name=derived_depth_bps,json=derivedDepthBps,proto3" json:"derived_depth_bps,omitempty"`
 }

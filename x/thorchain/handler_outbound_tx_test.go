@@ -185,8 +185,8 @@ func newOutboundTxHandlerTestHelper(c *C) outboundTxHandlerTestHelper {
 	pool := NewPool()
 	pool.Asset = common.BTCAsset
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
-	pool.LPUnits = pool.BalanceRune
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
+	pool.LPUnits = pool.BalanceSwitch
 
 	version := GetCurrentVersion()
 	asgardVault := GetRandomVault()
@@ -478,7 +478,7 @@ func (s *HandlerOutboundTxSuite) TestOutboundTxHandlerInvalidObservedTxVoterShou
 	c.Assert(newReserve, DeepEquals, expectedVaultTotalReserve)
 	pool, err = helper.keeper.GetPool(helper.ctx, common.BTCAsset)
 	c.Assert(err, IsNil)
-	c.Assert(pool.BalanceRune, DeepEquals, cosmos.NewUint(10086922809))
+	c.Assert(pool.BalanceSwitch, DeepEquals, cosmos.NewUint(10086922809))
 	c.Assert(pool.BalanceAsset, DeepEquals, poolBTC)
 }
 
@@ -488,8 +488,8 @@ func (s *HandlerOutboundTxSuite) TestOutboundTxHandlerETHChainSpendTooMuchGasSho
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
-	pool.LPUnits = pool.BalanceRune
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
+	pool.LPUnits = pool.BalanceSwitch
 	c.Assert(helper.keeper.SetPool(helper.ctx, pool), IsNil)
 	fromAddr, err := helper.asgardVault.PubKey.GetAddress(common.ETHChain)
 	c.Assert(err, IsNil)
@@ -538,8 +538,8 @@ func (s *HandlerOutboundTxSuite) TestOutboundTxHandlerETHChainSpendTooMuchGasPer
 	pool := NewPool()
 	pool.Asset = common.ETHAsset
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
-	pool.LPUnits = pool.BalanceRune
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
+	pool.LPUnits = pool.BalanceSwitch
 	c.Assert(helper.keeper.SetPool(helper.ctx, pool), IsNil)
 	fromAddr, err := helper.asgardVault.PubKey.GetAddress(common.ETHChain)
 	c.Assert(err, IsNil)
@@ -594,9 +594,9 @@ func (s *HandlerOutboundTxSuite) TestOutboundTxHandlerMismatchDecimalShouldNotSl
 	pool := NewPool()
 	pool.Asset = usdtAsset
 	pool.BalanceAsset = cosmos.NewUint(100 * common.One)
-	pool.BalanceRune = cosmos.NewUint(100 * common.One)
+	pool.BalanceSwitch = cosmos.NewUint(100 * common.One)
 	pool.Decimals = 6
-	pool.LPUnits = pool.BalanceRune
+	pool.LPUnits = pool.BalanceSwitch
 	c.Assert(helper.keeper.SetPool(helper.ctx, pool), IsNil)
 	fromAddr, err := helper.asgardVault.PubKey.GetAddress(common.ETHChain)
 	c.Assert(err, IsNil)
