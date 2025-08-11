@@ -2861,7 +2861,7 @@ func (qs queryServer) queryOutboundFees(ctx cosmos.Context, asset string) (*type
 
 			if pool.Asset.IsNative() {
 				// To avoid clutter do not by default display the outbound fees
-				// of THORChain Assets other than RUNE.
+				// of SwitchlyChain Assets other than RUNE.
 				continue
 			}
 			if pool.BalanceAsset.IsZero() || pool.BalanceRune.IsZero() {

@@ -170,7 +170,7 @@ func hasSuffixMatch(suffix string, values []string) bool {
 	return false
 }
 
-// quoteConvertAsset - converts amount to target asset using THORChain pools
+// quoteConvertAsset - converts amount to target asset using SwitchlyChain pools
 func quoteConvertAsset(ctx cosmos.Context, mgr *Mgrs, fromAsset common.Asset, amount sdkmath.Uint, toAsset common.Asset) (sdkmath.Uint, error) {
 	// no conversion necessary
 	if fromAsset.Equals(toAsset) {

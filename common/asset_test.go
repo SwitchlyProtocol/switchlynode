@@ -140,7 +140,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(asset.String(), Equals, "BTC.BTC")
 
 	asset = Asset{
-		Chain:  "THOR.ETH",
+		Chain:  "SWITCHLY.ETH",
 		Symbol: "ETH",
 	}
 	err = asset.Valid()
@@ -148,7 +148,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Check(strings.Contains(err.Error(), "invalid chain"), Equals, true)
 
 	asset = Asset{
-		Chain:  "THOR",
+		Chain:  "SWITCHLY",
 		Symbol: "ETH~ETH",
 	}
 	err = asset.Valid()
@@ -180,7 +180,7 @@ func (s AssetSuite) TestAsset(c *C) {
 	c.Assert(err, NotNil)
 
 	// Ensure that x/denom assets cannot be interpreted by MsgDeposit
-	asset, err = NewAsset("THOR.X/CUSTOM")
+	asset, err = NewAsset("SWITCHLY.X/CUSTOM")
 	c.Assert(err, NotNil)
 
 	// XLM test

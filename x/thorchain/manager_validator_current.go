@@ -917,7 +917,7 @@ func (vm *ValidatorMgrVCUR) ragnarokPools(ctx cosmos.Context, nth int64, mgr Man
 				if err != nil {
 					ctx.Logger().Error("fail to withdraw", "liquidity provider", lp.RuneAddress, "error", err)
 				} else if !withdrawAsset.Equals(common.SwitchNative) {
-					// when withdraw asset is only RUNE , then it should process more , because RUNE asset doesn't leave THORChain
+					// when withdraw asset is only RUNE , then it should process more , because RUNE asset doesn't leave SwitchlyChain
 					count++
 					pending, err := vm.k.GetRagnarokPending(ctx)
 					if err != nil {

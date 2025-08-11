@@ -81,7 +81,7 @@ func (s MigrationDataSuite) TestMigrate5to6AddressValidation(c *C) {
 		c.Assert(err, IsNil, Commentf("Failed to convert address at index %d: %s", i, refund.address))
 
 		// Verify thor prefix
-		c.Assert(refund.address[:4], Equals, "thor", Commentf("Address at index %d does not have thor prefix: %s", i, refund.address))
+		c.Assert(refund.address[:7], Equals, "switchly", Commentf("Address at index %d does not have switchly prefix: %s", i, refund.address))
 
 		// Verify address length (thor addresses should be 43 characters)
 		c.Assert(len(refund.address), Equals, 43, Commentf("Address at index %d has incorrect length: %s", i, refund.address))

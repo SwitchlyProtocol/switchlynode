@@ -257,7 +257,6 @@ func (addr Address) IsChain(chain Chain) bool {
 	default:
 		return true // if SwitchlyNode don't specifically check a chain yet, assume its ok.
 	}
-	return false
 }
 
 // Note that this will always return ETHChain for an AVAXChain address,

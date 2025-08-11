@@ -597,7 +597,7 @@ func (s *HandlerAddLiquiditySuite) TestValidateAddLiquidityMessage(c *C) {
 	// Don't accept THOR.ETH
 	thorAsset := common.ETHAsset
 	var err error // Previously undeclared, so declaration needed
-	thorAsset.Chain, err = common.NewChain("THOR")
+	thorAsset.Chain, err = common.NewChain("SWITCHLY")
 	c.Assert(err, IsNil)
 	c.Assert(h.validateAddLiquidityMessage(ctx, ps, thorAsset, txID, ethAddress, assetAddress), NotNil)
 	// Don't accept TEST.ETH
@@ -813,7 +813,7 @@ func (HandlerAddLiquiditySuite) TestSynthValidate(c *C) {
 
 	// don't accept THOR/BTC
 	thorAsset := asset
-	thorAsset.Chain, err = common.NewChain("THOR")
+	thorAsset.Chain, err = common.NewChain("SWITCHLY")
 	c.Assert(err, IsNil)
 	msg.Asset = thorAsset
 	err = handler.validate(ctx, *msg)

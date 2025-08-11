@@ -8,7 +8,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
 )
 
-const PreferredAssetSwapMemoPrefix = "THOR-PREFERRED-ASSET"
+const PreferredAssetSwapMemoPrefix = "SWITCHLY-PREFERRED-ASSET"
 
 type swapItem struct {
 	index int

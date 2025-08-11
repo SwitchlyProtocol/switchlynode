@@ -41,7 +41,7 @@ func NewThorchainBlockScan(cfg config.BifrostBlockScannerConfiguration, scanStor
 		return nil, errors.New("metric is nil")
 	}
 	return &ThorchainBlockScan{
-		logger:         log.With().Str("module", "blockscanner").Str("chain", "THOR").Logger(),
+		logger:         log.With().Str("module", "blockscanner").Str("chain", "SWITCHLY").Logger(),
 		wg:             &sync.WaitGroup{},
 		stopChan:       make(chan struct{}),
 		txOutChan:      make(chan types.TxOut),

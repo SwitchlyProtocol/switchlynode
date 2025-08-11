@@ -1849,7 +1849,7 @@ components:
       properties:
         rune_address:
           type: string
-          example: "THOR.RUNE"
+          example: "SWITCHLY.SWITCH"
         units:
           type: string
           example: "1234"
