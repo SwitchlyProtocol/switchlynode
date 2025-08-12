@@ -269,10 +269,22 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
+      # Complete environment-based configuration (bypasses config.json)
+      MIDGARD_LISTEN_PORT: 8080
+      MIDGARD_SHUTDOWN_TIMEOUT: 60s
+      MIDGARD_READ_TIMEOUT: 30s
+      MIDGARD_WRITE_TIMEOUT: 30s
       MIDGARD_SWITCHLY_NODE_URL: http://switchlynode:1317/switchly
       MIDGARD_SWITCHLY_TENDERMINT_URL: http://switchlynode:26657/websocket
-      MIDGARD_TIMESCALE_HOST: midgard-db
       MIDGARD_SWITCHLY_LAST_CHAIN_BACKOFF: ${BLOCK_TIME:-2s}
+      MIDGARD_TIMESCALE_HOST: midgard-db
+      MIDGARD_TIMESCALE_PORT: 5432
+      MIDGARD_TIMESCALE_USER_NAME: midgard
+      MIDGARD_TIMESCALE_PASSWORD: password
+      MIDGARD_TIMESCALE_DATABASE: midgard
+      MIDGARD_TIMESCALE_SSLMODE: disable
+      MIDGARD_TIMESCALE_MIGRATE_ON_STARTUP: true
+    command: ["./midgard"]
     ports:
       - 8080:8080
     logging: *logging
