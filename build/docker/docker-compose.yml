@@ -264,13 +264,15 @@ services:
     depends_on:
       - midgard-db
       - switchlynode
-    image: registry.gitlab.com/thorchain/midgard:develop
+    build:
+      context: https://github.com/SwitchlyProtocol/midgard.git
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      MIDGARD_THORCHAIN_THOR_NODE_URL: http://switchlynode:1317/switchly
-      MIDGARD_THORCHAIN_TENDERMINT_URL: http://switchlynode:26657/websocket
+      MIDGARD_SWITCHLY_NODE_URL: http://switchlynode:1317/switchly
+      MIDGARD_SWITCHLY_TENDERMINT_URL: http://switchlynode:26657/websocket
       MIDGARD_TIMESCALE_HOST: midgard-db
-      MIDGARD_THORCHAIN_LAST_CHAIN_BACKOFF: ${BLOCK_TIME:-2s}
+      MIDGARD_SWITCHLY_LAST_CHAIN_BACKOFF: ${BLOCK_TIME:-2s}
     ports:
       - 8080:8080
     logging: *logging
