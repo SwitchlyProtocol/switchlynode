@@ -8,8 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 type queryServer struct {

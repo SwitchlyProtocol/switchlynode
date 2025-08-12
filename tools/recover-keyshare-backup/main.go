@@ -16,11 +16,11 @@ import (
 	"github.com/itchio/lzma"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

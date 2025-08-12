@@ -13,9 +13,9 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/blame"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/blame"
 )
 
 type tssHelpSuite struct{}

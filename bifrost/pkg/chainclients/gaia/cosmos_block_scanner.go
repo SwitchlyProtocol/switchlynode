@@ -34,13 +34,13 @@ import (
 	rpcclienthttp "github.com/cometbft/cometbft/rpc/client/http"
 	tmtypes "github.com/cometbft/cometbft/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 // SolvencyReporter is to report solvency info to THORNode

@@ -1,8 +1,8 @@
 package tss
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keygen"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keysign"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
 )
 
 // Server define the necessary functionality should be provide by a TSS Server implementation

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 // ratioLength ensures that the character length of the ratio store in the key

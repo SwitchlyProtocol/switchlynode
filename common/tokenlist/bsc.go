@@ -3,7 +3,7 @@ package tokenlist
 import (
 	"encoding/json"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist/bsctokens"
+	"github.com/switchlyprotocol/switchlynode/v3/common/tokenlist/bsctokens"
 )
 
 var bscTokenList EVMTokenList

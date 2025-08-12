@@ -10,9 +10,9 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	keeperv1 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/v1"
+	keeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/v1"
 
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
 var httpClient = &http.Client{

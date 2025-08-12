@@ -6,10 +6,10 @@ import (
 	ltcec "github.com/ltcsuite/ltcd/btcec"
 	ltcchaincfg "github.com/ltcsuite/ltcd/chaincfg"
 	ltcwire "github.com/ltcsuite/ltcd/wire"
-	ltctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/ltcd-txscript"
+	ltctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/ltcd-txscript"
 
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 func (c *Client) getChainCfgLTC() *ltcchaincfg.Params {

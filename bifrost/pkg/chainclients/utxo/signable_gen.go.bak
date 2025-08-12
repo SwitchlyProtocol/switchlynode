@@ -14,9 +14,9 @@ import (
   dogeec "github.com/eager7/dogd/btcec"
   ltcec "github.com/ltcsuite/ltcd/btcec"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 type tssSignableBCH struct {

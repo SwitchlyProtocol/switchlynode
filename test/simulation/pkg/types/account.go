@@ -9,11 +9,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

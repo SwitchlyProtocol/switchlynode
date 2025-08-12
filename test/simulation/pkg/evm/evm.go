@@ -21,13 +21,13 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/tokenlist"
 
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

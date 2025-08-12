@@ -6,10 +6,10 @@ package utxo
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	ttypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 func (s *BitcoinSuite) TestGetAddress(c *C) {

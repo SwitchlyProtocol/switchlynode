@@ -10,7 +10,7 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	"github.com/switchlyprotocol/switchlynode/v1/app"
+	"github.com/switchlyprotocol/switchlynode/v3/app"
 )
 
 func main() {

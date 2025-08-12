@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	sdk "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	sdk "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -16,13 +16,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 // -------------------------------------------------------------------------------------

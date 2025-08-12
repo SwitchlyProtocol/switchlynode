@@ -3,8 +3,8 @@ package thorchain
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 // SolvencyQuorumHandler is to process MsgSolvencyQuorum message from bifrost

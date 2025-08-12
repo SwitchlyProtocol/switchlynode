@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // Gas coins

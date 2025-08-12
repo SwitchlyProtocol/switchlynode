@@ -3,7 +3,7 @@ package types
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 type NetworkFeeSuite struct{}

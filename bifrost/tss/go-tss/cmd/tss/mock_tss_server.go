@@ -3,12 +3,12 @@ package main
 import (
 	"errors"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/blame"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/common"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keygen"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keysign"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/blame"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 )
 
 type MockTssServer struct {

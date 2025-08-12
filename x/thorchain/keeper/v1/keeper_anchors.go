@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 func (k KVStore) GetAnchors(ctx cosmos.Context, asset common.Asset) []common.Asset {

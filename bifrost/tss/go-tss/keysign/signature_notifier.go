@@ -16,8 +16,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
 )
 
 var signatureNotifierProtocol protocol.ID = "/p2p/signatureNotifier"

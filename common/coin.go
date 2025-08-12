@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // SwitchlyDecimals indicate the number of decimal points used in Switchly

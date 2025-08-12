@@ -6,8 +6,8 @@ import (
 	math "cosmossdk.io/math"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 type MigrationHelpersTestSuite struct{}

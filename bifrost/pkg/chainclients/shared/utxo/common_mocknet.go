@@ -4,8 +4,8 @@
 package utxo
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 func GetConfMulBasisPoint(chain string, bridge thorclient.ThorchainBridge) (cosmos.Uint, error) {

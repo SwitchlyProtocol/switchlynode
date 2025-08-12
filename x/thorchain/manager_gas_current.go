@@ -3,11 +3,11 @@ package thorchain
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 // GasMgrVCUR implement GasManager interface which will store the gas related events happened in thorchain to memory

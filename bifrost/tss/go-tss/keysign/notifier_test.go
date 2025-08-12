@@ -9,8 +9,8 @@ import (
 	"github.com/binance-chain/tss-lib/ecdsa/signing"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
 )
 
 type NotifierTestSuite struct{}

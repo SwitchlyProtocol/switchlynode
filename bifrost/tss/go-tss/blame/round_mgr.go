@@ -3,7 +3,7 @@ package blame
 import (
 	"sync"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
 )
 
 type RoundInfo struct {

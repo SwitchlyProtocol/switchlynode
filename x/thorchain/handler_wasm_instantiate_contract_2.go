@@ -6,8 +6,8 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // WasmInstantiateContract2Handler processes incoming MsgInstantiateContract2 messages from x/wasm

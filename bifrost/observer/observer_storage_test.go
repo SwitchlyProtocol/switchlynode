@@ -9,10 +9,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
 )
 
 func setupTestDB(t *testing.T) (*ObserverStorage, string) {

@@ -3,7 +3,7 @@ package keeperv1
 import (
 	"github.com/blang/semver"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // GetVersionWithCtx returns the version with the given context,

@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/denom/types"
 )
 
 func (k Keeper) mintTo(ctx sdk.Context, amount sdk.Coin, mintTo string) error {

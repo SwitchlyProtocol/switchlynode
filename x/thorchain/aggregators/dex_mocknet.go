@@ -4,7 +4,7 @@
 package aggregators
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 func DexAggregators() []Aggregator {

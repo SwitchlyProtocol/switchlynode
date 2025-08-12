@@ -8,10 +8,10 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
 )
 
 type HandlerObservedTxInSuite struct{}
@@ -92,9 +92,9 @@ func (s *HandlerObservedTxInSuite) TestFailure(c *C) {
 
 	keeper := &TestObservedTxInFailureKeeper{
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			BalanceSwitch:  cosmos.NewUint(200),
-			BalanceAsset: cosmos.NewUint(300),
+			Asset:         common.ETHAsset,
+			BalanceSwitch: cosmos.NewUint(200),
+			BalanceAsset:  cosmos.NewUint(300),
 		},
 	}
 	mgr := NewDummyMgrWithKeeper(keeper)
@@ -233,9 +233,9 @@ func (s *HandlerObservedTxInSuite) testHandleWithConfirmation(c *C) {
 		},
 		vault: vault,
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			BalanceSwitch:  cosmos.NewUint(200),
-			BalanceAsset: cosmos.NewUint(300),
+			Asset:         common.ETHAsset,
+			BalanceSwitch: cosmos.NewUint(200),
+			BalanceAsset:  cosmos.NewUint(300),
 		},
 		vaultExists: true,
 	}
@@ -372,9 +372,9 @@ func (s *HandlerObservedTxInSuite) testHandleWithVersion(c *C) {
 		voter: NewObservedTxVoter(tx.ID, make(ObservedTxs, 0)),
 		vault: vault,
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			BalanceSwitch:  cosmos.NewUint(200),
-			BalanceAsset: cosmos.NewUint(300),
+			Asset:         common.ETHAsset,
+			BalanceSwitch: cosmos.NewUint(200),
+			BalanceAsset:  cosmos.NewUint(300),
 		},
 		vaultExists: true,
 	}
@@ -434,9 +434,9 @@ func (s *HandlerObservedTxInSuite) TestMigrateMemo(c *C) {
 		voter: NewObservedTxVoter(tx.Tx.ID, make(ObservedTxs, 0)),
 		vault: vault,
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			BalanceSwitch:  cosmos.NewUint(200),
-			BalanceAsset: cosmos.NewUint(300),
+			Asset:         common.ETHAsset,
+			BalanceSwitch: cosmos.NewUint(200),
+			BalanceAsset:  cosmos.NewUint(300),
 		},
 		vaultExists: true,
 		txOut:       txout,

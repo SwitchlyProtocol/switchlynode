@@ -11,22 +11,22 @@ import (
 	"github.com/btcsuite/btcd/wire"
 
 	"github.com/eager7/dogutil"
-	dogetxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/dogd-txscript"
+	dogetxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/dogd-txscript"
 
 	"github.com/gcash/bchutil"
-	bchtxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/bchd-txscript"
+	bchtxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/bchd-txscript"
 
 	"github.com/ltcsuite/ltcutil"
-	ltctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/ltcd-txscript"
+	ltctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/ltcd-txscript"
 
 	"github.com/btcsuite/btcutil"
-	btctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/txscript"
+	btctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/txscript"
 
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	mem "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

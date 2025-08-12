@@ -7,7 +7,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	common "github.com/switchlyprotocol/switchlynode/v3/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"

@@ -9,8 +9,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/storage"
 	. "gopkg.in/check.v1"
 
-	evmtypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm/types"
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+	evmtypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
 )
 
 // PrefixTxStorage declares prefix to use in leveldb to avoid conflicts

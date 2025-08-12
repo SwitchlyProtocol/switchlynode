@@ -3,7 +3,7 @@ package common
 import (
 	"errors"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	. "gopkg.in/check.v1"
 )
 

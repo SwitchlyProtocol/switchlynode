@@ -24,9 +24,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/storage"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/storage"
 )
 
 var (

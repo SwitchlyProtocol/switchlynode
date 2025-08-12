@@ -13,11 +13,11 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 	"github.com/tendermint/btcd/btcec"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keysign"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
 )
 
 const (

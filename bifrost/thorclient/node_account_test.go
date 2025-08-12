@@ -7,7 +7,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 type NodeAccountSuite struct {

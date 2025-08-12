@@ -23,7 +23,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 // -------------------------------------------------------------------------------------

@@ -11,10 +11,10 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

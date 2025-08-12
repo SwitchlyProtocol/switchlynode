@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 // NewNetworkFee create a new instance of network fee

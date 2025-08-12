@@ -23,11 +23,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

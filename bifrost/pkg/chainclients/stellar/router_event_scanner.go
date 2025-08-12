@@ -15,10 +15,10 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 	"github.com/stellar/go/protocols/horizon/operations"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 // RouterEventScanner scans for Stellar smart contract events from the Switchly router
@@ -536,11 +536,11 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		if len(assetAddress) == 56 && strings.HasPrefix(assetAddress, "C") {
 			// This looks like a Soroban contract address
 			mapping = StellarAssetMapping{
-				StellarAssetType:      "contract",
-				StellarAssetCode:      "UNKNOWN",
-				StellarAssetIssuer:    assetAddress,
-				StellarDecimals:       7, // Default to 7 decimals
-				SwitchlyAsset: common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"},
+				StellarAssetType:   "contract",
+				StellarAssetCode:   "UNKNOWN",
+				StellarAssetIssuer: assetAddress,
+				StellarDecimals:    7, // Default to 7 decimals
+				SwitchlyAsset:      common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"},
 			}
 			r.logger.Info().
 				Str("asset_address", assetAddress).
@@ -633,7 +633,7 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		Str("tx_hash", event.TransactionHash).
 		Str("from", fromAddr.String()).
 		Str("to", toAddr.String()).
-						Str("asset", mapping.SwitchlyAsset.String()).
+		Str("asset", mapping.SwitchlyAsset.String()).
 		Str("amount", coin.Amount.String()).
 		Str("memo", event.Memo).
 		Msg("processed deposit event from Soroban RPC")

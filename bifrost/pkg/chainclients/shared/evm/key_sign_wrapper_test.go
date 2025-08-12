@@ -12,12 +12,12 @@ import (
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 const MaxContractGas = 80000

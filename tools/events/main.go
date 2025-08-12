@@ -9,11 +9,11 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/thorscan"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

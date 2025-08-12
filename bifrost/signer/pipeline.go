@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

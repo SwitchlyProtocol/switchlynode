@@ -10,7 +10,7 @@ import (
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // GetPubKeyCmd cosmos sdk removed pubkey support recently , as a result of that , all pubkey will be print out in protobuf json format

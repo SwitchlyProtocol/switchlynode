@@ -6,7 +6,7 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/collections/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/denom/types"
 )
 
 func (k Keeper) Admins() collections.Map[string, sdk.AccAddress] {

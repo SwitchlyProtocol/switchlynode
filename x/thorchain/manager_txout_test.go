@@ -3,8 +3,8 @@ package thorchain
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
 )
 
 // using int64 so this can also represent deltas

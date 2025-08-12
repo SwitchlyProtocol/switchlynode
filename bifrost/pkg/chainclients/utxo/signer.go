@@ -20,10 +20,10 @@ import (
 	dogewire "github.com/eager7/dogd/wire"
 	"github.com/eager7/dogutil"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/utxo"
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/utxo"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

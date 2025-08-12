@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	mem "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
 )
 
 type TxIn struct {

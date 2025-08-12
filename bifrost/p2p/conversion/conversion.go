@@ -18,9 +18,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types/bech32/legacybech32" // nolint:staticcheck
 	crypto2 "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
 )
 
 // GetPeerIDFromSecp256PubKey convert the given pubkey into a peer.ID

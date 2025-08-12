@@ -10,11 +10,11 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/types"
 )
 
 // NOTE: Always end a dbPrefix with a slash ("/"). This is to ensure that there
@@ -396,7 +396,7 @@ func (k KVStore) MintToModule(ctx cosmos.Context, module string, coin common.Coi
 	// from the reserve instead of minting new tokens
 	maxAmt, _ := k.GetMimir(ctx, constants.MaxRuneSupply.String())
 	if coin.IsSwitch() && maxAmt > 0 {
-		currentSupply := k.GetTotalSupply(ctx, common.SwitchNative)  // current circulating supply of rune
+		currentSupply := k.GetTotalSupply(ctx, common.SwitchNative) // current circulating supply of rune
 		maxSupply := cosmos.NewUint(uint64(maxAmt))                 // max supply of rune (ie 500m)
 		availableSupply := common.SafeSub(maxSupply, currentSupply) // available supply to be mint
 		// if available supply is less than the coin.Amount, we need to

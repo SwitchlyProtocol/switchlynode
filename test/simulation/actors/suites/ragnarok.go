@@ -3,10 +3,10 @@ package suites
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/actors/core"
-	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/thornode"
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/actors/core"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -9,8 +9,8 @@ import (
 	dogchaincfg "github.com/eager7/dogd/chaincfg"
 	"github.com/hashicorp/go-multierror"
 	ltcchaincfg "github.com/ltcsuite/ltcd/chaincfg"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 const (

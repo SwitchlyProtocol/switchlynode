@@ -3,7 +3,7 @@ package pubkeymanager
 import (
 	"errors"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 var MockPubkey = "switchpub1addwnpepqt8tnluxnk3y5quyq952klgqnlmz2vmaynm40fp592s0um7ucvjh5lxhqhwz"

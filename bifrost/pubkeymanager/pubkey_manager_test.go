@@ -9,11 +9,11 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 func Test(t *testing.T) { TestingT(t) }

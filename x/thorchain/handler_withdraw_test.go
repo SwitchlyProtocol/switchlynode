@@ -5,10 +5,10 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
 )
 
 type HandlerWithdrawSuite struct{}
@@ -40,11 +40,11 @@ func (mfp *MockWithdrawKeeper) GetPool(_ cosmos.Context, _ common.Asset) (Pool, 
 	}
 	if mfp.suspendedPool {
 		return Pool{
-			BalanceSwitch:  cosmos.ZeroUint(),
-			BalanceAsset: cosmos.ZeroUint(),
-			Asset:        common.ETHAsset,
-			LPUnits:      cosmos.ZeroUint(),
-			Status:       PoolSuspended,
+			BalanceSwitch: cosmos.ZeroUint(),
+			BalanceAsset:  cosmos.ZeroUint(),
+			Asset:         common.ETHAsset,
+			LPUnits:       cosmos.ZeroUint(),
+			Status:        PoolSuspended,
 		}, nil
 	}
 	return mfp.currentPool, nil
@@ -106,14 +106,14 @@ func (HandlerWithdrawSuite) TestWithdrawHandler(c *C) {
 		keeper:            keeper,
 		activeNodeAccount: activeNodeAccount,
 		currentPool: Pool{
-			BalanceSwitch:         cosmos.ZeroUint(),
-			BalanceAsset:        cosmos.ZeroUint(),
-			Asset:               common.ETHAsset,
-			LPUnits:             cosmos.ZeroUint(),
-			SynthUnits:          cosmos.ZeroUint(),
-			PendingInboundSwitch:  cosmos.ZeroUint(),
-			PendingInboundAsset: cosmos.ZeroUint(),
-			Status:              PoolAvailable,
+			BalanceSwitch:        cosmos.ZeroUint(),
+			BalanceAsset:         cosmos.ZeroUint(),
+			Asset:                common.ETHAsset,
+			LPUnits:              cosmos.ZeroUint(),
+			SynthUnits:           cosmos.ZeroUint(),
+			PendingInboundSwitch: cosmos.ZeroUint(),
+			PendingInboundAsset:  cosmos.ZeroUint(),
+			Status:               PoolAvailable,
 		},
 		lp: LiquidityProvider{
 			Units:             cosmos.ZeroUint(),
@@ -285,11 +285,11 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_mockFailScenarios(c *C) {
 	activeNodeAccount := GetRandomValidatorNode(NodeActive)
 	ctx, k := setupKeeperForTest(c)
 	currentPool := Pool{
-		BalanceSwitch:  cosmos.ZeroUint(),
-		BalanceAsset: cosmos.ZeroUint(),
-		Asset:        common.ETHAsset,
-		LPUnits:      cosmos.ZeroUint(),
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.ZeroUint(),
+		BalanceAsset:  cosmos.ZeroUint(),
+		Asset:         common.ETHAsset,
+		LPUnits:       cosmos.ZeroUint(),
+		Status:        PoolAvailable,
 	}
 	lp := LiquidityProvider{
 		Units:        cosmos.ZeroUint(),
@@ -386,14 +386,14 @@ func (HandlerWithdrawSuite) TestWithdrawHandler_outboundFailures(c *C) {
 	asset := common.BTCAsset
 
 	pool := Pool{
-		Asset:               asset,
-		BalanceAsset:        cosmos.NewUint(10000),
-		BalanceSwitch:         cosmos.NewUint(10000),
-		LPUnits:             cosmos.NewUint(1000),
-		SynthUnits:          cosmos.ZeroUint(),
-		PendingInboundSwitch:  cosmos.ZeroUint(),
-		PendingInboundAsset: cosmos.ZeroUint(),
-		Status:              PoolAvailable,
+		Asset:                asset,
+		BalanceAsset:         cosmos.NewUint(10000),
+		BalanceSwitch:        cosmos.NewUint(10000),
+		LPUnits:              cosmos.NewUint(1000),
+		SynthUnits:           cosmos.ZeroUint(),
+		PendingInboundSwitch: cosmos.ZeroUint(),
+		PendingInboundAsset:  cosmos.ZeroUint(),
+		Status:               PoolAvailable,
 	}
 	c.Assert(pool.Valid(), IsNil)
 	_ = keeper.SetPool(ctx, pool)

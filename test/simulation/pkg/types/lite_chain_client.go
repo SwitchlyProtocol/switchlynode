@@ -2,8 +2,8 @@ package types
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 // SimTx is a struct used for simulation transactions.

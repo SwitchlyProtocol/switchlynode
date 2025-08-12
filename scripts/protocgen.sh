@@ -2,7 +2,7 @@
 
 set -e
 
-GO_MOD_PACKAGE="github.com/switchlyprotocol/switchlynode/v1"
+GO_MOD_PACKAGE="github.com/switchlyprotocol/switchlynode/v3"
 
 echo "Generating gogo proto code"
 cd proto/thorchain/v1

@@ -6,11 +6,11 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 type HelperSuite struct{}
@@ -378,9 +378,9 @@ func (s *HelperSuite) TestIsSynthMintPause(c *C) {
 	mgr.Keeper().SetMimir(ctx, constants.MaxSynthPerPoolDepth.String(), 1500)
 
 	pool := types.Pool{
-		Asset:        common.BTCAsset,
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		BalanceSwitch:  cosmos.NewUint(100 * common.One),
+		Asset:         common.BTCAsset,
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
 	}
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 

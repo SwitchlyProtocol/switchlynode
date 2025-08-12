@@ -9,7 +9,7 @@ import (
 	"github.com/decred/dcrd/dcrec/edwards"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }

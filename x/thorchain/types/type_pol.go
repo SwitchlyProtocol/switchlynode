@@ -1,7 +1,7 @@
 package types
 
 import (
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // NewProtocolOwnedLiquidity create a new instance ProtocolOwnedLiquidity it is empty though

@@ -3,7 +3,7 @@ package tokenlist
 import (
 	"encoding/json"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist/avaxtokens"
+	"github.com/switchlyprotocol/switchlynode/v3/common/tokenlist/avaxtokens"
 )
 
 var avaxTokenList EVMTokenList

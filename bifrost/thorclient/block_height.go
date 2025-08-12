@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
 )
 
 // GetLastObservedInHeight returns the lastobservedin value for the chain past in

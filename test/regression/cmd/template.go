@@ -5,7 +5,7 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

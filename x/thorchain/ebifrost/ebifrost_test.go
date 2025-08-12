@@ -12,7 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	common "github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 // Helper functions for test data

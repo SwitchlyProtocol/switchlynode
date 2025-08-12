@@ -12,16 +12,16 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/notify"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/notify"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

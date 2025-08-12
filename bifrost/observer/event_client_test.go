@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/observer"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/observer"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

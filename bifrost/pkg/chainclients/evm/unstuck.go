@@ -11,11 +11,11 @@ import (
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 
-	evmtypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm/types"
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	evmtypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 // unstuck should be called in a goroutine and runs until the client stop channel is

@@ -11,7 +11,7 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }

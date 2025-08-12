@@ -16,14 +16,14 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/storage"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/common"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keygen"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keysign"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/monitor"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/storage"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/monitor"
 )
 
 // TssServer is the structure that can provide all keysign and key gen features

@@ -3,7 +3,7 @@ package types
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 // NewChainContract create a new instance of ChainContract

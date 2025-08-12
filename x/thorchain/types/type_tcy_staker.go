@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"cosmossdk.io/math"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 func NewTCYStaker(address common.Address, amount math.Uint) TCYStaker {

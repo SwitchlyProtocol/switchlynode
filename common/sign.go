@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // Sign an array of bytes.

@@ -18,9 +18,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"github.com/switchlyprotocol/switchlynode/v1/x/denom/client/cli"
-	"github.com/switchlyprotocol/switchlynode/v1/x/denom/keeper"
-	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/denom/client/cli"
+	"github.com/switchlyprotocol/switchlynode/v3/x/denom/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/x/denom/types"
 )
 
 const ConsensusVersion = 1

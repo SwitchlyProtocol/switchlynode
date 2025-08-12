@@ -3,7 +3,7 @@ package keeperv1
 import (
 	. "gopkg.in/check.v1"
 
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 type KeeperStreamingSwapSuite struct{}

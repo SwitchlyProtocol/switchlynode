@@ -11,10 +11,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
 )
 
 var m *metrics.Metrics

@@ -27,16 +27,16 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/storage"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/utxo"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
-	types2 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/utxo"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 type DogecoinSignerSuite struct {

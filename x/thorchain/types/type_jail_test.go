@@ -10,7 +10,7 @@ import (
 	dbm "github.com/cosmos/cosmos-db"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 type JailSuite struct{}

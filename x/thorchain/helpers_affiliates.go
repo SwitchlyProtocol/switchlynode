@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/blang/semver"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	thorchain "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	thorchain "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
 )
 
 func triggerPreferredAssetSwap(ctx cosmos.Context, mgr Manager, affiliateAddress common.Address, txID common.TxID, tn THORName, affcol AffiliateFeeCollector, queueIndex int) error {

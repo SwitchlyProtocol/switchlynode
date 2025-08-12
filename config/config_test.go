@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 	. "gopkg.in/check.v1"
 	"gopkg.in/yaml.v2"
 )

@@ -6,7 +6,7 @@ import (
 	"github.com/btcsuite/btcutil"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 func bech32AccountPubKey(key *btcec.PrivateKey) (common.PubKey, error) {

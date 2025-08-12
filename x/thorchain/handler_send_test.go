@@ -2,8 +2,8 @@ package thorchain
 
 import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 
 	. "gopkg.in/check.v1"
 )

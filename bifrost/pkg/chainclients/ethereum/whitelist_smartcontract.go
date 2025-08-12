@@ -1,7 +1,7 @@
 package ethereum
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 var useWhitelistSmartContract = false

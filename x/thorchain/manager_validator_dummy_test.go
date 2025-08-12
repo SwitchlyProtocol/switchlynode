@@ -3,8 +3,8 @@ package thorchain
 import (
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 type ValidatorDummyMgr struct{}

@@ -5,7 +5,7 @@ import (
 
 	"github.com/blang/semver"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // ReserveContributorHandler is handler to process MsgReserveContributor

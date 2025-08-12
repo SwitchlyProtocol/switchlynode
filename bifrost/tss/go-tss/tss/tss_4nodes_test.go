@@ -19,11 +19,11 @@ import (
 	"gopkg.in/check.v1"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/common"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keygen"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keysign"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
 )
 
 const (

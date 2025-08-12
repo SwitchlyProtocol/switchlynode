@@ -84,23 +84,23 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-	appparams "github.com/switchlyprotocol/switchlynode/v1/app/params"
-	"github.com/switchlyprotocol/switchlynode/v1/app/upgrades"
-	"github.com/switchlyprotocol/switchlynode/v1/openapi"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
-	thorchainkeeper "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
-	thorchainkeeperabci "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/abci"
-	thorchainkeeperv1 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/v1"
-	thorchaintypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	appparams "github.com/switchlyprotocol/switchlynode/v3/app/params"
+	"github.com/switchlyprotocol/switchlynode/v3/app/upgrades"
+	"github.com/switchlyprotocol/switchlynode/v3/openapi"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	thorchainkeeper "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	thorchainkeeperabci "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/abci"
+	thorchainkeeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/v1"
+	thorchaintypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/x/denom"
-	denomkeeper "github.com/switchlyprotocol/switchlynode/v1/x/denom/keeper"
-	denomtypes "github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/denom"
+	denomkeeper "github.com/switchlyprotocol/switchlynode/v3/x/denom/keeper"
+	denomtypes "github.com/switchlyprotocol/switchlynode/v3/x/denom/types"
 
 	feegrantmodule "cosmossdk.io/x/feegrant/module"
 
-	"github.com/switchlyprotocol/switchlynode/v1/app/upgrades/standard"
+	"github.com/switchlyprotocol/switchlynode/v3/app/upgrades/standard"
 )
 
 const (

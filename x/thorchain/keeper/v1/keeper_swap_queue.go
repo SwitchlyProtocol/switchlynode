@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 func (k KVStore) setMsgSwap(ctx cosmos.Context, key string, record MsgSwap) {

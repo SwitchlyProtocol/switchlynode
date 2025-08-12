@@ -14,7 +14,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	tssp "github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
+	tssp "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 
 	"github.com/stellar/go/clients/horizonclient"
 	"github.com/stellar/go/network"
@@ -22,18 +22,18 @@ import (
 	"github.com/stellar/go/txnbuild"
 
 	"github.com/stellar/go/xdr"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/runners"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/signercache"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	mem "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/runners"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/signercache"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	mem "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
 )
 
 // Client is a structure to sign and broadcast tx to Stellar chain used by signer mostly

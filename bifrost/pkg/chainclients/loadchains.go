@@ -4,20 +4,20 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/ethereum"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/evm"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/gaia"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/types"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/stellar"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/utxo"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/xrp"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/ethereum"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/evm"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/gaia"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/stellar"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/utxo"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/xrp"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 // ChainClient exports the shared type.

@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/switchlyprotocol/switchlynode/v1/app"
+	"github.com/switchlyprotocol/switchlynode/v3/app"
 	"github.com/syndtr/goleveldb/leveldb/util"
 
 	"cosmossdk.io/log"
@@ -46,12 +46,12 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/cmd/thornode/cmd"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	thorlog "github.com/switchlyprotocol/switchlynode/v1/log"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd/thornode/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	thorlog "github.com/switchlyprotocol/switchlynode/v3/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/client/cli"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/client/cli"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"

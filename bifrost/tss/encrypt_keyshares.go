@@ -18,8 +18,8 @@ import (
 	"github.com/cosmos/go-bip39"
 	"github.com/itchio/lzma"
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/storage"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/storage"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"golang.org/x/crypto/chacha20poly1305"
 )
 

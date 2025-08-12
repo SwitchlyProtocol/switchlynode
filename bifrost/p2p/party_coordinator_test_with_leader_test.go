@@ -13,7 +13,7 @@ import (
 	mocknet "github.com/libp2p/go-libp2p/p2p/net/mock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
 )
 
 func init() {

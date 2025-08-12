@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // GetMimir get a mimir value from key value store

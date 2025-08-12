@@ -1,7 +1,7 @@
 package blockscanner
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 	. "gopkg.in/check.v1"
 )
 

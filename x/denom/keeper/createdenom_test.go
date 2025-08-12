@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/x/denom/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/denom/types"
 )
 
 func (s *KeeperTestSuite) TestMsgCreateDenom() {

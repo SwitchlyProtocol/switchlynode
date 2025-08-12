@@ -13,7 +13,7 @@ import (
 	maddr "github.com/multiformats/go-multiaddr"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
 )
 
 type FileStateMgrTestSuite struct{}

@@ -7,7 +7,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	evmtypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm/types"
+	evmtypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm/types"
 )
 
 // LevelDBBlockMetaAccessor struct

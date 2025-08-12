@@ -1,8 +1,8 @@
 package keysign
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/blame"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/blame"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
 )
 
 // signature

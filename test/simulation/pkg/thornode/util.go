@@ -3,8 +3,8 @@ package thornode
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

@@ -8,10 +8,10 @@ import (
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
 )
 
 type HandlerObservedTxOutSuite struct{}
@@ -197,9 +197,9 @@ func (s *HandlerObservedTxOutSuite) TestHandle(c *C) {
 		voter:     NewObservedTxVoter(tx.ID, make(ObservedTxs, 0)),
 		txInVoter: NewObservedTxVoter(txInHash, make(ObservedTxs, 0)),
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			BalanceSwitch:  cosmos.NewUint(200_000),
-			BalanceAsset: cosmos.NewUint(300_000),
+			Asset:         common.ETHAsset,
+			BalanceSwitch: cosmos.NewUint(200_000),
+			BalanceAsset:  cosmos.NewUint(300_000),
 		},
 		vaultExists: true,
 		vault:       vault,
@@ -294,9 +294,9 @@ func (s *HandlerObservedTxOutSuite) TestHandleFailedTransaction(c *C) {
 		voter:     NewObservedTxVoter(tx.ID, make(ObservedTxs, 0)),
 		txInVoter: NewObservedTxVoter(txInHash, make(ObservedTxs, 0)),
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			BalanceSwitch:  cosmos.NewUint(200_000),
-			BalanceAsset: cosmos.NewUint(300_000),
+			Asset:         common.ETHAsset,
+			BalanceSwitch: cosmos.NewUint(200_000),
+			BalanceAsset:  cosmos.NewUint(300_000),
 		},
 		vaultExists: true,
 		vault:       vault,
@@ -388,9 +388,9 @@ func (s *HandlerObservedTxOutSuite) TestHandleStolenFundsInvalidMemo(c *C) {
 		nas:   NodeAccounts{na},
 		voter: NewObservedTxVoter(tx.ID, make(ObservedTxs, 0)),
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			BalanceSwitch:  cosmos.NewUint(200 * common.One),
-			BalanceAsset: cosmos.NewUint(300 * common.One),
+			Asset:         common.ETHAsset,
+			BalanceSwitch: cosmos.NewUint(200 * common.One),
+			BalanceAsset:  cosmos.NewUint(300 * common.One),
 		},
 		vaultExists: true,
 		vault:       vault,

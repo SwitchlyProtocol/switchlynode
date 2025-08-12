@@ -2,9 +2,9 @@ package thorchain
 
 import (
 	"github.com/cometbft/cometbft/crypto"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 type DummySlasher struct {

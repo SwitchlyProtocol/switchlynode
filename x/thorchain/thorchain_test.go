@@ -7,9 +7,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -109,11 +109,11 @@ func (s *ThorchainSuite) TestChurn(c *C) {
 		TransactionFeeRate: 25000,
 	}), IsNil)
 	c.Assert(mgr.Keeper().SetPool(ctx, Pool{
-		BalanceSwitch:  cosmos.NewUint(common.One),
-		BalanceAsset: cosmos.NewUint(common.One),
-		Asset:        common.ETHAsset,
-		LPUnits:      cosmos.NewUint(common.One),
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(common.One),
+		BalanceAsset:  cosmos.NewUint(common.One),
+		Asset:         common.ETHAsset,
+		LPUnits:       cosmos.NewUint(common.One),
+		Status:        PoolAvailable,
 	}), IsNil)
 	addresses := make([]cosmos.AccAddress, 4)
 	var existingValidators []string

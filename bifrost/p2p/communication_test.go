@@ -10,7 +10,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
 )
 
 type CommunicationTestSuite struct{}

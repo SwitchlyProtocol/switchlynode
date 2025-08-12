@@ -28,8 +28,8 @@ BUILDTAG?=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 # compiler flags
 VERSION:=$(shell cat version)
 TAG?=mocknet
-ldflags = -X github.com/switchlynode/switchlynode/v1/constants.Version=$(VERSION) \
-      -X github.com/switchlynode/switchlynode/v1/constants.GitCommit=$(COMMIT) \
+ldflags = -X github.com/switchlynode/switchlynode/v3/constants.Version=$(VERSION) \
+      -X github.com/switchlynode/switchlynode/v3/constants.GitCommit=$(COMMIT) \
       -X github.com/cosmos/cosmos-sdk/version.Name=SwitchlyProtocol \
       -X github.com/cosmos/cosmos-sdk/version.AppName=switchlynode \
       -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
@@ -194,9 +194,9 @@ test-regression-coverage:
 # internal target used in docker build - version pinned for consistent app hashes
 _build-test-regression:
 	@go install -ldflags '$(ldflags)' -tags=mocknet,regtest ./cmd/switchlynode
-	@go build -ldflags '$(ldflags) -X github.com/switchlynode/switchlynode/v1/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X github.com/switchlynode/switchlynode/v3/constants.Version=9.999.0' \
 		-cover -tags=mocknet,regtest -o /regtest/cover-switchlynode ./cmd/switchlynode
-	@go build -ldflags '$(ldflags) -X github.com/switchlynode/switchlynode/v1/constants.Version=9.999.0' \
+	@go build -ldflags '$(ldflags) -X github.com/switchlynode/switchlynode/v3/constants.Version=9.999.0' \
 		-tags mocknet -o /regtest/regtest ./test/regression/cmd
 
 # internal target used in test run

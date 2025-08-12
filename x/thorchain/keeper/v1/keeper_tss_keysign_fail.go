@@ -3,7 +3,7 @@ package keeperv1
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 func (k KVStore) setTssKeysignFailVoter(ctx cosmos.Context, key string, record TssKeysignFailVoter) {

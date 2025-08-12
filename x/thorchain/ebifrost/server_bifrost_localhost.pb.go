@@ -8,7 +8,7 @@ import (
 	fmt "fmt"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	proto "github.com/cosmos/gogoproto/proto"
-	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	common "github.com/switchlyprotocol/switchlynode/v3/common"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"

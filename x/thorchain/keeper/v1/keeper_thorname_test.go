@@ -1,7 +1,7 @@
 package keeperv1
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 	. "gopkg.in/check.v1"
 )
 

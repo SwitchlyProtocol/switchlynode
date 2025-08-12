@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/notify"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/notify"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -237,7 +237,7 @@ func setMidgardLoanFees(height int64, fields *util.OrderedMap, txid string) {
 
 	// set fields
 	fields.Set("Liquidity Fee", fmt.Sprintf(
-							"%f SWITCH (%s)",
+		"%f SWITCH (%s)",
 		float64(liquidityFee.Uint64())/common.One,
 		util.FormatUSD(float64(liquidityFee.Uint64())/common.One),
 	))

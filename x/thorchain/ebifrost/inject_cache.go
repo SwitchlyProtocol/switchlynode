@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/log"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	common "github.com/switchlyprotocol/switchlynode/v1/common"
+	common "github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 type TimestampedItem[T any] struct {

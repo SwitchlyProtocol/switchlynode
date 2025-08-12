@@ -28,14 +28,14 @@ import (
 	"github.com/rs/zerolog/log"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	thorlog "github.com/switchlyprotocol/switchlynode/v1/log"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	thorlog "github.com/switchlyprotocol/switchlynode/v3/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
-	kv1 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/v1"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	kv1 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/v1"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -401,9 +401,9 @@ func (HandlerSuite) TestRefund(c *C) {
 	w := getHandlerTestWrapper(c, 1, true, false)
 
 	pool := Pool{
-		Asset:        common.DOGEAsset,
-		BalanceSwitch:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
+		Asset:         common.DOGEAsset,
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
 	}
 	c.Assert(w.keeper.SetPool(w.ctx, pool), IsNil)
 

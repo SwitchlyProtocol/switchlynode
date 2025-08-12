@@ -14,10 +14,10 @@ import (
 	"time"
 
 	ctypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/switchlyprotocol/switchlynode/v1/app"
-	"github.com/switchlyprotocol/switchlynode/v1/app/params"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/app"
+	"github.com/switchlyprotocol/switchlynode/v3/app/params"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"

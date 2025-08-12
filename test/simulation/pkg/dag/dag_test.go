@@ -3,7 +3,7 @@ package dag
 import (
 	"testing"
 
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 	. "gopkg.in/check.v1"
 )
 

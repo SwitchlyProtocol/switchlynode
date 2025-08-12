@@ -6,8 +6,8 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/db"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/db"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 // ScannerStorage define the method need to be used by scanner

@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"net/http"
 
-	btypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/blockscanner/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	btypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 // GetKeygenBlock retrieves keygen request for the given block height from thorchain

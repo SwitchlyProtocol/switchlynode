@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 )
 
 // Store will serialize an object to storage.

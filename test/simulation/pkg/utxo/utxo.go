@@ -18,32 +18,32 @@ import (
 	"github.com/btcsuite/btcd/wire"
 	btcwire "github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
-	btctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/txscript"
+	btctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/txscript"
 
 	dogeec "github.com/eager7/dogd/btcec"
 	dogechaincfg "github.com/eager7/dogd/chaincfg"
 	dogewire "github.com/eager7/dogd/wire"
 	"github.com/eager7/dogutil"
-	dogetxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/dogd-txscript"
+	dogetxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/dogd-txscript"
 
 	"github.com/gcash/bchd/bchec"
 	bchchaincfg "github.com/gcash/bchd/chaincfg"
 	bchwire "github.com/gcash/bchd/wire"
 	"github.com/gcash/bchutil"
-	bchtxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/bchd-txscript"
+	bchtxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/bchd-txscript"
 
 	ltcec "github.com/ltcsuite/ltcd/btcec"
 	ltcchaincfg "github.com/ltcsuite/ltcd/chaincfg"
 	ltcwire "github.com/ltcsuite/ltcd/wire"
 	"github.com/ltcsuite/ltcutil"
-	ltctxscript "github.com/switchlyprotocol/switchlynode/v1/bifrost/txscript/ltcd-txscript"
+	ltctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/ltcd-txscript"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/utxo/rpc"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/utxo/rpc"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

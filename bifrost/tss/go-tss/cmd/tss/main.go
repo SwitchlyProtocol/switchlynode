@@ -13,10 +13,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/input"
 	golog "github.com/ipfs/go-log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/common"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 )
 
 var (

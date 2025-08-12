@@ -15,7 +15,7 @@ import (
 	"github.com/libp2p/go-libp2p-peerstore/addr"
 	ma "github.com/multiformats/go-multiaddr"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
 )
 
 // KeygenLocalState is a structure used to represent the data we saved locally for different keygen

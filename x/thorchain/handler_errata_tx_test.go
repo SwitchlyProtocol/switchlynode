@@ -5,11 +5,11 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 var _ = Suite(&HandlerErrataTxSuite{})
@@ -112,10 +112,10 @@ func (s *HandlerErrataTxSuite) TestErrataHandlerHappyPath(c *C) {
 			Height: 1024,
 		},
 		pool: Pool{
-			Asset:        common.ETHAsset,
-			LPUnits:      totalUnits,
-			BalanceSwitch:  cosmos.NewUint(100 * common.One),
-			BalanceAsset: cosmos.NewUint(100 * common.One),
+			Asset:         common.ETHAsset,
+			LPUnits:       totalUnits,
+			BalanceSwitch: cosmos.NewUint(100 * common.One),
+			BalanceAsset:  cosmos.NewUint(100 * common.One),
 		},
 		lps: LiquidityProviders{
 			{
@@ -790,11 +790,11 @@ func (s *HandlerErrataTxSuite) TestObservingSlashing(c *C) {
 	mgr.Keeper().SetObservedTxInVoter(ctx, voter)
 
 	pool := Pool{
-		Asset:        common.ETHAsset,
-		LPUnits:      totalUnits,
-		BalanceSwitch:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Status:       PoolAvailable,
+		Asset:         common.ETHAsset,
+		LPUnits:       totalUnits,
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Status:        PoolAvailable,
 	}
 	c.Assert(mgr.Keeper().SetPool(ctx, pool), IsNil)
 

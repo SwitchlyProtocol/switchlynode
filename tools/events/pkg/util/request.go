@@ -9,7 +9,7 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

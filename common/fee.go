@@ -3,7 +3,7 @@ package common
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // NewFee return a new instance of Fee

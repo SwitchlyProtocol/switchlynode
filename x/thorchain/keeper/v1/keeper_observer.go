@@ -1,7 +1,7 @@
 package keeperv1
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // GetObservingAddresses - get list of observed addresses. This is a list of

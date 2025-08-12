@@ -7,10 +7,10 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/blang/semver"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
-	thorchaintypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	thorchaintypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 func QuoUint(num, denom sdkmath.Uint) sdkmath.LegacyDec {
@@ -32,21 +32,21 @@ func (k *TestSwapKeeper) GetPool(ctx cosmos.Context, asset common.Asset) (thorch
 	}
 	if asset.Equals(common.BCHAsset) {
 		return thorchaintypes.Pool{
-			BalanceSwitch:  cosmos.NewUint(100).MulUint64(common.One),
-			BalanceAsset: cosmos.NewUint(100).MulUint64(common.One),
-			LPUnits:      cosmos.NewUint(100).MulUint64(common.One),
-			SynthUnits:   cosmos.ZeroUint(),
-			Status:       PoolStaged,
-			Asset:        asset,
+			BalanceSwitch: cosmos.NewUint(100).MulUint64(common.One),
+			BalanceAsset:  cosmos.NewUint(100).MulUint64(common.One),
+			LPUnits:       cosmos.NewUint(100).MulUint64(common.One),
+			SynthUnits:    cosmos.ZeroUint(),
+			Status:        PoolStaged,
+			Asset:         asset,
 		}, nil
 	}
 	return thorchaintypes.Pool{
-		BalanceSwitch:  cosmos.NewUint(100).MulUint64(common.One),
-		BalanceAsset: cosmos.NewUint(100).MulUint64(common.One),
-		LPUnits:      cosmos.NewUint(100).MulUint64(common.One),
-		SynthUnits:   cosmos.ZeroUint(),
-		Status:       PoolAvailable,
-		Asset:        asset,
+		BalanceSwitch: cosmos.NewUint(100).MulUint64(common.One),
+		BalanceAsset:  cosmos.NewUint(100).MulUint64(common.One),
+		LPUnits:       cosmos.NewUint(100).MulUint64(common.One),
+		SynthUnits:    cosmos.ZeroUint(),
+		Status:        PoolAvailable,
+		Asset:         asset,
 	}, nil
 }
 

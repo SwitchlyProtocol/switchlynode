@@ -2,7 +2,7 @@ package conversion
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 )
 
 func SetupBech32Prefix() {

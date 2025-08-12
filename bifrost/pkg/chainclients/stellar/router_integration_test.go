@@ -9,8 +9,8 @@ import (
 	"github.com/stellar/go/clients/horizonclient"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 type RouterIntegrationTestSuite struct {

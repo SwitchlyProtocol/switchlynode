@@ -16,7 +16,7 @@ import (
 	coskey "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bech32 "github.com/cosmos/cosmos-sdk/types/bech32/legacybech32"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 )
 
 type (

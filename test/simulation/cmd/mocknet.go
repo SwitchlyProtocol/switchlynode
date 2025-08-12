@@ -14,13 +14,13 @@ import (
 	ecommon "github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/evm"
-	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/thornode"
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
-	ttypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/evm"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

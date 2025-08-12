@@ -11,7 +11,7 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
-	thorchainKeeper "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper"
+	thorchainKeeper "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
 )
 
 // AppKeepers contains references to all keepers required for upgrades

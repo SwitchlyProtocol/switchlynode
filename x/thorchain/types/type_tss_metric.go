@@ -3,8 +3,8 @@ package types
 import (
 	"sort"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // NewTssKeygenMetric create a new instance of TssKeygenMetric

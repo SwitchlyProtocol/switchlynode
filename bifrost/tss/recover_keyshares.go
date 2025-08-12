@@ -14,11 +14,11 @@ import (
 	"github.com/itchio/lzma"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/app"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/app"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge) error {

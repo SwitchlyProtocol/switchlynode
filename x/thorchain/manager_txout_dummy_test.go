@@ -2,8 +2,8 @@ package thorchain
 
 import (
 	"github.com/blang/semver"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // TxOutStoreDummy is going to manage all the outgoing tx

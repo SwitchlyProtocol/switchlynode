@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/itchio/lzma"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/storage"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/storage"
 	. "gopkg.in/check.v1"
 )
 

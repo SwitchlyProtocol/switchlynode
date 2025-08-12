@@ -1,7 +1,7 @@
 package evm
 
 import (
-	evmtypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm/types"
+	evmtypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm/types"
 )
 
 // BlockMetaAccessor define methods need to access block meta storage

@@ -24,12 +24,12 @@ import (
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/switchlyprotocol/switchlynode/v1/app/params"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/app/params"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/client/cli"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/client/cli"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"

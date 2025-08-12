@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 // ConstantsProvider which will query thorchain to get the constants value per request

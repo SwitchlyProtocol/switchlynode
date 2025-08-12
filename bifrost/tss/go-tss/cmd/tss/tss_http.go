@@ -13,9 +13,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keygen"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/keysign"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/tss"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 )
 
 // TssHttpServer provide http endpoint for tss server

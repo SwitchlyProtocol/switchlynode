@@ -8,7 +8,7 @@ import (
 	fmt "fmt"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
-	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v1/common"
+	gitlab_com_thorchain_thornode_v3_common "github.com/switchlyprotocol/switchlynode/v3/common"
 	io "io"
 	math "math"
 	math_bits "math/bits"

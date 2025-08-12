@@ -1,4 +1,4 @@
-module github.com/switchlyprotocol/switchlynode/v1
+module github.com/switchlyprotocol/switchlynode/v3
 
 go 1.23.4
 

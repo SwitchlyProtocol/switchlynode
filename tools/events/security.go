@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/config"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/notify"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v1/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/notify"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

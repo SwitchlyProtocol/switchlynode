@@ -3,7 +3,7 @@ package xrp
 import (
 	"sync"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 type XrpMetadata struct {

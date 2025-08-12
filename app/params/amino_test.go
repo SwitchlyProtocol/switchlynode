@@ -9,10 +9,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/stretchr/testify/require"
-	appparams "github.com/switchlyprotocol/switchlynode/v1/app/params"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	thorchaintypes "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	appparams "github.com/switchlyprotocol/switchlynode/v3/app/params"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	thorchaintypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 func TestAminoThorchainMessages(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 
 	se "github.com/cosmos/cosmos-sdk/types/errors"
 
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 
 	. "gopkg.in/check.v1"
 )

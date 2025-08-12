@@ -2,9 +2,9 @@ package keeperv1
 
 import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 	. "gopkg.in/check.v1"
 )
 

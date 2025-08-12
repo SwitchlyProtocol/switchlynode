@@ -3,10 +3,10 @@ package suites
 import (
 	"math/rand"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/actors/core"
-	"github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/evm"
-	. "github.com/switchlyprotocol/switchlynode/v1/test/simulation/pkg/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/actors/core"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/evm"
+	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

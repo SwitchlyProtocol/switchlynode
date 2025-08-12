@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	cosmos "github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 func (k KVStore) setKeygenBlock(ctx cosmos.Context, key string, record KeygenBlock) {

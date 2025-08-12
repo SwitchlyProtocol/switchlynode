@@ -1,6 +1,6 @@
 package blockscanner
 
-import "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
+import "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
 
 type DummyFetcher struct {
 	Tx  types.TxIn

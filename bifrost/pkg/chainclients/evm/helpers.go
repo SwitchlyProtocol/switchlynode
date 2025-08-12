@@ -10,7 +10,7 @@ import (
 	ecore "github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/txpool"
 	ethclient "github.com/ethereum/go-ethereum/ethclient"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 func isAcceptableError(err error) bool {

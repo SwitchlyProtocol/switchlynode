@@ -10,7 +10,7 @@ import (
 
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/crypto/codec"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 func (s *PubKeyTestSuite) TestPubKeyGetAddress(c *C) {

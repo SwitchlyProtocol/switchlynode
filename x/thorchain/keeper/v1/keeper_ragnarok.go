@@ -3,9 +3,9 @@ package keeperv1
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/keeper/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/types"
 )
 
 func (k KVStore) setRagnarokWithdrawPosition(ctx cosmos.Context, key string, record RagnarokWithdrawPosition) {

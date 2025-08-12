@@ -1,8 +1,8 @@
 package keeperv1
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 // AddPoolFeeToReserve add fee to reserve, the fee is always in RUNE

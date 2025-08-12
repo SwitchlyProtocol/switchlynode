@@ -19,7 +19,7 @@ import (
 	"github.com/ltcsuite/ltcutil"
 	"github.com/stellar/go/strkey"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 type Address string

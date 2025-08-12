@@ -3,9 +3,9 @@ package thorchain
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 type GasManagerTestSuiteVCUR struct{}
@@ -81,10 +81,10 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 
 	// set pool
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceSwitch:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Asset:        common.AVAXAsset,
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Asset:         common.AVAXAsset,
+		Status:        PoolAvailable,
 	}), IsNil)
 
 	// conversion to rune should now work
@@ -102,10 +102,10 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 	c.Assert(fee.Uint64(), Equals, uint64(70*50*2))
 
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceSwitch:  cosmos.NewUint(100 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Asset:        common.BTCAsset,
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(100 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Asset:         common.BTCAsset,
+		Status:        PoolAvailable,
 	}), IsNil)
 	fee, _ = gasMgr.GetAssetOutboundFee(ctx, common.BTCAsset, false)
 	c.Assert(fee.Uint64(), Equals, uint64(70*50*2))
@@ -116,10 +116,10 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 
 	// change the pool balance
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceSwitch:  cosmos.NewUint(500 * common.One),
-		BalanceAsset: cosmos.NewUint(100 * common.One),
-		Asset:        common.BTCAsset,
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(500 * common.One),
+		BalanceAsset:  cosmos.NewUint(100 * common.One),
+		Asset:         common.BTCAsset,
+		Status:        PoolAvailable,
 	}), IsNil)
 	synthAssetFee, err := gasMgr.GetAssetOutboundFee(ctx, sBTC, false)
 	c.Assert(synthAssetFee.Uint64(), Equals, uint64(400000))
@@ -142,11 +142,11 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 	busdAsset, err := common.NewAsset("BSC.BUSD-BD1")
 	c.Assert(err, IsNil)
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceSwitch:  cosmos.NewUint(500 * common.One),
-		BalanceAsset: cosmos.NewUint(500 * common.One),
-		Decimals:     8,
-		Asset:        busdAsset,
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(500 * common.One),
+		BalanceAsset:  cosmos.NewUint(500 * common.One),
+		Decimals:      8,
+		Asset:         busdAsset,
+		Status:        PoolAvailable,
 	}), IsNil)
 	k.SetMimir(ctx, constants.MinimumL1OutboundFeeUSD.String(), 1_0000_0000)
 	k.SetMimir(ctx, "TorAnchor-BSC-BUSD-BD1", 1) // enable BUSD pool as a TOR anchor
@@ -191,10 +191,10 @@ func (GasManagerTestSuiteVCUR) TestGetAssetOutboundFee(c *C) {
 	btcUsd, err := common.NewAsset("BTC.USDC")
 	c.Assert(err, IsNil)
 	c.Assert(k.SetPool(ctx, Pool{
-		BalanceSwitch:  cosmos.NewUint(500 * common.One),
-		BalanceAsset: cosmos.NewUint(200 * common.One),
-		Asset:        btcUsd,
-		Status:       PoolAvailable,
+		BalanceSwitch: cosmos.NewUint(500 * common.One),
+		BalanceAsset:  cosmos.NewUint(200 * common.One),
+		Asset:         btcUsd,
+		Status:        PoolAvailable,
 	}), IsNil)
 
 	fee, err = gasMgr.GetAssetOutboundFee(ctx, btcUsd, false)

@@ -12,8 +12,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/rs/zerolog"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
 // askForAttestationState will ask other validators for their attestation state

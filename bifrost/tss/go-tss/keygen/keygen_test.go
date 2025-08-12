@@ -26,11 +26,11 @@ import (
 	maddr "github.com/multiformats/go-multiaddr"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/messages"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/p2p/storage"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/tss/go-tss/common"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/storage"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
 )
 
 var (

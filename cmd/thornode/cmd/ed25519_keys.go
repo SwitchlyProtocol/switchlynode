@@ -21,15 +21,15 @@ import (
 	"github.com/decred/dcrd/dcrec/edwards"
 	"github.com/spf13/cobra"
 
-	"github.com/switchlyprotocol/switchlynode/v1/app"
+	"github.com/switchlyprotocol/switchlynode/v3/app"
 )
 
 const (
-	DefaultEd25519KeyName           = `Switchly-ED25519`
+	DefaultEd25519KeyName          = `Switchly-ED25519`
 	SwitchlyDefaultBIP39PassPhrase = "switchly"
-	BIP44Prefix                     = "44'/931'/"
-	PartialPath                     = "0'/0/0"
-	FullPath                        = BIP44Prefix + PartialPath
+	BIP44Prefix                    = "44'/931'/"
+	PartialPath                    = "0'/0/0"
+	FullPath                       = BIP44Prefix + PartialPath
 )
 
 func GetEd25519Keys() *cobra.Command {

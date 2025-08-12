@@ -8,10 +8,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	v2 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/migrations/v2"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	v2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/migrations/v2"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 // Migrator is a struct for handling in-place store migrations.

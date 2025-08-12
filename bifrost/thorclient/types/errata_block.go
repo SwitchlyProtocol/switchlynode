@@ -1,6 +1,6 @@
 package types
 
-import "github.com/switchlyprotocol/switchlynode/v1/common"
+import "github.com/switchlyprotocol/switchlynode/v3/common"
 
 type ErrataBlock struct {
 	Height int64

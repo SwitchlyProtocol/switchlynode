@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/stellar/go/xdr"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
 // SorobanRPCClient handles Soroban RPC calls for contract events

@@ -7,8 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
 
-	"github.com/switchlyprotocol/switchlynode/v1/common/relay"
-	"github.com/switchlyprotocol/switchlynode/v1/constants"
+	"github.com/switchlyprotocol/switchlynode/v3/common/relay"
+	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
 type ver struct {

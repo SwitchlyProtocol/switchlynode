@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/blang/semver"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/tokenlist"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/tokenlist"
 )
 
 // -------------------------------------------------------------------------------------

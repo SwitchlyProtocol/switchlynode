@@ -17,17 +17,17 @@ import (
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pkg/chainclients/shared/evm"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v1/bifrost/thorclient/types"
-	"github.com/switchlyprotocol/switchlynode/v1/cmd"
-	"github.com/switchlyprotocol/switchlynode/v1/common"
-	"github.com/switchlyprotocol/switchlynode/v1/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	openapi "github.com/switchlyprotocol/switchlynode/v1/openapi/gen"
-	types2 "github.com/switchlyprotocol/switchlynode/v1/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/cmd"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
 )
 
 func TestEVMPackage(t *testing.T) { TestingT(t) }

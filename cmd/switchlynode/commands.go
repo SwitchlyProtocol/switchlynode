@@ -42,11 +42,11 @@ import (
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
-	"github.com/switchlyprotocol/switchlynode/v1/app"
-	"github.com/switchlyprotocol/switchlynode/v1/config"
-	thorlog "github.com/switchlyprotocol/switchlynode/v1/log"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/client/cli"
-	"github.com/switchlyprotocol/switchlynode/v1/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/app"
+	"github.com/switchlyprotocol/switchlynode/v3/config"
+	thorlog "github.com/switchlyprotocol/switchlynode/v3/log"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/client/cli"
+	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
 
 	"github.com/rs/zerolog"
 )
