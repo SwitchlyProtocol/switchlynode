@@ -104,19 +104,23 @@ init_mocknet() {
     fi
   done
 
-  sleep 2 # wait for switchly to commit a block
+  sleep 5 # wait for switchly to commit blocks and update sequence
   # set node version
   echo "Setting node version..."
   
   # Try version registration with better error handling
   for i in {1..5}; do
     echo "Version registration attempt $i/5..."
-    if printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-version --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes 2>&1; then
+    # Get current account sequence to avoid mismatch
+    ACCOUNT_SEQ=$(switchlynode query account $(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend=file) --node tcp://"$PEER":26657 --output json | jq -r '.sequence // "0"' 2>/dev/null || echo "0")
+    echo "Using account sequence: $ACCOUNT_SEQ"
+    
+    if printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-version --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --sequence="$ACCOUNT_SEQ" --yes 2>&1; then
       echo "Version set successfully!"
       break
     else
-      echo "Version set attempt $i failed, retrying in 5 seconds..."
-      sleep 5
+      echo "Version set attempt $i failed, retrying in 8 seconds..."
+      sleep 8
       if [ $i -eq 5 ]; then
         echo "Warning: Version registration failed after 5 attempts, but continuing..."
       fi
