@@ -34,7 +34,7 @@ services:
       SIGNER_NAME: switchly
       SIGNER_PASSWD: password
       SWITCHLYNODE_GRPC_ENABLE: true
-      XLM_CONTRACT: CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R
+      XLM_CONTRACT: CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R # testnet
     logging: &logging
       driver: "json-file"
       options:
@@ -161,9 +161,9 @@ services:
     environment: &bifrost-environment
       <<: *switchly-environment
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
-      CHAIN_API: switchlynode:1317
-      CHAIN_RPC: switchlynode:26657
-      BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode:50051
+      CHAIN_API: switchlynode-cat:1317
+      CHAIN_RPC: switchlynode-cat:26657
+      BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-cat:50051
       BTC_HOST: ${BTC_HOST:-bitcoin:18443}
       DOGE_HOST: ${DOGE_HOST:-dogecoin:18332}
       BCH_HOST: ${BCH_HOST:-bitcoin-cash:28443}
