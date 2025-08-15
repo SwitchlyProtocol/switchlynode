@@ -164,34 +164,6 @@ func (vm *ValidatorMgrVCUR) churn(ctx cosmos.Context) error {
 		return err
 	}
 
-	// Safety check: Don't proceed if we would churn out all active nodes
-	activeNodes, err := vm.k.ListActiveValidators(ctx)
-	if err != nil {
-		return err
-	}
-	
-	// Count how many nodes are marked for churn
-	nodesToChurn := 0
-	for _, na := range activeNodes {
-		if na.LeaveScore > 0 {
-			nodesToChurn++
-		}
-	}
-	
-	// If we would churn out all or most nodes, clear the churn marks to prevent system failure
-	if nodesToChurn >= len(activeNodes) {
-		ctx.Logger().Warn("Preventing system failure: too many nodes marked for churn, clearing marks")
-		for _, na := range activeNodes {
-			if na.LeaveScore > 0 {
-				na.LeaveScore = 0
-				if err := vm.k.SetNodeAccount(ctx, na); err != nil {
-					ctx.Logger().Error("Failed to clear leave score", "error", err, "node", na.NodeAddress)
-				}
-			}
-		}
-		return nil
-	}
-
 	next, ok, err := vm.nextVaultNodeAccounts(ctx, int(desiredValidatorSet))
 	if err != nil {
 		return err
@@ -1192,34 +1164,17 @@ func (vm *ValidatorMgrVCUR) findLowBondActor(ctx cosmos.Context) (NodeAccount, e
 	}
 
 	if len(nas) > 0 {
-		// Get the minimum bond requirement
-		minBond := vm.k.GetConfigInt64(ctx, constants.MinimumBondInSWITCH)
-		minBondUint := cosmos.NewUint(uint64(minBond))
-		
-		// Only mark nodes for churn if they are actually below the minimum bond
-		var lowestBondNode NodeAccount
-		var lowestBond cosmos.Uint
-		foundLowBond := false
-		
+		bond := nas[0].Bond
+		na = nas[0]
 		for _, n := range nas {
 			// Only mark a low bond actor not already marked for churn-out.
 			if n.LeaveScore > 0 {
 				continue
 			}
-			
-			// Check if this node is actually below the minimum bond requirement
-			if n.Bond.LT(minBondUint) {
-				if !foundLowBond || n.Bond.LT(lowestBond) {
-					lowestBond = n.Bond
-					lowestBondNode = n
-					foundLowBond = true
-				}
+			if n.Bond.LT(bond) {
+				bond = n.Bond
+				na = n
 			}
-		}
-		
-		// Only return a node if we found one that's actually below the minimum bond
-		if foundLowBond {
-			na = lowestBondNode
 		}
 	}
 
