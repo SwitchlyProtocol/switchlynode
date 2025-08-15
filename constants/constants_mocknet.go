@@ -57,6 +57,7 @@ func init() {
 		SWCYStakeSystemIncomeBps:            0,
 		MultipleAffiliatesMaxCount:          5,
 		BankSendEnabled:                     1,
+		NumberOfNewNodesPerChurn:            3, // Allow 3 nodes to activate per churn cycle
 	}
 	boolOverrides = map[ConstantName]bool{
 		StrictBondLiquidityRatio: false,
