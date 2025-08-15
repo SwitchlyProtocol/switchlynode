@@ -21,9 +21,10 @@ func init() {
 	int64Overrides = map[ConstantName]int64{
 		// ArtificialRagnarokBlockHeight: 200,
 		DesiredValidatorSet:                 4,
-		ChurnInterval:                       10, // Force more frequent churn in mocknet
+		ChurnInterval:                       60, // User requested to stick with 60
 		ChurnRetryInterval:                  30,
 		MinimumBondInSWITCH:                 100_000_000, // 1 rune
+		MinimumNodesForBFT:                  3, // Minimum nodes for Byzantine Fault Tolerance
 		ValidatorMaxRewardRatio:             3,
 		FundMigrationInterval:               15,
 		LiquidityLockUpBlocks:               0,
@@ -56,6 +57,7 @@ func init() {
 		SWCYStakeSystemIncomeBps:            0,
 		MultipleAffiliatesMaxCount:          5,
 		BankSendEnabled:                     1,
+		NumberOfNewNodesPerChurn:            3, // Allow 3 nodes to activate per churn cycle
 	}
 	boolOverrides = map[ConstantName]bool{
 		StrictBondLiquidityRatio: false,
