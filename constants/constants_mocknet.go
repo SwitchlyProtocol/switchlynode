@@ -24,7 +24,7 @@ func init() {
 		ChurnInterval:                       60, // User requested to stick with 60
 		ChurnRetryInterval:                  30,
 		MinimumBondInSWITCH:                 100_000_000, // 1 rune
-		MinimumNodesForBFT:                  3, // Minimum nodes for Byzantine Fault Tolerance
+		MinimumNodesForBFT:                  3,           // Minimum nodes for Byzantine Fault Tolerance
 		ValidatorMaxRewardRatio:             3,
 		FundMigrationInterval:               15,
 		LiquidityLockUpBlocks:               0,
