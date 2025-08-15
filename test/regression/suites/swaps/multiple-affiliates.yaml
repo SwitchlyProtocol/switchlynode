@@ -10,7 +10,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -23,7 +23,7 @@ type: create-blocks
 count: 1
 ---
 ########################################################################################
-# TEST MULTIPLE AFFILIATES - Swaps from RUNE
+# TEST MULTIPLE AFFILIATES - Swaps from SWITCH
 ########################################################################################
 ########################################################################################
 # swap rune to btc with affiliate fees over 1000bps, should fail
@@ -39,7 +39,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs|length == 1
   - .txs[0]|.result.log|contains("affiliate fee basis points can't be more than 1000")
@@ -74,7 +74,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"
@@ -121,7 +121,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -157,7 +157,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].in_hash == "{{ native_txid -1 }}"
@@ -205,7 +205,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ########################################################################################
@@ -217,7 +217,7 @@ signer: {{ addr_thor_pig }}
 coins:
   - amount: "200000000"
     asset: "rune"
-memo: "~:t:THOR:{{ addr_thor_pig }}:{{ addr_thor_pig }}"
+memo: "~:t:SWITCHLY:{{ addr_thor_pig }}:{{ addr_thor_pig }}"
 ---
 type: create-blocks
 count: 1
@@ -233,7 +233,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/t
+endpoint: http://localhost:1317/switchly/switchlyname/t
 asserts:
   - .aliases[0].address == "{{ addr_thor_pig }}"
   - .owner == "{{ addr_thor_pig }}"
@@ -241,7 +241,7 @@ asserts:
   - .preferred_asset == "."
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/a
+endpoint: http://localhost:1317/switchly/switchlyname/a
 asserts:
   - .aliases[0].address == "{{ addr_eth_cat }}"
   - .owner == "{{ addr_thor_cat }}"
@@ -249,7 +249,7 @@ asserts:
   - .affiliate_collector_rune == "0"
 ---
 ########################################################################################
-# swap rune to btc with 3 affiliates, one thorname, one thorname w/ preferred asset, one rune address
+# swap rune to btc with 3 affiliates, one switchlyname, one switchlyname w/ preferred asset, one rune address
 ########################################################################################
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_pig }}
@@ -292,7 +292,7 @@ asserts:
   - .result[]|select(.denom == "rune").amount == "${CAT_AFF}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/a
+endpoint: http://localhost:1317/switchly/switchlyname/a
 asserts:
   - .aliases[0].address == "{{ addr_eth_cat }}"
   - .owner == "{{ addr_thor_cat }}"
@@ -306,7 +306,7 @@ asserts:
   - .result[]|select(.denom == "rune").amount|tonumber == ${FISH_AFF} + 96829712
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].memo == "OUT:{{ native_txid -1 }}"
@@ -336,12 +336,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 ########################################################################################
-# swap BTC -> RUNE with 3 affiliates, one thorname, one thorname w/ preferred asset, one rune address
+# swap BTC -> SWITCH with 3 affiliates, one switchlyname, one switchlyname w/ preferred asset, one rune address
 ########################################################################################
 type: tx-observed-in
 signer: {{ addr_thor_dog }}
@@ -358,7 +358,7 @@ txs:
     gas:
       - amount: "10500"
         asset: "BTC.BTC"
-    memo: "=:THOR.RUNE:{{ addr_thor_fox }}::t/{{ addr_thor_fish }}/a:100/200/50"
+    memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}::t/{{ addr_thor_fish }}/a:100/200/50"
   block_height: 2
   finalise_height: 2
   observed_pub_key: {{ pubkey_dog }}
@@ -379,7 +379,7 @@ asserts:
   - .result[]|select(.denom == "rune").amount == "${CAT_AFF}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/a
+endpoint: http://localhost:1317/switchly/switchlyname/a
 asserts:
   - .aliases[0].address == "{{ addr_eth_cat }}"
   - .owner == "{{ addr_thor_cat }}"
@@ -393,27 +393,27 @@ asserts:
   - .result[]|select(.denom == "rune").amount == "${FISH_AFF=996425456}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type?=="affiliate_fee")] | length == 3
   ##
   - .|[..|select(.type?=="affiliate_fee")][0].rune_address == "{{ addr_thor_pig }}"
-  - .|[..|select(.type?=="affiliate_fee")][0].asset == "THOR.RUNE" # pig affiliate
+  - .|[..|select(.type?=="affiliate_fee")][0].asset == "SWITCHLY.SWITCH" # pig affiliate
   - .|[..|select(.type?=="affiliate_fee")][0].fee_bps == "100"
   - .|[..|select(.type?=="affiliate_fee")][0].fee_amount == "304509948"
   - .|[..|select(.type?=="affiliate_fee")][0].gross_amount == "${GROSS_AMOUNT=30450994773}"
-  - .|[..|select(.type?=="affiliate_fee")][0].thorname == "t"
+  - .|[..|select(.type?=="affiliate_fee")][0].switchlyname == "t"
   ##
   - .|[..|select(.type?=="affiliate_fee")][1].rune_address == "{{ addr_thor_fish }}"
-  - .|[..|select(.type?=="affiliate_fee")][1].asset == "THOR.RUNE" # fish affiliate
+  - .|[..|select(.type?=="affiliate_fee")][1].asset == "SWITCHLY.SWITCH" # fish affiliate
   - .|[..|select(.type?=="affiliate_fee")][1].fee_bps == "200"
   - .|[..|select(.type?=="affiliate_fee")][1].fee_amount == "609019895"
   - .|[..|select(.type?=="affiliate_fee")][1].gross_amount == "${GROSS_AMOUNT}"
-  - .|[..|select(.type?=="affiliate_fee")][1].thorname == ""
+  - .|[..|select(.type?=="affiliate_fee")][1].switchlyname == ""
   ##
   - .|[..|select(.type?=="affiliate_fee")][2].rune_address == "{{ addr_thor_cat }}"
-  - .|[..|select(.type?=="affiliate_fee")][2].asset == "THOR.RUNE" # cat affiliate
+  - .|[..|select(.type?=="affiliate_fee")][2].asset == "SWITCHLY.SWITCH" # cat affiliate
   - .|[..|select(.type?=="affiliate_fee")][2].fee_bps == "50"
   - .|[..|select(.type?=="affiliate_fee")][2].fee_amount == "152254974"
   - .|[..|select(.type?=="affiliate_fee")][2].gross_amount == "${GROSS_AMOUNT}"
-  - .|[..|select(.type?=="affiliate_fee")][2].thorname == "a"
+  - .|[..|select(.type?=="affiliate_fee")][2].switchlyname == "a"

@@ -14,16 +14,16 @@ import (
 )
 
 var (
-	md_ProtocolOwnedLiquidity                protoreflect.MessageDescriptor
-	fd_ProtocolOwnedLiquidity_rune_deposited protoreflect.FieldDescriptor
-	fd_ProtocolOwnedLiquidity_rune_withdrawn protoreflect.FieldDescriptor
+	md_ProtocolOwnedLiquidity                  protoreflect.MessageDescriptor
+	fd_ProtocolOwnedLiquidity_switch_deposited protoreflect.FieldDescriptor
+	fd_ProtocolOwnedLiquidity_switch_withdrawn protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_types_type_pol_proto_init()
 	md_ProtocolOwnedLiquidity = File_types_type_pol_proto.Messages().ByName("ProtocolOwnedLiquidity")
-	fd_ProtocolOwnedLiquidity_rune_deposited = md_ProtocolOwnedLiquidity.Fields().ByName("rune_deposited")
-	fd_ProtocolOwnedLiquidity_rune_withdrawn = md_ProtocolOwnedLiquidity.Fields().ByName("rune_withdrawn")
+	fd_ProtocolOwnedLiquidity_switch_deposited = md_ProtocolOwnedLiquidity.Fields().ByName("switch_deposited")
+	fd_ProtocolOwnedLiquidity_switch_withdrawn = md_ProtocolOwnedLiquidity.Fields().ByName("switch_withdrawn")
 }
 
 var _ protoreflect.Message = (*fastReflection_ProtocolOwnedLiquidity)(nil)
@@ -91,15 +91,15 @@ func (x *fastReflection_ProtocolOwnedLiquidity) Interface() protoreflect.ProtoMe
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_ProtocolOwnedLiquidity) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.RuneDeposited != "" {
-		value := protoreflect.ValueOfString(x.RuneDeposited)
-		if !f(fd_ProtocolOwnedLiquidity_rune_deposited, value) {
+	if x.SwitchDeposited != "" {
+		value := protoreflect.ValueOfString(x.SwitchDeposited)
+		if !f(fd_ProtocolOwnedLiquidity_switch_deposited, value) {
 			return
 		}
 	}
-	if x.RuneWithdrawn != "" {
-		value := protoreflect.ValueOfString(x.RuneWithdrawn)
-		if !f(fd_ProtocolOwnedLiquidity_rune_withdrawn, value) {
+	if x.SwitchWithdrawn != "" {
+		value := protoreflect.ValueOfString(x.SwitchWithdrawn)
+		if !f(fd_ProtocolOwnedLiquidity_switch_withdrawn, value) {
 			return
 		}
 	}
@@ -118,10 +118,10 @@ func (x *fastReflection_ProtocolOwnedLiquidity) Range(f func(protoreflect.FieldD
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_ProtocolOwnedLiquidity) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "types.ProtocolOwnedLiquidity.rune_deposited":
-		return x.RuneDeposited != ""
-	case "types.ProtocolOwnedLiquidity.rune_withdrawn":
-		return x.RuneWithdrawn != ""
+	case "types.ProtocolOwnedLiquidity.switch_deposited":
+		return x.SwitchDeposited != ""
+	case "types.ProtocolOwnedLiquidity.switch_withdrawn":
+		return x.SwitchWithdrawn != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.ProtocolOwnedLiquidity"))
@@ -138,10 +138,10 @@ func (x *fastReflection_ProtocolOwnedLiquidity) Has(fd protoreflect.FieldDescrip
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_ProtocolOwnedLiquidity) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "types.ProtocolOwnedLiquidity.rune_deposited":
-		x.RuneDeposited = ""
-	case "types.ProtocolOwnedLiquidity.rune_withdrawn":
-		x.RuneWithdrawn = ""
+	case "types.ProtocolOwnedLiquidity.switch_deposited":
+		x.SwitchDeposited = ""
+	case "types.ProtocolOwnedLiquidity.switch_withdrawn":
+		x.SwitchWithdrawn = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.ProtocolOwnedLiquidity"))
@@ -158,11 +158,11 @@ func (x *fastReflection_ProtocolOwnedLiquidity) Clear(fd protoreflect.FieldDescr
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_ProtocolOwnedLiquidity) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "types.ProtocolOwnedLiquidity.rune_deposited":
-		value := x.RuneDeposited
+	case "types.ProtocolOwnedLiquidity.switch_deposited":
+		value := x.SwitchDeposited
 		return protoreflect.ValueOfString(value)
-	case "types.ProtocolOwnedLiquidity.rune_withdrawn":
-		value := x.RuneWithdrawn
+	case "types.ProtocolOwnedLiquidity.switch_withdrawn":
+		value := x.SwitchWithdrawn
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
@@ -184,10 +184,10 @@ func (x *fastReflection_ProtocolOwnedLiquidity) Get(descriptor protoreflect.Fiel
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_ProtocolOwnedLiquidity) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "types.ProtocolOwnedLiquidity.rune_deposited":
-		x.RuneDeposited = value.Interface().(string)
-	case "types.ProtocolOwnedLiquidity.rune_withdrawn":
-		x.RuneWithdrawn = value.Interface().(string)
+	case "types.ProtocolOwnedLiquidity.switch_deposited":
+		x.SwitchDeposited = value.Interface().(string)
+	case "types.ProtocolOwnedLiquidity.switch_withdrawn":
+		x.SwitchWithdrawn = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.ProtocolOwnedLiquidity"))
@@ -208,10 +208,10 @@ func (x *fastReflection_ProtocolOwnedLiquidity) Set(fd protoreflect.FieldDescrip
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_ProtocolOwnedLiquidity) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "types.ProtocolOwnedLiquidity.rune_deposited":
-		panic(fmt.Errorf("field rune_deposited of message types.ProtocolOwnedLiquidity is not mutable"))
-	case "types.ProtocolOwnedLiquidity.rune_withdrawn":
-		panic(fmt.Errorf("field rune_withdrawn of message types.ProtocolOwnedLiquidity is not mutable"))
+	case "types.ProtocolOwnedLiquidity.switch_deposited":
+		panic(fmt.Errorf("field switch_deposited of message types.ProtocolOwnedLiquidity is not mutable"))
+	case "types.ProtocolOwnedLiquidity.switch_withdrawn":
+		panic(fmt.Errorf("field switch_withdrawn of message types.ProtocolOwnedLiquidity is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.ProtocolOwnedLiquidity"))
@@ -225,9 +225,9 @@ func (x *fastReflection_ProtocolOwnedLiquidity) Mutable(fd protoreflect.FieldDes
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_ProtocolOwnedLiquidity) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "types.ProtocolOwnedLiquidity.rune_deposited":
+	case "types.ProtocolOwnedLiquidity.switch_deposited":
 		return protoreflect.ValueOfString("")
-	case "types.ProtocolOwnedLiquidity.rune_withdrawn":
+	case "types.ProtocolOwnedLiquidity.switch_withdrawn":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -298,11 +298,11 @@ func (x *fastReflection_ProtocolOwnedLiquidity) ProtoMethods() *protoiface.Metho
 		var n int
 		var l int
 		_ = l
-		l = len(x.RuneDeposited)
+		l = len(x.SwitchDeposited)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.RuneWithdrawn)
+		l = len(x.SwitchWithdrawn)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -335,17 +335,17 @@ func (x *fastReflection_ProtocolOwnedLiquidity) ProtoMethods() *protoiface.Metho
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.RuneWithdrawn) > 0 {
-			i -= len(x.RuneWithdrawn)
-			copy(dAtA[i:], x.RuneWithdrawn)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.RuneWithdrawn)))
+		if len(x.SwitchWithdrawn) > 0 {
+			i -= len(x.SwitchWithdrawn)
+			copy(dAtA[i:], x.SwitchWithdrawn)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwitchWithdrawn)))
 			i--
 			dAtA[i] = 0x12
 		}
-		if len(x.RuneDeposited) > 0 {
-			i -= len(x.RuneDeposited)
-			copy(dAtA[i:], x.RuneDeposited)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.RuneDeposited)))
+		if len(x.SwitchDeposited) > 0 {
+			i -= len(x.SwitchDeposited)
+			copy(dAtA[i:], x.SwitchDeposited)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwitchDeposited)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -400,7 +400,7 @@ func (x *fastReflection_ProtocolOwnedLiquidity) ProtoMethods() *protoiface.Metho
 			switch fieldNum {
 			case 1:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RuneDeposited", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwitchDeposited", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -428,11 +428,11 @@ func (x *fastReflection_ProtocolOwnedLiquidity) ProtoMethods() *protoiface.Metho
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.RuneDeposited = string(dAtA[iNdEx:postIndex])
+				x.SwitchDeposited = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 2:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RuneWithdrawn", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwitchWithdrawn", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -460,7 +460,7 @@ func (x *fastReflection_ProtocolOwnedLiquidity) ProtoMethods() *protoiface.Metho
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.RuneWithdrawn = string(dAtA[iNdEx:postIndex])
+				x.SwitchWithdrawn = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -515,8 +515,8 @@ type ProtocolOwnedLiquidity struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	RuneDeposited string `protobuf:"bytes,1,opt,name=rune_deposited,json=runeDeposited,proto3" json:"rune_deposited,omitempty"`
-	RuneWithdrawn string `protobuf:"bytes,2,opt,name=rune_withdrawn,json=runeWithdrawn,proto3" json:"rune_withdrawn,omitempty"`
+	SwitchDeposited string `protobuf:"bytes,1,opt,name=switch_deposited,json=switchDeposited,proto3" json:"switch_deposited,omitempty"`
+	SwitchWithdrawn string `protobuf:"bytes,2,opt,name=switch_withdrawn,json=switchWithdrawn,proto3" json:"switch_withdrawn,omitempty"`
 }
 
 func (x *ProtocolOwnedLiquidity) Reset() {
@@ -539,16 +539,16 @@ func (*ProtocolOwnedLiquidity) Descriptor() ([]byte, []int) {
 	return file_types_type_pol_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ProtocolOwnedLiquidity) GetRuneDeposited() string {
+func (x *ProtocolOwnedLiquidity) GetSwitchDeposited() string {
 	if x != nil {
-		return x.RuneDeposited
+		return x.SwitchDeposited
 	}
 	return ""
 }
 
-func (x *ProtocolOwnedLiquidity) GetRuneWithdrawn() string {
+func (x *ProtocolOwnedLiquidity) GetSwitchWithdrawn() string {
 	if x != nil {
-		return x.RuneWithdrawn
+		return x.SwitchWithdrawn
 	}
 	return ""
 }
@@ -559,26 +559,27 @@ var file_types_type_pol_proto_rawDesc = []byte{
 	0x0a, 0x14, 0x74, 0x79, 0x70, 0x65, 0x73, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x5f, 0x70, 0x6f, 0x6c,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x05, 0x74, 0x79, 0x70, 0x65, 0x73, 0x1a, 0x14, 0x67,
 	0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x22, 0xa6, 0x01, 0x0a, 0x16, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
-	0x4f, 0x77, 0x6e, 0x65, 0x64, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x45,
-	0x0a, 0x0e, 0x72, 0x75, 0x6e, 0x65, 0x5f, 0x64, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x65, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1e, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16,
-	0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74,
-	0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0x52, 0x0d, 0x72, 0x75, 0x6e, 0x65, 0x44, 0x65, 0x70, 0x6f,
-	0x73, 0x69, 0x74, 0x65, 0x64, 0x12, 0x45, 0x0a, 0x0e, 0x72, 0x75, 0x6e, 0x65, 0x5f, 0x77, 0x69,
-	0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1e, 0xc8,
-	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b,
-	0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0x52, 0x0d, 0x72,
-	0x75, 0x6e, 0x65, 0x57, 0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x6e, 0x42, 0x84, 0x01, 0x0a,
-	0x09, 0x63, 0x6f, 0x6d, 0x2e, 0x74, 0x79, 0x70, 0x65, 0x73, 0x42, 0x0c, 0x54, 0x79, 0x70, 0x65,
-	0x50, 0x6f, 0x6c, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68,
-	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79,
-	0x6e, 0x6f, 0x64, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x74, 0x79, 0x70, 0x65,
-	0x73, 0xa2, 0x02, 0x03, 0x54, 0x58, 0x58, 0xaa, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xca,
-	0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xe2, 0x02, 0x11, 0x54, 0x79, 0x70, 0x65, 0x73, 0x5c,
-	0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x05, 0x54, 0x79,
-	0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x74, 0x6f, 0x22, 0xae, 0x01, 0x0a, 0x16, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
+	0x4f, 0x77, 0x6e, 0x65, 0x64, 0x4c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x12, 0x49,
+	0x0a, 0x10, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x5f, 0x64, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74,
+	0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1e, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde,
+	0x1f, 0x16, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x55, 0x69, 0x6e, 0x74, 0x52, 0x0f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68,
+	0x44, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x65, 0x64, 0x12, 0x49, 0x0a, 0x10, 0x73, 0x77, 0x69,
+	0x74, 0x63, 0x68, 0x5f, 0x77, 0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x6e, 0x18, 0x02, 0x20,
+	0x01, 0x28, 0x09, 0x42, 0x1e, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x16, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x55,
+	0x69, 0x6e, 0x74, 0x52, 0x0f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x57, 0x69, 0x74, 0x68, 0x64,
+	0x72, 0x61, 0x77, 0x6e, 0x42, 0x84, 0x01, 0x0a, 0x09, 0x63, 0x6f, 0x6d, 0x2e, 0x74, 0x79, 0x70,
+	0x65, 0x73, 0x42, 0x0c, 0x54, 0x79, 0x70, 0x65, 0x50, 0x6f, 0x6c, 0x50, 0x72, 0x6f, 0x74, 0x6f,
+	0x50, 0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73,
+	0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f,
+	0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x6f, 0x64, 0x65, 0x2f, 0x76, 0x33, 0x2f,
+	0x61, 0x70, 0x69, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0xa2, 0x02, 0x03, 0x54, 0x58, 0x58, 0xaa,
+	0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xca, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xe2,
+	0x02, 0x11, 0x54, 0x79, 0x70, 0x65, 0x73, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0xea, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (

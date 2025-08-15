@@ -42,8 +42,8 @@ var (
 	// SwitchNative SWITCH on switchly
 	SwitchNative = Asset{Chain: SWITCHLYChain, Symbol: "SWITCH", Ticker: "SWITCH", Synth: false}
 	RUJI         = Asset{Chain: SWITCHLYChain, Symbol: "RUJI", Ticker: "RUJI", Synth: false}
-	TCY          = Asset{Chain: SWITCHLYChain, Symbol: "TCY", Ticker: "TCY", Synth: false}
-	TOR          = Asset{Chain: SWITCHLYChain, Symbol: "TOR", Ticker: "TOR", Synth: false}
+	SWCY         = Asset{Chain: SWITCHLYChain, Symbol: "SWCY", Ticker: "SWCY", Synth: false}
+	SWITCHLY     = Asset{Chain: SWITCHLYChain, Symbol: "SWITCHLY", Ticker: "SWITCHLY", Synth: false}
 	SWITCHLYBTC  = Asset{Chain: SWITCHLYChain, Symbol: "BTC", Ticker: "BTC", Synth: false}
 )
 
@@ -245,18 +245,18 @@ func (a Asset) IsVaultAsset() bool {
 
 // Check if asset is a derived asset
 func (a Asset) IsDerivedAsset() bool {
-	return !a.Synth && !a.Trade && !a.Secured && a.GetChain().IsSWITCHLYChain() && !a.IsRune() && !a.IsTCY() && !a.IsRUJI()
+	return !a.Synth && !a.Trade && !a.Secured && a.GetChain().IsSWITCHLYChain() && !a.IsSWITCH() && !a.IsSWCY() && !a.IsRUJI()
 }
 
 // Native return native asset, only relevant on SWITCHLYChain
 func (a Asset) Native() string {
 	switch {
-	case a.IsRune():
+	case a.IsSWITCH():
 		return "switch"
-	case a.Equals(TOR):
+	case a.Equals(SWITCHLY):
 		return "tor"
-	case a.Equals(TCY):
-		return "tcy"
+	case a.Equals(SWCY):
+		return "swcy"
 	case a.IsRUJI():
 		return "x/ruji"
 	}
@@ -325,14 +325,14 @@ func (a Asset) IsGasAsset() bool {
 	return a.Equals(gasAsset)
 }
 
-// IsRune check whether asset is RUNE
-func (a Asset) IsRune() bool {
+// IsSWITCH check whether asset is SWITCH
+func (a Asset) IsSWITCH() bool {
 	return a.Equals(SwitchNative)
 }
 
-// IsTCY is a helper function ,return true only when the asset represent TCY
-func (a Asset) IsTCY() bool {
-	return TCY.Equals(a)
+// IsSWCY is a helper function ,return true only when the asset represent SWCY
+func (a Asset) IsSWCY() bool {
+	return SWCY.Equals(a)
 }
 
 func (a Asset) IsRUJI() bool {

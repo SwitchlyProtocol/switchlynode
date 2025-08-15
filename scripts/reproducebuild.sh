@@ -1,5 +1,5 @@
 #!/bin/bash
-# Given a specific commit, build the thornode binary and produce the hash.
+# Given a specific commit, build the switchlynode binary and produce the hash.
 set -euo pipefail
 
 # Default to current head commit and mainnet build.
@@ -19,7 +19,7 @@ trap cleanup EXIT
 
 # Work out of a fresh clone of the repository so as to not
 # need to clean/stash local working copy.
-git clone https://gitlab.com/thorchain/thornode.git "$TMP"
+git clone https://gitlab.com/switchly/switchlynode.git "$TMP"
 
 pushd "$TMP"
 
@@ -31,7 +31,7 @@ git checkout -b "$TAG"
 
 make docker-gitlab-build
 
-HASH=$(docker run --rm --entrypoint /bin/sh -it registry.gitlab.com/thorchain/thornode:"$TAG" -c 'sha256sum /usr/bin/thornode')
+HASH=$(docker run --rm --entrypoint /bin/sh -it registry.gitlab.com/switchly/switchlynode:"$TAG" -c 'sha256sum /usr/bin/switchlynode')
 
 popd
 
@@ -47,7 +47,7 @@ cat <<EOF
 EOF
 
 if [ -n "$IMAGE_HASH_" ]; then
-  DOCKER_IMAGE="registry.gitlab.com/thorchain/thornode@sha256:${IMAGE_HASH_}"
+  DOCKER_IMAGE="registry.gitlab.com/switchly/switchlynode@sha256:${IMAGE_HASH_}"
   echo -en "Binary in $DOCKER_IMAGE:\n\n    "
-  docker run --entrypoint /bin/sh --rm -it "$DOCKER_IMAGE" -c "sha256sum /usr/bin/thornode"
+  docker run --entrypoint /bin/sh --rm -it "$DOCKER_IMAGE" -c "sha256sum /usr/bin/switchlynode"
 fi

@@ -434,46 +434,46 @@ func (x *fastReflection_QueryNetworkRequest) ProtoMethods() *protoiface.Methods 
 }
 
 var (
-	md_QueryNetworkResponse                          protoreflect.MessageDescriptor
-	fd_QueryNetworkResponse_bond_reward_rune         protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_total_bond_units         protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_available_pools_rune     protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_vaults_liquidity_rune    protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_effective_security_bond  protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_total_reserve            protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_vaults_migrating         protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_gas_spent_rune           protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_gas_withheld_rune        protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_outbound_fee_multiplier  protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_native_outbound_fee_rune protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_native_tx_fee_rune       protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_tns_register_fee_rune    protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_tns_fee_per_block_rune   protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_rune_price_in_tor        protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_tor_price_in_rune        protoreflect.FieldDescriptor
-	fd_QueryNetworkResponse_tor_price_halted         protoreflect.FieldDescriptor
+	md_QueryNetworkResponse                                   protoreflect.MessageDescriptor
+	fd_QueryNetworkResponse_bond_reward_switch                protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_total_bond_units                  protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_available_pools_switch            protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_vaults_liquidity_switch           protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_effective_security_bond           protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_total_reserve                     protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_vaults_migrating                  protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_gas_spent_switch                  protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_gas_withheld_switch               protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_outbound_fee_multiplier           protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_native_outbound_fee_switch        protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_native_tx_fee_switch              protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_switchlyname_register_fee_switch  protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_switchlyname_fee_per_block_switch protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_switch_price_in_switchly          protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_switchly_price_in_switch          protoreflect.FieldDescriptor
+	fd_QueryNetworkResponse_switchly_price_halted             protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_types_query_network_proto_init()
 	md_QueryNetworkResponse = File_types_query_network_proto.Messages().ByName("QueryNetworkResponse")
-	fd_QueryNetworkResponse_bond_reward_rune = md_QueryNetworkResponse.Fields().ByName("bond_reward_rune")
+	fd_QueryNetworkResponse_bond_reward_switch = md_QueryNetworkResponse.Fields().ByName("bond_reward_switch")
 	fd_QueryNetworkResponse_total_bond_units = md_QueryNetworkResponse.Fields().ByName("total_bond_units")
-	fd_QueryNetworkResponse_available_pools_rune = md_QueryNetworkResponse.Fields().ByName("available_pools_rune")
-	fd_QueryNetworkResponse_vaults_liquidity_rune = md_QueryNetworkResponse.Fields().ByName("vaults_liquidity_rune")
+	fd_QueryNetworkResponse_available_pools_switch = md_QueryNetworkResponse.Fields().ByName("available_pools_switch")
+	fd_QueryNetworkResponse_vaults_liquidity_switch = md_QueryNetworkResponse.Fields().ByName("vaults_liquidity_switch")
 	fd_QueryNetworkResponse_effective_security_bond = md_QueryNetworkResponse.Fields().ByName("effective_security_bond")
 	fd_QueryNetworkResponse_total_reserve = md_QueryNetworkResponse.Fields().ByName("total_reserve")
 	fd_QueryNetworkResponse_vaults_migrating = md_QueryNetworkResponse.Fields().ByName("vaults_migrating")
-	fd_QueryNetworkResponse_gas_spent_rune = md_QueryNetworkResponse.Fields().ByName("gas_spent_rune")
-	fd_QueryNetworkResponse_gas_withheld_rune = md_QueryNetworkResponse.Fields().ByName("gas_withheld_rune")
+	fd_QueryNetworkResponse_gas_spent_switch = md_QueryNetworkResponse.Fields().ByName("gas_spent_switch")
+	fd_QueryNetworkResponse_gas_withheld_switch = md_QueryNetworkResponse.Fields().ByName("gas_withheld_switch")
 	fd_QueryNetworkResponse_outbound_fee_multiplier = md_QueryNetworkResponse.Fields().ByName("outbound_fee_multiplier")
-	fd_QueryNetworkResponse_native_outbound_fee_rune = md_QueryNetworkResponse.Fields().ByName("native_outbound_fee_rune")
-	fd_QueryNetworkResponse_native_tx_fee_rune = md_QueryNetworkResponse.Fields().ByName("native_tx_fee_rune")
-	fd_QueryNetworkResponse_tns_register_fee_rune = md_QueryNetworkResponse.Fields().ByName("tns_register_fee_rune")
-	fd_QueryNetworkResponse_tns_fee_per_block_rune = md_QueryNetworkResponse.Fields().ByName("tns_fee_per_block_rune")
-	fd_QueryNetworkResponse_rune_price_in_tor = md_QueryNetworkResponse.Fields().ByName("rune_price_in_tor")
-	fd_QueryNetworkResponse_tor_price_in_rune = md_QueryNetworkResponse.Fields().ByName("tor_price_in_rune")
-	fd_QueryNetworkResponse_tor_price_halted = md_QueryNetworkResponse.Fields().ByName("tor_price_halted")
+	fd_QueryNetworkResponse_native_outbound_fee_switch = md_QueryNetworkResponse.Fields().ByName("native_outbound_fee_switch")
+	fd_QueryNetworkResponse_native_tx_fee_switch = md_QueryNetworkResponse.Fields().ByName("native_tx_fee_switch")
+	fd_QueryNetworkResponse_switchlyname_register_fee_switch = md_QueryNetworkResponse.Fields().ByName("switchlyname_register_fee_switch")
+	fd_QueryNetworkResponse_switchlyname_fee_per_block_switch = md_QueryNetworkResponse.Fields().ByName("switchlyname_fee_per_block_switch")
+	fd_QueryNetworkResponse_switch_price_in_switchly = md_QueryNetworkResponse.Fields().ByName("switch_price_in_switchly")
+	fd_QueryNetworkResponse_switchly_price_in_switch = md_QueryNetworkResponse.Fields().ByName("switchly_price_in_switch")
+	fd_QueryNetworkResponse_switchly_price_halted = md_QueryNetworkResponse.Fields().ByName("switchly_price_halted")
 }
 
 var _ protoreflect.Message = (*fastReflection_QueryNetworkResponse)(nil)
@@ -541,9 +541,9 @@ func (x *fastReflection_QueryNetworkResponse) Interface() protoreflect.ProtoMess
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_QueryNetworkResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.BondRewardRune != "" {
-		value := protoreflect.ValueOfString(x.BondRewardRune)
-		if !f(fd_QueryNetworkResponse_bond_reward_rune, value) {
+	if x.BondRewardSwitch != "" {
+		value := protoreflect.ValueOfString(x.BondRewardSwitch)
+		if !f(fd_QueryNetworkResponse_bond_reward_switch, value) {
 			return
 		}
 	}
@@ -553,15 +553,15 @@ func (x *fastReflection_QueryNetworkResponse) Range(f func(protoreflect.FieldDes
 			return
 		}
 	}
-	if x.AvailablePoolsRune != "" {
-		value := protoreflect.ValueOfString(x.AvailablePoolsRune)
-		if !f(fd_QueryNetworkResponse_available_pools_rune, value) {
+	if x.AvailablePoolsSwitch != "" {
+		value := protoreflect.ValueOfString(x.AvailablePoolsSwitch)
+		if !f(fd_QueryNetworkResponse_available_pools_switch, value) {
 			return
 		}
 	}
-	if x.VaultsLiquidityRune != "" {
-		value := protoreflect.ValueOfString(x.VaultsLiquidityRune)
-		if !f(fd_QueryNetworkResponse_vaults_liquidity_rune, value) {
+	if x.VaultsLiquiditySwitch != "" {
+		value := protoreflect.ValueOfString(x.VaultsLiquiditySwitch)
+		if !f(fd_QueryNetworkResponse_vaults_liquidity_switch, value) {
 			return
 		}
 	}
@@ -583,15 +583,15 @@ func (x *fastReflection_QueryNetworkResponse) Range(f func(protoreflect.FieldDes
 			return
 		}
 	}
-	if x.GasSpentRune != "" {
-		value := protoreflect.ValueOfString(x.GasSpentRune)
-		if !f(fd_QueryNetworkResponse_gas_spent_rune, value) {
+	if x.GasSpentSwitch != "" {
+		value := protoreflect.ValueOfString(x.GasSpentSwitch)
+		if !f(fd_QueryNetworkResponse_gas_spent_switch, value) {
 			return
 		}
 	}
-	if x.GasWithheldRune != "" {
-		value := protoreflect.ValueOfString(x.GasWithheldRune)
-		if !f(fd_QueryNetworkResponse_gas_withheld_rune, value) {
+	if x.GasWithheldSwitch != "" {
+		value := protoreflect.ValueOfString(x.GasWithheldSwitch)
+		if !f(fd_QueryNetworkResponse_gas_withheld_switch, value) {
 			return
 		}
 	}
@@ -601,45 +601,45 @@ func (x *fastReflection_QueryNetworkResponse) Range(f func(protoreflect.FieldDes
 			return
 		}
 	}
-	if x.NativeOutboundFeeRune != "" {
-		value := protoreflect.ValueOfString(x.NativeOutboundFeeRune)
-		if !f(fd_QueryNetworkResponse_native_outbound_fee_rune, value) {
+	if x.NativeOutboundFeeSwitch != "" {
+		value := protoreflect.ValueOfString(x.NativeOutboundFeeSwitch)
+		if !f(fd_QueryNetworkResponse_native_outbound_fee_switch, value) {
 			return
 		}
 	}
-	if x.NativeTxFeeRune != "" {
-		value := protoreflect.ValueOfString(x.NativeTxFeeRune)
-		if !f(fd_QueryNetworkResponse_native_tx_fee_rune, value) {
+	if x.NativeTxFeeSwitch != "" {
+		value := protoreflect.ValueOfString(x.NativeTxFeeSwitch)
+		if !f(fd_QueryNetworkResponse_native_tx_fee_switch, value) {
 			return
 		}
 	}
-	if x.TnsRegisterFeeRune != "" {
-		value := protoreflect.ValueOfString(x.TnsRegisterFeeRune)
-		if !f(fd_QueryNetworkResponse_tns_register_fee_rune, value) {
+	if x.SwitchlynameRegisterFeeSwitch != "" {
+		value := protoreflect.ValueOfString(x.SwitchlynameRegisterFeeSwitch)
+		if !f(fd_QueryNetworkResponse_switchlyname_register_fee_switch, value) {
 			return
 		}
 	}
-	if x.TnsFeePerBlockRune != "" {
-		value := protoreflect.ValueOfString(x.TnsFeePerBlockRune)
-		if !f(fd_QueryNetworkResponse_tns_fee_per_block_rune, value) {
+	if x.SwitchlynameFeePerBlockSwitch != "" {
+		value := protoreflect.ValueOfString(x.SwitchlynameFeePerBlockSwitch)
+		if !f(fd_QueryNetworkResponse_switchlyname_fee_per_block_switch, value) {
 			return
 		}
 	}
-	if x.RunePriceInTor != "" {
-		value := protoreflect.ValueOfString(x.RunePriceInTor)
-		if !f(fd_QueryNetworkResponse_rune_price_in_tor, value) {
+	if x.SwitchPriceInSwitchly != "" {
+		value := protoreflect.ValueOfString(x.SwitchPriceInSwitchly)
+		if !f(fd_QueryNetworkResponse_switch_price_in_switchly, value) {
 			return
 		}
 	}
-	if x.TorPriceInRune != "" {
-		value := protoreflect.ValueOfString(x.TorPriceInRune)
-		if !f(fd_QueryNetworkResponse_tor_price_in_rune, value) {
+	if x.SwitchlyPriceInSwitch != "" {
+		value := protoreflect.ValueOfString(x.SwitchlyPriceInSwitch)
+		if !f(fd_QueryNetworkResponse_switchly_price_in_switch, value) {
 			return
 		}
 	}
-	if x.TorPriceHalted != false {
-		value := protoreflect.ValueOfBool(x.TorPriceHalted)
-		if !f(fd_QueryNetworkResponse_tor_price_halted, value) {
+	if x.SwitchlyPriceHalted != false {
+		value := protoreflect.ValueOfBool(x.SwitchlyPriceHalted)
+		if !f(fd_QueryNetworkResponse_switchly_price_halted, value) {
 			return
 		}
 	}
@@ -658,40 +658,40 @@ func (x *fastReflection_QueryNetworkResponse) Range(f func(protoreflect.FieldDes
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_QueryNetworkResponse) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "types.QueryNetworkResponse.bond_reward_rune":
-		return x.BondRewardRune != ""
+	case "types.QueryNetworkResponse.bond_reward_switch":
+		return x.BondRewardSwitch != ""
 	case "types.QueryNetworkResponse.total_bond_units":
 		return x.TotalBondUnits != ""
-	case "types.QueryNetworkResponse.available_pools_rune":
-		return x.AvailablePoolsRune != ""
-	case "types.QueryNetworkResponse.vaults_liquidity_rune":
-		return x.VaultsLiquidityRune != ""
+	case "types.QueryNetworkResponse.available_pools_switch":
+		return x.AvailablePoolsSwitch != ""
+	case "types.QueryNetworkResponse.vaults_liquidity_switch":
+		return x.VaultsLiquiditySwitch != ""
 	case "types.QueryNetworkResponse.effective_security_bond":
 		return x.EffectiveSecurityBond != ""
 	case "types.QueryNetworkResponse.total_reserve":
 		return x.TotalReserve != ""
 	case "types.QueryNetworkResponse.vaults_migrating":
 		return x.VaultsMigrating != false
-	case "types.QueryNetworkResponse.gas_spent_rune":
-		return x.GasSpentRune != ""
-	case "types.QueryNetworkResponse.gas_withheld_rune":
-		return x.GasWithheldRune != ""
+	case "types.QueryNetworkResponse.gas_spent_switch":
+		return x.GasSpentSwitch != ""
+	case "types.QueryNetworkResponse.gas_withheld_switch":
+		return x.GasWithheldSwitch != ""
 	case "types.QueryNetworkResponse.outbound_fee_multiplier":
 		return x.OutboundFeeMultiplier != ""
-	case "types.QueryNetworkResponse.native_outbound_fee_rune":
-		return x.NativeOutboundFeeRune != ""
-	case "types.QueryNetworkResponse.native_tx_fee_rune":
-		return x.NativeTxFeeRune != ""
-	case "types.QueryNetworkResponse.tns_register_fee_rune":
-		return x.TnsRegisterFeeRune != ""
-	case "types.QueryNetworkResponse.tns_fee_per_block_rune":
-		return x.TnsFeePerBlockRune != ""
-	case "types.QueryNetworkResponse.rune_price_in_tor":
-		return x.RunePriceInTor != ""
-	case "types.QueryNetworkResponse.tor_price_in_rune":
-		return x.TorPriceInRune != ""
-	case "types.QueryNetworkResponse.tor_price_halted":
-		return x.TorPriceHalted != false
+	case "types.QueryNetworkResponse.native_outbound_fee_switch":
+		return x.NativeOutboundFeeSwitch != ""
+	case "types.QueryNetworkResponse.native_tx_fee_switch":
+		return x.NativeTxFeeSwitch != ""
+	case "types.QueryNetworkResponse.switchlyname_register_fee_switch":
+		return x.SwitchlynameRegisterFeeSwitch != ""
+	case "types.QueryNetworkResponse.switchlyname_fee_per_block_switch":
+		return x.SwitchlynameFeePerBlockSwitch != ""
+	case "types.QueryNetworkResponse.switch_price_in_switchly":
+		return x.SwitchPriceInSwitchly != ""
+	case "types.QueryNetworkResponse.switchly_price_in_switch":
+		return x.SwitchlyPriceInSwitch != ""
+	case "types.QueryNetworkResponse.switchly_price_halted":
+		return x.SwitchlyPriceHalted != false
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.QueryNetworkResponse"))
@@ -708,40 +708,40 @@ func (x *fastReflection_QueryNetworkResponse) Has(fd protoreflect.FieldDescripto
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryNetworkResponse) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "types.QueryNetworkResponse.bond_reward_rune":
-		x.BondRewardRune = ""
+	case "types.QueryNetworkResponse.bond_reward_switch":
+		x.BondRewardSwitch = ""
 	case "types.QueryNetworkResponse.total_bond_units":
 		x.TotalBondUnits = ""
-	case "types.QueryNetworkResponse.available_pools_rune":
-		x.AvailablePoolsRune = ""
-	case "types.QueryNetworkResponse.vaults_liquidity_rune":
-		x.VaultsLiquidityRune = ""
+	case "types.QueryNetworkResponse.available_pools_switch":
+		x.AvailablePoolsSwitch = ""
+	case "types.QueryNetworkResponse.vaults_liquidity_switch":
+		x.VaultsLiquiditySwitch = ""
 	case "types.QueryNetworkResponse.effective_security_bond":
 		x.EffectiveSecurityBond = ""
 	case "types.QueryNetworkResponse.total_reserve":
 		x.TotalReserve = ""
 	case "types.QueryNetworkResponse.vaults_migrating":
 		x.VaultsMigrating = false
-	case "types.QueryNetworkResponse.gas_spent_rune":
-		x.GasSpentRune = ""
-	case "types.QueryNetworkResponse.gas_withheld_rune":
-		x.GasWithheldRune = ""
+	case "types.QueryNetworkResponse.gas_spent_switch":
+		x.GasSpentSwitch = ""
+	case "types.QueryNetworkResponse.gas_withheld_switch":
+		x.GasWithheldSwitch = ""
 	case "types.QueryNetworkResponse.outbound_fee_multiplier":
 		x.OutboundFeeMultiplier = ""
-	case "types.QueryNetworkResponse.native_outbound_fee_rune":
-		x.NativeOutboundFeeRune = ""
-	case "types.QueryNetworkResponse.native_tx_fee_rune":
-		x.NativeTxFeeRune = ""
-	case "types.QueryNetworkResponse.tns_register_fee_rune":
-		x.TnsRegisterFeeRune = ""
-	case "types.QueryNetworkResponse.tns_fee_per_block_rune":
-		x.TnsFeePerBlockRune = ""
-	case "types.QueryNetworkResponse.rune_price_in_tor":
-		x.RunePriceInTor = ""
-	case "types.QueryNetworkResponse.tor_price_in_rune":
-		x.TorPriceInRune = ""
-	case "types.QueryNetworkResponse.tor_price_halted":
-		x.TorPriceHalted = false
+	case "types.QueryNetworkResponse.native_outbound_fee_switch":
+		x.NativeOutboundFeeSwitch = ""
+	case "types.QueryNetworkResponse.native_tx_fee_switch":
+		x.NativeTxFeeSwitch = ""
+	case "types.QueryNetworkResponse.switchlyname_register_fee_switch":
+		x.SwitchlynameRegisterFeeSwitch = ""
+	case "types.QueryNetworkResponse.switchlyname_fee_per_block_switch":
+		x.SwitchlynameFeePerBlockSwitch = ""
+	case "types.QueryNetworkResponse.switch_price_in_switchly":
+		x.SwitchPriceInSwitchly = ""
+	case "types.QueryNetworkResponse.switchly_price_in_switch":
+		x.SwitchlyPriceInSwitch = ""
+	case "types.QueryNetworkResponse.switchly_price_halted":
+		x.SwitchlyPriceHalted = false
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.QueryNetworkResponse"))
@@ -758,17 +758,17 @@ func (x *fastReflection_QueryNetworkResponse) Clear(fd protoreflect.FieldDescrip
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_QueryNetworkResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "types.QueryNetworkResponse.bond_reward_rune":
-		value := x.BondRewardRune
+	case "types.QueryNetworkResponse.bond_reward_switch":
+		value := x.BondRewardSwitch
 		return protoreflect.ValueOfString(value)
 	case "types.QueryNetworkResponse.total_bond_units":
 		value := x.TotalBondUnits
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.available_pools_rune":
-		value := x.AvailablePoolsRune
+	case "types.QueryNetworkResponse.available_pools_switch":
+		value := x.AvailablePoolsSwitch
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.vaults_liquidity_rune":
-		value := x.VaultsLiquidityRune
+	case "types.QueryNetworkResponse.vaults_liquidity_switch":
+		value := x.VaultsLiquiditySwitch
 		return protoreflect.ValueOfString(value)
 	case "types.QueryNetworkResponse.effective_security_bond":
 		value := x.EffectiveSecurityBond
@@ -779,35 +779,35 @@ func (x *fastReflection_QueryNetworkResponse) Get(descriptor protoreflect.FieldD
 	case "types.QueryNetworkResponse.vaults_migrating":
 		value := x.VaultsMigrating
 		return protoreflect.ValueOfBool(value)
-	case "types.QueryNetworkResponse.gas_spent_rune":
-		value := x.GasSpentRune
+	case "types.QueryNetworkResponse.gas_spent_switch":
+		value := x.GasSpentSwitch
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.gas_withheld_rune":
-		value := x.GasWithheldRune
+	case "types.QueryNetworkResponse.gas_withheld_switch":
+		value := x.GasWithheldSwitch
 		return protoreflect.ValueOfString(value)
 	case "types.QueryNetworkResponse.outbound_fee_multiplier":
 		value := x.OutboundFeeMultiplier
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.native_outbound_fee_rune":
-		value := x.NativeOutboundFeeRune
+	case "types.QueryNetworkResponse.native_outbound_fee_switch":
+		value := x.NativeOutboundFeeSwitch
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.native_tx_fee_rune":
-		value := x.NativeTxFeeRune
+	case "types.QueryNetworkResponse.native_tx_fee_switch":
+		value := x.NativeTxFeeSwitch
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.tns_register_fee_rune":
-		value := x.TnsRegisterFeeRune
+	case "types.QueryNetworkResponse.switchlyname_register_fee_switch":
+		value := x.SwitchlynameRegisterFeeSwitch
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.tns_fee_per_block_rune":
-		value := x.TnsFeePerBlockRune
+	case "types.QueryNetworkResponse.switchlyname_fee_per_block_switch":
+		value := x.SwitchlynameFeePerBlockSwitch
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.rune_price_in_tor":
-		value := x.RunePriceInTor
+	case "types.QueryNetworkResponse.switch_price_in_switchly":
+		value := x.SwitchPriceInSwitchly
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.tor_price_in_rune":
-		value := x.TorPriceInRune
+	case "types.QueryNetworkResponse.switchly_price_in_switch":
+		value := x.SwitchlyPriceInSwitch
 		return protoreflect.ValueOfString(value)
-	case "types.QueryNetworkResponse.tor_price_halted":
-		value := x.TorPriceHalted
+	case "types.QueryNetworkResponse.switchly_price_halted":
+		value := x.SwitchlyPriceHalted
 		return protoreflect.ValueOfBool(value)
 	default:
 		if descriptor.IsExtension() {
@@ -829,40 +829,40 @@ func (x *fastReflection_QueryNetworkResponse) Get(descriptor protoreflect.FieldD
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryNetworkResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "types.QueryNetworkResponse.bond_reward_rune":
-		x.BondRewardRune = value.Interface().(string)
+	case "types.QueryNetworkResponse.bond_reward_switch":
+		x.BondRewardSwitch = value.Interface().(string)
 	case "types.QueryNetworkResponse.total_bond_units":
 		x.TotalBondUnits = value.Interface().(string)
-	case "types.QueryNetworkResponse.available_pools_rune":
-		x.AvailablePoolsRune = value.Interface().(string)
-	case "types.QueryNetworkResponse.vaults_liquidity_rune":
-		x.VaultsLiquidityRune = value.Interface().(string)
+	case "types.QueryNetworkResponse.available_pools_switch":
+		x.AvailablePoolsSwitch = value.Interface().(string)
+	case "types.QueryNetworkResponse.vaults_liquidity_switch":
+		x.VaultsLiquiditySwitch = value.Interface().(string)
 	case "types.QueryNetworkResponse.effective_security_bond":
 		x.EffectiveSecurityBond = value.Interface().(string)
 	case "types.QueryNetworkResponse.total_reserve":
 		x.TotalReserve = value.Interface().(string)
 	case "types.QueryNetworkResponse.vaults_migrating":
 		x.VaultsMigrating = value.Bool()
-	case "types.QueryNetworkResponse.gas_spent_rune":
-		x.GasSpentRune = value.Interface().(string)
-	case "types.QueryNetworkResponse.gas_withheld_rune":
-		x.GasWithheldRune = value.Interface().(string)
+	case "types.QueryNetworkResponse.gas_spent_switch":
+		x.GasSpentSwitch = value.Interface().(string)
+	case "types.QueryNetworkResponse.gas_withheld_switch":
+		x.GasWithheldSwitch = value.Interface().(string)
 	case "types.QueryNetworkResponse.outbound_fee_multiplier":
 		x.OutboundFeeMultiplier = value.Interface().(string)
-	case "types.QueryNetworkResponse.native_outbound_fee_rune":
-		x.NativeOutboundFeeRune = value.Interface().(string)
-	case "types.QueryNetworkResponse.native_tx_fee_rune":
-		x.NativeTxFeeRune = value.Interface().(string)
-	case "types.QueryNetworkResponse.tns_register_fee_rune":
-		x.TnsRegisterFeeRune = value.Interface().(string)
-	case "types.QueryNetworkResponse.tns_fee_per_block_rune":
-		x.TnsFeePerBlockRune = value.Interface().(string)
-	case "types.QueryNetworkResponse.rune_price_in_tor":
-		x.RunePriceInTor = value.Interface().(string)
-	case "types.QueryNetworkResponse.tor_price_in_rune":
-		x.TorPriceInRune = value.Interface().(string)
-	case "types.QueryNetworkResponse.tor_price_halted":
-		x.TorPriceHalted = value.Bool()
+	case "types.QueryNetworkResponse.native_outbound_fee_switch":
+		x.NativeOutboundFeeSwitch = value.Interface().(string)
+	case "types.QueryNetworkResponse.native_tx_fee_switch":
+		x.NativeTxFeeSwitch = value.Interface().(string)
+	case "types.QueryNetworkResponse.switchlyname_register_fee_switch":
+		x.SwitchlynameRegisterFeeSwitch = value.Interface().(string)
+	case "types.QueryNetworkResponse.switchlyname_fee_per_block_switch":
+		x.SwitchlynameFeePerBlockSwitch = value.Interface().(string)
+	case "types.QueryNetworkResponse.switch_price_in_switchly":
+		x.SwitchPriceInSwitchly = value.Interface().(string)
+	case "types.QueryNetworkResponse.switchly_price_in_switch":
+		x.SwitchlyPriceInSwitch = value.Interface().(string)
+	case "types.QueryNetworkResponse.switchly_price_halted":
+		x.SwitchlyPriceHalted = value.Bool()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.QueryNetworkResponse"))
@@ -883,40 +883,40 @@ func (x *fastReflection_QueryNetworkResponse) Set(fd protoreflect.FieldDescripto
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_QueryNetworkResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "types.QueryNetworkResponse.bond_reward_rune":
-		panic(fmt.Errorf("field bond_reward_rune of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.bond_reward_switch":
+		panic(fmt.Errorf("field bond_reward_switch of message types.QueryNetworkResponse is not mutable"))
 	case "types.QueryNetworkResponse.total_bond_units":
 		panic(fmt.Errorf("field total_bond_units of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.available_pools_rune":
-		panic(fmt.Errorf("field available_pools_rune of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.vaults_liquidity_rune":
-		panic(fmt.Errorf("field vaults_liquidity_rune of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.available_pools_switch":
+		panic(fmt.Errorf("field available_pools_switch of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.vaults_liquidity_switch":
+		panic(fmt.Errorf("field vaults_liquidity_switch of message types.QueryNetworkResponse is not mutable"))
 	case "types.QueryNetworkResponse.effective_security_bond":
 		panic(fmt.Errorf("field effective_security_bond of message types.QueryNetworkResponse is not mutable"))
 	case "types.QueryNetworkResponse.total_reserve":
 		panic(fmt.Errorf("field total_reserve of message types.QueryNetworkResponse is not mutable"))
 	case "types.QueryNetworkResponse.vaults_migrating":
 		panic(fmt.Errorf("field vaults_migrating of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.gas_spent_rune":
-		panic(fmt.Errorf("field gas_spent_rune of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.gas_withheld_rune":
-		panic(fmt.Errorf("field gas_withheld_rune of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.gas_spent_switch":
+		panic(fmt.Errorf("field gas_spent_switch of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.gas_withheld_switch":
+		panic(fmt.Errorf("field gas_withheld_switch of message types.QueryNetworkResponse is not mutable"))
 	case "types.QueryNetworkResponse.outbound_fee_multiplier":
 		panic(fmt.Errorf("field outbound_fee_multiplier of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.native_outbound_fee_rune":
-		panic(fmt.Errorf("field native_outbound_fee_rune of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.native_tx_fee_rune":
-		panic(fmt.Errorf("field native_tx_fee_rune of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.tns_register_fee_rune":
-		panic(fmt.Errorf("field tns_register_fee_rune of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.tns_fee_per_block_rune":
-		panic(fmt.Errorf("field tns_fee_per_block_rune of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.rune_price_in_tor":
-		panic(fmt.Errorf("field rune_price_in_tor of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.tor_price_in_rune":
-		panic(fmt.Errorf("field tor_price_in_rune of message types.QueryNetworkResponse is not mutable"))
-	case "types.QueryNetworkResponse.tor_price_halted":
-		panic(fmt.Errorf("field tor_price_halted of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.native_outbound_fee_switch":
+		panic(fmt.Errorf("field native_outbound_fee_switch of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.native_tx_fee_switch":
+		panic(fmt.Errorf("field native_tx_fee_switch of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.switchlyname_register_fee_switch":
+		panic(fmt.Errorf("field switchlyname_register_fee_switch of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.switchlyname_fee_per_block_switch":
+		panic(fmt.Errorf("field switchlyname_fee_per_block_switch of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.switch_price_in_switchly":
+		panic(fmt.Errorf("field switch_price_in_switchly of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.switchly_price_in_switch":
+		panic(fmt.Errorf("field switchly_price_in_switch of message types.QueryNetworkResponse is not mutable"))
+	case "types.QueryNetworkResponse.switchly_price_halted":
+		panic(fmt.Errorf("field switchly_price_halted of message types.QueryNetworkResponse is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: types.QueryNetworkResponse"))
@@ -930,13 +930,13 @@ func (x *fastReflection_QueryNetworkResponse) Mutable(fd protoreflect.FieldDescr
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_QueryNetworkResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "types.QueryNetworkResponse.bond_reward_rune":
+	case "types.QueryNetworkResponse.bond_reward_switch":
 		return protoreflect.ValueOfString("")
 	case "types.QueryNetworkResponse.total_bond_units":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.available_pools_rune":
+	case "types.QueryNetworkResponse.available_pools_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.vaults_liquidity_rune":
+	case "types.QueryNetworkResponse.vaults_liquidity_switch":
 		return protoreflect.ValueOfString("")
 	case "types.QueryNetworkResponse.effective_security_bond":
 		return protoreflect.ValueOfString("")
@@ -944,25 +944,25 @@ func (x *fastReflection_QueryNetworkResponse) NewField(fd protoreflect.FieldDesc
 		return protoreflect.ValueOfString("")
 	case "types.QueryNetworkResponse.vaults_migrating":
 		return protoreflect.ValueOfBool(false)
-	case "types.QueryNetworkResponse.gas_spent_rune":
+	case "types.QueryNetworkResponse.gas_spent_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.gas_withheld_rune":
+	case "types.QueryNetworkResponse.gas_withheld_switch":
 		return protoreflect.ValueOfString("")
 	case "types.QueryNetworkResponse.outbound_fee_multiplier":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.native_outbound_fee_rune":
+	case "types.QueryNetworkResponse.native_outbound_fee_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.native_tx_fee_rune":
+	case "types.QueryNetworkResponse.native_tx_fee_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.tns_register_fee_rune":
+	case "types.QueryNetworkResponse.switchlyname_register_fee_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.tns_fee_per_block_rune":
+	case "types.QueryNetworkResponse.switchlyname_fee_per_block_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.rune_price_in_tor":
+	case "types.QueryNetworkResponse.switch_price_in_switchly":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.tor_price_in_rune":
+	case "types.QueryNetworkResponse.switchly_price_in_switch":
 		return protoreflect.ValueOfString("")
-	case "types.QueryNetworkResponse.tor_price_halted":
+	case "types.QueryNetworkResponse.switchly_price_halted":
 		return protoreflect.ValueOfBool(false)
 	default:
 		if fd.IsExtension() {
@@ -1033,7 +1033,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 		var n int
 		var l int
 		_ = l
-		l = len(x.BondRewardRune)
+		l = len(x.BondRewardSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -1041,11 +1041,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.AvailablePoolsRune)
+		l = len(x.AvailablePoolsSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.VaultsLiquidityRune)
+		l = len(x.VaultsLiquiditySwitch)
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
@@ -1060,11 +1060,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 		if x.VaultsMigrating {
 			n += 2
 		}
-		l = len(x.GasSpentRune)
+		l = len(x.GasSpentSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.GasWithheldRune)
+		l = len(x.GasWithheldSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -1072,31 +1072,31 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.NativeOutboundFeeRune)
+		l = len(x.NativeOutboundFeeSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.NativeTxFeeRune)
+		l = len(x.NativeTxFeeSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.TnsRegisterFeeRune)
+		l = len(x.SwitchlynameRegisterFeeSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.TnsFeePerBlockRune)
+		l = len(x.SwitchlynameFeePerBlockSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.RunePriceInTor)
+		l = len(x.SwitchPriceInSwitchly)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.TorPriceInRune)
+		l = len(x.SwitchlyPriceInSwitch)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if x.TorPriceHalted {
+		if x.SwitchlyPriceHalted {
 			n += 3
 		}
 		if x.unknownFields != nil {
@@ -1128,9 +1128,9 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.TorPriceHalted {
+		if x.SwitchlyPriceHalted {
 			i--
-			if x.TorPriceHalted {
+			if x.SwitchlyPriceHalted {
 				dAtA[i] = 1
 			} else {
 				dAtA[i] = 0
@@ -1140,61 +1140,61 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 			i--
 			dAtA[i] = 0x88
 		}
-		if len(x.VaultsLiquidityRune) > 0 {
-			i -= len(x.VaultsLiquidityRune)
-			copy(dAtA[i:], x.VaultsLiquidityRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.VaultsLiquidityRune)))
+		if len(x.VaultsLiquiditySwitch) > 0 {
+			i -= len(x.VaultsLiquiditySwitch)
+			copy(dAtA[i:], x.VaultsLiquiditySwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.VaultsLiquiditySwitch)))
 			i--
 			dAtA[i] = 0x1
 			i--
 			dAtA[i] = 0x82
 		}
-		if len(x.AvailablePoolsRune) > 0 {
-			i -= len(x.AvailablePoolsRune)
-			copy(dAtA[i:], x.AvailablePoolsRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AvailablePoolsRune)))
+		if len(x.AvailablePoolsSwitch) > 0 {
+			i -= len(x.AvailablePoolsSwitch)
+			copy(dAtA[i:], x.AvailablePoolsSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.AvailablePoolsSwitch)))
 			i--
 			dAtA[i] = 0x7a
 		}
-		if len(x.TorPriceInRune) > 0 {
-			i -= len(x.TorPriceInRune)
-			copy(dAtA[i:], x.TorPriceInRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TorPriceInRune)))
+		if len(x.SwitchlyPriceInSwitch) > 0 {
+			i -= len(x.SwitchlyPriceInSwitch)
+			copy(dAtA[i:], x.SwitchlyPriceInSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwitchlyPriceInSwitch)))
 			i--
 			dAtA[i] = 0x72
 		}
-		if len(x.RunePriceInTor) > 0 {
-			i -= len(x.RunePriceInTor)
-			copy(dAtA[i:], x.RunePriceInTor)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.RunePriceInTor)))
+		if len(x.SwitchPriceInSwitchly) > 0 {
+			i -= len(x.SwitchPriceInSwitchly)
+			copy(dAtA[i:], x.SwitchPriceInSwitchly)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwitchPriceInSwitchly)))
 			i--
 			dAtA[i] = 0x6a
 		}
-		if len(x.TnsFeePerBlockRune) > 0 {
-			i -= len(x.TnsFeePerBlockRune)
-			copy(dAtA[i:], x.TnsFeePerBlockRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TnsFeePerBlockRune)))
+		if len(x.SwitchlynameFeePerBlockSwitch) > 0 {
+			i -= len(x.SwitchlynameFeePerBlockSwitch)
+			copy(dAtA[i:], x.SwitchlynameFeePerBlockSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwitchlynameFeePerBlockSwitch)))
 			i--
 			dAtA[i] = 0x62
 		}
-		if len(x.TnsRegisterFeeRune) > 0 {
-			i -= len(x.TnsRegisterFeeRune)
-			copy(dAtA[i:], x.TnsRegisterFeeRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TnsRegisterFeeRune)))
+		if len(x.SwitchlynameRegisterFeeSwitch) > 0 {
+			i -= len(x.SwitchlynameRegisterFeeSwitch)
+			copy(dAtA[i:], x.SwitchlynameRegisterFeeSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.SwitchlynameRegisterFeeSwitch)))
 			i--
 			dAtA[i] = 0x5a
 		}
-		if len(x.NativeTxFeeRune) > 0 {
-			i -= len(x.NativeTxFeeRune)
-			copy(dAtA[i:], x.NativeTxFeeRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NativeTxFeeRune)))
+		if len(x.NativeTxFeeSwitch) > 0 {
+			i -= len(x.NativeTxFeeSwitch)
+			copy(dAtA[i:], x.NativeTxFeeSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NativeTxFeeSwitch)))
 			i--
 			dAtA[i] = 0x52
 		}
-		if len(x.NativeOutboundFeeRune) > 0 {
-			i -= len(x.NativeOutboundFeeRune)
-			copy(dAtA[i:], x.NativeOutboundFeeRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NativeOutboundFeeRune)))
+		if len(x.NativeOutboundFeeSwitch) > 0 {
+			i -= len(x.NativeOutboundFeeSwitch)
+			copy(dAtA[i:], x.NativeOutboundFeeSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NativeOutboundFeeSwitch)))
 			i--
 			dAtA[i] = 0x4a
 		}
@@ -1205,17 +1205,17 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 			i--
 			dAtA[i] = 0x42
 		}
-		if len(x.GasWithheldRune) > 0 {
-			i -= len(x.GasWithheldRune)
-			copy(dAtA[i:], x.GasWithheldRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.GasWithheldRune)))
+		if len(x.GasWithheldSwitch) > 0 {
+			i -= len(x.GasWithheldSwitch)
+			copy(dAtA[i:], x.GasWithheldSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.GasWithheldSwitch)))
 			i--
 			dAtA[i] = 0x3a
 		}
-		if len(x.GasSpentRune) > 0 {
-			i -= len(x.GasSpentRune)
-			copy(dAtA[i:], x.GasSpentRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.GasSpentRune)))
+		if len(x.GasSpentSwitch) > 0 {
+			i -= len(x.GasSpentSwitch)
+			copy(dAtA[i:], x.GasSpentSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.GasSpentSwitch)))
 			i--
 			dAtA[i] = 0x32
 		}
@@ -1250,10 +1250,10 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 			i--
 			dAtA[i] = 0x12
 		}
-		if len(x.BondRewardRune) > 0 {
-			i -= len(x.BondRewardRune)
-			copy(dAtA[i:], x.BondRewardRune)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BondRewardRune)))
+		if len(x.BondRewardSwitch) > 0 {
+			i -= len(x.BondRewardSwitch)
+			copy(dAtA[i:], x.BondRewardSwitch)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.BondRewardSwitch)))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -1308,7 +1308,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 			switch fieldNum {
 			case 1:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BondRewardRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BondRewardSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1336,7 +1336,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.BondRewardRune = string(dAtA[iNdEx:postIndex])
+				x.BondRewardSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 2:
 				if wireType != 2 {
@@ -1372,7 +1372,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				iNdEx = postIndex
 			case 15:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AvailablePoolsRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field AvailablePoolsSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1400,11 +1400,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.AvailablePoolsRune = string(dAtA[iNdEx:postIndex])
+				x.AvailablePoolsSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 16:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field VaultsLiquidityRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field VaultsLiquiditySwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1432,7 +1432,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.VaultsLiquidityRune = string(dAtA[iNdEx:postIndex])
+				x.VaultsLiquiditySwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 3:
 				if wireType != 2 {
@@ -1520,7 +1520,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				x.VaultsMigrating = bool(v != 0)
 			case 6:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field GasSpentRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field GasSpentSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1548,11 +1548,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.GasSpentRune = string(dAtA[iNdEx:postIndex])
+				x.GasSpentSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 7:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field GasWithheldRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field GasWithheldSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1580,7 +1580,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.GasWithheldRune = string(dAtA[iNdEx:postIndex])
+				x.GasWithheldSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 8:
 				if wireType != 2 {
@@ -1616,7 +1616,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				iNdEx = postIndex
 			case 9:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NativeOutboundFeeRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NativeOutboundFeeSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1644,11 +1644,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.NativeOutboundFeeRune = string(dAtA[iNdEx:postIndex])
+				x.NativeOutboundFeeSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 10:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NativeTxFeeRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NativeTxFeeSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1676,11 +1676,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.NativeTxFeeRune = string(dAtA[iNdEx:postIndex])
+				x.NativeTxFeeSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 11:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TnsRegisterFeeRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwitchlynameRegisterFeeSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1708,11 +1708,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.TnsRegisterFeeRune = string(dAtA[iNdEx:postIndex])
+				x.SwitchlynameRegisterFeeSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 12:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TnsFeePerBlockRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwitchlynameFeePerBlockSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1740,11 +1740,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.TnsFeePerBlockRune = string(dAtA[iNdEx:postIndex])
+				x.SwitchlynameFeePerBlockSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 13:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field RunePriceInTor", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwitchPriceInSwitchly", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1772,11 +1772,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.RunePriceInTor = string(dAtA[iNdEx:postIndex])
+				x.SwitchPriceInSwitchly = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 14:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TorPriceInRune", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwitchlyPriceInSwitch", wireType)
 				}
 				var stringLen uint64
 				for shift := uint(0); ; shift += 7 {
@@ -1804,11 +1804,11 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.TorPriceInRune = string(dAtA[iNdEx:postIndex])
+				x.SwitchlyPriceInSwitch = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			case 17:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TorPriceHalted", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field SwitchlyPriceHalted", wireType)
 				}
 				var v int
 				for shift := uint(0); ; shift += 7 {
@@ -1825,7 +1825,7 @@ func (x *fastReflection_QueryNetworkResponse) ProtoMethods() *protoiface.Methods
 						break
 					}
 				}
-				x.TorPriceHalted = bool(v != 0)
+				x.SwitchlyPriceHalted = bool(v != 0)
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1914,40 +1914,40 @@ type QueryNetworkResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// total amount of RUNE awarded to node operators
-	BondRewardRune string `protobuf:"bytes,1,opt,name=bond_reward_rune,json=bondRewardRune,proto3" json:"bond_reward_rune,omitempty"`
-	// total bonded RUNE
+	// total amount of SWITCH awarded to node operators
+	BondRewardSwitch string `protobuf:"bytes,1,opt,name=bond_reward_switch,json=bondRewardSwitch,proto3" json:"bond_reward_switch,omitempty"`
+	// total bonded SWITCH
 	TotalBondUnits string `protobuf:"bytes,2,opt,name=total_bond_units,json=totalBondUnits,proto3" json:"total_bond_units,omitempty"`
-	// RUNE in Available pools (equal in value to the Assets in those pools)
-	AvailablePoolsRune string `protobuf:"bytes,15,opt,name=available_pools_rune,json=availablePoolsRune,proto3" json:"available_pools_rune,omitempty"`
-	// RUNE value of Layer 1 Assets in vaults
-	VaultsLiquidityRune string `protobuf:"bytes,16,opt,name=vaults_liquidity_rune,json=vaultsLiquidityRune,proto3" json:"vaults_liquidity_rune,omitempty"`
-	// effective security bond used to determine maximum pooled RUNE
+	// SWITCH in Available pools (equal in value to the Assets in those pools)
+	AvailablePoolsSwitch string `protobuf:"bytes,15,opt,name=available_pools_switch,json=availablePoolsSwitch,proto3" json:"available_pools_switch,omitempty"`
+	// SWITCH value of Layer 1 Assets in vaults
+	VaultsLiquiditySwitch string `protobuf:"bytes,16,opt,name=vaults_liquidity_switch,json=vaultsLiquiditySwitch,proto3" json:"vaults_liquidity_switch,omitempty"`
+	// effective security bond used to determine maximum pooled SWITCH
 	EffectiveSecurityBond string `protobuf:"bytes,3,opt,name=effective_security_bond,json=effectiveSecurityBond,proto3" json:"effective_security_bond,omitempty"`
-	// total reserve RUNE
+	// total reserve SWITCH
 	TotalReserve string `protobuf:"bytes,4,opt,name=total_reserve,json=totalReserve,proto3" json:"total_reserve,omitempty"`
 	// Returns true if there exist RetiringVaults which have not finished migrating funds to new ActiveVaults
 	VaultsMigrating bool `protobuf:"varint,5,opt,name=vaults_migrating,json=vaultsMigrating,proto3" json:"vaults_migrating,omitempty"`
 	// Sum of the gas the network has spent to send outbounds
-	GasSpentRune string `protobuf:"bytes,6,opt,name=gas_spent_rune,json=gasSpentRune,proto3" json:"gas_spent_rune,omitempty"`
+	GasSpentSwitch string `protobuf:"bytes,6,opt,name=gas_spent_switch,json=gasSpentSwitch,proto3" json:"gas_spent_switch,omitempty"`
 	// Sum of the gas withheld from users to cover outbound gas
-	GasWithheldRune string `protobuf:"bytes,7,opt,name=gas_withheld_rune,json=gasWithheldRune,proto3" json:"gas_withheld_rune,omitempty"`
+	GasWithheldSwitch string `protobuf:"bytes,7,opt,name=gas_withheld_switch,json=gasWithheldSwitch,proto3" json:"gas_withheld_switch,omitempty"`
 	// Current outbound fee multiplier, in basis points
 	OutboundFeeMultiplier string `protobuf:"bytes,8,opt,name=outbound_fee_multiplier,json=outboundFeeMultiplier,proto3" json:"outbound_fee_multiplier,omitempty"`
-	// the outbound transaction fee in rune, converted from the NativeOutboundFeeUSD mimir (after USD fees are enabled)
-	NativeOutboundFeeRune string `protobuf:"bytes,9,opt,name=native_outbound_fee_rune,json=nativeOutboundFeeRune,proto3" json:"native_outbound_fee_rune,omitempty"`
-	// the native transaction fee in rune, converted from the NativeTransactionFeeUSD mimir (after USD fees are enabled)
-	NativeTxFeeRune string `protobuf:"bytes,10,opt,name=native_tx_fee_rune,json=nativeTxFeeRune,proto3" json:"native_tx_fee_rune,omitempty"`
-	// the thorname register fee in rune, converted from the TNSRegisterFeeUSD mimir (after USD fees are enabled)
-	TnsRegisterFeeRune string `protobuf:"bytes,11,opt,name=tns_register_fee_rune,json=tnsRegisterFeeRune,proto3" json:"tns_register_fee_rune,omitempty"`
-	// the thorname fee per block in rune, converted from the TNSFeePerBlockUSD mimir (after USD fees are enabled)
-	TnsFeePerBlockRune string `protobuf:"bytes,12,opt,name=tns_fee_per_block_rune,json=tnsFeePerBlockRune,proto3" json:"tns_fee_per_block_rune,omitempty"`
-	// the rune price in tor
-	RunePriceInTor string `protobuf:"bytes,13,opt,name=rune_price_in_tor,json=runePriceInTor,proto3" json:"rune_price_in_tor,omitempty"`
-	// the tor price in rune
-	TorPriceInRune string `protobuf:"bytes,14,opt,name=tor_price_in_rune,json=torPriceInRune,proto3" json:"tor_price_in_rune,omitempty"`
+	// the outbound transaction fee in switch, converted from the NativeOutboundFeeUSD mimir (after USD fees are enabled)
+	NativeOutboundFeeSwitch string `protobuf:"bytes,9,opt,name=native_outbound_fee_switch,json=nativeOutboundFeeSwitch,proto3" json:"native_outbound_fee_switch,omitempty"`
+	// the native transaction fee in switch, converted from the NativeTransactionFeeUSD mimir (after USD fees are enabled)
+	NativeTxFeeSwitch string `protobuf:"bytes,10,opt,name=native_tx_fee_switch,json=nativeTxFeeSwitch,proto3" json:"native_tx_fee_switch,omitempty"`
+	// the switchlyname register fee in switch, converted from the TNSRegisterFeeUSD mimir (after USD fees are enabled)
+	SwitchlynameRegisterFeeSwitch string `protobuf:"bytes,11,opt,name=switchlyname_register_fee_switch,json=switchlynameRegisterFeeSwitch,proto3" json:"switchlyname_register_fee_switch,omitempty"`
+	// the switchlyname fee per block in switch, converted from the TNSFeePerBlockUSD mimir (after USD fees are enabled)
+	SwitchlynameFeePerBlockSwitch string `protobuf:"bytes,12,opt,name=switchlyname_fee_per_block_switch,json=switchlynameFeePerBlockSwitch,proto3" json:"switchlyname_fee_per_block_switch,omitempty"`
+	// the switch price in switchly
+	SwitchPriceInSwitchly string `protobuf:"bytes,13,opt,name=switch_price_in_switchly,json=switchPriceInSwitchly,proto3" json:"switch_price_in_switchly,omitempty"`
+	// the switchly price in switch
+	SwitchlyPriceInSwitch string `protobuf:"bytes,14,opt,name=switchly_price_in_switch,json=switchlyPriceInSwitch,proto3" json:"switchly_price_in_switch,omitempty"`
 	// indicator if all anchor chains are halted
-	TorPriceHalted bool `protobuf:"varint,17,opt,name=tor_price_halted,json=torPriceHalted,proto3" json:"tor_price_halted,omitempty"`
+	SwitchlyPriceHalted bool `protobuf:"varint,17,opt,name=switchly_price_halted,json=switchlyPriceHalted,proto3" json:"switchly_price_halted,omitempty"`
 }
 
 func (x *QueryNetworkResponse) Reset() {
@@ -1970,9 +1970,9 @@ func (*QueryNetworkResponse) Descriptor() ([]byte, []int) {
 	return file_types_query_network_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *QueryNetworkResponse) GetBondRewardRune() string {
+func (x *QueryNetworkResponse) GetBondRewardSwitch() string {
 	if x != nil {
-		return x.BondRewardRune
+		return x.BondRewardSwitch
 	}
 	return ""
 }
@@ -1984,16 +1984,16 @@ func (x *QueryNetworkResponse) GetTotalBondUnits() string {
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetAvailablePoolsRune() string {
+func (x *QueryNetworkResponse) GetAvailablePoolsSwitch() string {
 	if x != nil {
-		return x.AvailablePoolsRune
+		return x.AvailablePoolsSwitch
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetVaultsLiquidityRune() string {
+func (x *QueryNetworkResponse) GetVaultsLiquiditySwitch() string {
 	if x != nil {
-		return x.VaultsLiquidityRune
+		return x.VaultsLiquiditySwitch
 	}
 	return ""
 }
@@ -2019,16 +2019,16 @@ func (x *QueryNetworkResponse) GetVaultsMigrating() bool {
 	return false
 }
 
-func (x *QueryNetworkResponse) GetGasSpentRune() string {
+func (x *QueryNetworkResponse) GetGasSpentSwitch() string {
 	if x != nil {
-		return x.GasSpentRune
+		return x.GasSpentSwitch
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetGasWithheldRune() string {
+func (x *QueryNetworkResponse) GetGasWithheldSwitch() string {
 	if x != nil {
-		return x.GasWithheldRune
+		return x.GasWithheldSwitch
 	}
 	return ""
 }
@@ -2040,51 +2040,51 @@ func (x *QueryNetworkResponse) GetOutboundFeeMultiplier() string {
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetNativeOutboundFeeRune() string {
+func (x *QueryNetworkResponse) GetNativeOutboundFeeSwitch() string {
 	if x != nil {
-		return x.NativeOutboundFeeRune
+		return x.NativeOutboundFeeSwitch
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetNativeTxFeeRune() string {
+func (x *QueryNetworkResponse) GetNativeTxFeeSwitch() string {
 	if x != nil {
-		return x.NativeTxFeeRune
+		return x.NativeTxFeeSwitch
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetTnsRegisterFeeRune() string {
+func (x *QueryNetworkResponse) GetSwitchlynameRegisterFeeSwitch() string {
 	if x != nil {
-		return x.TnsRegisterFeeRune
+		return x.SwitchlynameRegisterFeeSwitch
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetTnsFeePerBlockRune() string {
+func (x *QueryNetworkResponse) GetSwitchlynameFeePerBlockSwitch() string {
 	if x != nil {
-		return x.TnsFeePerBlockRune
+		return x.SwitchlynameFeePerBlockSwitch
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetRunePriceInTor() string {
+func (x *QueryNetworkResponse) GetSwitchPriceInSwitchly() string {
 	if x != nil {
-		return x.RunePriceInTor
+		return x.SwitchPriceInSwitchly
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetTorPriceInRune() string {
+func (x *QueryNetworkResponse) GetSwitchlyPriceInSwitch() string {
 	if x != nil {
-		return x.TorPriceInRune
+		return x.SwitchlyPriceInSwitch
 	}
 	return ""
 }
 
-func (x *QueryNetworkResponse) GetTorPriceHalted() bool {
+func (x *QueryNetworkResponse) GetSwitchlyPriceHalted() bool {
 	if x != nil {
-		return x.TorPriceHalted
+		return x.SwitchlyPriceHalted
 	}
 	return false
 }
@@ -2098,92 +2098,102 @@ var file_types_query_network_proto_rawDesc = []byte{
 	0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x2d, 0x0a, 0x13, 0x51, 0x75, 0x65, 0x72,
 	0x79, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
 	0x16, 0x0a, 0x06, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xb2, 0x09, 0x0a, 0x14, 0x51, 0x75, 0x65, 0x72,
+	0x06, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0xd7, 0x0a, 0x0a, 0x14, 0x51, 0x75, 0x65, 0x72,
 	0x79, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x3e, 0x0a, 0x10, 0x62, 0x6f, 0x6e, 0x64, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f,
-	0x72, 0x75, 0x6e, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x14, 0xea, 0xde, 0x1f, 0x10,
-	0x62, 0x6f, 0x6e, 0x64, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x72, 0x75, 0x6e, 0x65,
-	0x52, 0x0e, 0x62, 0x6f, 0x6e, 0x64, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x52, 0x75, 0x6e, 0x65,
-	0x12, 0x3e, 0x0a, 0x10, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x62, 0x6f, 0x6e, 0x64, 0x5f, 0x75,
-	0x6e, 0x69, 0x74, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x14, 0xea, 0xde, 0x1f, 0x10,
-	0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x62, 0x6f, 0x6e, 0x64, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x73,
-	0x52, 0x0e, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x42, 0x6f, 0x6e, 0x64, 0x55, 0x6e, 0x69, 0x74, 0x73,
-	0x12, 0x4a, 0x0a, 0x14, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x70, 0x6f,
-	0x6f, 0x6c, 0x73, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18,
-	0xea, 0xde, 0x1f, 0x14, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x70, 0x6f,
-	0x6f, 0x6c, 0x73, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x12, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61,
-	0x62, 0x6c, 0x65, 0x50, 0x6f, 0x6f, 0x6c, 0x73, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x4d, 0x0a, 0x15,
-	0x76, 0x61, 0x75, 0x6c, 0x74, 0x73, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79,
-	0x5f, 0x72, 0x75, 0x6e, 0x65, 0x18, 0x10, 0x20, 0x01, 0x28, 0x09, 0x42, 0x19, 0xea, 0xde, 0x1f,
-	0x15, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x73, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74,
-	0x79, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x13, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x73, 0x4c, 0x69,
-	0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x53, 0x0a, 0x17, 0x65,
-	0x66, 0x66, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x73, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74,
-	0x79, 0x5f, 0x62, 0x6f, 0x6e, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1b, 0xea, 0xde,
-	0x1f, 0x17, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x73, 0x65, 0x63, 0x75,
-	0x72, 0x69, 0x74, 0x79, 0x5f, 0x62, 0x6f, 0x6e, 0x64, 0x52, 0x15, 0x65, 0x66, 0x66, 0x65, 0x63,
-	0x74, 0x69, 0x76, 0x65, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x42, 0x6f, 0x6e, 0x64,
-	0x12, 0x36, 0x0a, 0x0d, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x73, 0x65, 0x72, 0x76,
-	0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x11, 0xea, 0xde, 0x1f, 0x0d, 0x74, 0x6f, 0x74,
-	0x61, 0x6c, 0x5f, 0x72, 0x65, 0x73, 0x65, 0x72, 0x76, 0x65, 0x52, 0x0c, 0x74, 0x6f, 0x74, 0x61,
-	0x6c, 0x52, 0x65, 0x73, 0x65, 0x72, 0x76, 0x65, 0x12, 0x3f, 0x0a, 0x10, 0x76, 0x61, 0x75, 0x6c,
-	0x74, 0x73, 0x5f, 0x6d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x18, 0x05, 0x20, 0x01,
-	0x28, 0x08, 0x42, 0x14, 0xea, 0xde, 0x1f, 0x10, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x73, 0x5f, 0x6d,
-	0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x52, 0x0f, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x73,
-	0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x12, 0x38, 0x0a, 0x0e, 0x67, 0x61, 0x73,
-	0x5f, 0x73, 0x70, 0x65, 0x6e, 0x74, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28,
-	0x09, 0x42, 0x12, 0xea, 0xde, 0x1f, 0x0e, 0x67, 0x61, 0x73, 0x5f, 0x73, 0x70, 0x65, 0x6e, 0x74,
-	0x5f, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x0c, 0x67, 0x61, 0x73, 0x53, 0x70, 0x65, 0x6e, 0x74, 0x52,
-	0x75, 0x6e, 0x65, 0x12, 0x41, 0x0a, 0x11, 0x67, 0x61, 0x73, 0x5f, 0x77, 0x69, 0x74, 0x68, 0x68,
-	0x65, 0x6c, 0x64, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x42, 0x15,
-	0xea, 0xde, 0x1f, 0x11, 0x67, 0x61, 0x73, 0x5f, 0x77, 0x69, 0x74, 0x68, 0x68, 0x65, 0x6c, 0x64,
-	0x5f, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x0f, 0x67, 0x61, 0x73, 0x57, 0x69, 0x74, 0x68, 0x68, 0x65,
-	0x6c, 0x64, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x36, 0x0a, 0x17, 0x6f, 0x75, 0x74, 0x62, 0x6f, 0x75,
-	0x6e, 0x64, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x69, 0x65,
-	0x72, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x15, 0x6f, 0x75, 0x74, 0x62, 0x6f, 0x75, 0x6e,
-	0x64, 0x46, 0x65, 0x65, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x69, 0x65, 0x72, 0x12, 0x55,
-	0x0a, 0x18, 0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x62, 0x6f, 0x75, 0x6e,
-	0x64, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09,
-	0x42, 0x1c, 0xea, 0xde, 0x1f, 0x18, 0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x6f, 0x75, 0x74,
-	0x62, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x15,
-	0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x4f, 0x75, 0x74, 0x62, 0x6f, 0x75, 0x6e, 0x64, 0x46, 0x65,
-	0x65, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x43, 0x0a, 0x12, 0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x5f,
-	0x74, 0x78, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x18, 0x0a, 0x20, 0x01, 0x28,
-	0x09, 0x42, 0x16, 0xea, 0xde, 0x1f, 0x12, 0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x74, 0x78,
-	0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x0f, 0x6e, 0x61, 0x74, 0x69, 0x76,
-	0x65, 0x54, 0x78, 0x46, 0x65, 0x65, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x4c, 0x0a, 0x15, 0x74, 0x6e,
-	0x73, 0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72,
-	0x75, 0x6e, 0x65, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x42, 0x19, 0xea, 0xde, 0x1f, 0x15, 0x74,
-	0x6e, 0x73, 0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x66, 0x65, 0x65, 0x5f,
-	0x72, 0x75, 0x6e, 0x65, 0x52, 0x12, 0x74, 0x6e, 0x73, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
-	0x72, 0x46, 0x65, 0x65, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x4e, 0x0a, 0x16, 0x74, 0x6e, 0x73, 0x5f,
-	0x66, 0x65, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x72, 0x75,
-	0x6e, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1a, 0xea, 0xde, 0x1f, 0x16, 0x74, 0x6e,
-	0x73, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
-	0x72, 0x75, 0x6e, 0x65, 0x52, 0x12, 0x74, 0x6e, 0x73, 0x46, 0x65, 0x65, 0x50, 0x65, 0x72, 0x42,
-	0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x40, 0x0a, 0x11, 0x72, 0x75, 0x6e, 0x65,
-	0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x74, 0x6f, 0x72, 0x18, 0x0d, 0x20,
-	0x01, 0x28, 0x09, 0x42, 0x15, 0xea, 0xde, 0x1f, 0x11, 0x72, 0x75, 0x6e, 0x65, 0x5f, 0x70, 0x72,
-	0x69, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x74, 0x6f, 0x72, 0x52, 0x0e, 0x72, 0x75, 0x6e, 0x65,
-	0x50, 0x72, 0x69, 0x63, 0x65, 0x49, 0x6e, 0x54, 0x6f, 0x72, 0x12, 0x40, 0x0a, 0x11, 0x74, 0x6f,
-	0x72, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x18,
-	0x0e, 0x20, 0x01, 0x28, 0x09, 0x42, 0x15, 0xea, 0xde, 0x1f, 0x11, 0x74, 0x6f, 0x72, 0x5f, 0x70,
-	0x72, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x72, 0x75, 0x6e, 0x65, 0x52, 0x0e, 0x74, 0x6f,
-	0x72, 0x50, 0x72, 0x69, 0x63, 0x65, 0x49, 0x6e, 0x52, 0x75, 0x6e, 0x65, 0x12, 0x3e, 0x0a, 0x10,
-	0x74, 0x6f, 0x72, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x68, 0x61, 0x6c, 0x74, 0x65, 0x64,
-	0x18, 0x11, 0x20, 0x01, 0x28, 0x08, 0x42, 0x14, 0xea, 0xde, 0x1f, 0x10, 0x74, 0x6f, 0x72, 0x5f,
-	0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x68, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x52, 0x0e, 0x74, 0x6f,
-	0x72, 0x50, 0x72, 0x69, 0x63, 0x65, 0x48, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x42, 0x8d, 0x01, 0x0a,
-	0x09, 0x63, 0x6f, 0x6d, 0x2e, 0x74, 0x79, 0x70, 0x65, 0x73, 0x42, 0x11, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
-	0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x73, 0x77, 0x69, 0x74,
-	0x63, 0x68, 0x6c, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2f, 0x73, 0x77, 0x69,
-	0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x6f, 0x64, 0x65, 0x2f, 0x76, 0x31, 0x2f, 0x61, 0x70, 0x69,
-	0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0xa2, 0x02, 0x03, 0x54, 0x58, 0x58, 0xaa, 0x02, 0x05, 0x54,
-	0x79, 0x70, 0x65, 0x73, 0xca, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xe2, 0x02, 0x11, 0x54,
-	0x79, 0x70, 0x65, 0x73, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
-	0xea, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xc8, 0xe2, 0x1e, 0x01, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x12, 0x44, 0x0a, 0x12, 0x62, 0x6f, 0x6e, 0x64, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f,
+	0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x16, 0xea, 0xde,
+	0x1f, 0x12, 0x62, 0x6f, 0x6e, 0x64, 0x5f, 0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x73, 0x77,
+	0x69, 0x74, 0x63, 0x68, 0x52, 0x10, 0x62, 0x6f, 0x6e, 0x64, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64,
+	0x53, 0x77, 0x69, 0x74, 0x63, 0x68, 0x12, 0x3e, 0x0a, 0x10, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f,
+	0x62, 0x6f, 0x6e, 0x64, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x14, 0xea, 0xde, 0x1f, 0x10, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x62, 0x6f, 0x6e, 0x64,
+	0x5f, 0x75, 0x6e, 0x69, 0x74, 0x73, 0x52, 0x0e, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x42, 0x6f, 0x6e,
+	0x64, 0x55, 0x6e, 0x69, 0x74, 0x73, 0x12, 0x50, 0x0a, 0x16, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61,
+	0x62, 0x6c, 0x65, 0x5f, 0x70, 0x6f, 0x6f, 0x6c, 0x73, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68,
+	0x18, 0x0f, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1a, 0xea, 0xde, 0x1f, 0x16, 0x61, 0x76, 0x61, 0x69,
+	0x6c, 0x61, 0x62, 0x6c, 0x65, 0x5f, 0x70, 0x6f, 0x6f, 0x6c, 0x73, 0x5f, 0x73, 0x77, 0x69, 0x74,
+	0x63, 0x68, 0x52, 0x14, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x50, 0x6f, 0x6f,
+	0x6c, 0x73, 0x53, 0x77, 0x69, 0x74, 0x63, 0x68, 0x12, 0x53, 0x0a, 0x17, 0x76, 0x61, 0x75, 0x6c,
+	0x74, 0x73, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x5f, 0x73, 0x77, 0x69,
+	0x74, 0x63, 0x68, 0x18, 0x10, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1b, 0xea, 0xde, 0x1f, 0x17, 0x76,
+	0x61, 0x75, 0x6c, 0x74, 0x73, 0x5f, 0x6c, 0x69, 0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x5f,
+	0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x52, 0x15, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x73, 0x4c, 0x69,
+	0x71, 0x75, 0x69, 0x64, 0x69, 0x74, 0x79, 0x53, 0x77, 0x69, 0x74, 0x63, 0x68, 0x12, 0x53, 0x0a,
+	0x17, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x73, 0x65, 0x63, 0x75, 0x72,
+	0x69, 0x74, 0x79, 0x5f, 0x62, 0x6f, 0x6e, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1b,
+	0xea, 0xde, 0x1f, 0x17, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x73, 0x65,
+	0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x5f, 0x62, 0x6f, 0x6e, 0x64, 0x52, 0x15, 0x65, 0x66, 0x66,
+	0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x42, 0x6f,
+	0x6e, 0x64, 0x12, 0x36, 0x0a, 0x0d, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x73, 0x65,
+	0x72, 0x76, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x11, 0xea, 0xde, 0x1f, 0x0d, 0x74,
+	0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x73, 0x65, 0x72, 0x76, 0x65, 0x52, 0x0c, 0x74, 0x6f,
+	0x74, 0x61, 0x6c, 0x52, 0x65, 0x73, 0x65, 0x72, 0x76, 0x65, 0x12, 0x3f, 0x0a, 0x10, 0x76, 0x61,
+	0x75, 0x6c, 0x74, 0x73, 0x5f, 0x6d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x08, 0x42, 0x14, 0xea, 0xde, 0x1f, 0x10, 0x76, 0x61, 0x75, 0x6c, 0x74, 0x73,
+	0x5f, 0x6d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x52, 0x0f, 0x76, 0x61, 0x75, 0x6c,
+	0x74, 0x73, 0x4d, 0x69, 0x67, 0x72, 0x61, 0x74, 0x69, 0x6e, 0x67, 0x12, 0x3e, 0x0a, 0x10, 0x67,
+	0x61, 0x73, 0x5f, 0x73, 0x70, 0x65, 0x6e, 0x74, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x09, 0x42, 0x14, 0xea, 0xde, 0x1f, 0x10, 0x67, 0x61, 0x73, 0x5f, 0x73,
+	0x70, 0x65, 0x6e, 0x74, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x52, 0x0e, 0x67, 0x61, 0x73,
+	0x53, 0x70, 0x65, 0x6e, 0x74, 0x53, 0x77, 0x69, 0x74, 0x63, 0x68, 0x12, 0x47, 0x0a, 0x13, 0x67,
+	0x61, 0x73, 0x5f, 0x77, 0x69, 0x74, 0x68, 0x68, 0x65, 0x6c, 0x64, 0x5f, 0x73, 0x77, 0x69, 0x74,
+	0x63, 0x68, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x42, 0x17, 0xea, 0xde, 0x1f, 0x13, 0x67, 0x61,
+	0x73, 0x5f, 0x77, 0x69, 0x74, 0x68, 0x68, 0x65, 0x6c, 0x64, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63,
+	0x68, 0x52, 0x11, 0x67, 0x61, 0x73, 0x57, 0x69, 0x74, 0x68, 0x68, 0x65, 0x6c, 0x64, 0x53, 0x77,
+	0x69, 0x74, 0x63, 0x68, 0x12, 0x36, 0x0a, 0x17, 0x6f, 0x75, 0x74, 0x62, 0x6f, 0x75, 0x6e, 0x64,
+	0x5f, 0x66, 0x65, 0x65, 0x5f, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x69, 0x65, 0x72, 0x18,
+	0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x15, 0x6f, 0x75, 0x74, 0x62, 0x6f, 0x75, 0x6e, 0x64, 0x46,
+	0x65, 0x65, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x69, 0x65, 0x72, 0x12, 0x5b, 0x0a, 0x1a,
+	0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x62, 0x6f, 0x75, 0x6e, 0x64, 0x5f,
+	0x66, 0x65, 0x65, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x1e, 0xea, 0xde, 0x1f, 0x1a, 0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x6f, 0x75, 0x74,
+	0x62, 0x6f, 0x75, 0x6e, 0x64, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68,
+	0x52, 0x17, 0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x4f, 0x75, 0x74, 0x62, 0x6f, 0x75, 0x6e, 0x64,
+	0x46, 0x65, 0x65, 0x53, 0x77, 0x69, 0x74, 0x63, 0x68, 0x12, 0x49, 0x0a, 0x14, 0x6e, 0x61, 0x74,
+	0x69, 0x76, 0x65, 0x5f, 0x74, 0x78, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63,
+	0x68, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x42, 0x18, 0xea, 0xde, 0x1f, 0x14, 0x6e, 0x61, 0x74,
+	0x69, 0x76, 0x65, 0x5f, 0x74, 0x78, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63,
+	0x68, 0x52, 0x11, 0x6e, 0x61, 0x74, 0x69, 0x76, 0x65, 0x54, 0x78, 0x46, 0x65, 0x65, 0x53, 0x77,
+	0x69, 0x74, 0x63, 0x68, 0x12, 0x6d, 0x0a, 0x20, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79,
+	0x6e, 0x61, 0x6d, 0x65, 0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x66, 0x65,
+	0x65, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x09, 0x42, 0x24,
+	0xea, 0xde, 0x1f, 0x20, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x61, 0x6d, 0x65,
+	0x5f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x73, 0x77,
+	0x69, 0x74, 0x63, 0x68, 0x52, 0x1d, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x61,
+	0x6d, 0x65, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x46, 0x65, 0x65, 0x53, 0x77, 0x69,
+	0x74, 0x63, 0x68, 0x12, 0x6f, 0x0a, 0x21, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e,
+	0x61, 0x6d, 0x65, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
+	0x6b, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x09, 0x42, 0x25,
+	0xea, 0xde, 0x1f, 0x21, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x61, 0x6d, 0x65,
+	0x5f, 0x66, 0x65, 0x65, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x73,
+	0x77, 0x69, 0x74, 0x63, 0x68, 0x52, 0x1d, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e,
+	0x61, 0x6d, 0x65, 0x46, 0x65, 0x65, 0x50, 0x65, 0x72, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x53, 0x77,
+	0x69, 0x74, 0x63, 0x68, 0x12, 0x55, 0x0a, 0x18, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x5f, 0x70,
+	0x72, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79,
+	0x18, 0x0d, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1c, 0xea, 0xde, 0x1f, 0x18, 0x73, 0x77, 0x69, 0x74,
+	0x63, 0x68, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x73, 0x77, 0x69, 0x74,
+	0x63, 0x68, 0x6c, 0x79, 0x52, 0x15, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x50, 0x72, 0x69, 0x63,
+	0x65, 0x49, 0x6e, 0x53, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x12, 0x55, 0x0a, 0x18, 0x73,
+	0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x5f, 0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x6e,
+	0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x09, 0x42, 0x1c, 0xea,
+	0xde, 0x1f, 0x18, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x5f, 0x70, 0x72, 0x69, 0x63,
+	0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x52, 0x15, 0x73, 0x77, 0x69,
+	0x74, 0x63, 0x68, 0x6c, 0x79, 0x50, 0x72, 0x69, 0x63, 0x65, 0x49, 0x6e, 0x53, 0x77, 0x69, 0x74,
+	0x63, 0x68, 0x12, 0x4d, 0x0a, 0x15, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x5f, 0x70,
+	0x72, 0x69, 0x63, 0x65, 0x5f, 0x68, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x18, 0x11, 0x20, 0x01, 0x28,
+	0x08, 0x42, 0x19, 0xea, 0xde, 0x1f, 0x15, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x5f,
+	0x70, 0x72, 0x69, 0x63, 0x65, 0x5f, 0x68, 0x61, 0x6c, 0x74, 0x65, 0x64, 0x52, 0x13, 0x73, 0x77,
+	0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x50, 0x72, 0x69, 0x63, 0x65, 0x48, 0x61, 0x6c, 0x74, 0x65,
+	0x64, 0x42, 0x8d, 0x01, 0x0a, 0x09, 0x63, 0x6f, 0x6d, 0x2e, 0x74, 0x79, 0x70, 0x65, 0x73, 0x42,
+	0x11, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x50, 0x72, 0x6f,
+	0x74, 0x6f, 0x50, 0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x2f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x6f, 0x64, 0x65, 0x2f, 0x76,
+	0x33, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0xa2, 0x02, 0x03, 0x54, 0x58,
+	0x58, 0xaa, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xca, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65,
+	0x73, 0xe2, 0x02, 0x11, 0x54, 0x79, 0x70, 0x65, 0x73, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
+	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xc8, 0xe2, 0x1e,
+	0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (

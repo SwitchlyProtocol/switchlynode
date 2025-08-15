@@ -25,10 +25,10 @@ genesis:
         - "@type": /cosmos.auth.v1beta1.ModuleAccount
           base_account:
             account_number: "2"
-            address: {{ addr_module_thorchain }}
+            address: {{ addr_module_switchly }}
             pub_key: ~
             sequence: "0"
-          name: thorchain
+          name: switchly
           permissions:
             - minter
             - burner
@@ -129,7 +129,7 @@ genesis:
     transfer:
       params:
         send_enabled: false
-    thorchain:
+    switchly:
       node_accounts:
         - active_block_height: "0"
           bond: "2500000000000"
@@ -223,7 +223,7 @@ genesis:
       vaults:
         - block_height: "0"
           chains:
-            - THOR
+            - SWITCHLY
             - BTC
             - LTC
             - BCH
@@ -247,7 +247,7 @@ genesis:
           type: AsgardVault
         - block_height: "0"
           chains:
-            - THOR
+            - SWITCHLY
           membership:
             - {{ pubkey_cat }}
           pub_key: tthorpub1addwnpepqfll6vmxepk9usvefmnqau83t9yfrelmg4gn57ee2zu2wc3gsjsz6huxnv7
@@ -258,7 +258,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] |
     select(.node_address == "{{ addr_thor_fox }}") |
@@ -284,12 +284,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[] | select(.result.code == 4) | .result.log | contains("not authorized to manage")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .requested_to_leave == false
 ---
@@ -304,11 +304,11 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[] | select(.result.code == 0)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .requested_to_leave == true

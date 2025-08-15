@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Borrower**](BorrowersApi.md#Borrower) | **Get** /thorchain/pool/{asset}/borrower/{address} | 
-[**Borrowers**](BorrowersApi.md#Borrowers) | **Get** /thorchain/pool/{asset}/borrowers | 
+[**Borrower**](BorrowersApi.md#Borrower) | **Get** /switchly/pool/{asset}/borrower/{address} | 
+[**Borrowers**](BorrowersApi.md#Borrowers) | **Get** /switchly/pool/{asset}/borrowers | 
 
 
 

@@ -70,8 +70,8 @@ type Config struct {
 		// CacheSize is the number responses to keep in LRU cache.
 		CacheSize int `mapstructure:"cache_size"`
 
-		Thornode string `mapstructure:"thornode"`
-		Midgard  string `mapstructure:"midgard"`
+		Switchlynode string `mapstructure:"switchlynode"`
+		Midgard      string `mapstructure:"midgard"`
 	} `mapstructure:"endpoints"`
 
 	// Notifications contain categories of webhooks that route to multiple services.
@@ -89,18 +89,18 @@ type Config struct {
 		// Track is the Nine Realms Tracker service.
 		Track string `mapstructure:"track"`
 
-		// Explorer is the native Thorchain explorer, should support:
+		// Explorer is the native Switchly explorer, should support:
 		// - <explorer>/tx/<txid>
 		// - <explorer>/address/<address>
 		// - <explorer>/block/<height>
 		Explorer string `mapstructure:"explorer"`
 
-		// Thornode is the Thornode API endpoint to use in message links.
-		Thornode string `mapstructure:"thornode"`
+		// Switchlynode is the Switchlynode API endpoint to use in message links.
+		Switchlynode string `mapstructure:"switchlynode"`
 	} `mapstructure:"explorers"`
 
-	// TORAnchorCheckBlocks is the number of blocks to check for TOR anchor drift.
-	TORAnchorCheckBlocks int64 `mapstructure:"tor_anchor_check_blocks"`
+	// SWITCHLYAnchorCheckBlocks is the number of blocks to check for SWITCHLY anchor drift.
+	SWITCHLYAnchorCheckBlocks int64 `mapstructure:"tor_anchor_check_blocks"`
 
 	// Thresholds contain various thresholds for alerts.
 	Thresholds struct {
@@ -109,8 +109,8 @@ type Config struct {
 		// addresses to avoid noise from addresses with a history of trust.
 		USDValue uint64 `mapstructure:"usd_value"`
 
-			// SwitchTransferValue is the threshold for a SWITCH transfer that triggers an alert.
-	SwitchTransferValue uint64 `mapstructure:"switch_value"`
+		// SwitchTransferValue is the threshold for a SWITCH transfer that triggers an alert.
+		SwitchTransferValue uint64 `mapstructure:"switch_value"`
 
 		// SwapDelta contains thresholds for USD value and percent change of a swap. The
 		// alert will fire if both thresholds are met.
@@ -126,9 +126,9 @@ type Config struct {
 		// SwapSlipBasisPoints defines the slip threshold that will trigger a swap alert.
 		SwapSlipBasisPoints uint64 `mapstructure:"swap_slip_basis_points"`
 
-		// TORAnchorDriftBasisPoints defines the threshold for the drift of a single TOR
+		// SWITCHLYAnchorDriftBasisPoints defines the threshold for the drift of a single SWITCHLY
 		// anchor asset that will trigger an alert.
-		TORAnchorDriftBasisPoints uint64 `mapstructure:"tor_anchor_drift_basis_points"`
+		SWITCHLYAnchorDriftBasisPoints uint64 `mapstructure:"tor_anchor_drift_basis_points"`
 
 		// MaxRescheduledAge is the maximum age of a rescheduled outbound that will trigger
 		// an alert. This avoids ongoing noise from known stuck outbounds.
@@ -183,7 +183,7 @@ func init() {
 
 	// endpoints
 	config.Endpoints.CacheSize = 100
-	config.Endpoints.Thornode = "https://thornode.ninerealms.com"
+	config.Endpoints.Switchlynode = "https://switchlynode.ninerealms.com"
 	config.Endpoints.Midgard = "https://midgard.ninerealms.com"
 
 	// notifications
@@ -203,9 +203,9 @@ func init() {
 	// links
 	config.Links.Track = "https://track.ninerealms.com"
 	config.Links.Explorer = "https://runescan.io"
-	config.Links.Thornode = "https://thornode.ninerealms.com"
+	config.Links.Switchlynode = "https://switchlynode.ninerealms.com"
 
-	config.TORAnchorCheckBlocks = 300 // 30 minutes
+	config.SWITCHLYAnchorCheckBlocks = 300 // 30 minutes
 
 	// thresholds
 	config.Thresholds.USDValue = 150_000
@@ -214,14 +214,14 @@ func init() {
 	config.Thresholds.SwapDelta.BasisPoints = 500
 	config.Thresholds.Security.USDValue = 3_000_000
 	config.Thresholds.SwapSlipBasisPoints = 100
-	config.Thresholds.TORAnchorDriftBasisPoints = 500
+	config.Thresholds.SWITCHLYAnchorDriftBasisPoints = 500
 	config.Thresholds.MaxRescheduledAge = 3 * 24 * time.Hour
 
 	// styles
 	config.Styles.USDPerMoneyBag = 100_000
 
 	// labeled addresses
-	// https://raw.githubusercontent.com/ViewBlock/cryptometa/master/data/thorchain/labels.json
+	// https://raw.githubusercontent.com/ViewBlock/cryptometa/master/data/switchly/labels.json
 	config.LabeledAddresses = map[string]string{
 		"thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt":  "Reserve Module",
 		"thor17gw75axcnr8747pkanye45pnrwk7p9c3cqncsv":  "Bond Module",

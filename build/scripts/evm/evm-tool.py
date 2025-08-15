@@ -153,7 +153,7 @@ class EVMSetupTool:
         bytecode_file = "router-bytecode.txt"
         args = []
 
-        # if on eth the router constructor takes ERC20 RUNE token address
+        # if on eth the router constructor takes ERC20 SWITCH token address
         if self.chain == "ETH":
             abi_file = "eth-" + abi_file
             bytecode_file = "eth-" + bytecode_file
@@ -182,7 +182,7 @@ class EVMSetupTool:
 
     @functools.lru_cache
     def get_vault_addr(self) -> ChecksumAddress:
-        data = requests.get("http://localhost:1317/thorchain/inbound_addresses").json()
+        data = requests.get("http://localhost:1317/switchly/inbound_addresses").json()
         for vault in data:
             if vault["chain"] == self.chain:
                 return Web3.to_checksum_address(vault["address"])
@@ -191,7 +191,7 @@ class EVMSetupTool:
 
     @functools.lru_cache
     def get_router_addr(self) -> ChecksumAddress:
-        data = requests.get("http://localhost:1317/thorchain/inbound_addresses").json()
+        data = requests.get("http://localhost:1317/switchly/inbound_addresses").json()
         for vault in data:
             if vault["chain"] == self.chain:
                 return Web3.to_checksum_address(vault["router"])
@@ -239,7 +239,7 @@ class EVMSetupTool:
         tx_hash = agg.functions.swapIn(
             Web3.to_checksum_address(self.get_router_addr()),
             Web3.to_checksum_address(self.get_vault_addr()),
-            f"SWAP:THOR.RUNE:{args.thor_address}",
+            f"SWAP:SWITCHLY.SWITCH:{args.thor_address}",
             Web3.to_checksum_address(args.token_address),
             args.amount,
             0,
@@ -263,7 +263,7 @@ class EVMSetupTool:
 
     def deposit_from_dex(self, args):
         dex, _ = self.dex_contract(address=args.dex_address)
-        memo = args.memo or f"=:THOR.RUNE:{args.thor_address}"
+        memo = args.memo or f"=:SWITCHLY.SWITCH:{args.thor_address}"
         tx_hash = dex.functions.callDeposit(
             Web3.to_checksum_address(self.get_router_addr()),
             Web3.to_checksum_address(self.get_vault_addr()),
@@ -276,7 +276,7 @@ class EVMSetupTool:
 
     def deposit_from_dex_with_logs(self, args):
         dex, _ = self.dex_contract(address=args.dex_address)
-        memo = args.memo or f"=:THOR.RUNE:{args.thor_address}"
+        memo = args.memo or f"=:SWITCHLY.SWITCH:{args.thor_address}"
         tx_hash = dex.functions.callDepositWithLogs(
             Web3.to_checksum_address(self.get_router_addr()),
             Web3.to_checksum_address(self.get_vault_addr()),

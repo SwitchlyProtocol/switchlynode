@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
@@ -22,8 +22,8 @@ import (
 
 // User holds a set of chain clients configured with a given private key.
 type User struct {
-	// Thorchain is the thorchain client for the account.
-	Thorchain thorclient.ThorchainBridge
+	// Switchly is the switchly client for the account.
+	Switchly switchlyclient.SwitchlyBridge
 
 	// ChainClients is a map of chain to the corresponding client for the account.
 	ChainClients map[common.Chain]LiteChainClient
@@ -58,8 +58,8 @@ func NewUser(mnemonic string, constructors map[common.Chain]LiteChainClientConst
 		log.Fatal().Err(err).Msg("failed to add account to keyring")
 	}
 
-	// create thorclient.Keys for chain client construction
-	keys := thorclient.NewKeysWithKeybase(kr, name, "")
+	// create switchlyclient.Keys for chain client construction
+	keys := switchlyclient.NewKeysWithKeybase(kr, name, "")
 
 	// bifrost config for chain client construction
 	cfg := config.GetBifrost()
@@ -73,17 +73,17 @@ func NewUser(mnemonic string, constructors map[common.Chain]LiteChainClientConst
 		}
 	}
 
-	// create thorchain bridge
-	thorchainCfg := cfg.Thorchain
-	thorchainCfg.SignerName = name
-	thorchain, err := thorclient.NewThorchainBridge(thorchainCfg, nil, keys)
+	// create switchly bridge
+	switchlyCfg := cfg.Switchly
+	switchlyCfg.SignerName = name
+	switchly, err := switchlyclient.NewSwitchlyBridge(switchlyCfg, nil, keys)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to create thorchain client")
+		log.Fatal().Err(err).Msg("failed to create switchly client")
 	}
 
 	return &User{
 		ChainClients: chainClients,
-		Thorchain:    thorchain,
+		Switchly:     switchly,
 		lock:         make(chan struct{}, 1),
 		pubkey:       pubkey,
 		mnemonic:     mnemonic,

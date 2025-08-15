@@ -4,37 +4,37 @@
 
 ### xchain-\[chain] clients
 
-Each blockchian that is integrated into THORChain has a corresponding xchain client with a suite of functionality to work with that chain. They all extend the `xchain-client` class.
+Each blockchian that is integrated into SWITCHLYChain has a corresponding xchain client with a suite of functionality to work with that chain. They all extend the `xchain-client` class.
 
-### xchain-thorchain-amm
+### xchain-switchly-amm
 
-Thorchain automatic market maker that uses Thornode & Midgard Api's AMM functions like swapping, adding and removing liquidity. It wraps xchain clients and creates a new wallet class and balance collection.
+Switchly automatic market maker that uses Switchlynode & Midgard Api's AMM functions like swapping, adding and removing liquidity. It wraps xchain clients and creates a new wallet class and balance collection.
 
-### xchain-thorchain-query
+### xchain-switchly-query
 
-Uses midgard and thornode Api's to query Thorchain for information. This module should be used as the starting place get any THORChain information that resides in THORNode or Midgard as it does the heaving lifting and configuration.
+Uses midgard and switchlynode Api's to query Switchly for information. This module should be used as the starting place get any SWITCHLYChain information that resides in SWITCHLYNode or Midgard as it does the heaving lifting and configuration.
 
-Default endpoints are provided with redundancy, custom THORNode or Midgard endpoints can be provided in the constructor.
+Default endpoints are provided with redundancy, custom SWITCHLYNode or Midgard endpoints can be provided in the constructor.
 
 ### **xchain-midgard**
 
-This package is built from OpenAPI-generator. It is used by the thorchain-query.
+This package is built from OpenAPI-generator. It is used by the switchly-query.
 
-Thorchain-query contains midgard class that uses xchain-midgard and the following end points:
+Switchly-query contains midgard class that uses xchain-midgard and the following end points:
 
-- /v2/thorchain/mimir
-- /v2/thorchain/inbound_addresses
-- /v2/thorchain/constants
-- /v2/thorchain/queue
+- /v2/switchly/mimir
+- /v2/switchly/inbound_addresses
+- /v2/switchly/constants
+- /v2/switchly/queue
 
-For simplicity, is recommended to use the midgard class within thorchain-query instead of using the midgard package directly.
+For simplicity, is recommended to use the midgard class within switchly-query instead of using the midgard package directly.
 
-#### Midgard Configuration in thorchain-query
+#### Midgard Configuration in switchly-query
 
 Default endpoints `defaultMidgardConfig` are provided with redundancy within the Midgard class.
 
 ```typescript
-// How thorchain-query constructs midgard
+// How switchly-query constructs midgard
 const defaultMidgardConfig: Record<Network, MidgardConfig> = {
   mainnet: {
     apiRetries: 3,
@@ -75,45 +75,45 @@ Custom Midgard endpoints can be provided in the constructor using the `MidgardCo
 
 See [ListPools](query-package.md#list-pools) for a working example.
 
-### xchain-thornode
+### xchain-switchlynode
 
-This package is built from OpenAPI-generator and is also used by the thorchain-query. The design is similar to the midgard. Thornode should only be used when time-sensitive data is required else midgard should be used.
+This package is built from OpenAPI-generator and is also used by the switchly-query. The design is similar to the midgard. Switchlynode should only be used when time-sensitive data is required else midgard should be used.
 
 ```typescript
-// How thorchain-query constructs thornode
-const defaultThornodeConfig: Record<Network, ThornodeConfig> = {
+// How switchly-query constructs switchlynode
+const defaultSwitchlynodeConfig: Record<Network, SwitchlynodeConfig> = {
   mainnet: {
     apiRetries: 3,
-    thornodeBaseUrls: [
-      `https://thornode.ninerealms.com`,
-      `https://thornode.thorswap.net`,
-      `https://thornode.ninerealms.com/`,
+    switchlynodeBaseUrls: [
+      `https://switchlynode.ninerealms.com`,
+      `https://switchlynode.thorswap.net`,
+      `https://switchlynode.ninerealms.com/`,
     ],
   },
   ...
-  export class Thornode {
-  private config: ThornodeConfig
+  export class Switchlynode {
+  private config: SwitchlynodeConfig
   private network: Network
  ...
-  constructor(network: Network = Network.Mainnet, config?: ThornodeConfig) {
+  constructor(network: Network = Network.Mainnet, config?: SwitchlynodeConfig) {
     this.network = network
-    this.config = config ?? defaultThornodeConfig[this.network]
+    this.config = config ?? defaultSwitchlynodeConfig[this.network]
     axiosRetry(axios, { retries: this.config.apiRetries, retryDelay: axiosRetry.exponentialDelay })
-    this.transactionsApi = this.config.thornodeBaseUrls.map(
+    this.transactionsApi = this.config.switchlynodeBaseUrls.map(
       (url) => new TransactionsApi(new Configuration({ basePath: url })),
     )
-    this.queueApi = this.config.thornodeBaseUrls.map((url) => new QueueApi(new Configuration({ basePath: url })))
-    this.networkApi = this.config.thornodeBaseUrls.map((url) => new NetworkApi(new Configuration({ basePath: url })))
-    this.poolsApi = this.config.thornodeBaseUrls.map((url) => new PoolsApi(new Configuration({ basePath: url })))
-    this.liquidityProvidersApi = this.config.thornodeBaseUrls.map(
+    this.queueApi = this.config.switchlynodeBaseUrls.map((url) => new QueueApi(new Configuration({ basePath: url })))
+    this.networkApi = this.config.switchlynodeBaseUrls.map((url) => new NetworkApi(new Configuration({ basePath: url })))
+    this.poolsApi = this.config.switchlynodeBaseUrls.map((url) => new PoolsApi(new Configuration({ basePath: url })))
+    this.liquidityProvidersApi = this.config.switchlynodeBaseUrls.map(
       (url) => new LiquidityProvidersApi(new Configuration({ basePath: url })),
     )
   }
 ```
 
-### Thornode Configuration in thorchain-query
+### Switchlynode Configuration in switchly-query
 
-As with the midgard package, thornode can also be given custom end points via the `ThornodeConfig` type.
+As with the midgard package, switchlynode can also be given custom end points via the `SwitchlynodeConfig` type.
 
 ## **xchain-util**
 

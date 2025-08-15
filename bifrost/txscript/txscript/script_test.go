@@ -3385,17 +3385,17 @@ func TestUnparsingInvalidOpcodes(t *testing.T) {
 			expectedErr: scriptError(ErrInternal, ""),
 		},
 		{
-			name: "OP_CODESAPERATOR",
+			name: "OP_CODESAPERASWITCHLY",
 			pop: &parsedOpcode{
-				opcode: &opcodeArray[OP_CODESEPARATOR],
+				opcode: &opcodeArray[OP_CODESEPARASWITCHLY],
 				data:   nil,
 			},
 			expectedErr: nil,
 		},
 		{
-			name: "OP_CODESEPARATOR long",
+			name: "OP_CODESEPARASWITCHLY long",
 			pop: &parsedOpcode{
-				opcode: &opcodeArray[OP_CODESEPARATOR],
+				opcode: &opcodeArray[OP_CODESEPARASWITCHLY],
 				data:   make([]byte, 1),
 			},
 			expectedErr: scriptError(ErrInternal, ""),
@@ -3952,40 +3952,40 @@ func TestRemoveOpcodes(t *testing.T) {
 			// Nothing to remove.
 			name:   "nothing to remove",
 			before: "NOP",
-			remove: OP_CODESEPARATOR,
+			remove: OP_CODESEPARASWITCHLY,
 			after:  "NOP",
 		},
 		{
 			// Test basic opcode removal.
 			name:   "codeseparator 1",
-			before: "NOP CODESEPARATOR TRUE",
-			remove: OP_CODESEPARATOR,
+			before: "NOP CODESEPARASWITCHLY TRUE",
+			remove: OP_CODESEPARASWITCHLY,
 			after:  "NOP TRUE",
 		},
 		{
 			// The opcode in question is actually part of the data
 			// in a previous opcode.
 			name:   "codeseparator by coincidence",
-			before: "NOP DATA_1 CODESEPARATOR TRUE",
-			remove: OP_CODESEPARATOR,
-			after:  "NOP DATA_1 CODESEPARATOR TRUE",
+			before: "NOP DATA_1 CODESEPARASWITCHLY TRUE",
+			remove: OP_CODESEPARASWITCHLY,
+			after:  "NOP DATA_1 CODESEPARASWITCHLY TRUE",
 		},
 		{
 			name:   "invalid opcode",
 			before: "CAT",
-			remove: OP_CODESEPARATOR,
+			remove: OP_CODESEPARASWITCHLY,
 			after:  "CAT",
 		},
 		{
 			name:   "invalid length (instruction)",
 			before: "PUSHDATA1",
-			remove: OP_CODESEPARATOR,
+			remove: OP_CODESEPARASWITCHLY,
 			err:    scriptError(ErrMalformedPush, ""),
 		},
 		{
 			name:   "invalid length (data)",
 			before: "PUSHDATA1 0xff 0xfe",
-			remove: OP_CODESEPARATOR,
+			remove: OP_CODESEPARASWITCHLY,
 			err:    scriptError(ErrMalformedPush, ""),
 		},
 	}

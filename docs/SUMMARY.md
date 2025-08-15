@@ -8,24 +8,24 @@
   - [Fees and Wait Times](swap-guide/fees-and-wait-times.md)
   - [Streaming Swaps](swap-guide/streaming-swaps.md)
 
-- [Affiliate Guide](affiliate-guide/thorname-guide.md)
+- [Affiliate Guide](affiliate-guide/switchlyname-guide.md)
 
-  - [THORName Guide](affiliate-guide/thorname-guide.md)
+  - [SWITCHName Guide](affiliate-guide/switchlyname-guide.md)
   - [Affiliate Guide](affiliate-guide/affiliate-fee-guide.md)
 
-- [TCY Information](concepts/tcy.md)
+- [SWCY Information](concepts/tcy.md)
 
-- [Concepts](concepts/connecting-to-thorchain.md)
+- [Concepts](concepts/connecting-to-switchly.md)
 
-  - [Connecting to THORChain](concepts/connecting-to-thorchain.md)
-  - [Querying THORChain](concepts/querying-thorchain.md)
+  - [Connecting to SWITCHLYChain](concepts/connecting-to-switchly.md)
+  - [Querying SWITCHLYChain](concepts/querying-switchly.md)
   - [Transaction Memos](concepts/memos.md)
   - [Asset Notation](concepts/asset-notation.md)
   - [Memo Length Reduction](concepts/memo-length-reduction.md)
   - [Incentive Pendulum](concepts/incentive-pendulum.md)
   - [Trade Accounts](concepts/trade-accounts.md)
   - [Secured Assets](concepts/secured-assets.md)
-  - [RUNE Pool](concepts/rune-pool.md)
+  - [SWITCH Pool](concepts/rune-pool.md)
   - [Swapper Clout](concepts/swapper-clout.md)
   - [Network Halts](concepts/network-halts.md)
   - [Fees](concepts/fees.md)
@@ -46,7 +46,7 @@
   - [Multisig](cli/multisig.md)
   - [Offline Ledger Support](cli/offline-ledger-support.md)
 
-- [THORNode](release.md)
+- [SWITCHLYNode](release.md)
 
   - [Release Process](release.md)
   - [EVM Whitelist Procedure](evm_whitelist_procedure.md)
@@ -67,7 +67,7 @@
     - [ADR 008: Implement a Dynamic Outbound Fee Multiplier (DOFM)](architecture/adr-008-implement-dynamic-outbound-fee-multiplier.md)
     - [ADR 009: Reserve Income and Fee Overhaul](architecture/adr-009-reserve-income-fee-overhaul.md)
     - [ADR 010: Introduction of Streaming Swaps](architecture/adr-010-streaming-swaps.md)
-    - [ADR 011: THORFi Lending Feature](architecture/adr-011-lending.md)
+    - [ADR 011: SWITCHLYFi Lending Feature](architecture/adr-011-lending.md)
     - [ADR 012: Scale Lending](architecture/adr-012-scale-lending.md)
     - [ADR 013: Synth Backstop](architecture/adr-013-synth-backstop.md)
     - [ADR 014: Reduce Saver Yield Synth Target to Match POL Target](architecture/adr-014-reduce-saver-yield-target.md)

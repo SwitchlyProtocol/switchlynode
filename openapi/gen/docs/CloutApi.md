@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**SwapperClout**](CloutApi.md#SwapperClout) | **Get** /thorchain/clout/swap/{address} | 
+[**SwapperClout**](CloutApi.md#SwapperClout) | **Get** /switchly/clout/swap/{address} | 
 
 
 

@@ -4,12 +4,12 @@
 package utxo
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
-func GetConfMulBasisPoint(chain string, bridge thorclient.ThorchainBridge) (cosmos.Uint, error) {
+func GetConfMulBasisPoint(chain string, bridge switchlyclient.SwitchlyBridge) (cosmos.Uint, error) {
 	confMultiplier, err := bridge.GetMimirWithRef(constants.MimirTemplateConfMultiplierBasisPoints, chain)
 	// should never be negative
 	if err != nil || confMultiplier <= 0 {
@@ -18,7 +18,7 @@ func GetConfMulBasisPoint(chain string, bridge thorclient.ThorchainBridge) (cosm
 	return cosmos.NewUint(uint64(confMultiplier)), nil
 }
 
-func MaxConfAdjustment(confirm uint64, chain string, bridge thorclient.ThorchainBridge) (uint64, error) {
+func MaxConfAdjustment(confirm uint64, chain string, bridge switchlyclient.SwitchlyBridge) (uint64, error) {
 	maxConfirmations, err := bridge.GetMimirWithRef(constants.MimirTemplateMaxConfirmations, chain)
 	if err != nil {
 		return confirm, err

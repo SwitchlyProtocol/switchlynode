@@ -13,4 +13,4 @@ git push --set-upstream origin "${BRANCH}" -f --no-verify
 git checkout "@{-1}"
 
 echo
-echo "Navigate to https://gitlab.com/thorchain/thornode/-/pipelines/new and run the pipeline for branch: mr-$MR"
+echo "Navigate to https://gitlab.com/switchly/switchlynode/-/pipelines/new and run the pipeline for branch: mr-$MR"

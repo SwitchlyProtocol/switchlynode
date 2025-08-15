@@ -26,13 +26,13 @@ func GetPrivateKey(key cryptotypes.PrivKey) (*ecdsa.PrivateKey, error) {
 type KeySignWrapper struct {
 	privKey       *ecdsa.PrivateKey
 	pubKey        common.PubKey
-	tssKeyManager tss.ThorchainKeyManager
+	tssKeyManager tss.SwitchlyKeyManager
 	logger        zerolog.Logger
 	signer        etypes.Signer
 }
 
 // NewKeySignWrapper create a new instance of keysign wrapper
-func NewKeySignWrapper(privateKey *ecdsa.PrivateKey, pubKey common.PubKey, keyManager tss.ThorchainKeyManager, chainID *big.Int, chain string) (*KeySignWrapper, error) {
+func NewKeySignWrapper(privateKey *ecdsa.PrivateKey, pubKey common.PubKey, keyManager tss.SwitchlyKeyManager, chainID *big.Int, chain string) (*KeySignWrapper, error) {
 	return &KeySignWrapper{
 		privKey:       privateKey,
 		pubKey:        pubKey,

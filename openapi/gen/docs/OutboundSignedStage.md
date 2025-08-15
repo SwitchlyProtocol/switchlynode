@@ -4,8 +4,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ScheduledOutboundHeight** | Pointer to **int64** | THORChain height for which the external outbound is scheduled | [optional] 
-**BlocksSinceScheduled** | Pointer to **int64** | THORChain blocks since the scheduled outbound height | [optional] 
+**ScheduledOutboundHeight** | Pointer to **int64** | SWITCHLYChain height for which the external outbound is scheduled | [optional] 
+**BlocksSinceScheduled** | Pointer to **int64** | SWITCHLYChain blocks since the scheduled outbound height | [optional] 
 **Completed** | **bool** | returns true if an external transaction has been signed and broadcast (and observed in its mempool) | 
 
 ## Methods

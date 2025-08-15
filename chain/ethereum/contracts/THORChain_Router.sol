@@ -9,8 +9,8 @@ interface iERC20 {
     function balanceOf(address) external view returns (uint256);
     function burn(uint) external;
 }
-// RUNE Interface
-interface iRUNE {
+// SWITCH Interface
+interface iSWITCH {
     function transferTo(address, uint) external returns (bool);
 }
 // ROUTER Interface
@@ -18,9 +18,9 @@ interface iROUTER {
     function depositWithExpiry(address, address, uint, string calldata, uint) external;
 }
 
-// THORChain_Router is managed by THORChain Vaults
-contract THORChain_Router {
-    address public RUNE;
+// SWITCHLYChain_Router is managed by SWITCHLYChain Vaults
+contract SWITCHLYChain_Router {
+    address public SWITCH;
 
     struct Coin {
         address asset;
@@ -57,13 +57,13 @@ contract THORChain_Router {
     }
 
     constructor(address rune) {
-        RUNE = rune;
+        SWITCH = rune;
         _status = _NOT_ENTERED;
     }
 
     // Deposit with Expiry (preferred)
     function depositWithExpiry(address payable vault, address asset, uint amount, string memory memo, uint expiration) external payable {
-        require(block.timestamp < expiration, "THORChain_Router: expired");
+        require(block.timestamp < expiration, "SWITCHLYChain_Router: expired");
         deposit(vault, asset, amount, memo);
     }
 
@@ -76,10 +76,10 @@ contract THORChain_Router {
             require(success);
         } else {
             require(msg.value == 0, "unexpected eth");  // protect user from accidentally locking up eth
-            if(asset == RUNE) {
+            if(asset == SWITCH) {
                 safeAmount = amount;
-                iRUNE(RUNE).transferTo(address(this), amount);
-                iERC20(RUNE).burn(amount);
+                iSWITCH(SWITCH).transferTo(address(this), amount);
+                iERC20(SWITCH).burn(amount);
             } else {
                 safeAmount = safeTransferFrom(asset, amount); // Transfer asset
                 _vaultAllowance[vault][asset] += safeAmount; // Credit to chosen vault

@@ -18,17 +18,17 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/notify"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	memo "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/switchlyscan"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	memo "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Scan Activity
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func ScanActivity(block *thorscan.BlockResponse) {
+func ScanActivity(block *switchlyscan.BlockResponse) {
 	LargeUnconfirmedInbounds(block)
 	LargeStreamingSwaps(block)
 	ScheduledOutbounds(block)
@@ -40,14 +40,14 @@ func ScanActivity(block *thorscan.BlockResponse) {
 	LargeHighSlipSwaps(block)
 	FailedRefunds(block)
 
-	// THORNameRegistrations(block) (disable per community request)
+	// SWITCHNameRegistrations(block) (disable per community request)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Large Unconfirmed Inbounds
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func LargeUnconfirmedInbounds(block *thorscan.BlockResponse) {
+func LargeUnconfirmedInbounds(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		// skip failed transactions
 		if *tx.Result.Code != 0 {
@@ -61,7 +61,7 @@ func LargeUnconfirmedInbounds(block *thorscan.BlockResponse) {
 
 		for _, msg := range tx.Tx.GetMsgs() {
 			// skip anything other than observed transactions
-			msgObservedTxIn, ok := msg.(*thorchain.MsgObservedTxIn)
+			msgObservedTxIn, ok := msg.(*switchly.MsgObservedTxIn)
 			if !ok {
 				continue
 			}
@@ -173,7 +173,7 @@ func LargeUnconfirmedInbounds(block *thorscan.BlockResponse) {
 // Large Streaming Swap
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func LargeStreamingSwaps(block *thorscan.BlockResponse) {
+func LargeStreamingSwaps(block *switchlyscan.BlockResponse) {
 	for _, event := range append(block.EndBlockEvents, block.FinalizeBlockEvents...) {
 		if event["type"] != types.SwapEventType {
 			continue
@@ -220,8 +220,8 @@ func LargeStreamingSwaps(block *thorscan.BlockResponse) {
 		tx := struct {
 			ObservedTx openapi.ObservedTx `json:"observed_tx"`
 		}{}
-		url := fmt.Sprintf("thorchain/tx/%s", event["id"])
-		err = util.ThornodeCachedRetryGet(url, block.Header.Height, &tx)
+		url := fmt.Sprintf("switchly/tx/%s", event["id"])
+		err = util.SwitchlynodeCachedRetryGet(url, block.Header.Height, &tx)
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to get tx")
 		}
@@ -233,7 +233,7 @@ func LargeStreamingSwaps(block *thorscan.BlockResponse) {
 		cloutFields.Set(
 			fmt.Sprintf("Clout (%s)", event["from"]),
 			fmt.Sprintf(
-				"%f RUNE (%s)",
+				"%f SWITCH (%s)",
 				float64(fromClout.Amount.Uint64())/common.One,
 				util.FormatUSD(fromCloutUSD),
 			),
@@ -391,9 +391,9 @@ func rescheduledOutbounds(height int64, event map[string]string) bool {
 
 	// get the transaction status if this was not a ragnarok outbound
 	if !reMemoRagnarok.MatchString(event["memo"]) {
-		statusURL := fmt.Sprintf("thorchain/tx/status/%s", event["in_hash"])
+		statusURL := fmt.Sprintf("switchly/tx/status/%s", event["in_hash"])
 		status := openapi.TxStatusResponse{}
-		err = util.ThornodeCachedRetryGet(statusURL, height, &status)
+		err = util.SwitchlynodeCachedRetryGet(statusURL, height, &status)
 		if err != nil {
 			log.Panic().
 				Err(err).
@@ -419,7 +419,7 @@ func rescheduledOutbounds(height int64, event map[string]string) bool {
 		if err != nil {
 			log.Error().Err(err).Str("txid", event["in_hash"]).Msg("failed to parse memo type")
 		}
-		if memoType == thorchain.TxSwap {
+		if memoType == switchly.TxSwap {
 			links = append(links, fmt.Sprintf("[Track](%s/%s)", config.Get().Links.Track, event["in_hash"]))
 		}
 
@@ -518,9 +518,9 @@ func scheduledOutbound(height int64, events []map[string]string) {
 	}
 
 	// get the inbound status
-	statusURL := fmt.Sprintf("thorchain/tx/status/%s", events[0]["in_hash"])
+	statusURL := fmt.Sprintf("switchly/tx/status/%s", events[0]["in_hash"])
 	status := openapi.TxStatusResponse{}
-	err := util.ThornodeCachedRetryGet(statusURL, height, &status)
+	err := util.SwitchlynodeCachedRetryGet(statusURL, height, &status)
 	if err != nil {
 		log.Panic().
 			Err(err).
@@ -582,7 +582,7 @@ func scheduledOutbound(height int64, events []map[string]string) {
 	}
 
 	// add the inbound coins for inbound swap or outbound refund
-	if memoType == thorchain.TxSwap || reMemoRefund.MatchString(events[0]["memo"]) {
+	if memoType == switchly.TxSwap || reMemoRefund.MatchString(events[0]["memo"]) {
 		inboundCoin := util.CoinToCommon(status.Tx.Coins[0])
 		inboundUSDValue := util.USDValue(height, inboundCoin)
 		fields.Set("Inbound Amount", fmt.Sprintf(
@@ -619,12 +619,12 @@ func scheduledOutbound(height int64, events []map[string]string) {
 	}
 
 	// extra fields for swap alerts
-	if memoType == thorchain.TxSwap {
+	if memoType == switchly.TxSwap {
 		links = append(links, fmt.Sprintf("[Track](%s/%s)", config.Get().Links.Track, events[0]["in_hash"]))
 
 		// add streaming swap durations
 		lastStatus := openapi.TxStatusResponse{}
-		err = util.ThornodeCachedRetryGet(statusURL, height-1, &lastStatus)
+		err = util.SwitchlynodeCachedRetryGet(statusURL, height-1, &lastStatus)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to get last transaction status")
 		} else if lastStatus.Stages.SwapStatus != nil &&
@@ -691,7 +691,7 @@ func scheduledOutbound(height int64, events []map[string]string) {
 	}
 }
 
-func ScheduledOutbounds(block *thorscan.BlockResponse) {
+func ScheduledOutbounds(block *switchlyscan.BlockResponse) {
 	events := []map[string]string{}
 
 	// gather block events
@@ -735,7 +735,7 @@ func ScheduledOutbounds(block *thorscan.BlockResponse) {
 // Large Transfers
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func LargeTransfers(block *thorscan.BlockResponse) {
+func LargeTransfers(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		// skip failed transactions
 		if *tx.Result.Code != 0 {
@@ -751,7 +751,7 @@ func LargeTransfers(block *thorscan.BlockResponse) {
 			amount := uint64(0)
 			var fromAddr, toAddr string
 			switch m := msg.(type) {
-			case *thorchain.MsgSend:
+			case *switchly.MsgSend:
 				for _, coin := range m.Amount {
 					if coin.Denom == "switch" {
 						amount = coin.Amount.Uint64()
@@ -844,7 +844,7 @@ func init() {
 	_ = util.Load("vaults", vaults)
 }
 
-func InactiveVaultInbounds(block *thorscan.BlockResponse) {
+func InactiveVaultInbounds(block *switchlyscan.BlockResponse) {
 	// update our active vault set any time there is an active vault event
 	update := false
 	for _, tx := range block.Txs {
@@ -863,7 +863,7 @@ func InactiveVaultInbounds(block *thorscan.BlockResponse) {
 			Height:   block.Header.Height,
 		}
 		vaultsRes := []openapi.Vault{}
-		err := util.ThornodeCachedRetryGet("thorchain/vaults/asgard", block.Header.Height, &vaultsRes)
+		err := util.SwitchlynodeCachedRetryGet("switchly/vaults/asgard", block.Header.Height, &vaultsRes)
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to get vaults")
 		}
@@ -890,7 +890,7 @@ func InactiveVaultInbounds(block *thorscan.BlockResponse) {
 
 		for _, msg := range tx.Tx.GetMsgs() {
 			// skip anything other than observed transactions
-			msgObservedTxIn, ok := msg.(*thorchain.MsgObservedTxIn)
+			msgObservedTxIn, ok := msg.(*switchly.MsgObservedTxIn)
 			if !ok {
 				continue
 			}
@@ -921,7 +921,7 @@ func InactiveVaultInbounds(block *thorscan.BlockResponse) {
 
 				// skip finalized inbounds
 				stages := openapi.TxStagesResponse{}
-				err = util.ThornodeCachedRetryGet(fmt.Sprintf("thorchain/tx/stages/%s", tx.Tx.ID), block.Header.Height, &stages)
+				err = util.SwitchlynodeCachedRetryGet(fmt.Sprintf("switchly/tx/stages/%s", tx.Tx.ID), block.Header.Height, &stages)
 				if err != nil {
 					log.Panic().Err(err).Msg("failed to get tx stages")
 				}
@@ -961,7 +961,7 @@ func InactiveVaultInbounds(block *thorscan.BlockResponse) {
 // New Node
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func NewNode(block *thorscan.BlockResponse) {
+func NewNode(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
 			if event["type"] != "new_node" {
@@ -972,15 +972,15 @@ func NewNode(block *thorscan.BlockResponse) {
 				amount := uint64(0)
 				operator := ""
 				switch msg := msg.(type) {
-				case *thorchain.MsgDeposit:
+				case *switchly.MsgDeposit:
 					for _, coin := range msg.Coins {
 						if coin.Asset.Equals(common.SwitchNative) {
 							amount = coin.Amount.Uint64()
 						}
 					}
 					operator = msg.Signer.String()
-				case *thorchain.MsgSend:
-					if !util.IsThorchainModule(msg.ToAddress.String()) {
+				case *switchly.MsgSend:
+					if !util.IsSwitchlyModule(msg.ToAddress.String()) {
 						continue
 					}
 
@@ -992,7 +992,7 @@ func NewNode(block *thorscan.BlockResponse) {
 					operator = msg.FromAddress.String()
 
 				case *bank.MsgSend:
-					if !util.IsThorchainModule(msg.ToAddress) {
+					if !util.IsSwitchlyModule(msg.ToAddress) {
 						continue
 					}
 
@@ -1023,7 +1023,7 @@ func NewNode(block *thorscan.BlockResponse) {
 // Bond
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func Bond(block *thorscan.BlockResponse) {
+func Bond(block *switchlyscan.BlockResponse) {
 txs:
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
@@ -1041,7 +1041,7 @@ txs:
 				provider := ""
 				memo := ""
 				switch msg := msg.(type) {
-				case *thorchain.MsgDeposit:
+				case *switchly.MsgDeposit:
 					for _, coin := range msg.Coins {
 						if coin.Asset.Equals(common.SwitchNative) {
 							amount = coin.Amount.Uint64()
@@ -1049,8 +1049,8 @@ txs:
 					}
 					provider = msg.Signer.String()
 					memo = msg.Memo
-				case *thorchain.MsgSend:
-					if !util.IsThorchainModule(msg.ToAddress.String()) {
+				case *switchly.MsgSend:
+					if !util.IsSwitchlyModule(msg.ToAddress.String()) {
 						continue
 					}
 
@@ -1066,7 +1066,7 @@ txs:
 						log.Panic().Msg("failed to cast tx to TxWithMemo")
 					}
 				case *bank.MsgSend:
-					if !util.IsThorchainModule(msg.ToAddress) {
+					if !util.IsSwitchlyModule(msg.ToAddress) {
 						continue
 					}
 
@@ -1094,7 +1094,7 @@ txs:
 				fields.Set("Amount", util.FormatLocale(float64(amount)/common.One))
 
 				// extract node address from memo
-				m, err := thorchain.ParseMemo(common.LatestVersion, memo)
+				m, err := switchly.ParseMemo(common.LatestVersion, memo)
 				if err != nil {
 					log.Panic().Str("memo", memo).Err(err).Msg("failed to parse memo")
 				}
@@ -1104,7 +1104,7 @@ txs:
 
 					// lookup node to determine operator
 					nodes := []openapi.Node{}
-					err = util.ThornodeCachedRetryGet("thorchain/nodes", block.Header.Height, &nodes)
+					err = util.SwitchlynodeCachedRetryGet("switchly/nodes", block.Header.Height, &nodes)
 					if err != nil {
 						log.Panic().Err(err).Msg("failed to get nodes")
 					}
@@ -1117,9 +1117,9 @@ txs:
 				}
 
 				switch memo := m.(type) {
-				case thorchain.BondMemo:
+				case switchly.BondMemo:
 					addNodeInfo(memo.NodeAddress.String())
-				case thorchain.UnbondMemo:
+				case switchly.UnbondMemo:
 					addNodeInfo(memo.NodeAddress.String())
 					unbondAmount := cosmos.NewUintFromString(event["amount"]).Uint64()
 					fields.Set("Unbond Amount", util.FormatLocale(float64(unbondAmount)/common.One))
@@ -1135,7 +1135,7 @@ txs:
 // Failed Transactions
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func FailedTransactions(block *thorscan.BlockResponse) {
+func FailedTransactions(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		// skip successful transactions and failed gas or sequence
 		switch *tx.Result.Code {
@@ -1154,7 +1154,7 @@ func FailedTransactions(block *thorscan.BlockResponse) {
 		fields.Set("Code", fmt.Sprintf("%d", *tx.Result.Code))
 		fields.Set(
 			"Transaction",
-			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s", config.Get().Links.Thornode, tx.BlockTx.Hash),
+			fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s", config.Get().Links.Switchlynode, tx.BlockTx.Hash),
 		)
 
 		// determine if the transaction failed to decode
@@ -1178,7 +1178,7 @@ func FailedTransactions(block *thorscan.BlockResponse) {
 // Failed Refunds
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func FailedRefunds(block *thorscan.BlockResponse) {
+func FailedRefunds(block *switchlyscan.BlockResponse) {
 	for _, event := range block.EndBlockEvents {
 		if event["type"] != types.RefundEventType {
 			continue
@@ -1196,7 +1196,7 @@ func FailedRefunds(block *thorscan.BlockResponse) {
 
 		// skip refunds for less than the native transaction fee (failed affiliate swaps)
 		txFee := float64(constants.NewConstantValue().GetInt64Value(constants.NativeTransactionFee)) / common.One
-		if util.RuneValue(block.Header.Height, coin) < txFee {
+		if util.SWITCHValue(block.Header.Height, coin) < txFee {
 			continue
 		}
 
@@ -1227,13 +1227,13 @@ func FailedRefunds(block *thorscan.BlockResponse) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// THORName Registrations
+// SWITCHName Registrations
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func THORNameRegistrations(block *thorscan.BlockResponse) {
+func SWITCHNameRegistrations(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
-			if event["type"] != types.THORNameEventType {
+			if event["type"] != types.SWITCHNameEventType {
 				continue
 			}
 
@@ -1241,21 +1241,21 @@ func THORNameRegistrations(block *thorscan.BlockResponse) {
 			registrationFee := cosmos.NewUintFromString(event["registration_fee"]).Uint64()
 			fundAmount := cosmos.NewUintFromString(event["fund_amount"]).Uint64()
 			expire := cosmos.NewUintFromString(event["expire"]).Uint64()
-			expireDuration := time.Duration(expire-uint64(block.Header.Height)) * constants.ThorchainBlockTime
+			expireDuration := time.Duration(expire-uint64(block.Header.Height)) * constants.SwitchlyBlockTime
 
 			// alert fields
 			fields := util.NewOrderedMap()
-			fields.Set("THORName", fmt.Sprintf("`%s`", event["name"]))
+			fields.Set("SWITCHName", fmt.Sprintf("`%s`", event["name"]))
 			fields.Set("Expiration", fmt.Sprintf("`%d` (%s)", expire, util.FormatDuration(expireDuration)))
 			fields.Set("Registration Fee", util.FormatLocale(float64(registrationFee)/common.One))
 			fields.Set("Fund Amount", util.FormatLocale(float64(fundAmount)/common.One))
 
 			for _, msg := range tx.Tx.GetMsgs() {
 				switch m := msg.(type) {
-				case *thorchain.MsgDeposit:
+				case *switchly.MsgDeposit:
 					fields.Set("Memo", fmt.Sprintf("`%s`", m.Memo))
-				case *thorchain.MsgSend:
-					if !util.IsThorchainModule(m.ToAddress.String()) {
+				case *switchly.MsgSend:
+					if !util.IsSwitchlyModule(m.ToAddress.String()) {
 						continue
 					}
 
@@ -1265,7 +1265,7 @@ func THORNameRegistrations(block *thorscan.BlockResponse) {
 						log.Panic().Msg("failed to cast tx to TxWithMemo")
 					}
 				case *bank.MsgSend:
-					if !util.IsThorchainModule(m.ToAddress) {
+					if !util.IsSwitchlyModule(m.ToAddress) {
 						continue
 					}
 
@@ -1279,11 +1279,11 @@ func THORNameRegistrations(block *thorscan.BlockResponse) {
 
 			fields.Set(
 				"Transaction",
-				fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s", config.Get().Links.Thornode, tx.BlockTx.Hash),
+				fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s", config.Get().Links.Switchlynode, tx.BlockTx.Hash),
 			)
 
-			// notify thorname registration
-			title := "THORName Registration"
+			// notify switchlyname registration
+			title := "SWITCHName Registration"
 			notify.Notify(config.Get().Notifications.Activity, title, block.Header.Height, nil, notify.Info, fields)
 		}
 	}
@@ -1293,7 +1293,7 @@ func THORNameRegistrations(block *thorscan.BlockResponse) {
 // Large High Slip Swaps
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func LargeHighSlipSwaps(block *thorscan.BlockResponse) {
+func LargeHighSlipSwaps(block *switchlyscan.BlockResponse) {
 	for _, event := range append(block.EndBlockEvents, block.FinalizeBlockEvents...) {
 		if event["type"] != types.SwapEventType {
 			continue

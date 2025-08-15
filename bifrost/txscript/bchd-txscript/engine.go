@@ -472,7 +472,7 @@ func (vm *Engine) Execute() (err error) {
 	return vm.CheckErrorCondition(true)
 }
 
-// subScript returns the script since the last OP_CODESEPARATOR.
+// subScript returns the script since the last OP_CODESEPARASWITCHLY.
 func (vm *Engine) subScript() []parsedOpcode {
 	return vm.scripts[vm.scriptIdx][vm.lastCodeSep:]
 }

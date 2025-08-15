@@ -1,9 +1,9 @@
-const Router = artifacts.require("THORChain_Router");
-const Aggregator = artifacts.require("THORChain_Aggregator");
+const Router = artifacts.require("SWITCHLYChain_Router");
+const Aggregator = artifacts.require("SWITCHLYChain_Aggregator");
 const SushiRouter = artifacts.require("SushiRouterSmol");
 const RevertingContract = artifacts.require("RevertingContract");
 const Token = artifacts.require("ERC20Token");
-const Rune = artifacts.require("ETH_RUNE");
+const SWITCH = artifacts.require("ETH_SWITCH");
 const Usdt = artifacts.require("TetherToken");
 const Weth = artifacts.require("WETH");
 const BigNumber = require("bignumber.js");
@@ -22,7 +22,7 @@ var AGG;
 var WETH;
 var SUSHIROUTER;
 var REVERTINGCONTRACT;
-var RUNE, TOKEN;
+var SWITCH, TOKEN;
 var USDT;
 var WETH;
 var ETH = "0x0000000000000000000000000000000000000000";
@@ -38,8 +38,8 @@ describe("Aggregator contract", function () {
 
   before(async function () {
     accounts = await web3.eth.getAccounts();
-    RUNE = await Rune.new();
-    ROUTER = await Router.new(RUNE.address);
+    SWITCH = await SWITCH.new();
+    ROUTER = await Router.new(SWITCH.address);
     TOKEN = await Token.new(); // User gets 1m TOKENS during construction
     USDT = await Usdt.new(_1m, "Tether", "USDT", 6);
     USER1 = accounts[0];

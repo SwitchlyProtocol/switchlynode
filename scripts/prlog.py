@@ -9,7 +9,7 @@ if len(sys.argv) == 1:
     exit("usage: ./prlog <milestone name>")
 
 gl = gitlab.Gitlab()
-tn = gl.projects.get(13422983)  # thornode project id
+tn = gl.projects.get(13422983)  # switchlynode project id
 
 mrs = tn.mergerequests.list(milestone=sys.argv[1], state="merged", all=True)
 

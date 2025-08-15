@@ -92,7 +92,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f"
   - .txs[0].result.events[5].new_value == "1"
@@ -107,7 +107,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrs3ptfdq"
   - .txs[0].result.events[5].new_value == "1"
@@ -122,7 +122,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3swxdzfd"
   - .txs[0].result.events[5].new_value == "1"
@@ -137,7 +137,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor1aakfpghcanxtc45gpqlx8j3rq0zcpyf49qmhm9mdjrfx036h4z5sc68ary"
   - .txs[0].result.events[5].new_value == "1"
@@ -153,7 +153,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - ."HALTWASMCONTRACT-W58U9F" == 1
 ---
@@ -168,7 +168,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("contract halted: unauthorized")'
 ---
@@ -182,7 +182,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrs3ptfdq"
   - .txs[0].result.events[5].new_value == "2"
@@ -197,7 +197,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3swxdzfd"
   - .txs[0].result.events[5].new_value == "2"
@@ -212,7 +212,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor1aakfpghcanxtc45gpqlx8j3rq0zcpyf49qmhm9mdjrfx036h4z5sc68ary"
   - .txs[0].result.events[5].new_value == "2"
@@ -228,7 +228,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - ."HALTWASMCS-4UMPB3SYCM6Z5WRT5DINB66N462U5VVQVDOIFKMP5G55WKRR7VDA" == 1
 ---
@@ -243,7 +243,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("contract halted: unauthorized")'
 ---
@@ -257,7 +257,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5]._contract_address == "tthor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrs3ptfdq"
   - .txs[0].result.events[5].new_value == "3"
@@ -272,7 +272,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("checksum halted: unauthorized")'
 ---
@@ -286,7 +286,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("checksum halted: unauthorized")'
 ---
@@ -301,7 +301,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .HALTWASMGLOBAL == 1
 ---
@@ -316,7 +316,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("wasm halted: unauthorized")'
 ---
@@ -330,7 +330,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("wasm halted: unauthorized")'
 ---
@@ -344,7 +344,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("wasm halted: unauthorized")'
 ---
@@ -358,6 +358,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log|contains("wasm halted: unauthorized")'

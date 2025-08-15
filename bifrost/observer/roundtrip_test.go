@@ -19,12 +19,12 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func TestObserverRoundTrip(t *testing.T) {
@@ -38,19 +38,19 @@ func TestObserverRoundTrip(t *testing.T) {
 	server := httptest.NewServer(
 		http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			switch {
-			case strings.HasPrefix(req.RequestURI, thorclient.MimirEndpoint):
+			case strings.HasPrefix(req.RequestURI, switchlyclient.MimirEndpoint):
 				buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
 				require.NoError(t, err)
 				_, err = rw.Write(buf)
 				require.NoError(t, err)
 			case strings.HasPrefix(req.RequestURI, "/switchly/lastblock"):
-				// NOTE: weird pattern in GetBlockHeight uses first thorchain height.
+				// NOTE: weird pattern in GetBlockHeight uses first switchly height.
 				_, err := rw.Write([]byte(`[
           {
             "chain": "NOOP",
             "lastobservedin": 0,
             "lastsignedout": 0,
-            "thorchain": 0
+            "switchly": 0
           }
         ]`))
 				require.NoError(t, err)
@@ -76,7 +76,7 @@ func TestObserverRoundTrip(t *testing.T) {
 		}))
 
 	cfg := config.BifrostClientConfiguration{
-		ChainID:      "thorchain",
+		ChainID:      "switchly",
 		ChainHost:    server.Listener.Addr().String(),
 		ChainRPC:     server.Listener.Addr().String(),
 		SignerName:   "bob",
@@ -89,10 +89,10 @@ func TestObserverRoundTrip(t *testing.T) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err = kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	require.NoError(t, err)
-	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	thorKeys := switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 
 	require.NotNil(t, thorKeys)
-	bridge, err := thorclient.NewThorchainBridge(cfg, nil, thorKeys)
+	bridge, err := switchlyclient.NewSwitchlyBridge(cfg, nil, thorKeys)
 	require.NotNil(t, bridge)
 	require.NoError(t, err)
 	priv, err := thorKeys.GetPrivateKey()
@@ -154,7 +154,7 @@ func TestObserverRoundTrip(t *testing.T) {
 	for _, tx := range dbTxs {
 		final := false
 
-		obsTxs, err := obs.getThorchainTxIns(tx, final, tx.TxArray[0].BlockHeight+tx.ConfirmationRequired)
+		obsTxs, err := obs.getSwitchlyTxIns(tx, final, tx.TxArray[0].BlockHeight+tx.ConfirmationRequired)
 		require.NoError(t, err)
 
 		inbound, outbound, err := bridge.GetInboundOutbound(obsTxs)
@@ -181,7 +181,7 @@ func TestObserverRoundTrip(t *testing.T) {
 
 		final := true
 
-		obsTxs, err := obs.getThorchainTxIns(tx, final, tx.TxArray[0].BlockHeight+tx.ConfirmationRequired)
+		obsTxs, err := obs.getSwitchlyTxIns(tx, final, tx.TxArray[0].BlockHeight+tx.ConfirmationRequired)
 		require.NoError(t, err)
 
 		require.Len(t, obsTxs, numTxs)

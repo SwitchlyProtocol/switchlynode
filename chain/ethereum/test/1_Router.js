@@ -5,12 +5,12 @@
  * It then tests for Asgard to send out those assets back to User
  */
 
-const Router = artifacts.require("THORChain_Router");
+const Router = artifacts.require("SWITCHLYChain_Router");
 const Token = artifacts.require("ERC20Token");
 const EvilToken = artifacts.require("EvilERC20Token");
 const RevertingContract = artifacts.require("RevertingContract");
 const EvilCallback = artifacts.require("EvilCallback");
-const Rune = artifacts.require("ETH_RUNE");
+const SWITCH = artifacts.require("ETH_SWITCH");
 const USDT = artifacts.require("TetherToken");
 
 const BigNumber = require("bignumber.js");
@@ -27,7 +27,7 @@ function getBN(BN) {
 var ROUTER1;
 var ROUTER2;
 var ROUTER3;
-var RUNE, TOKEN, EVILTOKEN;
+var SWITCH, TOKEN, EVILTOKEN;
 var ETH = "0x0000000000000000000000000000000000000000";
 var usdt;
 var REVERTINGCONTRACT, EVILCALLBACK;
@@ -58,10 +58,10 @@ describe("Router contract", function () {
 
   before(async function () {
     accounts = await web3.eth.getAccounts();
-    RUNE = await Rune.new();
-    ROUTER1 = await Router.new(RUNE.address);
-    ROUTER2 = await Router.new(RUNE.address);
-    ROUTER3 = await Router.new(RUNE.address);
+    SWITCH = await SWITCH.new();
+    ROUTER1 = await Router.new(SWITCH.address);
+    ROUTER2 = await Router.new(SWITCH.address);
+    ROUTER3 = await Router.new(SWITCH.address);
     TOKEN = await Token.new(); // User gets 1m TOKENS during construction
     EVILTOKEN = await EvilToken.new();
     REVERTINGCONTRACT = await RevertingContract.new();
@@ -83,7 +83,7 @@ describe("Router contract", function () {
         ASGARD1,
         ETH,
         _1000,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
         currentTime,
         { from: USER1, value: _1000 },
       );
@@ -92,7 +92,7 @@ describe("Router contract", function () {
       expect(tx.logs[0].event).to.equal("Deposit");
       expect(tx.logs[0].args.asset).to.equal(ETH);
       expect(BN2Str(tx.logs[0].args.amount)).to.equal(_1000);
-      expect(tx.logs[0].args.memo).to.equal("SWAP:THOR.RUNE");
+      expect(tx.logs[0].args.memo).to.equal("SWAP:SWITCHLY.SWITCH");
 
       let endBal = getBN(await web3.eth.getBalance(ASGARD1));
       let changeBal = BN2Str(endBal.minus(startBal));
@@ -105,52 +105,52 @@ describe("Router contract", function () {
           ASGARD1,
           ETH,
           _1000,
-          "SWAP:THOR.RUNE",
+          "SWAP:SWITCHLY.SWITCH",
           getBN(0),
           { from: USER1, value: _1000 },
         ),
-        "THORChain_Router: expired",
+        "SWITCHLYChain_Router: expired",
       );
     });
 
-    it("Should Deposit RUNE to Asgard1", async function () {
+    it("Should Deposit SWITCH to Asgard1", async function () {
       expect(BN2Str(await TOKEN.totalSupply())).to.equal(_1m);
       expect(BN2Str(await TOKEN.balanceOf(USER1))).to.equal(_1m);
 
       // tx
       let tx = await ROUTER1.depositWithExpiry(
         ASGARD1,
-        RUNE.address,
+        SWITCH.address,
         _1m,
-        "SWITCH:THOR.RUNE",
+        "SWITCH:SWITCHLY.SWITCH",
         currentTime,
       );
       // console.log(tx.logs)
       expect(tx.logs[0].event).to.equal("Deposit");
-      expect(tx.logs[0].args.asset).to.equal(RUNE.address);
+      expect(tx.logs[0].args.asset).to.equal(SWITCH.address);
       expect(tx.logs[0].args.to).to.equal(ASGARD1);
       expect(BN2Str(tx.logs[0].args.amount)).to.equal(_1m);
-      expect(tx.logs[0].args.memo).to.equal("SWITCH:THOR.RUNE");
+      expect(tx.logs[0].args.memo).to.equal("SWITCH:SWITCHLY.SWITCH");
 
-      expect(BN2Str(await RUNE.totalSupply())).to.equal(_9m);
+      expect(BN2Str(await SWITCH.totalSupply())).to.equal(_9m);
 
-      expect(BN2Str(await RUNE.balanceOf(ROUTER1.address))).to.equal("0");
-      expect(BN2Str(await RUNE.balanceOf(USER1))).to.equal(_9m);
+      expect(BN2Str(await SWITCH.balanceOf(ROUTER1.address))).to.equal("0");
+      expect(BN2Str(await SWITCH.balanceOf(USER1))).to.equal(_9m);
       expect(
-        BN2Str(await ROUTER1.vaultAllowance(ASGARD1, RUNE.address)),
+        BN2Str(await ROUTER1.vaultAllowance(ASGARD1, SWITCH.address)),
       ).to.equal("0");
     });
 
-    it("Should revert Deposit RUNE to Asgard1", async function () {
+    it("Should revert Deposit SWITCH to Asgard1", async function () {
       await truffleAssert.reverts(
         ROUTER1.depositWithExpiry(
           ASGARD1,
-          RUNE.address,
+          SWITCH.address,
           _1m,
-          "SWITCH:THOR.RUNE",
+          "SWITCH:SWITCHLY.SWITCH",
           getBN(0),
         ),
-        "THORChain_Router: expired",
+        "SWITCHLYChain_Router: expired",
       );
     });
 
@@ -169,7 +169,7 @@ describe("Router contract", function () {
         ASGARD1,
         TOKEN.address,
         _500k,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
         currentTime,
       );
       // console.log(tx.logs)
@@ -177,7 +177,7 @@ describe("Router contract", function () {
       expect(tx.logs[0].args.asset).to.equal(TOKEN.address);
       expect(tx.logs[0].args.to).to.equal(ASGARD1);
       expect(BN2Str(tx.logs[0].args.amount)).to.equal(_500k);
-      expect(tx.logs[0].args.memo).to.equal("SWAP:THOR.RUNE");
+      expect(tx.logs[0].args.memo).to.equal("SWAP:SWITCHLY.SWITCH");
 
       expect(BN2Str(await TOKEN.balanceOf(ROUTER1.address))).to.equal(_500k);
       expect(BN2Str(await TOKEN.balanceOf(USER1))).to.equal(_500k);
@@ -192,10 +192,10 @@ describe("Router contract", function () {
           ASGARD1,
           TOKEN.address,
           _500k,
-          "SWAP:THOR.RUNE",
+          "SWAP:SWITCHLY.SWITCH",
           getBN(0),
         ),
-        "THORChain_Router: expired",
+        "SWITCHLYChain_Router: expired",
       );
     });
 
@@ -229,7 +229,7 @@ describe("Router contract", function () {
         ASGARD1,
         usdt.address,
         _500k,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
         currentTime,
       );
       // console.log(tx.logs)
@@ -237,7 +237,7 @@ describe("Router contract", function () {
       expect(tx.logs[0].args.asset).to.equal(usdt.address);
       expect(tx.logs[0].args.to).to.equal(ASGARD1);
       expect(BN2Str(tx.logs[0].args.amount)).to.equal(_500k);
-      expect(tx.logs[0].args.memo).to.equal("SWAP:THOR.RUNE");
+      expect(tx.logs[0].args.memo).to.equal("SWAP:SWITCHLY.SWITCH");
 
       expect(BN2Str(await usdt.balanceOf(ROUTER1.address))).to.equal(_500k);
       expect(BN2Str(await usdt.balanceOf(USER1))).to.equal(_500k);

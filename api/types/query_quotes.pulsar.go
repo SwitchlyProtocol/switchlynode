@@ -13659,7 +13659,7 @@ type QueryQuoteSwapResponse struct {
 	InboundConfirmationBlocks int64 `protobuf:"varint,2,opt,name=inbound_confirmation_blocks,json=inboundConfirmationBlocks,proto3" json:"inbound_confirmation_blocks,omitempty"`
 	// the approximate seconds for block confirmations required before processing
 	InboundConfirmationSeconds int64 `protobuf:"varint,3,opt,name=inbound_confirmation_seconds,json=inboundConfirmationSeconds,proto3" json:"inbound_confirmation_seconds,omitempty"`
-	// the number of thorchain blocks the outbound will be delayed
+	// the number of switchly blocks the outbound will be delayed
 	OutboundDelayBlocks int64 `protobuf:"varint,4,opt,name=outbound_delay_blocks,json=outboundDelayBlocks,proto3" json:"outbound_delay_blocks,omitempty"`
 	// the approximate seconds for the outbound delay before it will be sent
 	OutboundDelaySeconds int64      `protobuf:"varint,5,opt,name=outbound_delay_seconds,json=outboundDelaySeconds,proto3" json:"outbound_delay_seconds,omitempty"`
@@ -13941,7 +13941,7 @@ type QueryQuoteSaverDepositResponse struct {
 	InboundConfirmationBlocks int64 `protobuf:"varint,2,opt,name=inbound_confirmation_blocks,json=inboundConfirmationBlocks,proto3" json:"inbound_confirmation_blocks,omitempty"`
 	// the approximate seconds for block confirmations required before processing
 	InboundConfirmationSeconds int64 `protobuf:"varint,3,opt,name=inbound_confirmation_seconds,json=inboundConfirmationSeconds,proto3" json:"inbound_confirmation_seconds,omitempty"`
-	// the number of thorchain blocks the outbound will be delayed
+	// the number of switchly blocks the outbound will be delayed
 	OutboundDelayBlocks int64 `protobuf:"varint,4,opt,name=outbound_delay_blocks,json=outboundDelayBlocks,proto3" json:"outbound_delay_blocks,omitempty"`
 	// the approximate seconds for the outbound delay before it will be sent
 	OutboundDelaySeconds int64      `protobuf:"varint,5,opt,name=outbound_delay_seconds,json=outboundDelaySeconds,proto3" json:"outbound_delay_seconds,omitempty"`
@@ -14179,7 +14179,7 @@ type QueryQuoteSaverWithdrawResponse struct {
 	InboundConfirmationBlocks int64 `protobuf:"varint,2,opt,name=inbound_confirmation_blocks,json=inboundConfirmationBlocks,proto3" json:"inbound_confirmation_blocks,omitempty"`
 	// the approximate seconds for block confirmations required before processing
 	InboundConfirmationSeconds int64 `protobuf:"varint,3,opt,name=inbound_confirmation_seconds,json=inboundConfirmationSeconds,proto3" json:"inbound_confirmation_seconds,omitempty"`
-	// the number of thorchain blocks the outbound will be delayed
+	// the number of switchly blocks the outbound will be delayed
 	OutboundDelayBlocks int64 `protobuf:"varint,4,opt,name=outbound_delay_blocks,json=outboundDelayBlocks,proto3" json:"outbound_delay_blocks,omitempty"`
 	// the approximate seconds for the outbound delay before it will be sent
 	OutboundDelaySeconds int64      `protobuf:"varint,5,opt,name=outbound_delay_seconds,json=outboundDelaySeconds,proto3" json:"outbound_delay_seconds,omitempty"`
@@ -14449,7 +14449,7 @@ type QueryQuoteLoanOpenResponse struct {
 	InboundConfirmationBlocks int64 `protobuf:"varint,2,opt,name=inbound_confirmation_blocks,json=inboundConfirmationBlocks,proto3" json:"inbound_confirmation_blocks,omitempty"`
 	// the approximate seconds for block confirmations required before processing
 	InboundConfirmationSeconds int64 `protobuf:"varint,3,opt,name=inbound_confirmation_seconds,json=inboundConfirmationSeconds,proto3" json:"inbound_confirmation_seconds,omitempty"`
-	// the number of thorchain blocks the outbound will be delayed
+	// the number of switchly blocks the outbound will be delayed
 	OutboundDelayBlocks int64 `protobuf:"varint,4,opt,name=outbound_delay_blocks,json=outboundDelayBlocks,proto3" json:"outbound_delay_blocks,omitempty"`
 	// the approximate seconds for the outbound delay before it will be sent
 	OutboundDelaySeconds int64      `protobuf:"varint,5,opt,name=outbound_delay_seconds,json=outboundDelaySeconds,proto3" json:"outbound_delay_seconds,omitempty"`
@@ -14478,7 +14478,7 @@ type QueryQuoteLoanOpenResponse struct {
 	ExpectedCollateralizationRatio string `protobuf:"bytes,17,opt,name=expected_collateralization_ratio,json=expectedCollateralizationRatio,proto3" json:"expected_collateralization_ratio,omitempty"`
 	// the expected amount of collateral increase on the loan
 	ExpectedCollateralDeposited string `protobuf:"bytes,18,opt,name=expected_collateral_deposited,json=expectedCollateralDeposited,proto3" json:"expected_collateral_deposited,omitempty"`
-	// the expected amount of TOR debt increase on the loan
+	// the expected amount of SWITCHLY debt increase on the loan
 	ExpectedDebtIssued string `protobuf:"bytes,19,opt,name=expected_debt_issued,json=expectedDebtIssued,proto3" json:"expected_debt_issued,omitempty"`
 	// The number of blocks involved in the streaming swaps during the open loan process.
 	StreamingSwapBlocks int64 `protobuf:"varint,20,opt,name=streaming_swap_blocks,json=streamingSwapBlocks,proto3" json:"streaming_swap_blocks,omitempty"`
@@ -14748,7 +14748,7 @@ type QueryQuoteLoanCloseResponse struct {
 	InboundConfirmationBlocks int64 `protobuf:"varint,2,opt,name=inbound_confirmation_blocks,json=inboundConfirmationBlocks,proto3" json:"inbound_confirmation_blocks,omitempty"`
 	// the approximate seconds for block confirmations required before processing
 	InboundConfirmationSeconds int64 `protobuf:"varint,3,opt,name=inbound_confirmation_seconds,json=inboundConfirmationSeconds,proto3" json:"inbound_confirmation_seconds,omitempty"`
-	// the number of thorchain blocks the outbound will be delayed
+	// the number of switchly blocks the outbound will be delayed
 	OutboundDelayBlocks int64 `protobuf:"varint,4,opt,name=outbound_delay_blocks,json=outboundDelayBlocks,proto3" json:"outbound_delay_blocks,omitempty"`
 	// the approximate seconds for the outbound delay before it will be sent
 	OutboundDelaySeconds int64      `protobuf:"varint,5,opt,name=outbound_delay_seconds,json=outboundDelaySeconds,proto3" json:"outbound_delay_seconds,omitempty"`
@@ -14777,7 +14777,7 @@ type QueryQuoteLoanCloseResponse struct {
 	ExpectedAmountIn string `protobuf:"bytes,17,opt,name=expected_amount_in,json=expectedAmountIn,proto3" json:"expected_amount_in,omitempty"`
 	// the expected amount of collateral decrease on the loan
 	ExpectedCollateralWithdrawn string `protobuf:"bytes,18,opt,name=expected_collateral_withdrawn,json=expectedCollateralWithdrawn,proto3" json:"expected_collateral_withdrawn,omitempty"`
-	// the expected amount of TOR debt decrease on the loan
+	// the expected amount of SWITCHLY debt decrease on the loan
 	ExpectedDebtRepaid string `protobuf:"bytes,19,opt,name=expected_debt_repaid,json=expectedDebtRepaid,proto3" json:"expected_debt_repaid,omitempty"`
 	// The number of blocks involved in the streaming swaps during the repayment process.
 	StreamingSwapBlocks int64 `protobuf:"varint,20,opt,name=streaming_swap_blocks,json=streamingSwapBlocks,proto3" json:"streaming_swap_blocks,omitempty"`
@@ -15574,7 +15574,7 @@ var file_types_query_quotes_proto_rawDesc = []byte{
 	0x10, 0x51, 0x75, 0x65, 0x72, 0x79, 0x51, 0x75, 0x6f, 0x74, 0x65, 0x73, 0x50, 0x72, 0x6f, 0x74,
 	0x6f, 0x50, 0x01, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
 	0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c,
-	0x2f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x6f, 0x64, 0x65, 0x2f, 0x76, 0x31,
+	0x2f, 0x73, 0x77, 0x69, 0x74, 0x63, 0x68, 0x6c, 0x79, 0x6e, 0x6f, 0x64, 0x65, 0x2f, 0x76, 0x33,
 	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0xa2, 0x02, 0x03, 0x54, 0x58, 0x58,
 	0xaa, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73, 0xca, 0x02, 0x05, 0x54, 0x79, 0x70, 0x65, 0x73,
 	0xe2, 0x02, 0x11, 0x54, 0x79, 0x70, 0x65, 0x73, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61,

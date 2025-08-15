@@ -6,7 +6,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/evm"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
@@ -35,7 +35,7 @@ func NewSolvencyCheckActor() *Actor {
 
 func (a *DualLPActor) checkSolvency(config *OpConfig) OpResult {
 	// get all vaults
-	vaults, err := thornode.GetVaults()
+	vaults, err := switchlynode.GetVaults()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get vaults")
 		return OpResult{
@@ -103,7 +103,7 @@ func (a *DualLPActor) checkSolvency(config *OpConfig) OpResult {
 			l1CoinAmounts[assetStr] = l1Acct.Coins.GetCoin(asset).Amount
 		} else if asset.Chain.IsEVM() {
 			// for EVM chains, we need to get the balance from the contract
-			_, routerAddr, err := thornode.GetInboundAddress(asset.Chain)
+			_, routerAddr, err := switchlynode.GetInboundAddress(asset.Chain)
 			if err != nil {
 				a.Log().Error().Err(err).Msg("failed to get router address")
 				return OpResult{

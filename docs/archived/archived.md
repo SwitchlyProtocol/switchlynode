@@ -1,6 +1,6 @@
 # Archived Documentation
 
-This section contains documentation for features, guides, or modules that are no longer available or supported in THORChain.
+This section contains documentation for features, guides, or modules that are no longer available or supported in SWITCHLYChain.
 
 These pages are preserved for historical reference only and may contain outdated or deprecated information. They are **not maintained** and do **not reflect the current state**.
 

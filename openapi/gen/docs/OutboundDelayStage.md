@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**RemainingDelayBlocks** | Pointer to **int64** | the number of remaining THORChain blocks the outbound will be delayed | [optional] 
+**RemainingDelayBlocks** | Pointer to **int64** | the number of remaining SWITCHLYChain blocks the outbound will be delayed | [optional] 
 **RemainingDelaySeconds** | Pointer to **int64** | the estimated remaining seconds of the outbound delay before it will be sent | [optional] 
 **Completed** | **bool** | returns true if no transaction outbound delay remains | 
 

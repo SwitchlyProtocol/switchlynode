@@ -11,10 +11,10 @@ import (
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
-	memo "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	memo "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 )
 
 const (
@@ -136,8 +136,8 @@ func (scp *SmartContractLogParser) parseTransferAllowanceEvent(log etypes.Log) (
 	return event, nil
 }
 
-// THORChainRouterTransferOutAndCall represents a TransferOutAndCall event raised by the THORChainRouter contract.
-type THORChainRouterTransferOutAndCall struct {
+// SWITCHLYChainRouterTransferOutAndCall represents a TransferOutAndCall event raised by the SWITCHLYChainRouter contract.
+type SWITCHLYChainRouterTransferOutAndCall struct {
 	Vault        ecommon.Address
 	Target       ecommon.Address
 	Amount       *big.Int
@@ -148,9 +148,9 @@ type THORChainRouterTransferOutAndCall struct {
 }
 
 // parseTransferOutAndCall is a log parse operation binding the contract event 0xbda904e26adea40cc083dc36e80fde1641dfdd8b9a035c44022a43e713f73d36.
-func (scp *SmartContractLogParser) parseTransferOutAndCall(log etypes.Log) (*THORChainRouterTransferOutAndCall, error) {
+func (scp *SmartContractLogParser) parseTransferOutAndCall(log etypes.Log) (*SWITCHLYChainRouterTransferOutAndCall, error) {
 	const TransferOutAndCallEventName = "TransferOutAndCall"
-	event := new(THORChainRouterTransferOutAndCall)
+	event := new(SWITCHLYChainRouterTransferOutAndCall)
 	if err := scp.unpackVaultLog(event, TransferOutAndCallEventName, log); err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (scp *SmartContractLogParser) GetTxInItem(logs []*etypes.Log, txInItem *typ
 	}
 	isVaultTransfer := false
 	for _, item := range logs {
-		// only events produced by THORChain router is processed
+		// only events produced by SWITCHLYChain router is processed
 		if !scp.addressValidator(&item.Address, false) {
 			continue
 		}

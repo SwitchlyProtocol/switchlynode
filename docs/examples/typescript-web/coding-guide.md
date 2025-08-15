@@ -40,10 +40,10 @@ console.log(oneBtc.AssetAmount().amount().toNumber().toFixed()); // 1
 
 ## Query
 
-Major data types for the thorchain-query package.
+Major data types for the switchly-query package.
 
 - [Package description](query-package.md)
-- [Github source code](https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-thorchain-query)
+- [Github source code](https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-switchly-query)
 - [Code examples](query-package.md#code-examples-in-replit)
 - [Install procedures](overview.md#install-procedures)
 
@@ -60,7 +60,7 @@ The input Type for `estimateSwap`. This is designed to be created by interfaces 
 | `destinationAddress`  | String       | Outbound asset address          |
 | `slipLimit`           | BigNumber    | Optional: Used to set LIM       |
 | `affiliateFeePercent` | number       | Optional: 0-0.1 allowed         |
-| `affiliateAddress`    | Address      | Optional: THOR address          |
+| `affiliateAddress`    | Address      | Optional: SWITCHLY address          |
 | `interfaceID`         | string       | Optional: Assigned interface ID |
 
 ### **SwapEstimate**
@@ -83,7 +83,7 @@ Return type of `estimateSwap`. This is designed to be used by interfaces to give
 | Variable     | Data Type    | Comments                                                    |
 | ------------ | ------------ | ----------------------------------------------------------- |
 | `txEstimate` | SwapEstimate | Swap details                                                |
-| `memo`       | string       | Constructed memo THORChain will understand                  |
+| `memo`       | string       | Constructed memo SWITCHLYChain will understand                  |
 | `expiry`     | DateTime     | When the `SwapEstimate` information will no longer be valid |
 | `toAddress`  | string       | Current Asgard Vault address from `inbound_address`         |
 
@@ -93,10 +93,10 @@ Do not use `toAddress` after `expiry` as the Asgard vault rotates
 
 ## AMM
 
-Major data types for the thorchain-query package.
+Major data types for the switchly-query package.
 
 - [Package description](amm-package.md)
-- [Github source code](https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-thorchain-amm)
+- [Github source code](https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-switchly-amm)
 - [Code examples](amm-package.md#code-examples-in-replit)
 - [Install procedures](overview.md#install-procedures)
 

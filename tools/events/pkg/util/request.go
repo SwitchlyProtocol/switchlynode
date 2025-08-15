@@ -53,10 +53,10 @@ func InitCache() {
 // Cache
 ////////////////////////////////////////////////////////////////////////////////////////
 
-// ThornodeCachedRetryGet fetches the Thornode API response at the provided height with
+// SwitchlynodeCachedRetryGet fetches the Switchlynode API response at the provided height with
 // retry. Responses at a specific height are assumed immutable and cached indefinitely.
-func ThornodeCachedRetryGet(path string, height int64, result interface{}, allowStatus ...int) error {
-	url := fmt.Sprintf("%s/%s?height=%d", config.Get().Endpoints.Thornode, path, height)
+func SwitchlynodeCachedRetryGet(path string, height int64, result interface{}, allowStatus ...int) error {
+	url := fmt.Sprintf("%s/%s?height=%d", config.Get().Endpoints.Switchlynode, path, height)
 
 	// check the cache first
 	if val, ok := cache.Get(url); ok {

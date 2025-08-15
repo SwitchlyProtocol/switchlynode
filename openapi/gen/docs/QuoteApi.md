@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Quoteloanclose**](QuoteApi.md#Quoteloanclose) | **Get** /thorchain/quote/loan/close | 
-[**Quoteloanopen**](QuoteApi.md#Quoteloanopen) | **Get** /thorchain/quote/loan/open | 
-[**Quotesaverdeposit**](QuoteApi.md#Quotesaverdeposit) | **Get** /thorchain/quote/saver/deposit | 
-[**Quotesaverwithdraw**](QuoteApi.md#Quotesaverwithdraw) | **Get** /thorchain/quote/saver/withdraw | 
-[**Quoteswap**](QuoteApi.md#Quoteswap) | **Get** /thorchain/quote/swap | 
+[**Quoteloanclose**](QuoteApi.md#Quoteloanclose) | **Get** /switchly/quote/loan/close | 
+[**Quoteloanopen**](QuoteApi.md#Quoteloanopen) | **Get** /switchly/quote/loan/open | 
+[**Quotesaverdeposit**](QuoteApi.md#Quotesaverdeposit) | **Get** /switchly/quote/saver/deposit | 
+[**Quotesaverwithdraw**](QuoteApi.md#Quotesaverwithdraw) | **Get** /switchly/quote/saver/withdraw | 
+[**Quoteswap**](QuoteApi.md#Quoteswap) | **Get** /switchly/quote/swap | 
 
 
 
@@ -112,11 +112,11 @@ func main() {
     height := int64(789) // int64 | optional block height, defaults to current tip (optional)
     fromAsset := "BTC.BTC" // string | the collateral asset (optional)
     amount := int64(1000000) // int64 | the collateral asset amount in 1e8 decimals (optional)
-    toAsset := "ETH.ETH" // string | the target asset to receive (loan denominated in TOR regardless) (optional)
+    toAsset := "ETH.ETH" // string | the target asset to receive (loan denominated in SWITCHLY regardless) (optional)
     destination := "0x1c7b17362c84287bd1184447e6dfeaf920c31bbe" // string | the destination address, required to generate memo (optional)
     minOut := "1234" // string | the minimum amount of the target asset to accept (optional)
     affiliateBps := int64(100) // int64 | the affiliate fee in basis points (optional)
-    affiliate := "t" // string | the affiliate (address or thorname) (optional)
+    affiliate := "t" // string | the affiliate (address or switchlyname) (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
@@ -144,11 +144,11 @@ Name | Type | Description  | Notes
  **height** | **int64** | optional block height, defaults to current tip | 
  **fromAsset** | **string** | the collateral asset | 
  **amount** | **int64** | the collateral asset amount in 1e8 decimals | 
- **toAsset** | **string** | the target asset to receive (loan denominated in TOR regardless) | 
+ **toAsset** | **string** | the target asset to receive (loan denominated in SWITCHLY regardless) | 
  **destination** | **string** | the destination address, required to generate memo | 
  **minOut** | **string** | the minimum amount of the target asset to accept | 
  **affiliateBps** | **int64** | the affiliate fee in basis points | 
- **affiliate** | **string** | the affiliate (address or thorname) | 
+ **affiliate** | **string** | the affiliate (address or switchlyname) | 
 
 ### Return type
 
@@ -342,7 +342,7 @@ func main() {
     toleranceBps := int64(100) // int64 | the maximum basis points from the current feeless swap price to set the limit in the generated memo (optional)
     liquidityToleranceBps := int64(100) // int64 | the maximum basis points of tolerance for pool price movements to set the limit in the generated memo (optional)
     affiliateBps := int64(100) // int64 | the affiliate fee in basis points (optional)
-    affiliate := "t" // string | the affiliate (address or thorname) (optional)
+    affiliate := "t" // string | the affiliate (address or switchlyname) (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
@@ -378,7 +378,7 @@ Name | Type | Description  | Notes
  **toleranceBps** | **int64** | the maximum basis points from the current feeless swap price to set the limit in the generated memo | 
  **liquidityToleranceBps** | **int64** | the maximum basis points of tolerance for pool price movements to set the limit in the generated memo | 
  **affiliateBps** | **int64** | the affiliate fee in basis points | 
- **affiliate** | **string** | the affiliate (address or thorname) | 
+ **affiliate** | **string** | the affiliate (address or switchlyname) | 
 
 ### Return type
 

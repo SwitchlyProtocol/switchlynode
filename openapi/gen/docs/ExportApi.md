@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Export**](ExportApi.md#Export) | **Get** /thorchain/export | 
+[**Export**](ExportApi.md#Export) | **Get** /switchly/export | 
 
 
 

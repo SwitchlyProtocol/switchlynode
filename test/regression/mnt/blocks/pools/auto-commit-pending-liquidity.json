@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -108,7 +108,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -323,7 +323,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -440,7 +440,7 @@
                 "coins": [
                   {
                     "amount": "200000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -520,7 +520,7 @@
               "type": "message"
             },
             {
-              "THOR_txid": "FCCDA2B100DA9963984A89FA368E018029FACAD38DA186C963525C6B2E0DDBF1",
+              "SWITCHLY_txid": "FCCDA2B100DA9963984A89FA368E018029FACAD38DA186C963525C6B2E0DDBF1",
               "asset_address": "bcrt1quuds8pd92qnnq0udw0rpg0szpgcslc9pm6tzal",
               "asset_amount": "0",
               "msg_index": "0",
@@ -547,7 +547,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -643,7 +643,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -739,7 +739,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 6,
       "time": "",
       "last_block_id": {
@@ -764,7 +764,7 @@
     "end_block_events": [
       {
         "BTC_txid": "0000000000000000000000000000000000000000000000000000000000000000",
-        "THOR_txid": "FCCDA2B100DA9963984A89FA368E018029FACAD38DA186C963525C6B2E0DDBF1",
+        "SWITCHLY_txid": "FCCDA2B100DA9963984A89FA368E018029FACAD38DA186C963525C6B2E0DDBF1",
         "asset_address": "bcrt1quuds8pd92qnnq0udw0rpg0szpgcslc9pm6tzal",
         "asset_amount": "0",
         "liquidity_provider_units": "99894672",

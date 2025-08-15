@@ -1,4 +1,4 @@
-# TCYClaimer
+# SWCYClaimer
 
 ## Properties
 
@@ -10,84 +10,84 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewTCYClaimer
+### NewSWCYClaimer
 
-`func NewTCYClaimer(amount string, asset string, ) *TCYClaimer`
+`func NewSWCYClaimer(amount string, asset string, ) *SWCYClaimer`
 
-NewTCYClaimer instantiates a new TCYClaimer object
+NewSWCYClaimer instantiates a new SWCYClaimer object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewTCYClaimerWithDefaults
+### NewSWCYClaimerWithDefaults
 
-`func NewTCYClaimerWithDefaults() *TCYClaimer`
+`func NewSWCYClaimerWithDefaults() *SWCYClaimer`
 
-NewTCYClaimerWithDefaults instantiates a new TCYClaimer object
+NewSWCYClaimerWithDefaults instantiates a new SWCYClaimer object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetL1Address
 
-`func (o *TCYClaimer) GetL1Address() string`
+`func (o *SWCYClaimer) GetL1Address() string`
 
 GetL1Address returns the L1Address field if non-nil, zero value otherwise.
 
 ### GetL1AddressOk
 
-`func (o *TCYClaimer) GetL1AddressOk() (*string, bool)`
+`func (o *SWCYClaimer) GetL1AddressOk() (*string, bool)`
 
 GetL1AddressOk returns a tuple with the L1Address field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetL1Address
 
-`func (o *TCYClaimer) SetL1Address(v string)`
+`func (o *SWCYClaimer) SetL1Address(v string)`
 
 SetL1Address sets L1Address field to given value.
 
 ### HasL1Address
 
-`func (o *TCYClaimer) HasL1Address() bool`
+`func (o *SWCYClaimer) HasL1Address() bool`
 
 HasL1Address returns a boolean if a field has been set.
 
 ### GetAmount
 
-`func (o *TCYClaimer) GetAmount() string`
+`func (o *SWCYClaimer) GetAmount() string`
 
 GetAmount returns the Amount field if non-nil, zero value otherwise.
 
 ### GetAmountOk
 
-`func (o *TCYClaimer) GetAmountOk() (*string, bool)`
+`func (o *SWCYClaimer) GetAmountOk() (*string, bool)`
 
 GetAmountOk returns a tuple with the Amount field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAmount
 
-`func (o *TCYClaimer) SetAmount(v string)`
+`func (o *SWCYClaimer) SetAmount(v string)`
 
 SetAmount sets Amount field to given value.
 
 
 ### GetAsset
 
-`func (o *TCYClaimer) GetAsset() string`
+`func (o *SWCYClaimer) GetAsset() string`
 
 GetAsset returns the Asset field if non-nil, zero value otherwise.
 
 ### GetAssetOk
 
-`func (o *TCYClaimer) GetAssetOk() (*string, bool)`
+`func (o *SWCYClaimer) GetAssetOk() (*string, bool)`
 
 GetAssetOk returns a tuple with the Asset field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAsset
 
-`func (o *TCYClaimer) SetAsset(v string)`
+`func (o *SWCYClaimer) SetAsset(v string)`
 
 SetAsset sets Asset field to given value.
 

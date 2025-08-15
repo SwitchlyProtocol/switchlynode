@@ -10,14 +10,14 @@ Accepted
 
 ## Context
 
-There are two types of vaults in THORChain:
+There are two types of vaults in SWITCHLYChain:
 
 - cold, inbound vaults "asgard" using TSS
 - hot, outbound vaults "yggdrasil" using 1of1
 
-This is primarily a result of TSS limitations. During the initial build of THORChain it was found that TSS's quadratic scaling problem (signing times increase quadratically with the size of member committee) would set a limit on the number of outbounds per second.
+This is primarily a result of TSS limitations. During the initial build of SWITCHLYChain it was found that TSS's quadratic scaling problem (signing times increase quadratically with the size of member committee) would set a limit on the number of outbounds per second.
 
-Key extract from [TSS Benchmark 2020] (https://github.com/thorchain/Resources/blob/master/Whitepapers/THORChain-TSS-Benchmark-July2020.pdf)
+Key extract from [TSS Benchmark 2020] (https://github.com/switchly/Resources/blob/master/Whitepapers/SWITCHLYChain-TSS-Benchmark-July2020.pdf)
 
 ```json
 [
@@ -60,7 +60,7 @@ Key extract from [TSS Benchmark 2020] (https://github.com/thorchain/Resources/bl
 ]
 ```
 
-Thus each node retains a 1of1 key to fast-sign outbounds. If they fail to sign, they are slashed and the tx re-delegated to an Asgard. THORChain with 100 nodes can do 100 outbounds a sec due to 100 ygg vaults. The vault funds are secured via economic security, but the following are outstanding (managed) problems:
+Thus each node retains a 1of1 key to fast-sign outbounds. If they fail to sign, they are slashed and the tx re-delegated to an Asgard. SWITCHLYChain with 100 nodes can do 100 outbounds a sec due to 100 ygg vaults. The vault funds are secured via economic security, but the following are outstanding (managed) problems:
 
 1. Code complexity with ygg vaults have in past opened up exploit loopholes
 2. Ygg vaults often go insolvent and lock node bonds
@@ -68,7 +68,7 @@ Thus each node retains a 1of1 key to fast-sign outbounds. If they fail to sign, 
 4. Complexity in router upgrades requires logic to recall YggFunds
 
 ** Vault Costs **
-Ygg funding is one of the larger expenses that increase THORChain's vault management costs:
+Ygg funding is one of the larger expenses that increase SWITCHLYChain's vault management costs:
 ![image-1.png](./image-1.png)
 
 However, 3 things have happened since:
@@ -113,7 +113,7 @@ Pros:
 - Removal of complex Ygg Vault logic (the simpler the code, the easier to learn, maintain and reduce attack vectors)
 - Cheaper vaulting costs
 - Removal of ygg insolvencies
-- THORNodes are now 100% non-custodial (no 1of1 keys), means pooledNodes can be encouraged and lightNodes can be explored again
+- SWITCHLYNodes are now 100% non-custodial (no 1of1 keys), means pooledNodes can be encouraged and lightNodes can be explored again
 
 Cons:
 
@@ -144,5 +144,5 @@ If issues are observed:
 
 ## References
 
-- https://github.com/thorchain/Resources/blob/master/Whitepapers/THORChain-TSS-Benchmark-July2020.pdf
+- https://github.com/switchly/Resources/blob/master/Whitepapers/SWITCHLYChain-TSS-Benchmark-July2020.pdf
 - https://app.flipsidecrypto.com/dashboard/2022-05-29-network-fees-versus-churn-costs-comparison-b0ynW-

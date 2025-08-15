@@ -25,12 +25,12 @@ EVM router code lives in this repository, under the [chain/](../chain/) director
 
 ## Router upgrade procedure
 
-Before router upgrade , make sure you already make relevant changes in thornode repo. Replace `<chain>` in the below variables with the lowercase, shortened chain identifier (e.g. `eth`, `avax`).
+Before router upgrade , make sure you already make relevant changes in switchlynode repo. Replace `<chain>` in the below variables with the lowercase, shortened chain identifier (e.g. `eth`, `avax`).
 
 - New router has been deployed , and the router address has been updated. `<chain>OldRouter` is your current router address, `<chain>NewRouter` is your new router address
-  - [Mocknet](https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/router_upgrade_info_mocknet.go)
-  - [Stagenet](https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/router_upgrade_info_stagenet.go)
-  - [Mainnet](https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/router_upgrade_info.go)
+  - [Mocknet](https://gitlab.com/switchly/switchlynode/-/blob/develop/x/switchly/router_upgrade_info_mocknet.go)
+  - [Stagenet](https://gitlab.com/switchly/switchlynode/-/blob/develop/x/switchly/router_upgrade_info_stagenet.go)
+  - [Mainnet](https://gitlab.com/switchly/switchlynode/-/blob/develop/x/switchly/router_upgrade_info.go)
 
 Before upgrade , make sure the network is healthy , all active nodes / standby nodes are online. If some nodes are not healthy , bifrost are not online it will cause the node's vault in a bad state
 

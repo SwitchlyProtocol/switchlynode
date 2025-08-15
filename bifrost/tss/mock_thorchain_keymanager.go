@@ -7,30 +7,30 @@ import (
 	ctypes "github.com/cosmos/cosmos-sdk/types"
 )
 
-// MockThorchainKeymanager is to mock the TSS , so as we could test it
-type MockThorchainKeyManager struct{}
+// MockSwitchlyKeymanager is to mock the TSS , so as we could test it
+type MockSwitchlyKeyManager struct{}
 
-func (k *MockThorchainKeyManager) GetPrivKey() crypto.PrivKey {
+func (k *MockSwitchlyKeyManager) GetPrivKey() crypto.PrivKey {
 	return nil
 }
 
-func (k *MockThorchainKeyManager) GetAddr() ctypes.AccAddress {
+func (k *MockSwitchlyKeyManager) GetAddr() ctypes.AccAddress {
 	return nil
 }
 
-func (k *MockThorchainKeyManager) ExportAsMnemonic() (string, error) {
+func (k *MockSwitchlyKeyManager) ExportAsMnemonic() (string, error) {
 	return "", nil
 }
 
-func (k *MockThorchainKeyManager) ExportAsPrivateKey() (string, error) {
+func (k *MockSwitchlyKeyManager) ExportAsPrivateKey() (string, error) {
 	return "", nil
 }
 
-func (k *MockThorchainKeyManager) ExportAsKeyStore(password string) (*EncryptedKeyJSON, error) {
+func (k *MockSwitchlyKeyManager) ExportAsKeyStore(password string) (*EncryptedKeyJSON, error) {
 	return nil, nil
 }
 
-func (k *MockThorchainKeyManager) RemoteSign(msg []byte, poolPubKey string) ([]byte, []byte, error) {
+func (k *MockSwitchlyKeyManager) RemoteSign(msg []byte, poolPubKey string) ([]byte, []byte, error) {
 	// this is the key we are using to test TSS keysign result in BTC chain
 	// switchpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5xqy5rtn
 	if poolPubKey == "switchpub1addwnpepqwznsrgk2t5vn2cszr6ku6zned6tqxknugzw3vhdcjza284d7djp5xqy5rtn" {
@@ -70,5 +70,5 @@ func (k *MockThorchainKeyManager) RemoteSign(msg []byte, poolPubKey string) ([]b
 	return nil, nil, nil
 }
 
-func (k *MockThorchainKeyManager) Start() {}
-func (k *MockThorchainKeyManager) Stop()  {}
+func (k *MockSwitchlyKeyManager) Start() {}
+func (k *MockSwitchlyKeyManager) Stop()  {}

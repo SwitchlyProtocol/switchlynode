@@ -7,11 +7,11 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 // SolvencyCheckProvider methods that a SolvencyChecker implementation should have
@@ -22,10 +22,10 @@ type SolvencyCheckProvider interface {
 }
 
 // SolvencyCheckRunner when a chain get marked as insolvent , and then get halt automatically , the chain client will stop scanning blocks , as a result , solvency checker will
-// not report current solvency status to THORNode anymore, this method is to ensure that the chain client will continue to do solvency check even when the chain has been halted
+// not report current solvency status to SWITCHLYNode anymore, this method is to ensure that the chain client will continue to do solvency check even when the chain has been halted
 func SolvencyCheckRunner(chain common.Chain,
 	provider SolvencyCheckProvider,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	stopper <-chan struct{},
 	wg *sync.WaitGroup,
 	backOffDuration time.Duration,
@@ -41,7 +41,7 @@ func SolvencyCheckRunner(chain common.Chain,
 		return
 	}
 	if backOffDuration == 0 {
-		backOffDuration = constants.ThorchainBlockTime
+		backOffDuration = constants.SwitchlyBlockTime
 	}
 	for {
 		select {
@@ -84,7 +84,7 @@ func SolvencyCheckRunner(chain common.Chain,
 	}
 }
 
-// IsVaultSolvent check whether the given vault is solvent or not , if it is not solvent , then it will need to report solvency to thornode
+// IsVaultSolvent check whether the given vault is solvent or not , if it is not solvent , then it will need to report solvency to switchlynode
 func IsVaultSolvent(account common.Account, vault types.Vault, currentGasFee cosmos.Uint) bool {
 	logger := log.Logger
 	for _, c := range account.Coins {
@@ -96,7 +96,7 @@ func IsVaultSolvent(account common.Account, vault types.Vault, currentGasFee cos
 		}
 
 		gap := asgardCoin.Amount.Sub(c.Amount)
-		// thornode allow 10x of MaxGas as the gap
+		// switchlynode allow 10x of MaxGas as the gap
 		if c.Asset.IsGasAsset() && gap.LT(currentGasFee.MulUint64(10)) {
 			continue
 		}

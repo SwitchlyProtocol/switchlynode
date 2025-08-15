@@ -9,16 +9,16 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/notify"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/switchlyscan"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Scan Security
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func ScanSecurity(block *thorscan.BlockResponse) {
+func ScanSecurity(block *switchlyscan.BlockResponse) {
 	SecurityEvents(block)
 	ErrataTransactions(block)
 	Round7Failures(block)
@@ -28,7 +28,7 @@ func ScanSecurity(block *thorscan.BlockResponse) {
 // Security Events
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func SecurityEvents(block *thorscan.BlockResponse) {
+func SecurityEvents(block *switchlyscan.BlockResponse) {
 	// transaction security events
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
@@ -74,7 +74,7 @@ func SecurityEvents(block *thorscan.BlockResponse) {
 // Errata Transactions
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func ErrataTransactions(block *thorscan.BlockResponse) {
+func ErrataTransactions(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
 			if event["type"] != types.ErrataEventType {
@@ -86,7 +86,7 @@ func ErrataTransactions(block *thorscan.BlockResponse) {
 			fields := util.NewOrderedMap()
 			fields.Set(
 				"Links",
-				fmt.Sprintf("[Details](%s/thorchain/tx/details/%s)", config.Get().Links.Thornode, event["tx_id"]),
+				fmt.Sprintf("[Details](%s/switchly/tx/details/%s)", config.Get().Links.Switchlynode, event["tx_id"]),
 			)
 
 			// notify errata transaction
@@ -99,13 +99,13 @@ func ErrataTransactions(block *thorscan.BlockResponse) {
 // Round 7 Failures
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func Round7Failures(block *thorscan.BlockResponse) {
+func Round7Failures(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		if tx.Tx == nil { // transaction failed decode
 			continue
 		}
 		for _, msg := range tx.Tx.GetMsgs() {
-			if msgKeysignFail, ok := msg.(*thorchain.MsgTssKeysignFail); ok {
+			if msgKeysignFail, ok := msg.(*switchly.MsgTssKeysignFail); ok {
 				// skip migrate transactions
 				if reMemoMigration.MatchString(msgKeysignFail.Memo) {
 					continue
@@ -136,7 +136,7 @@ func Round7Failures(block *thorscan.BlockResponse) {
 					util.USDValueString(block.Header.Height, msgKeysignFail.Coins[0]),
 				))
 				fields.Set("Memo", msgKeysignFail.Memo)
-				fields.Set("Transaction", fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s", config.Get().Links.Thornode, tx.Hash))
+				fields.Set("Transaction", fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s", config.Get().Links.Switchlynode, tx.Hash))
 				notify.Notify(config.Get().Notifications.Security, title, block.Header.Height, nil, notify.Warning, fields)
 
 				// save seen round 7 failures

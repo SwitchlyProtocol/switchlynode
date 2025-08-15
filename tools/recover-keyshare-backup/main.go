@@ -19,8 +19,8 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/switchlyscan"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -96,14 +96,14 @@ func main() {
 	cfg.SetPurpose(cmd.SwitchlyCoinPurpose)
 	cfg.Seal()
 
-	// prompt for thornode endpoint
+	// prompt for switchlynode endpoint
 	reader := bufio.NewReader(os.Stdin)
-	defaultEndpoint := "https://thornode-archive.ninerealms.com"
-	fmt.Printf("Thornode (must contain vault block heights) [%s]: ", defaultEndpoint)
-	thornode, err := reader.ReadString('\n')
+	defaultEndpoint := "https://switchlynode-archive.ninerealms.com"
+	fmt.Printf("Switchlynode (must contain vault block heights) [%s]: ", defaultEndpoint)
+	switchlynode, err := reader.ReadString('\n')
 	check(err, "Failed to read endpoint")
-	thornode = strings.TrimSpace(thornode)
-	thorscan.APIEndpoint = thornode
+	switchlynode = strings.TrimSpace(switchlynode)
+	switchlyscan.APIEndpoint = switchlynode
 
 	// prompt for vault
 	fmt.Print("Vault: ")
@@ -113,13 +113,13 @@ func main() {
 
 	// get vault response
 	vaultResponse := openapi.Vault{}
-	vaultUrl := fmt.Sprintf("%s/thorchain/vault/%s", thornode, vault)
+	vaultUrl := fmt.Sprintf("%s/switchly/vault/%s", switchlynode, vault)
 	err = get(vaultUrl, &vaultResponse)
 	check(err, "Failed to get vault")
 
 	// get nodes at vault height
 	nodes := []openapi.Node{}
-	nodesUrl := fmt.Sprintf("%s/thorchain/nodes?height=%d", thornode, *vaultResponse.StatusSince)
+	nodesUrl := fmt.Sprintf("%s/switchly/nodes?height=%d", switchlynode, *vaultResponse.StatusSince)
 	err = get(nodesUrl, &nodes)
 	check(err, "Failed to get nodes")
 
@@ -142,10 +142,10 @@ func main() {
 	var keyshare []byte
 	start := *vaultResponse.BlockHeight - 20
 	stop := *vaultResponse.BlockHeight
-	for block := range thorscan.Scan(int(start), int(stop)) {
+	for block := range switchlyscan.Scan(int(start), int(stop)) {
 		for _, tx := range block.Txs {
 			for _, msg := range tx.Tx.GetMsgs() {
-				msgTssPool, ok := msg.(*thorchain.MsgTssPool)
+				msgTssPool, ok := msg.(*switchly.MsgTssPool)
 				if !ok {
 					continue
 				}

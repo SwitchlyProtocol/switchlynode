@@ -19,7 +19,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].coin.amount == "${OUT_AMOUNT=11241527500}"
@@ -51,12 +51,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .HALTETHCHAIN|not
 ---
@@ -74,7 +74,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
 ---
@@ -105,17 +105,17 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1 # outbound remains in queue
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="bond")]|length == 2' # 2 bond slash events
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .HALTETHCHAIN # chain halted
 ---

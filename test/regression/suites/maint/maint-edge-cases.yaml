@@ -21,7 +21,7 @@ count: 1
 ---
 # Check that maintenance status didn't change
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_cat }}
 asserts:
   - .maintenance == false
 ---
@@ -38,7 +38,7 @@ count: 1
 ---
 # Check that maintenance status didn't change
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_cat }}
 asserts:
   - .maintenance == false
 ---
@@ -48,7 +48,7 @@ type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - asset: "rune"
-    amount: "100000000000" # 100,000 RUNE (above active threshold)
+    amount: "100000000000" # 100,000 SWITCH (above active threshold)
 memo: "BOND:{{ addr_thor_fox }}"
 ---
 type: create-blocks
@@ -56,7 +56,7 @@ count: 1
 ---
 # Check fox node status before maintenance
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .total_bond == "100000000000"
   - .maintenance == false
@@ -74,7 +74,7 @@ count: 1
 ---
 # Verify maintenance flag is set to true
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .maintenance == true
 ---
@@ -92,7 +92,7 @@ count: 1
 ---
 # Check that leave request was processed but maintenance flag is still true
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .requested_to_leave == true
   - .maintenance == true
@@ -110,7 +110,7 @@ count: 1
 ---
 # Verify maintenance flag toggled back to false even for a node that's leaving
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .requested_to_leave == true
   - .maintenance == false
@@ -129,7 +129,7 @@ count: 1
 ---
 # First toggle should set it to true
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .maintenance == true
 ---
@@ -146,7 +146,7 @@ count: 1
 ---
 # Second toggle should set it back to false
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .maintenance == false
 ---
@@ -163,7 +163,7 @@ count: 1
 ---
 # Third toggle should set it to true again
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .maintenance == true
 ---
@@ -181,6 +181,6 @@ count: 1
 ---
 # Maintenance status should remain unchanged
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .maintenance == true

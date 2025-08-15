@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -50,10 +50,10 @@ asserts:
   - .balances[]|select(.denom == "rune")|.amount|tonumber == 2498998000000-2000000-10000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.end_block_events[]|select(.type=="reserve")]|length == 1'
-  - .end_block_events[]|select(.type=="reserve")|.coin == "10000 THOR.RUNE"
+  - .end_block_events[]|select(.type=="reserve")|.coin == "10000 SWITCHLY.SWITCH"
 ---
 ########################################################################################
 # swap insufficient synth for refund (synth sent to reserve)
@@ -63,7 +63,7 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "100"
     asset: "btc/btc"
-memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
 ---
 type: create-blocks
 count: 1
@@ -75,7 +75,7 @@ asserts:
   - .balances[]|select(.denom == "rune")|.amount|tonumber == 2498998000000-4000000-10000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.end_block_events[]|select(.type=="reserve")]|length == 1'
   - .end_block_events[]|select(.type=="reserve")|.coin == "100 BTC/BTC"
@@ -98,7 +98,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -107,22 +107,22 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[]|.coins[]|select(.asset=="BTC.BTC")|.amount|tonumber == 100001000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc
+endpoint: http://localhost:1317/switchly/pool/btc.btc
 asserts:
   - .balance_asset|tonumber == 100000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/scheduled
+endpoint: http://localhost:1317/switchly/queue/scheduled
 asserts:
   - length == 0
 ---

@@ -24,31 +24,31 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
-// Mock ThorchainBridge that always returns active status and correct node count
-type mockThorchainBridge struct {
-	thorclient.ThorchainBridge
+// Mock SwitchlyBridge that always returns active status and correct node count
+type mockSwitchlyBridge struct {
+	switchlyclient.SwitchlyBridge
 	activeNodes []common.PubKey
 }
 
-func (m *mockThorchainBridge) FetchNodeStatus() (stypes.NodeStatus, error) {
+func (m *mockSwitchlyBridge) FetchNodeStatus() (stypes.NodeStatus, error) {
 	return stypes.NodeStatus_Active, nil
 }
 
-func (m *mockThorchainBridge) FetchActiveNodes() ([]common.PubKey, error) {
+func (m *mockSwitchlyBridge) FetchActiveNodes() ([]common.PubKey, error) {
 	return m.activeNodes, nil
 }
 
-func (m *mockThorchainBridge) GetMimir(key string) (int64, error) {
+func (m *mockSwitchlyBridge) GetMimir(key string) (int64, error) {
 	return 0, nil
 }
 
@@ -95,11 +95,11 @@ func (s *ObserverSuite) TestAttestedTxWorkflow(c *C) {
 	logger := zlog.With().Logger()
 
 	// Create 4 validator keys
-	validatorKeys := make([]*thorclient.Keys, 4)
+	validatorKeys := make([]*switchlyclient.Keys, 4)
 	validatorPubs := make([]common.PubKey, 4)
 	for i := 0; i < 4; i++ {
 		cfg := config.BifrostClientConfiguration{
-			// ChainID: "thorchain",
+			// ChainID: "switchly",
 			// ChainHost:    server.Listener.Addr().String(),
 			// ChainRPC:     server.Listener.Addr().String(),
 			SignerName:   "validator" + fmt.Sprint(i),
@@ -112,7 +112,7 @@ func (s *ObserverSuite) TestAttestedTxWorkflow(c *C) {
 		kb := cKeys.NewInMemory(cdc)
 		_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 		c.Assert(err, IsNil)
-		keys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+		keys := switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 
 		validatorKeys[i] = keys
 		priv, err := keys.GetPrivateKey()
@@ -121,8 +121,8 @@ func (s *ObserverSuite) TestAttestedTxWorkflow(c *C) {
 		c.Assert(err, IsNil)
 	}
 
-	// Create a mock thorchain bridge
-	mockBridge := &mockThorchainBridge{
+	// Create a mock switchly bridge
+	mockBridge := &mockSwitchlyBridge{
 		activeNodes: validatorPubs, // 4 validators
 	}
 

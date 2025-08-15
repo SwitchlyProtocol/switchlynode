@@ -17,11 +17,11 @@ import (
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 )
 
 func TestTSSKeyGen(t *testing.T) { TestingT(t) }
@@ -31,7 +31,7 @@ type KeyGenTestSuite struct{}
 var _ = Suite(&KeyGenTestSuite{})
 
 func (*KeyGenTestSuite) SetUpSuite(c *C) {
-	thorchain.SetupConfigForTest()
+	switchly.SetupConfigForTest()
 }
 
 const (
@@ -70,15 +70,15 @@ func (kts *KeyGenTestSuite) TestNewTssKenGen(c *C) {
 		err := os.RemoveAll(folder)
 		c.Assert(err, IsNil)
 	}()
-	kb, _, err := thorclient.GetKeyringKeybase(folder, signerNameForTest, signerPasswordForTest)
+	kb, _, err := switchlyclient.GetKeyringKeybase(folder, signerNameForTest, signerPasswordForTest)
 	c.Assert(err, IsNil)
-	k := thorclient.NewKeysWithKeybase(kb, signerNameForTest, signerPasswordForTest)
+	k := switchlyclient.NewKeysWithKeybase(kb, signerNameForTest, signerPasswordForTest)
 	c.Assert(k, NotNil)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		c.Logf("requestUri:%s", req.RequestURI)
 	}))
-	b, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:      "thorchain",
+	b, err := switchlyclient.NewSwitchlyBridge(config.BifrostClientConfiguration{
+		ChainID:      "switchly",
 		ChainHost:    server.Listener.Addr().String(),
 		SignerName:   "bob",
 		SignerPasswd: "password",

@@ -9,11 +9,11 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -73,7 +73,7 @@ func (s *PubKeyMgrSuite) TestFetchKeys(c *C) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Logf("================>:%s", r.RequestURI)
 		switch r.RequestURI {
-		case "/thorchain/vaults/pubkeys":
+		case "/switchly/vaults/pubkeys":
 			var result openapi.VaultPubkeysResponse
 			chain := common.ETHChain.String()
 			router := "0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44"
@@ -91,7 +91,7 @@ func (s *PubKeyMgrSuite) TestFetchKeys(c *C) {
 			if _, err = w.Write(buf); err != nil {
 				c.Error(err)
 			}
-		case "/thorchain/vaults/asgard":
+		case "/switchly/vaults/asgard":
 			if _, err := w.Write([]byte(fmt.Sprintf(`[{"membership":["%s"]}]`, pk3))); err != nil {
 				c.Error(err)
 			}
@@ -99,10 +99,10 @@ func (s *PubKeyMgrSuite) TestFetchKeys(c *C) {
 	}))
 
 	cfg := config.BifrostClientConfiguration{
-		ChainID:   "thorchain",
+		ChainID:   "switchly",
 		ChainHost: server.URL[7:],
 	}
-	bridge, err := thorclient.NewThorchainBridge(cfg, nil, nil)
+	bridge, err := switchlyclient.NewSwitchlyBridge(cfg, nil, nil)
 	c.Assert(err, IsNil)
 	pubkeyMgr, err := NewPubKeyManager(bridge, nil)
 	c.Assert(err, IsNil)

@@ -32,8 +32,8 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 
 	// clear data directory
 	localLog.Debug().Msg("Clearing data directory")
-	thornodePath := filepath.Join(home, ".thornode")
-	cmdOut, err := exec.Command("rm", "-rf", thornodePath).CombinedOutput()
+	switchlynodePath := filepath.Join(home, ".switchlynode")
+	cmdOut, err := exec.Command("rm", "-rf", switchlynodePath).CombinedOutput()
 	if err != nil {
 		fmt.Println(string(cmdOut))
 		log.Fatal().Err(err).Msg("failed to clear data directory")
@@ -42,30 +42,30 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 	// use same environment for all commands
 	env := []string{
 		"HOME=" + home,
-		"SIGNER_NAME=thorchain",
+		"SIGNER_NAME=switchly",
 		"SIGNER_PASSWD=password",
-		"CHAIN_HOME_FOLDER=" + thornodePath,
-		"THOR_TENDERMINT_INSTRUMENTATION_PROMETHEUS=false",
+		"CHAIN_HOME_FOLDER=" + switchlynodePath,
+		"SWITCHLY_TENDERMINT_INSTRUMENTATION_PROMETHEUS=false",
 		// block time should be short, but all consecutive checks must complete within timeout
-		fmt.Sprintf("THOR_TENDERMINT_CONSENSUS_TIMEOUT_COMMIT=%s", time.Second*getTimeFactor()),
+		fmt.Sprintf("SWITCHLY_TENDERMINT_CONSENSUS_TIMEOUT_COMMIT=%s", time.Second*getTimeFactor()),
 		// all ports will be offset by the routine number
-		fmt.Sprintf("THOR_COSMOS_API_ADDRESS=tcp://0.0.0.0:%d", 1317+routine),
-		fmt.Sprintf("THOR_COSMOS_EBIFROST_ADDRESS=127.0.0.1:%d", 50051+routine),
-		fmt.Sprintf("THOR_TENDERMINT_RPC_LISTEN_ADDRESS=tcp://0.0.0.0:%d", 26657+routine),
-		fmt.Sprintf("THOR_TENDERMINT_P2P_LISTEN_ADDRESS=tcp://0.0.0.0:%d", 27000+routine),
+		fmt.Sprintf("SWITCHLY_COSMOS_API_ADDRESS=tcp://0.0.0.0:%d", 1317+routine),
+		fmt.Sprintf("SWITCHLY_COSMOS_EBIFROST_ADDRESS=127.0.0.1:%d", 50051+routine),
+		fmt.Sprintf("SWITCHLY_TENDERMINT_RPC_LISTEN_ADDRESS=tcp://0.0.0.0:%d", 26657+routine),
+		fmt.Sprintf("SWITCHLY_TENDERMINT_P2P_LISTEN_ADDRESS=tcp://0.0.0.0:%d", 27000+routine),
 		"CREATE_BLOCK_PORT=" + strconv.Itoa(8080+routine),
 		"GOCOVERDIR=/mnt/coverage",
 	}
 
-	// if DEBUG is set also output thornode debug logs
+	// if DEBUG is set also output switchlynode debug logs
 	debugVar := os.Getenv("DEBUG")
 	if debugVar != "" {
-		env = append(env, "THOR_TENDERMINT_LOG_LEVEL="+debugVar)
+		env = append(env, "SWITCHLY_TENDERMINT_LOG_LEVEL="+debugVar)
 	}
 
 	// init chain with dog mnemonic
 	localLog.Debug().Msg("Initializing chain")
-	cmd := exec.Command("thornode", "init", "local", "--chain-id", "thorchain", "--recover")
+	cmd := exec.Command("switchlynode", "init", "local", "--chain-id", "switchly", "--recover")
 	cmd.Stdin = bytes.NewBufferString(dogMnemonic + "\n")
 	cmd.Env = env
 	cmdOut, err = cmd.CombinedOutput()
@@ -76,7 +76,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 
 	// init keys with dog mnemonic
 	localLog.Debug().Msg("Initializing keys")
-	cmd = exec.Command("thornode", "keys", "--keyring-backend=file", "add", "--recover", "thorchain")
+	cmd = exec.Command("switchlynode", "keys", "--keyring-backend=file", "add", "--recover", "switchly")
 	cmd.Stdin = bytes.NewBufferString(dogMnemonic + "\npassword\npassword\n")
 	cmd.Env = env
 	cmdOut, err = cmd.CombinedOutput()
@@ -87,7 +87,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 
 	// init chain
 	localLog.Debug().Msg("Initializing chain")
-	cmd = exec.Command("thornode", "init", "local", "--chain-id", "thorchain", "-o")
+	cmd = exec.Command("switchlynode", "init", "local", "--chain-id", "switchly", "-o")
 	cmd.Env = env
 	cmdOut, err = cmd.CombinedOutput()
 	if err != nil {
@@ -144,7 +144,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 
 	// validate genesis
 	localLog.Debug().Msg("Validating genesis")
-	cmd = exec.Command("thornode", "genesis", "validate")
+	cmd = exec.Command("switchlynode", "genesis", "validate")
 	cmd.Env = env
 	cmdOut, err = cmd.CombinedOutput()
 	if err != nil {
@@ -152,7 +152,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 		// dump the genesis
 		fmt.Println(ColorPurple + "Genesis:" + ColorReset)
 		var f *os.File
-		f, err = os.OpenFile(filepath.Join(home, ".thornode/config/genesis.json"), os.O_RDWR, 0o644)
+		f, err = os.OpenFile(filepath.Join(home, ".switchlynode/config/genesis.json"), os.O_RDWR, 0o644)
 		if err != nil {
 			log.Fatal().Err(err).Str("path", path).Msg("failed to open genesis file")
 		}
@@ -169,7 +169,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 
 	// render config
 	localLog.Debug().Msg("Rendering config")
-	cmd = exec.Command("thornode", "render-config")
+	cmd = exec.Command("switchlynode", "render-config")
 	cmd.Env = env
 	err = cmd.Run()
 	if err != nil {
@@ -178,7 +178,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 
 	// overwrite private validator key
 	localLog.Debug().Msg("Overwriting private validator key")
-	keyPath := filepath.Join(home, ".thornode/config/priv_validator_key.json")
+	keyPath := filepath.Join(home, ".switchlynode/config/priv_validator_key.json")
 	cmd = exec.Command("cp", "/mnt/priv_validator_key.json", keyPath)
 	err = cmd.Run()
 	if err != nil {
@@ -192,12 +192,12 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 	}
 
 	// setup process io
-	thornode := exec.Command("/regtest/cover-thornode", "--log_level", logLevel, "start")
-	thornode.Env = env
+	switchlynode := exec.Command("/regtest/cover-switchlynode", "--log_level", logLevel, "start")
+	switchlynode.Env = env
 
-	stderr, err := thornode.StderrPipe()
+	stderr, err := switchlynode.StderrPipe()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to setup thornode stderr")
+		log.Fatal().Err(err).Msg("failed to setup switchlynode stderr")
 	}
 	stderrScanner := bufio.NewScanner(stderr)
 	stderrLines := make(chan string, 100)
@@ -207,22 +207,22 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 		}
 	}()
 	if debugVar != "" {
-		thornode.Stdout = os.Stdout
-		thornode.Stderr = os.Stderr
+		switchlynode.Stdout = os.Stdout
+		switchlynode.Stderr = os.Stderr
 	}
 
-	// start thornode process
-	localLog.Debug().Msg("Starting thornode")
-	err = thornode.Start()
+	// start switchlynode process
+	localLog.Debug().Msg("Starting switchlynode")
+	err = switchlynode.Start()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to start thornode")
+		log.Fatal().Err(err).Msg("failed to start switchlynode")
 	}
 
-	// wait for thornode to listen on block creation port
+	// wait for switchlynode to listen on block creation port
 	time.Sleep(time.Second)
 	for i := 0; ; i++ {
 		if i%100 == 0 {
-			localLog.Debug().Msg("Waiting for thornode to listen")
+			localLog.Debug().Msg("Waiting for switchlynode to listen")
 		}
 		time.Sleep(100 * time.Millisecond)
 		var conn net.Conn
@@ -266,7 +266,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 		}
 
 		localLog.Info().Int("line", opLines[i]).Msgf(">>> [%d] %s", stateOpCount+i+1, op.OpType())
-		returnErr = op.Execute(out, path, opLines[i], routine, thornode.Process, stderrLines)
+		returnErr = op.Execute(out, path, opLines[i], routine, switchlynode.Process, stderrLines)
 		if returnErr != nil {
 			localLog.Error().Err(returnErr).
 				Int("line", opLines[i]).
@@ -294,17 +294,17 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 		localLog.Info().Msg("All operations succeeded")
 	}
 
-	// stop thornode process
-	localLog.Debug().Msg("Stopping thornode")
-	err = thornode.Process.Signal(syscall.SIGUSR1)
+	// stop switchlynode process
+	localLog.Debug().Msg("Stopping switchlynode")
+	err = switchlynode.Process.Signal(syscall.SIGUSR1)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to stop thornode")
+		log.Fatal().Err(err).Msg("failed to stop switchlynode")
 	}
 
 	// wait for process to exit
-	_, err = thornode.Process.Wait()
+	_, err = switchlynode.Process.Wait()
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to wait for thornode")
+		log.Fatal().Err(err).Msg("failed to wait for switchlynode")
 	}
 
 	// retry context deadline exceeded errors and all errors in CI
@@ -322,7 +322,7 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 	// if failed and debug enabled restart to allow inspection
 	if returnErr != nil && os.Getenv("DEBUG") != "" {
 
-		// remove validator key (otherwise thornode will hang in begin block)
+		// remove validator key (otherwise switchlynode will hang in begin block)
 		localLog.Debug().Msg("Removing validator key")
 		cmd = exec.Command("rm", keyPath)
 		cmdOut, err = cmd.CombinedOutput()
@@ -331,22 +331,22 @@ func run(out io.Writer, path string, routine int, doneWithRetries func(path stri
 			log.Fatal().Err(err).Msg("failed to remove validator key")
 		}
 
-		// restart thornode
-		localLog.Debug().Msg("Restarting thornode")
-		thornode = exec.Command("thornode", "--log_level", logLevel, "start")
-		thornode.Env = env
-		thornode.Stdout = os.Stdout
-		thornode.Stderr = os.Stderr
-		err = thornode.Start()
+		// restart switchlynode
+		localLog.Debug().Msg("Restarting switchlynode")
+		switchlynode = exec.Command("switchlynode", "--log_level", logLevel, "start")
+		switchlynode.Env = env
+		switchlynode.Stdout = os.Stdout
+		switchlynode.Stderr = os.Stderr
+		err = switchlynode.Start()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to restart thornode")
+			log.Fatal().Err(err).Msg("failed to restart switchlynode")
 		}
 
-		// wait for thornode
-		localLog.Debug().Msg("Waiting for thornode")
-		_, err = thornode.Process.Wait()
+		// wait for switchlynode
+		localLog.Debug().Msg("Waiting for switchlynode")
+		_, err = switchlynode.Process.Wait()
 		if err != nil {
-			log.Fatal().Err(err).Msg("failed to wait for thornode")
+			log.Fatal().Err(err).Msg("failed to wait for switchlynode")
 		}
 	}
 

@@ -6,14 +6,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/network
+endpoint: http://localhost:1317/switchly/network
 asserts:
   - .rune_price_in_tor == "0"
   - .tor_price_in_rune == "0"
   - .tor_price_halted == true
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
 ---
@@ -22,7 +22,7 @@ asserts:
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 0
 ---
@@ -36,13 +36,13 @@ type: create-blocks
 count: 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .DERIVEDDEPTHBASISPTS == 10000
-  - ."TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/network
+endpoint: http://localhost:1317/switchly/network
 asserts:
   - .rune_price_in_tor == "99998801"
   - .tor_price_in_rune == "100001199"
@@ -57,7 +57,7 @@ type: create-blocks
 count: 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/network
+endpoint: http://localhost:1317/switchly/network
 asserts:
   - .rune_price_in_tor == "99997802"
   - .tor_price_in_rune == "100002198"

@@ -21,18 +21,18 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 // signedTxOutCacheSize is the number of signed tx out observations to keep in memory
 // to prevent duplicate observations. Based on historical data at the time of writing,
-// the peak of Thorchain's L1 swaps was 10k per day.
+// the peak of Switchly's L1 swaps was 10k per day.
 const signedTxOutCacheSize = 10_000
 
 // deckRefreshTime is the time to wait before reconciling txIn status.
@@ -64,7 +64,7 @@ type Observer struct {
 	globalNetworkFeeQueue chan common.NetworkFee
 	m                     *metrics.Metrics
 	errCounter            *prometheus.CounterVec
-	thorchainBridge       thorclient.ThorchainBridge
+	switchlyBridge        switchlyclient.SwitchlyBridge
 	storage               *ObserverStorage
 	tssKeysignMetricMgr   *metrics.TssKeysignMetricMgr
 
@@ -86,7 +86,7 @@ type Observer struct {
 // NewObserver create a new instance of Observer for chain
 func NewObserver(pubkeyMgr *pubkeymanager.PubKeyManager,
 	chains map[common.Chain]chainclients.ChainClient,
-	thorchainBridge thorclient.ThorchainBridge,
+	switchlyBridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics, dataPath string,
 	tssKeysignMetricMgr *metrics.TssKeysignMetricMgr,
 	attestationGossip *AttestationGossip,
@@ -131,7 +131,7 @@ func NewObserver(pubkeyMgr *pubkeymanager.PubKeyManager,
 		globalSolvencyQueue:   make(chan types.Solvency),
 		globalNetworkFeeQueue: make(chan common.NetworkFee),
 		errCounter:            m.GetCounterVec(metrics.ObserverError),
-		thorchainBridge:       thorchainBridge,
+		switchlyBridge:        switchlyBridge,
 		storage:               storage,
 		tssKeysignMetricMgr:   tssKeysignMetricMgr,
 		signedTxOutCache:      signedTxOutCache,
@@ -219,8 +219,8 @@ func (o *Observer) deck(ctx context.Context) {
 	}
 }
 
-// handleObservedTxCommitted will be called when an observed tx has been committed to thorchain,
-// notified via AttestationGossip's grpc subscription to thornode..
+// handleObservedTxCommitted will be called when an observed tx has been committed to switchly,
+// notified via AttestationGossip's grpc subscription to switchlynode..
 func (o *Observer) handleObservedTxCommitted(tx common.ObservedTx) {
 	madeChanges := false
 
@@ -265,7 +265,7 @@ func (o *Observer) handleObservedTxCommitted(tx common.ObservedTx) {
 				}
 			}
 		} else {
-			// if the tx is not final, set tx.CommittedUnFinalised to true to indicate that it has been committed to thorchain but not finalised yet.
+			// if the tx is not final, set tx.CommittedUnFinalised to true to indicate that it has been committed to switchly but not finalised yet.
 			txInItem.CommittedUnFinalised = true
 			if err := o.storage.AddOrUpdateTx(deck); err != nil {
 				o.logger.Error().Err(err).Msg("fail to update tx in storage")
@@ -299,12 +299,12 @@ func (o *Observer) handleObservedTxCommitted(tx common.ObservedTx) {
 		Str("coins", tx.Tx.Coins.String()).
 		Str("gas", common.Coins(tx.Tx.Gas).String()).
 		Str("observed_vault_pubkey", tx.ObservedPubKey.String()).
-		Msg("observed tx committed to thorchain")
+		Msg("observed tx committed to switchly")
 }
 
 func (o *Observer) sendDeck(ctx context.Context) {
 	// fetch and update active validator count on attestation gossip so it can calculate quorum
-	activeVals, err := o.thorchainBridge.FetchActiveNodes()
+	activeVals, err := o.switchlyBridge.FetchActiveNodes()
 	if err != nil {
 		o.logger.Error().Err(err).Msg("failed to get active node count")
 		return
@@ -312,7 +312,7 @@ func (o *Observer) sendDeck(ctx context.Context) {
 	o.attestationGossip.setActiveValidators(activeVals)
 
 	// check if node is active
-	nodeStatus, err := o.thorchainBridge.FetchNodeStatus()
+	nodeStatus, err := o.switchlyBridge.FetchNodeStatus()
 	if err != nil {
 		o.logger.Error().Err(err).Msg("failed to get node status")
 		return
@@ -366,9 +366,9 @@ func (o *Observer) sendDeck(ctx context.Context) {
 }
 
 func (o *Observer) sendToQuorumChecker(deck *types.TxIn, finalised bool, finaliseHeight int64) {
-	txs, err := o.getThorchainTxIns(deck, finalised, finaliseHeight)
+	txs, err := o.getSwitchlyTxIns(deck, finalised, finaliseHeight)
 	if err != nil {
-		o.logger.Error().Err(err).Msg("fail to convert txin to thorchain txins")
+		o.logger.Error().Err(err).Msg("fail to convert txin to switchly txins")
 		return
 	}
 
@@ -377,7 +377,7 @@ func (o *Observer) sendToQuorumChecker(deck *types.TxIn, finalised bool, finalis
 		return
 	}
 
-	inbound, outbound, err := o.thorchainBridge.GetInboundOutbound(txs)
+	inbound, outbound, err := o.switchlyBridge.GetInboundOutbound(txs)
 	if err != nil {
 		o.logger.Error().Err(err).Msg("fail to get inbound and outbound txs")
 		return
@@ -385,13 +385,13 @@ func (o *Observer) sendToQuorumChecker(deck *types.TxIn, finalised bool, finalis
 
 	for _, tx := range inbound {
 		if err := o.attestationGossip.AttestObservedTx(context.Background(), &tx, true); err != nil {
-			o.logger.Err(err).Msg("fail to send inbound tx to thorchain")
+			o.logger.Err(err).Msg("fail to send inbound tx to switchly")
 		}
 	}
 
 	for _, tx := range outbound {
 		if err := o.attestationGossip.AttestObservedTx(context.Background(), &tx, false); err != nil {
-			o.logger.Err(err).Msg("fail to send outbound tx to thorchain")
+			o.logger.Err(err).Msg("fail to send outbound tx to switchly")
 		}
 	}
 }
@@ -579,7 +579,7 @@ func (o *Observer) processErrataTx(ctx context.Context) {
 			}
 			// filter
 			o.filterErrataTx(errataBlock)
-			o.logger.Info().Msgf("Received a errata block %+v from the Thorchain", errataBlock.Height)
+			o.logger.Info().Msgf("Received a errata block %+v from the Switchly", errataBlock.Height)
 			for _, errataTx := range errataBlock.Txs {
 				if err := o.attestationGossip.AttestErrata(ctx, common.ErrataTx{
 					Chain: errataTx.Chain,
@@ -594,9 +594,9 @@ func (o *Observer) processErrataTx(ctx context.Context) {
 }
 
 // filterErrataTx with confirmation counting logic in place, all inbound tx to asgard will be parked and waiting for confirmation count to reach
-// the target threshold before it get forward to THORChain,  it is possible that when a re-org happened on BTC / ETH
+// the target threshold before it get forward to SWITCHLYChain,  it is possible that when a re-org happened on BTC / ETH
 // the transaction that has been re-org out ,still in bifrost memory waiting for confirmation, as such, it should be
-// removed from ondeck tx queue, and not forward it to THORChain
+// removed from ondeck tx queue, and not forward it to SWITCHLYChain
 func (o *Observer) filterErrataTx(block types.ErrataBlock) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
@@ -665,9 +665,9 @@ func (o *Observer) getSaversMemo(chain common.Chain, tx *types.TxInItem) string 
 	}
 }
 
-// getThorchainTxIns convert to the type thorchain expected
-// maybe in later THORNode can just refactor this to use the type in thorchain
-func (o *Observer) getThorchainTxIns(txIn *types.TxIn, finalized bool, finaliseHeight int64) (common.ObservedTxs, error) {
+// getSwitchlyTxIns convert to the type switchly expected
+// maybe in later SWITCHLYNode can just refactor this to use the type in switchly
+func (o *Observer) getSwitchlyTxIns(txIn *types.TxIn, finalized bool, finaliseHeight int64) (common.ObservedTxs, error) {
 	obsTxs := make(common.ObservedTxs, 0, len(txIn.TxArray))
 	o.logger.Debug().Msgf("len %d", len(txIn.TxArray))
 	for _, item := range txIn.TxArray {
@@ -782,7 +782,7 @@ func (o *Observer) processNetworkFeeQueue(ctx context.Context) {
 				continue
 			}
 			if err := o.attestationGossip.AttestNetworkFee(ctx, networkFee); err != nil {
-				o.logger.Err(err).Msg("fail to send network fee to thorchain")
+				o.logger.Err(err).Msg("fail to send network fee to switchly")
 			}
 		}
 	}

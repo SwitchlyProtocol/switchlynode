@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
   - .[0].asset == "BTC.BTC"
@@ -29,7 +29,7 @@ type: create-blocks
 count: 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
   - .[0].asset == "BTC.BTC"
@@ -60,7 +60,7 @@ type: create-blocks
 count: 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
   - .[0].asset == "BTC.BTC"

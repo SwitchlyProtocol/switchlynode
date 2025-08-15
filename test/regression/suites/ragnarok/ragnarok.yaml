@@ -8,7 +8,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 0
 ---
@@ -92,17 +92,17 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 1 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 1 }}
 asserts:
   - .observed_tx.status == "done"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/liquidity_providers
 asserts:
   - .|length == 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
   - .[0].LP_units == "400000000"
@@ -110,14 +110,14 @@ asserts:
   - .[0].pending_inbound_rune == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/liquidity_providers
 asserts:
   - .|length == 2
   - .[0].units == "200000000"
   - .[1].units == "200000000"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/savers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/savers
 asserts:
   - .|length == 0
 ---
@@ -155,12 +155,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.FOO/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/ETH.FOO/liquidity_providers
 asserts:
   - .|length == 1
   - .[0].units == "100000000"
@@ -224,7 +224,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/savers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/savers
 asserts:
   - .|length == 3
 ---
@@ -255,7 +255,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
 ---
@@ -263,7 +263,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
@@ -293,7 +293,7 @@ count: 1
 # before gas asset ragnarok should eject the token pool LP
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
 ---
@@ -327,7 +327,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -335,13 +335,13 @@ asserts:
 # first block should eject two savers
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/savers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/savers
 asserts:
   - .|length == 1
 ---
 # savers eject to the swap queue for synth -> L1 before outbound
 type: check
-endpoint: http://localhost:1317/thorchain/queue/swap
+endpoint: http://localhost:1317/switchly/queue/swap
 asserts:
   - .|length == 2
 ---
@@ -378,7 +378,7 @@ asserts:
 ---
 # cat account error
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 99
   - .txs[0].result.log | contains("trading is halted")
@@ -387,30 +387,30 @@ asserts:
 # second block should eject last saver and create outbounds for the first 2
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/savers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/savers
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/swap
+endpoint: http://localhost:1317/switchly/queue/swap
 asserts:
   - .|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 2
 ---
 # lps should be untouched
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/liquidity_providers
 asserts:
   - .|length == 2
   - .[0].units == "200000000"
   - .[1].units == "200000000"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH
 asserts:
   - .status == "Available"
 ---
@@ -450,28 +450,28 @@ asserts:
   - .balances|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/swap
+endpoint: http://localhost:1317/switchly/queue/swap
 asserts:
   - .|length == 0
 ---
 # outbounds for all savers withdrawals, synth swap, and the first LP withdrawal
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/liquidity_providers
 asserts:
   - .|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH
 asserts:
   - .status == "Staged"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 5
   - .[0].coin.amount == "${OUTPUT_AMOUNT_1=8898578}"
@@ -561,7 +561,7 @@ skip_invariants: true # last withdraw failed, but LP was removed
 ---
 # just the one lp outbound remains
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].coin.amount == "${OUTPUT_AMOUNT=85862686}"
@@ -595,11 +595,11 @@ count: 1
 skip_invariants: true # last withdraw failed, but LP was removed
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH
 asserts:
   - .status == "Suspended"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0

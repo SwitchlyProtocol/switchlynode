@@ -14,7 +14,7 @@ genesis:
       balances:
         - address: {{ addr_thor_fish }}
           coins:
-            - denom: btc/btc # For non-RUNE deposit test
+            - denom: btc/btc # For non-SWITCH deposit test
               amount: "100000000"
             - denom: rune
               amount: "10000000" # Network fee/s
@@ -50,12 +50,12 @@ asserts:
   - .balances[]|select(.denom == "rune")|.amount|tonumber == 2499998000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .total_bond == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs|length == 1
   - .txs[0]|.result.log|contains("insufficient funds")
@@ -76,7 +76,7 @@ asserts:
   - .result.value.sequence == "2"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .total_bond == "2499996000000"
 ---
@@ -100,26 +100,26 @@ endpoint: http://localhost:1317/auth/accounts/{{ addr_thor_fox }}
 asserts:
   - .result.value.sequence == "2"
 ---
-# Test non-RUNE bond attempt (a MsgDeposit for a network module which should only receive RUNE).
+# Test non-SWITCH bond attempt (a MsgDeposit for a network module which should only receive SWITCH).
 type: check
 endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fish }}
 asserts:
   - .result | length == 2
-  - .result[0].denom == ${NON_RUNE_ASSET="btc/btc"}
-  - .result[0].amount == "${NON_RUNE_AMOUNT=100000000}"
+  - .result[0].denom == ${NON_SWITCH_ASSET="btc/btc"}
+  - .result[0].amount == "${NON_SWITCH_AMOUNT=100000000}"
 ---
 type: tx-deposit
 signer: {{ addr_thor_fish }}
 coins:
-  - amount: "${NON_RUNE_AMOUNT}"
-    asset: ${NON_RUNE_ASSET}
+  - amount: "${NON_SWITCH_AMOUNT}"
+    asset: ${NON_SWITCH_ASSET}
 memo: "bond:{{ addr_thor_fish }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.code? and .code != 0)] | length == 1
-  - ..|select(.code? and .code != 0).log| contains("(bond) memos are for the (bond) module, for which messages must only contain RUNE")
+  - ..|select(.code? and .code != 0).log| contains("(bond) memos are for the (bond) module, for which messages must only contain SWITCH")

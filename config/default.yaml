@@ -401,7 +401,7 @@ bifrost:
 switchly:
   node_relay_url: https://node-relay-bot.herokuapp.com
   vault_pubkeys_cutoff_blocks: 1_000_000
-  seed_nodes_endpoint: https://thornode.ninerealms.com/switchly/nodes
+  seed_nodes_endpoint: https://switchlynode.ninerealms.com/switchly/nodes
   stagenet_admin_addresses: "sswitch1gdq9qejfy33jctztqdrg5v4hvxnytmvjhduacc" # 9R official stagenet
   telemetry:
     slash_points: false

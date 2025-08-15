@@ -10,7 +10,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -49,14 +49,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/unit/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/unit/BTC~BTC
 asserts:
   - .asset == "BTC~BTC"
   - .units|tonumber == 10000000
   - .depth|tonumber == 10000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -64,7 +64,7 @@ asserts:
   - .[0].owner == "{{ addr_thor_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs|length == 1
   - '[.txs[0].result.events[]|select(.type == "trade_account_deposit")]|length == 1'
@@ -87,14 +87,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/unit/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/unit/BTC~BTC
 asserts:
   - .asset == "BTC~BTC"
   - .units|tonumber == 5000000
   - .depth|tonumber == 5000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 2
   - .[0].asset == "BTC~BTC"
@@ -118,14 +118,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/unit/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/unit/BTC~BTC
 asserts:
   - .asset == "BTC~BTC"
   - .units|tonumber == 5000000
   - .depth|tonumber == 5000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 2
   - .[0].asset == "BTC~BTC"
@@ -149,14 +149,14 @@ type: create-blocks
 count: 9
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/unit/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/unit/BTC~BTC
 asserts:
   - .asset == "BTC~BTC"
   - .units == "${REMAINING_UNITS=9516485}"
   - .depth == "${REMAINING_UNITS}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/accounts/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/accounts/BTC~BTC
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -164,7 +164,7 @@ asserts:
   - .[0].owner == "{{ addr_thor_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -189,7 +189,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs|length == 1
   - '[.txs[0].result.events[]|select(.type == "trade_account_withdraw")]|length == 1'
@@ -199,29 +199,29 @@ asserts:
   - .txs[0].result.events[]|select(.type == "trade_account_withdraw")|.asset_address == "{{ addr_btc_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/unit/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/unit/BTC~BTC
 asserts:
   - .asset == "BTC~BTC"
   - .units|tonumber == ${NEW_REMAINING_UNITS}
   - .depth|tonumber == ${NEW_REMAINING_UNITS}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/accounts/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/accounts/BTC~BTC
 asserts:
   - .|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/inbound_addresses
+endpoint: http://localhost:1317/switchly/inbound_addresses
 asserts:
   - .[]|select(.chain == "BTC").outbound_fee == "${OUT_FEE=14000}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].in_hash == "{{ native_txid -1 }}"
@@ -252,7 +252,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -270,7 +270,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs|length == 1
   - '[.txs[0].result.events[]|select(.type == "trade_account_withdraw")]|length == 1'
@@ -280,24 +280,24 @@ asserts:
   - .txs[0].result.events[]|select(.type == "trade_account_withdraw")|.asset_address == "{{ addr_btc_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/unit/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/unit/BTC~BTC
 asserts:
   - .asset == "BTC~BTC"
   - .units == "0"
   - .depth == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/accounts/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/accounts/BTC~BTC
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"
@@ -328,6 +328,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0

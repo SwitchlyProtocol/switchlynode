@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 3
 ---
@@ -15,7 +15,7 @@ asserts:
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDC-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDC-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 0
 ---
@@ -29,23 +29,23 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .DERIVEDDEPTHBASISPTS == 10000
-  - ."TORANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999" == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.BTC
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.BTC
 asserts:
   - .status == "Available"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.ETH
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.ETH
 asserts:
   - .status == "Available"
 ---
@@ -99,12 +99,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 0
 ---
@@ -122,7 +122,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 0'
 ---
@@ -155,7 +155,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 0'
 ---
@@ -163,7 +163,7 @@ asserts:
 # open loan with rune over max supply should fail
 ########################################################################################
 type: tx-mimir
-key: MaxRuneSupply
+key: MaxSWITCHSupply
 value: 50000000000000
 signer: {{ addr_thor_dog }}
 ---
@@ -174,13 +174,13 @@ type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000"
-    asset: "THOR.RUNE"
+    asset: "SWITCHLY.SWITCH"
 memo: "LOAN+:BTC.BTC:{{ addr_btc_fox }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 0'

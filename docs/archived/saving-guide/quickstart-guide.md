@@ -2,11 +2,11 @@
 
 ## Introduction
 
-THORChain allows users to deposit Layer1 assets into its network to earn asset-denominated yield without RUNE asset exposure, or being aware of THORChain’s network.
+SWITCHLYChain allows users to deposit Layer1 assets into its network to earn asset-denominated yield without SWITCH asset exposure, or being aware of SWITCHLYChain’s network.
 
-There is no permission, authentication or prior steps, so developers can get started and allow their users to earn asset-denominated yield simply by sending layer1 transactions to THORChain vaults.
+There is no permission, authentication or prior steps, so developers can get started and allow their users to earn asset-denominated yield simply by sending layer1 transactions to SWITCHLYChain vaults.
 
-Under the hood, THORChain deposits the user’s Layer1 asset into a liquidity pool which earns yield. This yield is tracked and paid to the user’s deposit value. Users can withdraw their Layer1 asset, including the yield earned. There is no slashing, penalties, timelocks, or account minimum/maximums. The only fees paid are the Layer1 fees to make a deposit and withdraw transaction (as necessitated), and a slip-based fee on entry and exit to stop price manipulation attacks. Both of these are transparent and within the user’s control.
+Under the hood, SWITCHLYChain deposits the user’s Layer1 asset into a liquidity pool which earns yield. This yield is tracked and paid to the user’s deposit value. Users can withdraw their Layer1 asset, including the yield earned. There is no slashing, penalties, timelocks, or account minimum/maximums. The only fees paid are the Layer1 fees to make a deposit and withdraw transaction (as necessitated), and a slip-based fee on entry and exit to stop price manipulation attacks. Both of these are transparent and within the user’s control.
 
 ```admonish info
 [Streaming swaps](../swap-guide/streaming-swaps.md) is enabled for savers.
@@ -20,7 +20,7 @@ Savers Quote endpoints have been created to simplify the implementation process.
 
 **Request:** _Add 1_ _BTC to Savers_
 
-[https://thornode.ninerealms.com/thorchain/quote/saver/deposit?asset=BTC.BTC\&amount=100000000](https://thornode.ninerealms.com/thorchain/quote/saver/deposit?asset=BTC.BTC&amount=100000000)
+[https://switchlynode.ninerealms.com/switchly/quote/saver/deposit?asset=BTC.BTC\&amount=100000000](https://switchlynode.ninerealms.com/switchly/quote/saver/deposit?asset=BTC.BTC&amount=100000000)
 
 **Response:**
 
@@ -63,16 +63,16 @@ Inbound transactions should not be delayed for any reason else there is risk fun
 ```
 
 ```admonish info
-Full quote saving endpoint specification can be found here: [https://thornode.ninerealms.com/thorchain/doc/](https://thornode.ninerealms.com/thorchain/doc/).
+Full quote saving endpoint specification can be found here: [https://switchlynode.ninerealms.com/switchly/doc/](https://switchlynode.ninerealms.com/switchly/doc/).
 
-See an example implementation [here](https://replit.com/@thorchain/quoteSavers#index.js).
+See an example implementation [here](https://replit.com/@switchly/quoteSavers#index.js).
 ```
 
 **User withdrawing all of their BTC Saver's position.**
 
 **Request:** _Withdraw 100% of BTC Savers for_ `bc1qy9rjlz5w3tqn7m3reh3y48n8del4y8z42sswx5`
 
-[https://thornode.ninerealms.com/thorchain/quote/saver/withdraw?asset=BTC.BTC\&address=bc1qy9rjlz5w3tqn7m3reh3y48n8del4y8z42sswx5\&withdraw_bps=10000](https://thornode.ninerealms.com/thorchain/quote/saver/withdraw?asset=BTC.BTC&address=bc1qy9rjlz5w3tqn7m3reh3y48n8del4y8z42sswx5&withdraw_bps=10000)
+[https://switchlynode.ninerealms.com/switchly/quote/saver/withdraw?asset=BTC.BTC\&address=bc1qy9rjlz5w3tqn7m3reh3y48n8del4y8z42sswx5\&withdraw_bps=10000](https://switchlynode.ninerealms.com/switchly/quote/saver/withdraw?asset=BTC.BTC&address=bc1qy9rjlz5w3tqn7m3reh3y48n8del4y8z42sswx5&withdraw_bps=10000)
 
 **Response:**
 
@@ -107,14 +107,14 @@ Deposit and withdraw interfaces will return `inbound_address` and `memo` fields 
 
 ### Basic Mechanics
 
-Users can add assets to a vault by sending assets directly to the chain’s vault `address` found on the `/thorchain/inbound_addresses` endpoint. Quote endpoints will also return this.
+Users can add assets to a vault by sending assets directly to the chain’s vault `address` found on the `/switchly/inbound_addresses` endpoint. Quote endpoints will also return this.
 
 #### 1. Find the L1 vault address
 
-[`https://thornode.ninerealms.com/thorchain/inbound_addresses`](https://thornode.ninerealms.com/thorchain/inbound_addresses)
+[`https://switchlynode.ninerealms.com/switchly/inbound_addresses`](https://switchlynode.ninerealms.com/switchly/inbound_addresses)
 
 ```text
-curl -SL https://thornode.ninerealms.com/thorchain/inbound_addresses | jq '.[] | select(.chain == "BTC") | .address'
+curl -SL https://switchlynode.ninerealms.com/switchly/inbound_addresses | jq '.[] | select(.chain == "BTC") | .address'
 => “bc1q556ljv5y4rkdt4p46usx86esljs3xqjxyntlyd”
 ```
 
@@ -123,7 +123,7 @@ curl -SL https://thornode.ninerealms.com/thorchain/inbound_addresses | jq '.[] |
 There is a cap on how many synths can be minted as a function of liquidity depth. To do this, find `synth_mint_paused = false` on the `/pool` endpoint
 
 ```text
-curl -SL https://thornode.ninerealms.com/thorchain/pools | jq '.[] | select(.asset == "BTC.BTC") | .synth_mint_paused'
+curl -SL https://switchlynode.ninerealms.com/switchly/pools | jq '.[] | select(.asset == "BTC.BTC") | .synth_mint_paused'
 ```
 
 #### 3. Send memoless savers transactions
@@ -147,9 +147,9 @@ Specific rules for each chain and action are as follows:
 
 **Examples:**
 
-- User wants to deposit 100,000 sats (0.001 BTC): Wallet signs an inbound tx to THORChain’s BTC `/inbound_addresses` vault address from the user with 100,000 sats. This will be added to the user’s Savers position.
-- User wants to withdraw 50% of their BTC Savers position: Wallet signs an inbound with 15,000 sats `50% = 5,000 basis points + 10,000[BTC dust_threshold` to THORChain’s BTC vault
-- User wants to withdraw 10% of their ETH Savers position: Wallet signs an inbound with 1,000 wei `(10% = 1,000 basis points + 0 [ETH dust_threshold])` to THORChain’s ETH vault
+- User wants to deposit 100,000 sats (0.001 BTC): Wallet signs an inbound tx to SWITCHLYChain’s BTC `/inbound_addresses` vault address from the user with 100,000 sats. This will be added to the user’s Savers position.
+- User wants to withdraw 50% of their BTC Savers position: Wallet signs an inbound with 15,000 sats `50% = 5,000 basis points + 10,000[BTC dust_threshold` to SWITCHLYChain’s BTC vault
+- User wants to withdraw 10% of their ETH Savers position: Wallet signs an inbound with 1,000 wei `(10% = 1,000 basis points + 0 [ETH dust_threshold])` to SWITCHLYChain’s ETH vault
 - User wants to deposit 10,000 sats to their DOGE Savers position: Not possible transactions below the `dust_threshold` for each chain are ignored to prevent dust attacks.
 - User wants to deposit 20,000 sats to their BTC Savers position: Not possible with memoless, the user’s deposit will be interpreted as a `withdraw:100%`. Instead the user should use a memo.
 
@@ -175,21 +175,21 @@ The latter can be derived from the former.
 
 ```text
 saver’s address: bc1qcxssye4j6730h7ehgega3gyykkuwgdgmmpu62n
-myUnits => curl -SL https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/savers | jq '.[] | select(.asset_address == "bc1qcxssye4j6730h7ehgega3gyykkuwgdgmmpu62n") | .units'
-saverUnits => curl -SL https://thornode.ninerealms.com/thorchain/pools | jq '.[] | select(.asset == "BTC.BTC") | .savers_units'
-saverDepth => curl -SL https://thornode.ninerealms.com/thorchain/pools | jq '.[] | select(.asset == "BTC.BTC") | .savers_depth'
+myUnits => curl -SL https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/savers | jq '.[] | select(.asset_address == "bc1qcxssye4j6730h7ehgega3gyykkuwgdgmmpu62n") | .units'
+saverUnits => curl -SL https://switchlynode.ninerealms.com/switchly/pools | jq '.[] | select(.asset == "BTC.BTC") | .savers_units'
+saverDepth => curl -SL https://switchlynode.ninerealms.com/switchly/pools | jq '.[] | select(.asset == "BTC.BTC") | .savers_depth'
 ```
 
-See Asset APYs at [THORChain.net](https://thorchain.net/thorfi/savers)
+See Asset APYs at [SWITCHLYChain.net](https://switchly.net/thorfi/savers)
 
 #### Past Performance
 
 The easy way to determine lifetime performance of the savers vault is to look back 7 days, find the saver value, then compare it with the current saver value.
 
 ```admonish info
-[https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/savers](https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/savers) will show all BTC Savers
+[https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/savers](https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/savers) will show all BTC Savers
 ```
 
 ### Support
 
-Developers experiencing issues with these APIs can go to the THORChain Dev Discord for assistance. Interface developers should subscribe to the #interface-alerts channel for information pertinent to the endpoints and functionality discussed here.
+Developers experiencing issues with these APIs can go to the SWITCHLYChain Dev Discord for assistance. Interface developers should subscribe to the #interface-alerts channel for information pertinent to the endpoints and functionality discussed here.

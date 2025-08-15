@@ -10,9 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/keeper"
 )
 
 // HandlerOptions extend the SDK's AnteHandler options
@@ -26,7 +26,7 @@ type HandlerOptions struct {
 
 	BypassMinFeeMsgTypes []string
 
-	THORChainKeeper keeper.Keeper
+	SWITCHLYChainKeeper keeper.Keeper
 }
 
 // NewAnteHandler constructor
@@ -46,8 +46,8 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if options.WasmKeeper == nil {
 		return nil, errors.New("wasm keeper is required for ante builder")
 	}
-	if options.THORChainKeeper == nil {
-		return nil, errors.New("thorchain keeper is required for ante builder")
+	if options.SWITCHLYChainKeeper == nil {
+		return nil, errors.New("switchly keeper is required for ante builder")
 	}
 	if options.TXCounterStoreService == nil {
 		return nil, errors.New("wasm store service is required for ante builder")
@@ -60,7 +60,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 
 		// replace gas meter immediately after setting up ctx
-		thorchain.NewGasDecorator(options.THORChainKeeper),
+		switchly.NewGasDecorator(options.SWITCHLYChainKeeper),
 
 		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
 		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreService),
@@ -71,10 +71,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		thorchain.NewWasmExecuteAnteDecorator(options.THORChainKeeper, options.AccountKeeper, options.BankKeeper),
+		switchly.NewWasmExecuteAnteDecorator(options.SWITCHLYChainKeeper, options.AccountKeeper, options.BankKeeper),
 
-		// run thorchain-specific msg antes
-		thorchain.NewAnteDecorator(options.THORChainKeeper),
+		// run switchly-specific msg antes
+		switchly.NewAnteDecorator(options.SWITCHLYChainKeeper),
 
 		ante.NewSetPubKeyDecorator(options.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),

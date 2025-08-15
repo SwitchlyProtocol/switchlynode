@@ -25,17 +25,17 @@ count: 1
 # should not leave anything in queues
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/swap
+endpoint: http://localhost:1317/switchly/queue/swap
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/scheduled
+endpoint: http://localhost:1317/switchly/queue/scheduled
 asserts:
   - .|length == 0
 ---
@@ -43,7 +43,7 @@ asserts:
 # should emit security event
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.end_block_events[]|select(.type == "security")]|length == 1'
   - .end_block_events[]|select(.type == "security")|.msg == "evm outbound to null address"

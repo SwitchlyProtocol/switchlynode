@@ -29,22 +29,22 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/evm"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
 
 type ObserverSuite struct {
 	metrics  *metrics.Metrics
-	thorKeys *thorclient.Keys
-	bridge   thorclient.ThorchainBridge
+	thorKeys *switchlyclient.Keys
+	bridge   switchlyclient.SwitchlyBridge
 	client   *evm.EVMClient
 }
 
@@ -57,7 +57,7 @@ var _ = Suite(&ObserverSuite{})
 func (s *ObserverSuite) ResetMockClient(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.metrics)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 
 	mockEvmRPC := httptest.NewServer(
 		http.HandlerFunc(
@@ -120,19 +120,19 @@ func (s *ObserverSuite) SetUpSuite(c *C) {
 	server := httptest.NewServer(
 		http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			switch {
-			case strings.HasPrefix(req.RequestURI, thorclient.MimirEndpoint):
+			case strings.HasPrefix(req.RequestURI, switchlyclient.MimirEndpoint):
 				buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
 				c.Assert(err, IsNil)
 				_, err = rw.Write(buf)
 				c.Assert(err, IsNil)
 			case strings.HasPrefix(req.RequestURI, "/switchly/lastblock"):
-				// NOTE: weird pattern in GetBlockHeight uses first thorchain height.
+				// NOTE: weird pattern in GetBlockHeight uses first switchly height.
 				_, err := rw.Write([]byte(`[
           {
             "chain": "NOOP",
             "lastobservedin": 0,
             "lastsignedout": 0,
-            "thorchain": 0
+            "switchly": 0
           }
         ]`))
 				c.Assert(err, IsNil)
@@ -169,7 +169,7 @@ func (s *ObserverSuite) SetUpSuite(c *C) {
 	c.Assert(err, IsNil)
 
 	cfg := config.BifrostClientConfiguration{
-		ChainID:      "thorchain",
+		ChainID:      "switchly",
 		ChainHost:    server.Listener.Addr().String(),
 		ChainRPC:     server.Listener.Addr().String(),
 		SignerName:   "bob",
@@ -182,10 +182,10 @@ func (s *ObserverSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err = kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.thorKeys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 
 	c.Assert(s.thorKeys, NotNil)
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.metrics, s.thorKeys)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.metrics, s.thorKeys)
 	c.Assert(s.bridge, NotNil)
 	c.Assert(err, IsNil)
 	priv, err := s.thorKeys.GetPrivateKey()
@@ -241,7 +241,7 @@ func (s *ObserverSuite) TestProcess(c *C) {
 	err = obs.Start(context.Background())
 	c.Assert(err, IsNil)
 	time.Sleep(time.Second * 2)
-	metric, err := s.metrics.GetCounterVec(metrics.ObserverError).GetMetricWithLabelValues("fail_to_send_to_thorchain", "1")
+	metric, err := s.metrics.GetCounterVec(metrics.ObserverError).GetMetricWithLabelValues("fail_to_send_to_switchly", "1")
 	c.Assert(err, IsNil)
 	c.Check(int(testutil.ToFloat64(metric)), Equals, 0)
 
@@ -280,7 +280,7 @@ func (s *ObserverSuite) TestErrataTx(c *C) {
 	c.Assert(obs.attestationGossip.AttestSolvency(context.Background(), common.Solvency{
 		Height: 25,
 		Chain:  common.ETHChain,
-		Id:     thorchain.GetRandomTxHash(),
+		Id:     switchly.GetRandomTxHash(),
 	}), NotNil)
 	bech32Pub, err := cosmos.Bech32ifyPubKey(cosmos.Bech32PubKeyTypeAccPub, priv.PubKey())
 	c.Assert(err, IsNil)
@@ -288,7 +288,7 @@ func (s *ObserverSuite) TestErrataTx(c *C) {
 	c.Assert(obs.attestationGossip.AttestSolvency(context.Background(), common.Solvency{
 		Height: 25,
 		Chain:  common.ETHChain,
-		Id:     thorchain.GetRandomTxHash(),
+		Id:     switchly.GetRandomTxHash(),
 	}), IsNil)
 }
 
@@ -335,13 +335,13 @@ func (s *ObserverSuite) TestGetSaversMemo(c *C) {
 		BlockHeight: 1024,
 		Tx:          "tx1",
 		Memo:        "",
-		Sender:      thorchain.GetRandomETHAddress().String(),
-		To:          thorchain.GetRandomETHAddress().String(),
+		Sender:      switchly.GetRandomETHAddress().String(),
+		To:          switchly.GetRandomETHAddress().String(),
 		Coins: common.Coins{
 			common.NewCoin(usdc, cosmos.NewUint(1025)),
 		},
 		Gas:                 nil,
-		ObservedVaultPubKey: thorchain.GetRandomPubKey(),
+		ObservedVaultPubKey: switchly.GetRandomPubKey(),
 	}
 
 	// memo should be withdraw 1024 basis points
@@ -362,13 +362,13 @@ func (s *ObserverSuite) TestGetSaversMemo(c *C) {
 		BlockHeight: 1024,
 		Tx:          "tx1",
 		Memo:        "",
-		Sender:      thorchain.GetRandomBTCAddress().String(),
-		To:          thorchain.GetRandomBTCAddress().String(),
+		Sender:      switchly.GetRandomBTCAddress().String(),
+		To:          switchly.GetRandomBTCAddress().String(),
 		Coins: common.Coins{
 			common.NewCoin(common.BTCAsset, cosmos.NewUint(1001)),
 		},
 		Gas:                 nil,
-		ObservedVaultPubKey: thorchain.GetRandomPubKey(),
+		ObservedVaultPubKey: switchly.GetRandomPubKey(),
 	}
 
 	// memo should be empty, amount not above dust threshold
@@ -539,7 +539,7 @@ func (s *ObserverSuite) TestObserverDeckStorage(c *C) {
 		key := TxInKey(txInMempool)
 		assertTxExists(observer, key, txID.String())
 
-		// Simulate non-final observation in Thorchain
+		// Simulate non-final observation in Switchly
 		observedTxMempool := common.ObservedTx{
 			Tx: common.Tx{
 				ID:          txID,
@@ -582,7 +582,7 @@ func (s *ObserverSuite) TestObserverDeckStorage(c *C) {
 		// Should still be in both memory and storage
 		assertTxExists(observer, key, txID.String())
 
-		// Simulate non-final observation in Thorchain (still not enough confirmations)
+		// Simulate non-final observation in Switchly (still not enough confirmations)
 		observedTxBlock := common.ObservedTx{
 			Tx: common.Tx{
 				ID:          txID,
@@ -662,7 +662,7 @@ func (s *ObserverSuite) TestObserverDeckStorage(c *C) {
 		key := TxInKey(txInBlock)
 		assertTxExists(observer, key, txID.String())
 
-		// Simulate non-final observation in Thorchain
+		// Simulate non-final observation in Switchly
 		observedTxNonFinal := common.ObservedTx{
 			Tx: common.Tx{
 				ID:          txID,
@@ -741,7 +741,7 @@ func (s *ObserverSuite) TestObserverDeckStorage(c *C) {
 		key := TxInKey(txFinal)
 		assertTxExists(observer, key, txID.String())
 
-		// Simulate final observation in Thorchain (already final since BlockHeight == FinaliseHeight)
+		// Simulate final observation in Switchly (already final since BlockHeight == FinaliseHeight)
 		observedTx := common.ObservedTx{
 			Tx: common.Tx{
 				ID:          txID,
@@ -758,7 +758,7 @@ func (s *ObserverSuite) TestObserverDeckStorage(c *C) {
 
 		observer.handleObservedTxCommitted(observedTx)
 
-		// Simulate final observation in Thorchain (already final since BlockHeight == FinaliseHeight)
+		// Simulate final observation in Switchly (already final since BlockHeight == FinaliseHeight)
 		// observe from both vaults
 		observedTx = common.ObservedTx{
 			Tx: common.Tx{

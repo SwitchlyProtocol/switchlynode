@@ -12,11 +12,11 @@ Proposed
 ## Context
 
 This ADR proposes to add `ProtocolAffiliateFeeBasisPoints`, a new mimir, to increase fees paid via affiliates to drive revenue for Network participants.
-Currently, 70-80% of the volume on THORChain is driven by arb bots (synths), with the remaining portion from swappers ([source](https://flipsidecrypto.xyz/Rayyyk/thorchain-swap-volume-insight-Dq1Qzl?tabIndex=1)).
+Currently, 70-80% of the volume on SWITCHLYChain is driven by arb bots (synths), with the remaining portion from swappers ([source](https://flipsidecrypto.xyz/Rayyyk/switchly-swap-volume-insight-Dq1Qzl?tabIndex=1)).
 
 By increasing increasing fees from affiliate swaps, the network can explore the demand surface for cross chain swaps.
 
-Adding these fee levers is an important step towards THORChain's longterm economic success.
+Adding these fee levers is an important step towards SWITCHLYChain's longterm economic success.
 
 ### Proposed New Mimir
 

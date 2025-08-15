@@ -1,9 +1,9 @@
 # Quick Start Guide
 
-[Lending](https://docs.thorchain.org/thorchain-finance/lending) allows users to deposit native collateral, and then create a debt at a collateralization ratio `CR` (collateralization ratio). The debt is always denominated in USD (aka `TOR`) regardless of what L1 asset the user receives.
+[Lending](https://docs.switchly.org/switchly-finance/lending) allows users to deposit native collateral, and then create a debt at a collateralization ratio `CR` (collateralization ratio). The debt is always denominated in USD (aka `SWITCHLY`) regardless of what L1 asset the user receives.
 
 ```admonish info
-Lending will be moved to the App Layer; new loans within THORChain can no longer be opened.
+Lending will be moved to the App Layer; new loans within SWITCHLYChain can no longer be opened.
 ```
 
 ## Open a Loan Quote
@@ -12,7 +12,7 @@ Lending Quote endpoints have been created to simplify the implementation process
 
 **Request:** Loan quote using 1 BTC as collateral, target debt asset is USDT at 0XDAC17F958D2EE523A2206206994597C13D831EC7
 
-[https://thornode.ninerealms.com/thorchain/quote/loan/open?from_asset=BTC.BTC\&amount=10000000\&to_asset=ETH.USDT-0xdac17f958d2ee523a2206206994597c13d831ec7\&destination=0xe7062003a7be4df3a86127293a0d6b1f54c04220](https://thornode.ninerealms.com/thorchain/quote/loan/open?from_asset=BTC.BTC&amount=10000000&to_asset=ETH.USDT-0xdac17f958d2ee523a2206206994597c13d831ec7&destination=0xe7062003a7be4df3a86127293a0d6b1f54c04220)
+[https://switchlynode.ninerealms.com/switchly/quote/loan/open?from_asset=BTC.BTC\&amount=10000000\&to_asset=ETH.USDT-0xdac17f958d2ee523a2206206994597c13d831ec7\&destination=0xe7062003a7be4df3a86127293a0d6b1f54c04220](https://switchlynode.ninerealms.com/switchly/quote/loan/open?from_asset=BTC.BTC&amount=10000000&to_asset=ETH.USDT-0xdac17f958d2ee523a2206206994597c13d831ec7&destination=0xe7062003a7be4df3a86127293a0d6b1f54c04220)
 
 **Response:**
 
@@ -51,12 +51,12 @@ The `Inbound_Address` changes regularly, do not cache!
 ```
 
 ```admonish warning
-Loans cannot be repaid until a minimum time has passed, as determined by [LOANREPAYMENTMATURITY](https://thornode.ninerealms.com/thorchain/mimir), which is currently set as the current block height plus LOANREPAYMENTMATURITY. Currently, LOANREPAYMENTMATURITY is set to 432,000 blocks, equivalent to 30 days. Increasing the collateral on an existing loan to obtain additional debt resets the period.
+Loans cannot be repaid until a minimum time has passed, as determined by [LOANREPAYMENTMATURITY](https://switchlynode.ninerealms.com/switchly/mimir), which is currently set as the current block height plus LOANREPAYMENTMATURITY. Currently, LOANREPAYMENTMATURITY is set to 432,000 blocks, equivalent to 30 days. Increasing the collateral on an existing loan to obtain additional debt resets the period.
 ```
 
 ## **Close a Loan**
 
-**Request**: Repay a loan using USDT where BTC.BTC was used as collateral. Note any asset can be used to repay a loan. [https://thornode.ninerealms.com/thorchain/quote/loan/close?from_asset=ETH.USDT&repay_bps=100&to_asset=BTC.BTC&loan_owner=bc1qfj7q8segu8wqvgahyvxnx8wgxpkev8f4dfswd2&min_out=862898890000](https://thornode.ninerealms.com/thorchain/quote/loan/close?from_asset=ETH.USDT&repay_bps=100&to_asset=BTC.BTC&loan_owner=bc1qfj7q8segu8wqvgahyvxnx8wgxpkev8f4dfswd2&min_out=862898890000)
+**Request**: Repay a loan using USDT where BTC.BTC was used as collateral. Note any asset can be used to repay a loan. [https://switchlynode.ninerealms.com/switchly/quote/loan/close?from_asset=ETH.USDT&repay_bps=100&to_asset=BTC.BTC&loan_owner=bc1qfj7q8segu8wqvgahyvxnx8wgxpkev8f4dfswd2&min_out=862898890000](https://switchlynode.ninerealms.com/switchly/quote/loan/close?from_asset=ETH.USDT&repay_bps=100&to_asset=BTC.BTC&loan_owner=bc1qfj7q8segu8wqvgahyvxnx8wgxpkev8f4dfswd2&min_out=862898890000)
 
 **Response:**
 
@@ -93,13 +93,13 @@ Loans cannot be repaid until a minimum time has passed, as determined by [LOANRE
 }
 ```
 
-_If you send 8637.17 USDT with a memo `$-:BTC.BTC:bc1q089j003xwj07uuavt2as5r45a95k5zzrhe4ac3` of you will repay your loan off and cancel out the debt of 862898890000 TOR. This includes a 15 pbs slip._
+_If you send 8637.17 USDT with a memo `$-:BTC.BTC:bc1q089j003xwj07uuavt2as5r45a95k5zzrhe4ac3` of you will repay your loan off and cancel out the debt of 862898890000 SWITCHLY. This includes a 15 pbs slip._
 
 ### **Borrowers Position**
 
 **Request:**\
 Get brower's position in the BTC pool who tool out a loan from `bc1q089j003xwj07uuavt2as5r45a95k5zzrhe4ac3`\
-[https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/borrower/bc1q089j003xwj07uuavt2as5r45a95k5zzrhe4ac3](https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/borrower/bc1q089j003xwj07uuavt2as5r45a95k5zzrhe4ac3)\
+[https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/borrower/bc1q089j003xwj07uuavt2as5r45a95k5zzrhe4ac3](https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/borrower/bc1q089j003xwj07uuavt2as5r45a95k5zzrhe4ac3)\
 
 **Response:**
 
@@ -118,18 +118,18 @@ Get brower's position in the BTC pool who tool out a loan from `bc1q089j003xwj07
 }
 ```
 
-_The borrower has provided 0.0997 BTC and had a TOR debt of $1149.78. The loan has been fully repaid._
+_The borrower has provided 0.0997 BTC and had a SWITCHLY debt of $1149.78. The loan has been fully repaid._
 
-All Borrowers position can be seen at [https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/borrowers](https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/borrowers)
+All Borrowers position can be seen at [https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/borrowers](https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/borrowers)
 
 ## More Information
 
-1. [Lending Documentation](https://docs.thorchain.org/thorchain-finance/lending)
-1. [Lending Module](https://thornode.ninerealms.com/thorchain/balance/module/lending)
-1. [Leanding Mint and Burn Chart](https://thorcharts.org/thorchain_lending_rune_burned)
+1. [Lending Documentation](https://docs.switchly.org/switchly-finance/lending)
+1. [Lending Module](https://switchlynode.ninerealms.com/switchly/balance/module/lending)
+1. [Leanding Mint and Burn Chart](https://thorcharts.org/switchly_lending_rune_burned)
 1. [Lending Health Dashboard](https://dashboards.ninerealms.com/#lending)
-1. [Other Lending Resources](https://docs.thorchain.org/thorchain-finance/lending#lending-resources)
+1. [Other Lending Resources](https://docs.switchly.org/switchly-finance/lending#lending-resources)
 
 ### Support
 
-Developers experiencing issues with these APIs can go to the THORChain Dev Discord for assistance. Interface developers should subscribe to the #interface-alerts channel for information pertinent to the endpoints and functionality discussed here.
+Developers experiencing issues with these APIs can go to the SWITCHLYChain Dev Discord for assistance. Interface developers should subscribe to the #interface-alerts channel for information pertinent to the endpoints and functionality discussed here.

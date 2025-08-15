@@ -14,28 +14,28 @@ import (
 	. "gopkg.in/check.v1"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 )
 
 const Mainnet = 1
 
 type BlockScannerTestSuite struct {
 	m      *metrics.Metrics
-	bridge thorclient.ThorchainBridge
-	keys   *thorclient.Keys
+	bridge switchlyclient.SwitchlyBridge
+	keys   *switchlyclient.Keys
 }
 
 var _ = Suite(&BlockScannerTestSuite{})
 
 func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
-	thorchain.SetupConfigForTest()
+	switchly.SetupConfigForTest()
 	s.m = GetMetricForTest(c)
 	c.Assert(s.m, NotNil)
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       "localhost",
 		SignerName:      "bob",
 		SignerPasswd:    "password",
@@ -48,16 +48,16 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	thorKeys := switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 	c.Assert(err, IsNil)
 	s.keys = thorKeys
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, thorKeys)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.m, thorKeys)
 	c.Assert(err, IsNil)
 }
 
 func getConfigForTest() config.BifrostBlockScannerConfiguration {
 	return config.BifrostBlockScannerConfiguration{
-		StartBlockHeight:           1, // avoids querying thorchain for block height
+		StartBlockHeight:           1, // avoids querying switchly for block height
 		BlockScanProcessors:        1,
 		HTTPRequestTimeout:         time.Second,
 		HTTPRequestReadTimeout:     time.Second * 30,

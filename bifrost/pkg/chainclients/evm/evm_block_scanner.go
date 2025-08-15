@@ -29,15 +29,15 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/signercache"
 	. "github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/common/tokenlist"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/aggregators"
-	memo "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/aggregators"
+	memo "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ type EVMScanner struct {
 	blockMetaAccessor     evm.BlockMetaAccessor
 	globalErrataQueue     chan<- stypes.ErrataBlock
 	globalNetworkFeeQueue chan<- common.NetworkFee
-	bridge                thorclient.ThorchainBridge
+	bridge                switchlyclient.SwitchlyBridge
 	pubkeyMgr             pubkeymanager.PubKeyValidator
 	eipSigner             etypes.Signer
 	currentBlockHeight    int64
@@ -79,7 +79,7 @@ func NewEVMScanner(cfg config.BifrostBlockScannerConfiguration,
 	chainID *big.Int,
 	ethClient *ethclient.Client,
 	ethRpc *evm.EthRPC,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	pubkeyMgr pubkeymanager.PubKeyValidator,
 	solvencyReporter SolvencyReporter,
@@ -275,7 +275,7 @@ func (e *EVMScanner) FetchTxs(height, chainHeight int64) (stypes.TxIn, error) {
 	e.reportNetworkFee(height)
 	if e.solvencyReporter != nil {
 		if err = e.solvencyReporter(height); err != nil {
-			e.logger.Err(err).Msg("failed to report Solvency info to THORNode")
+			e.logger.Err(err).Msg("failed to report Solvency info to SWITCHLYNode")
 		}
 	}
 
@@ -655,7 +655,7 @@ func (e *EVMScanner) processReorg(header *etypes.Header) ([]stypes.TxIn, error) 
 // reprocessTx is initiated when the chain client detects a reorg. It reads block
 // metadata from local storage and processes all transactions, sending an RPC request to
 // check each transaction's existence. If a transaction no longer exists, the chain
-// client reports this to Thorchain.
+// client reports this to Switchly.
 //
 // The []int64 return value represents the block heights to be rescanned.
 func (e *EVMScanner) reprocessTxs() ([]int64, error) {
@@ -718,7 +718,7 @@ func (e *EVMScanner) reprocessTxs() ([]int64, error) {
 
 // --------------------------------- gas ---------------------------------
 
-// updateGasPrice calculates and stores the current gas price to reported to thornode
+// updateGasPrice calculates and stores the current gas price to reported to switchlynode
 func (e *EVMScanner) updateGasPrice(prices []*big.Int) {
 	// skip empty blocks
 	if len(prices) == 0 {
@@ -759,7 +759,7 @@ func (e *EVMScanner) updateGasPrice(prices []*big.Int) {
 	e.m.GetCounter(metrics.GasPriceChange(e.cfg.ChainID)).Inc()
 }
 
-// reportNetworkFee reports current network fee to thornode
+// reportNetworkFee reports current network fee to switchlynode
 func (e *EVMScanner) reportNetworkFee(height int64) {
 	gasPrice := e.GetGasPrice()
 
@@ -788,7 +788,7 @@ func (e *EVMScanner) reportNetworkFee(height int64) {
 	// gas price to 1e8 from 1e18
 	tcGasPrice := new(big.Int).Div(gasPrice, big.NewInt(1e10))
 
-	// post to thorchain
+	// post to switchly
 	e.globalNetworkFeeQueue <- common.NetworkFee{
 		Chain:           e.cfg.ChainID,
 		Height:          height,
@@ -835,7 +835,7 @@ func (e *EVMScanner) getTxInFromTransaction(tx *etypes.Transaction, receipt *ety
 		if txInItem.Sender == txInItem.To {
 			// When the Sender and To is the same then there's no balance chance whatever the Coins,
 			// and for Tx-received Valid() a non-zero Amount is needed to observe
-			// the transaction fees (THORChain gas cost) of unstuck.go's cancel transactions.
+			// the transaction fees (SWITCHLYChain gas cost) of unstuck.go's cancel transactions.
 			observableAmount := e.cfg.ChainID.DustThreshold()
 			txInItem.Coins = common.NewCoins(common.NewCoin(txInItem.Gas[0].Asset, observableAmount))
 
@@ -851,12 +851,12 @@ func (e *EVMScanner) getTxInFromTransaction(tx *etypes.Transaction, receipt *ety
 }
 
 // isToValidContractAddress this method make sure the transaction to address is to
-// THORChain router or a whitelist address
+// SWITCHLYChain router or a whitelist address
 func (e *EVMScanner) isToValidContractAddress(addr *ecommon.Address, includeWhiteList bool) bool {
 	if addr == nil {
 		return false
 	}
-	// get the smart contract used by thornode
+	// get the smart contract used by switchlynode
 	contractAddresses := e.pubkeyMgr.GetContracts(e.cfg.ChainID)
 	if includeWhiteList {
 		contractAddresses = append(contractAddresses, e.whitelistContracts...)
@@ -943,7 +943,7 @@ func (e *EVMScanner) getTxInFromSmartContract(tx *etypes.Transaction, receipt *e
 
 // getTxInFromFailedTransaction when a transaction failed due to out of gas, this method
 // will check whether the transaction is an outbound it fake a txInItem if the failed
-// transaction is an outbound , and report it back to thornode, thus the gas fee can be
+// transaction is an outbound , and report it back to switchlynode, thus the gas fee can be
 // subsidised need to know that this will also cause the vault that send
 // out the outbound to be slashed 1.5x gas it is for security purpose
 func (e *EVMScanner) getTxInFromFailedTransaction(tx *etypes.Transaction, receipt *etypes.Receipt) *stypes.TxInItem {

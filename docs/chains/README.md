@@ -1,20 +1,20 @@
 # New Chain Integrations
 
-Integrating a new chain into THORChain is an inherently risky process. THORChain inherits the risks (and value) from each chain it connects. Node operators take on risk and cost by adding new chains. Chains should be economically-significant, acceptable risk, and reasonable cost to be considered.
+Integrating a new chain into SWITCHLYChain is an inherently risky process. SWITCHLYChain inherits the risks (and value) from each chain it connects. Node operators take on risk and cost by adding new chains. Chains should be economically-significant, acceptable risk, and reasonable cost to be considered.
 
 ## **Phase I: Data Gathering and Initial Proposal**
 
-Chains should meet a minimum standard to remain listed on THORChain.
+Chains should meet a minimum standard to remain listed on SWITCHLYChain.
 
 - meet initial listing standards
 - meet pool depth, volume, LP count requirements
 
-A chain that changes its characteristics for the worse, or drops in uptake on THORChain may cause the following issues:
+A chain that changes its characteristics for the worse, or drops in uptake on SWITCHLYChain may cause the following issues:
 
 - become centralised and introduce a risk to the network
 - lose adoption and thus be costly to subsidise for the network
 
-Chains should meet a minimum standard of the following before being listed on THORChain.
+Chains should meet a minimum standard of the following before being listed on SWITCHLYChain.
 
 - decentralisation
 - ossification
@@ -24,13 +24,13 @@ Chains should meet a minimum standard of the following before being listed on TH
 
 ### **Chain Consequences:**
 
-A chain that fails on THORChain may have the following affects:
+A chain that fails on SWITCHLYChain may have the following affects:
 
 - Infinite Mint bug causes theft of pooled assets from LPs
-- Impact to reliability of THORNodes (poor sync, halted churn, double-spend txOuts)
+- Impact to reliability of SWITCHLYNodes (poor sync, halted churn, double-spend txOuts)
 - Poor LP uptake causes low fee revenue for that chain
 - Waste of developer resources to support the chain
-- Disruption to THORChain when Ragnaroking the chain
+- Disruption to SWITCHLYChain when Ragnaroking the chain
 
 ### **Detailed Requirements:**
 
@@ -49,8 +49,8 @@ A new chain to be added should meet the following requirements:
 
 #### _Economic Value_
 
-- Must not be less than 10% of THORChain's FDV
-- Must have existing daily volumes not less than 10% of $RUNE volumes
+- Must not be less than 10% of SWITCHLYChain's FDV
+- Must have existing daily volumes not less than 10% of $SWITCH volumes
 - If PoW, must not take longer than 1hour to conf-count a $1k swap
 
 #### _Developer Support_
@@ -60,24 +60,24 @@ A new chain to be added should meet the following requirements:
 
 #### _Community_
 
-- Must have users that exceed 10% of THORChain's on-chain users
+- Must have users that exceed 10% of SWITCHLYChain's on-chain users
 
 ### **Removing Chains**
 
-Chains should meet a minimum standard to remain listed on THORChain.
+Chains should meet a minimum standard to remain listed on SWITCHLYChain.
 
 - meet initial listing standards
 - meet pool depth, volume, LP count requirements
 
-A chain that changes its characteristics for the worse, or drops in uptake on THORChain may cause the following issues:
+A chain that changes its characteristics for the worse, or drops in uptake on SWITCHLYChain may cause the following issues:
 
 - become centralised and introduce a risk to the network
 - lose adoption and thus be costly to subsidise for the network
 
-A chain should be purged from THORChain if any of the following are sustained over a 6 month period:
+A chain should be purged from SWITCHLYChain if any of the following are sustained over a 6 month period:
 
 - Breach any of New Chain Standards set out above
-- Have a base asset pool depth that drops below `MINRUNEPOOLDEPTH`
+- Have a base asset pool depth that drops below `MINSWITCHPOOLDEPTH`
 - Have daily volumes that drop below $1k for an entire `POOLCYCLE`
 - Have less than 100 LPs
 
@@ -91,7 +91,7 @@ Prompt Node Operators to vote on `Halt<Proposed-Chain>Chain=1` view Node Mimir. 
 
 ## **Phase II: Development, Testing, and Auditing**
 
-1. _Chain Client Development Period:_ Community devs of the Proposed Chain build the Bifrost Chain Client, and open a PR to [`thornode`](https://gitlab.com/thorchain/thornode) (referencing the Gitlab issue created in the discussion phase), and [`node-launcher`](https://gitlab.com/thorchain/node-launcher) repos.
+1. _Chain Client Development Period:_ Community devs of the Proposed Chain build the Bifrost Chain Client, and open a PR to [`switchlynode`](https://gitlab.com/switchly/switchlynode) (referencing the Gitlab issue created in the discussion phase), and [`node-launcher`](https://gitlab.com/switchly/node-launcher) repos.
 
    1. All PRs should meet the public requirements set forth in [Technical Requirements and Guidelines](#technical-requirements-and-guidelines).
 
@@ -102,20 +102,20 @@ _Functionality to be tested:_
 - Swapping to/from the asset
 - Adding/withdrawing assets on the chain
 - Minting/burning synths
-- Registering a thorname for the chain
+- Registering a switchlyname for the chain
 - Vault funding
 - Vault churning
 - Inbound addresses returned correctly
 - Insolvency on the chain halts the chain
 - Unauthorised tx on the chain (double-spend) halts the chain
-- Chain client does not sign outbound when `HaltSigning<Chain>` is set non-zero (and lower than the THORChain height)
+- Chain client does not sign outbound when `HaltSigning<Chain>` is set non-zero (and lower than the SWITCHLYChain height)
 
 _Usage requirements:_
 
 - 100 inbound transactions on stagenet
 - 100 outbound transactions on stagenet
-- 100 RUNE of aggregate add liquidity transactions on stagenet
-- 100 RUNE of aggregate withdraw liquidity transactions on stagenet
+- 100 SWITCH of aggregate add liquidity transactions on stagenet
+- 100 SWITCH of aggregate withdraw liquidity transactions on stagenet
 
 3. **Chain Client Audit:** An expert of the chain (that is not the author) must independently review the chain client and sign off on the safety and validity of its implementation. The final audit must be included in the chain client Pull Request under `bifrost/pkg/chainclients/<chain-name>`.
 
@@ -137,18 +137,18 @@ The following steps will be performed by the core team and Nine Realms for the f
 
 ## Technical Requirements and Guidelines
 
-A new Chain Integration must include a pull request to [`thornode`](https://gitlab.com/thorchain/thornode) (referencing the Gitlab issue created in the discussion phase) and [`node-launcher`](https://gitlab.com/thorchain/node-launcher).
+A new Chain Integration must include a pull request to [`switchlynode`](https://gitlab.com/switchly/switchlynode) (referencing the Gitlab issue created in the discussion phase) and [`node-launcher`](https://gitlab.com/switchly/node-launcher).
 
-### **Thornode PR Requirements**
+### **Switchlynode PR Requirements**
 
 1. Ensure a "mocknet" (local development network) service for the chain daemon is be added (`build/docker/docker-compose.yml`).
 1. Ensure **70% or greater** unit test coverage.
 1. Ensure a `<chain>_DISABLED` environment variable is respected in the Bifrost initialization script at `build/scripts/bifrost.sh`.
 1. Lead a live walkthrough (PR author) with the core team, Nine Realms, and any other interested community members. During the walkthrough the author must be able to speak to the questions in (#chain-client-implementation-considerations).
-1. Can an inbound transaction be "spoofed" - i.e. can the Chain Client be tricked into thinking value was transferred into THORChain, when it actually was not?
+1. Can an inbound transaction be "spoofed" - i.e. can the Chain Client be tricked into thinking value was transferred into SWITCHLYChain, when it actually was not?
 1. Does the chain client properly whitelist valid assets and reject invalid assets?
-1. Does the chain client properly convert asset values to/from the 8 decimal point standard of thornode?
-1. Is gas reporting deterministic? Every Bifrost must agree, or THORChain will not reach consensus.
+1. Does the chain client properly convert asset values to/from the 8 decimal point standard of switchlynode?
+1. Is gas reporting deterministic? Every Bifrost must agree, or SWITCHLYChain will not reach consensus.
 1. Does the chain client properly report solvency of Asgard vaults?
 
 #### **Node Launcher PR Requirements**

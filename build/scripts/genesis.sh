@@ -17,13 +17,33 @@ genesis_init() {
   init_chain
   create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
-  VALIDATOR=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
+  VALIDASWITCHLY=$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)
   NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
   NODE_PUB_KEY=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -p --keyring-backend file | switchlynode pubkey)
   VERSION=$(fetch_version)
 
-  NODE_IP_ADDRESS=${EXTERNAL_IP:=$(curl -s http://whatismyip.akamai.com)}
-  add_node_account "$NODE_ADDRESS" "$VALIDATOR" "$NODE_PUB_KEY" "$VERSION" "$NODE_ADDRESS" "$NODE_PUB_KEY_ED25519" "$NODE_IP_ADDRESS"
+  # For mocknet genesis node, use proper IP detection
+  if [ "$NET" = "mocknet" ] && [ -n "$EXTERNAL_IP" ]; then
+    NODE_IP_ADDRESS="$EXTERNAL_IP"
+    echo "Using preset mocknet IP: $NODE_IP_ADDRESS"
+  elif [ "$NET" = "mocknet" ]; then
+    # Docker container IP detection for genesis node
+    if command -v hostname >/dev/null 2>&1; then
+      DOCKER_IP="$(hostname -I 2>/dev/null | awk '{print $1}' | head -n1)"
+      if [ -n "$DOCKER_IP" ] && [ "$DOCKER_IP" != "127.0.0.1" ]; then
+        NODE_IP_ADDRESS="$DOCKER_IP"
+      else
+        NODE_IP_ADDRESS="$(hostname -i 2>/dev/null || echo '172.18.0.6')"
+      fi
+    else
+      NODE_IP_ADDRESS="172.18.0.6"
+    fi
+    echo "Detected mocknet genesis IP: $NODE_IP_ADDRESS"
+  else
+    NODE_IP_ADDRESS=$(curl -s http://whatismyip.akamai.com)
+    echo "Using external IP: $NODE_IP_ADDRESS"
+  fi
+  add_node_account "$NODE_ADDRESS" "$VALIDASWITCHLY" "$NODE_PUB_KEY" "$VERSION" "$NODE_ADDRESS" "$NODE_PUB_KEY_ED25519" "$NODE_IP_ADDRESS"
   add_account "$NODE_ADDRESS" switch 100000000000
 
   # disable default bank transfer, and opt to use our own custom one
@@ -40,7 +60,7 @@ genesis_init() {
     add_account tswitch18s83m747vmre2ljw45t7dlmju96zmt03humlvj switch 25000000000100
     add_account tswitch1tyry86qensp4ws4enudkrjrw408x559ghwe7xy switch 5090000000000
 
-    # local cluster accounts (2M RUNE)
+    # local cluster accounts (2M SWITCH)
     add_account tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9pxf4cw9 switch 200000000000000 # cat
     add_account tswitch1swe4u2gw9vlze677fgseyka0tu0zgmp2wkdktk switch 200000000000000 # dog
     add_account tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4gvwq05 switch 200000000000000 # fox

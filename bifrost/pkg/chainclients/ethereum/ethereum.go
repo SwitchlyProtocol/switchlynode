@@ -33,15 +33,15 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/aggregators"
-	mem "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/aggregators"
+	mem "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 )
 
 const (
@@ -57,11 +57,11 @@ type Client struct {
 	chainID                 *big.Int
 	kw                      *evm.KeySignWrapper
 	ethScanner              *ETHScanner
-	bridge                  thorclient.ThorchainBridge
+	bridge                  switchlyclient.SwitchlyBridge
 	blockScanner            *blockscanner.BlockScanner
 	vaultABI                *abi.ABI
 	pubkeyMgr               pubkeymanager.PubKeyValidator
-	poolMgr                 thorclient.PoolManager
+	poolMgr                 switchlyclient.PoolManager
 	asgardAddresses         []common.Address
 	lastAsgard              time.Time
 	tssKeySigner            *tss.KeySign
@@ -73,13 +73,13 @@ type Client struct {
 }
 
 // NewClient create new instance of Ethereum client
-func NewClient(thorKeys *thorclient.Keys,
+func NewClient(thorKeys *switchlyclient.Keys,
 	cfg config.BifrostChainConfiguration,
 	server *tssp.TssServer,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	pubkeyMgr pubkeymanager.PubKeyValidator,
-	poolMgr thorclient.PoolManager,
+	poolMgr switchlyclient.PoolManager,
 ) (*Client, error) {
 	if thorKeys == nil {
 		return nil, fmt.Errorf("fail to create ETH client,thor keys is empty")
@@ -104,7 +104,7 @@ func NewClient(thorKeys *thorclient.Keys,
 	}
 
 	if bridge == nil {
-		return nil, errors.New("THORChain bridge is nil")
+		return nil, errors.New("SWITCHLYChain bridge is nil")
 	}
 	if pubkeyMgr == nil {
 		return nil, errors.New("pubkey manager is nil")
@@ -201,7 +201,7 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	c.wg.Add(1)
 	go c.unstuck()
 	c.wg.Add(1)
-	go runners.SolvencyCheckRunner(c.GetChain(), c, c.bridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
+	go runners.SolvencyCheckRunner(c.GetChain(), c, c.bridge, c.stopchan, c.wg, constants.SwitchlyBlockTime)
 }
 
 // Stop ETH client
@@ -527,10 +527,10 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 		// if chain gas is zero we are still filling our gas price buffer, use outbound rate
 		gasRate = c.convertSwitchlyProtocolAmountToWei(big.NewInt(tx.GasRate))
 	} else {
-		// Thornode uses a gas rate 1.5x the reported network fee for the rate and computed
+		// Switchlynode uses a gas rate 1.5x the reported network fee for the rate and computed
 		// max gas to ensure the rate is sufficient when it is signed later. Since we now know
 		// the more recent rate, we will use our current rate with a lower bound on 2/3 the
-		// outbound rate (the original rate we reported to Thornode in the network fee).
+		// outbound rate (the original rate we reported to Switchlynode in the network fee).
 		lowerBound := c.convertSwitchlyProtocolAmountToWei(big.NewInt(tx.GasRate))
 		lowerBound.Mul(lowerBound, big.NewInt(2))
 		lowerBound.Div(lowerBound, big.NewInt(3))
@@ -613,17 +613,17 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 		if err != nil {
 			c.logger.Err(err).
 				Str("aggregator", tx.Aggregator).
-				Msg("fail to get aggregator gas limit, aborting to let thornode reschedule")
+				Msg("fail to get aggregator gas limit, aborting to let switchlynode reschedule")
 			return nil, nil, nil, nil
 		}
 
-		// if the estimate gas is over the max, abort and let thornode reschedule for now
+		// if the estimate gas is over the max, abort and let switchlynode reschedule for now
 		if estimatedGas > gasLimitForAggregator {
 			c.logger.Warn().
 				Stringer("in_hash", tx.InHash).
 				Uint64("estimated_gas", estimatedGas).
 				Uint64("aggregator_gas_limit", gasLimitForAggregator).
-				Msg("aggregator gas limit exceeded, aborting to let thornode reschedule")
+				Msg("aggregator gas limit exceeded, aborting to let switchlynode reschedule")
 			return nil, nil, nil, nil
 		}
 
@@ -640,7 +640,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 		// determine max gas units based on scheduled max gas (fee) and current rate
 		maxGasUnits := new(big.Int).Div(scheduledMaxFee, gasRate).Uint64()
 
-		// if estimated gas is more than the planned gas, abort and let thornode reschedule
+		// if estimated gas is more than the planned gas, abort and let switchlynode reschedule
 		if estimatedGas > maxGasUnits {
 			c.logger.Warn().
 				Stringer("in_hash", tx.InHash).
@@ -648,7 +648,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 				Uint64("estimated_gas_units", estimatedGas).
 				Uint64("max_gas_units", maxGasUnits).
 				Str("scheduled_max_fee", scheduledMaxFee.String()).
-				Msg("max gas exceeded, aborting to let thornode reschedule")
+				Msg("max gas exceeded, aborting to let switchlynode reschedule")
 			return nil, nil, nil, nil
 		}
 
@@ -669,7 +669,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 		})
 	} else {
 
-		// if over max scheduled gas, abort and let thornode reschedule
+		// if over max scheduled gas, abort and let switchlynode reschedule
 		estimatedFee = big.NewInt(int64(estimatedGas) * gasRate.Int64())
 		if scheduledMaxFee.Cmp(estimatedFee) < 0 {
 			c.logger.Warn().
@@ -678,7 +678,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 				Uint64("estimated_gas", estimatedGas).
 				Str("estimated_fee", estimatedFee.String()).
 				Str("scheduled_max_fee", scheduledMaxFee.String()).
-				Msg("max gas exceeded, aborting to let thornode reschedule")
+				Msg("max gas exceeded, aborting to let switchlynode reschedule")
 			return nil, nil, nil, nil
 		}
 
@@ -704,7 +704,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *sty
 
 	// create the observation to be sent by the signer before broadcast
 	chainHeight, err := c.GetHeight()
-	if err != nil { // fall back to the scanner height, thornode voter does not use height
+	if err != nil { // fall back to the scanner height, switchlynode voter does not use height
 		chainHeight = c.ethScanner.currentBlockHeight
 	}
 	coin := tx.Coins[0]
@@ -752,12 +752,12 @@ func (c *Client) sign(tx *etypes.Transaction, poolPubKey common.PubKey, height i
 			// TSS doesn't know which node to blame
 			return nil, fmt.Errorf("fail to sign tx: %w", err)
 		}
-		// key sign error forward the keysign blame to thorchain
+		// key sign error forward the keysign blame to switchly
 		txID, errPostKeysignFail := c.bridge.PostKeysignFailure(keysignError.Blame, height, txOutItem.Memo, txOutItem.Coins, txOutItem.VaultPubKey)
 		if errPostKeysignFail != nil {
 			return nil, multierror.Append(err, errPostKeysignFail)
 		}
-		c.logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to thorchain")
+		c.logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to switchly")
 	}
 	return nil, fmt.Errorf("fail to sign tx: %w", err)
 }
@@ -876,7 +876,7 @@ func (c *Client) BroadcastTx(txOutItem stypes.TxOutItem, hexTx []byte) (string, 
 
 	blockHeight, err := c.bridge.GetBlockHeight()
 	if err != nil {
-		c.logger.Err(err).Msgf("fail to get current THORChain block height")
+		c.logger.Err(err).Msgf("fail to get current SWITCHLYChain block height")
 		// at this point , the tx already broadcast successfully , don't return an error
 		// otherwise will cause the same tx to retry
 	} else if err = c.AddSignedTxItem(txID, blockHeight, txOutItem.VaultPubKey.String(), &txOutItem); err != nil {
@@ -886,7 +886,7 @@ func (c *Client) BroadcastTx(txOutItem stypes.TxOutItem, hexTx []byte) (string, 
 	return txID, nil
 }
 
-// ConfirmationCountReady check whether the given txIn is ready to be send to THORChain
+// ConfirmationCountReady check whether the given txIn is ready to be send to SWITCHLYChain
 func (c *Client) ConfirmationCountReady(txIn stypes.TxIn) bool {
 	if len(txIn.TxArray) == 0 {
 		return true
@@ -947,7 +947,7 @@ func (c *Client) getTotalTransactionValue(txIn stypes.TxIn, excludeFrom []common
 	return total
 }
 
-// getBlockRequiredConfirmation find out how many confirmation the given txIn need to have before it can be send to THORChain
+// getBlockRequiredConfirmation find out how many confirmation the given txIn need to have before it can be send to SWITCHLYChain
 func (c *Client) getBlockRequiredConfirmation(txIn stypes.TxIn, height int64) (int64, error) {
 	asgards, err := c.getAsgardAddress()
 	if err != nil {
@@ -1005,7 +1005,7 @@ func (c *Client) GetConfirmationCount(txIn stypes.TxIn) int64 {
 }
 
 func (c *Client) getAsgardAddress() ([]common.Address, error) {
-	if time.Since(c.lastAsgard) < constants.ThorchainBlockTime && c.asgardAddresses != nil {
+	if time.Since(c.lastAsgard) < constants.SwitchlyBlockTime && c.asgardAddresses != nil {
 		return c.asgardAddresses, nil
 	}
 	newAddresses, err := utxo.GetAsgardAddress(common.ETHChain, c.bridge)
@@ -1024,7 +1024,7 @@ func (c *Client) OnObservedTxIn(txIn stypes.TxInItem, blockHeight int64) {
 	c.ethScanner.onObservedTxIn(txIn, blockHeight)
 	m, err := mem.ParseMemo(common.LatestVersion, txIn.Memo)
 	if err != nil {
-		// Debug log only as ParseMemo error is expected for THORName inbounds.
+		// Debug log only as ParseMemo error is expected for SWITCHName inbounds.
 		c.logger.Debug().Err(err).Msgf("fail to parse memo: %s", txIn.Memo)
 		return
 	}
@@ -1088,7 +1088,7 @@ func (c *Client) ReportSolvency(ethBlockHeight int64) error {
 	// report that all the vaults are solvent.
 	// If there are any insolvent vaults, report only them.
 	// Not reporting both solvent and insolvent vaults is to avoid noise (spam):
-	// Reporting both could halt-and-unhalt SolvencyHalt in the same THOR block
+	// Reporting both could halt-and-unhalt SolvencyHalt in the same SWITCHLY block
 	// (resetting its height), plus making it harder to know at a glance from solvency reports which vaults were insolvent.
 	solvent := false
 	if !c.IsBlockScannerHealthy() && len(solventMsgs) == len(asgardVaults) {
@@ -1103,18 +1103,18 @@ func (c *Client) ReportSolvency(ethBlockHeight int64) error {
 			Bool("solvent", solvent).
 			Msg("reporting solvency")
 
-		// send solvency to thorchain via global queue consumed by the observer
+		// send solvency to switchly via global queue consumed by the observer
 		select {
 		case c.globalSolvencyQueue <- msgs[i]:
-		case <-time.After(constants.ThorchainBlockTime):
-			c.logger.Info().Msgf("fail to send solvency info to THORChain, timeout")
+		case <-time.After(constants.SwitchlyBlockTime):
+			c.logger.Info().Msgf("fail to send solvency info to SWITCHLYChain, timeout")
 		}
 	}
 	c.lastSolvencyCheckHeight = ethBlockHeight
 	return nil
 }
 
-// ShouldReportSolvency with given block height , should chain client report Solvency to THORNode?
+// ShouldReportSolvency with given block height , should chain client report Solvency to SWITCHLYNode?
 func (c *Client) ShouldReportSolvency(height int64) bool {
 	return height%20 == 0
 }

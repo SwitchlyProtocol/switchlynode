@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Mimir**](MimirApi.md#Mimir) | **Get** /thorchain/mimir | 
-[**MimirAdmin**](MimirApi.md#MimirAdmin) | **Get** /thorchain/mimir/admin | 
-[**MimirKey**](MimirApi.md#MimirKey) | **Get** /thorchain/mimir/key/{key} | 
-[**MimirNode**](MimirApi.md#MimirNode) | **Get** /thorchain/mimir/node/{address} | 
-[**MimirNodes**](MimirApi.md#MimirNodes) | **Get** /thorchain/mimir/nodes_all | 
+[**Mimir**](MimirApi.md#Mimir) | **Get** /switchly/mimir | 
+[**MimirAdmin**](MimirApi.md#MimirAdmin) | **Get** /switchly/mimir/admin | 
+[**MimirKey**](MimirApi.md#MimirKey) | **Get** /switchly/mimir/key/{key} | 
+[**MimirNode**](MimirApi.md#MimirNode) | **Get** /switchly/mimir/node/{address} | 
+[**MimirNodes**](MimirApi.md#MimirNodes) | **Get** /switchly/mimir/nodes_all | 
 
 
 

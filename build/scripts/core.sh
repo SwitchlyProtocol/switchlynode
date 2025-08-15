@@ -24,14 +24,14 @@ fi
 # adds an account node into the genesis file
 add_node_account() {
   NODE_ADDRESS=$1
-  VALIDATOR=$2
+  VALIDASWITCHLY=$2
   NODE_PUB_KEY=$3
   VERSION=$4
   BOND_ADDRESS=$5
   NODE_PUB_KEY_ED25519=$6
   IP_ADDRESS=$7
   MEMBERSHIP=$8
-  jq --arg IP_ADDRESS "$IP_ADDRESS" --arg VERSION "$VERSION" --arg BOND_ADDRESS "$BOND_ADDRESS" --arg VALIDATOR "$VALIDATOR" --arg NODE_ADDRESS "$NODE_ADDRESS" --arg NODE_PUB_KEY "$NODE_PUB_KEY" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.switchly.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address":$BOND_ADDRESS, "signer_membership": [], "validator_cons_pub_key":$VALIDATOR, "pub_key_set":{"secp256k1":$NODE_PUB_KEY,"ed25519":$NODE_PUB_KEY_ED25519}}]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
+  jq --arg IP_ADDRESS "$IP_ADDRESS" --arg VERSION "$VERSION" --arg BOND_ADDRESS "$BOND_ADDRESS" --arg VALIDASWITCHLY "$VALIDASWITCHLY" --arg NODE_ADDRESS "$NODE_ADDRESS" --arg NODE_PUB_KEY "$NODE_PUB_KEY" --arg NODE_PUB_KEY_ED25519 "$NODE_PUB_KEY_ED25519" '.app_state.switchly.node_accounts += [{"node_address": $NODE_ADDRESS, "version": $VERSION, "ip_address": $IP_ADDRESS, "status": "Active","bond":"30000000000000", "active_block_height": "0", "bond_address":$BOND_ADDRESS, "signer_membership": [], "validator_cons_pub_key":$VALIDASWITCHLY, "pub_key_set":{"secp256k1":$NODE_PUB_KEY,"ed25519":$NODE_PUB_KEY_ED25519}}]' <~/.switchlynode/config/genesis.json >/tmp/genesis.json
   mv /tmp/genesis.json ~/.switchlynode/config/genesis.json
   if [ -n "$MEMBERSHIP" ]; then
     jq --arg MEMBERSHIP "$MEMBERSHIP" '.app_state.switchly.node_accounts[-1].signer_membership += [$MEMBERSHIP]' ~/.switchlynode/config/genesis.json >/tmp/genesis.json
@@ -91,9 +91,9 @@ set_node_keys() {
   PEER="$3"
   NODE_PUB_KEY="$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" --pubkey --keyring-backend file | switchlynode pubkey)"
   NODE_PUB_KEY_ED25519="$(printf "%s\n" "$SIGNER_PASSWD" | switchlynode ed25519)"
-  VALIDATOR="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
+  VALIDASWITCHLY="$(switchlynode tendermint show-validator | switchlynode pubkey --bech cons)"
   echo "Setting SwitchlyNode keys"
-  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDATOR" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend file --yes
+  printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-node-keys "$NODE_PUB_KEY" "$NODE_PUB_KEY_ED25519" "$VALIDASWITCHLY" --node "tcp://$PEER:$PORT_RPC" --from "$SIGNER_NAME" --keyring-backend file --yes
 }
 
 set_ip_address() {

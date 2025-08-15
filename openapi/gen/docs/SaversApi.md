@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Saver**](SaversApi.md#Saver) | **Get** /thorchain/pool/{asset}/saver/{address} | 
-[**Savers**](SaversApi.md#Savers) | **Get** /thorchain/pool/{asset}/savers | 
+[**Saver**](SaversApi.md#Saver) | **Get** /switchly/pool/{asset}/saver/{address} | 
+[**Savers**](SaversApi.md#Savers) | **Get** /switchly/pool/{asset}/savers | 
 
 
 

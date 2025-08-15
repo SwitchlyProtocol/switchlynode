@@ -6,7 +6,7 @@ func NewConstantValue() *ConstantVals {
 		int64values: map[ConstantName]int64{
 			EmissionCurve:                       6,
 			BlocksPerYear:                       5256000,
-			MaxRuneSupply:                       -1, // max supply of rune. Default set to -1 to avoid consensus failure
+			MaxSWITCHSupply:                     -1, // max supply of rune. Default set to -1 to avoid consensus failure
 			OutboundTransactionFee:              2_000000,
 			NativeOutboundFeeUSD:                2_000000, // $0.02 fee on all swaps and withdrawals
 			NativeTransactionFee:                2_000000,
@@ -14,7 +14,7 @@ func NewConstantValue() *ConstantVals {
 			PoolCycle:                           43200,              // Make a pool available every 3 days
 			StagedPoolCost:                      10_00000000,        // amount of rune to take from a staged pool on every pool cycle
 			PendingLiquidityAgeLimit:            100800,             // age pending liquidity can be pending before its auto committed to the pool
-			MinRunePoolDepth:                    10000_00000000,     // minimum rune pool depth to be an available pool
+			MinSWITCHPoolDepth:                  10000_00000000,     // minimum rune pool depth to be an available pool
 			MaxAvailablePools:                   100,                // maximum number of available pools
 			MinimumNodesForBFT:                  4,                  // Minimum node count to keep network running. Below this, Ragnarök is performed.
 			DesiredValidatorSet:                 100,                // desire validator set
@@ -26,8 +26,8 @@ func NewConstantValue() *ConstantVals {
 			DynamicMaxAnchorSlipBlocks:          14400 * 14,         // number of blocks to sample in calculating the dynamic max anchor slip
 			DynamicMaxAnchorTarget:              0,                  // target depth of derived virtual pool (in basis points)
 			DynamicMaxAnchorCalcInterval:        14400,              // number of blocks to recalculate the dynamic max anchor
-			FundMigrationInterval:               360,                // number of blocks THORNode will attempt to move funds from a retiring vault to an active one
-			ChurnInterval:                       43200,              // How many blocks THORNode try to rotate validators
+			FundMigrationInterval:               360,                // number of blocks SWITCHLYNode will attempt to move funds from a retiring vault to an active one
+			ChurnInterval:                       43200,              // How many blocks SWITCHLYNode try to rotate validators
 			ChurnRetryInterval:                  720,                // How many blocks until we retry a churn (only if we haven't had a successful churn in ChurnInterval blocks
 			MissingBlockChurnOut:                0,                  // num of blocks a validator needs to NOT sign between churns
 			MaxMissingBlockChurnOut:             0,                  // max number of nodes to be churned out due to not signing blocks
@@ -38,7 +38,7 @@ func NewConstantValue() *ConstantVals {
 			DoubleSignMaxAge:                    24,                 // number of blocks to limit double signing a block
 			PauseBond:                           0,                  // pauses the ability to bond
 			PauseUnbond:                         0,                  // pauses the ability to unbond
-			MinimumBondInRune:                   1_000_000_00000000, // 1 million rune
+			MinimumBondInSWITCH:                 1_000_000_00000000, // 1 million rune
 			MaxBondProviders:                    6,                  // maximum number of bond providers
 			MaxOutboundAttempts:                 0,                  // maximum retries to reschedule a transaction
 			SlashPenalty:                        15000,              // penalty paid (in basis points) for theft of assets
@@ -79,12 +79,12 @@ func NewConstantValue() *ConstantVals {
 			TxOutDelayMax:                       17280,              // max number of blocks a transaction can be delayed
 			MaxTxOutOffset:                      720,                // max blocks to offset a txout into a future block
 			TNSRegisterFee:                      10_00000000,
-			TNSRegisterFeeUSD:                   10_00000000, // registration fee for new THORName in USD
+			TNSRegisterFeeUSD:                   10_00000000, // registration fee for new SWITCHName in USD
 			TNSFeeOnSale:                        1000,        // fee for TNS sale in basis points
 			TNSFeePerBlock:                      20,
 			TNSFeePerBlockUSD:                   20,               // per block cost for TNS in USD
 			PermittedSolvencyGap:                100,              // the setting is in basis points
-			ValidatorMaxRewardRatio:             1,                // the ratio to MinimumBondInRune at which validators stop receiving rewards proportional to their bond
+			ValidatorMaxRewardRatio:             1,                // the ratio to MinimumBondInSWITCH at which validators stop receiving rewards proportional to their bond
 			MaxNodeToChurnOutForLowVersion:      1,                // the maximum number of nodes to churn out for low version per churn
 			ChurnOutForLowVersionBlocks:         21600,            // the blocks after the MinJoinVersion changes before nodes can be churned out for low version
 			POLMaxNetworkDeposit:                0,                // Maximum amount of rune deposited into the pools
@@ -99,12 +99,12 @@ func NewConstantValue() *ConstantVals {
 			ChurnMigrateRounds:                  5,                // Number of rounds to migrate vaults during churn
 			AllowWideBlame:                      0,                // allow for a wide blame, only set in mocknet for regression testing tss keysign failures
 			MaxAffiliateFeeBasisPoints:          10_000,           // Max allowed affiliate fee basis points
-			TargetOutboundFeeSurplusRune:        100_000_00000000, // Target amount of RUNE for Outbound Fee Surplus: the sum of the diff between outbound cost to user and outbound cost to network
+			TargetOutboundFeeSurplusSWITCH:      100_000_00000000, // Target amount of SWITCH for Outbound Fee Surplus: the sum of the diff between outbound cost to user and outbound cost to network
 			MaxOutboundFeeMultiplierBasisPoints: 30_000,           // Maximum multiplier applied to base outbound fee charged to user, in basis points
 			MinOutboundFeeMultiplierBasisPoints: 15_000,           // Minimum multiplier applied to base outbound fee charged to user, in basis points
 			EnableUSDFees:                       0,                // enable USD fees
 			PreferredAssetOutboundFeeMultiplier: 100,              // multiplier of the current preferred asset outbound fee, if rune balance > multiplier * outbound_fee, a preferred asset swap is triggered
-			FeeUSDRoundSignificantDigits:        2,                // number of significant digits to round the RUNE value of USD denominated fees
+			FeeUSDRoundSignificantDigits:        2,                // number of significant digits to round the SWITCH value of USD denominated fees
 			MigrationVaultSecurityBps:           0,                // vault bond must be greater than bps of funds value in rune to receive migrations
 			CloutReset:                          720,              // number of blocks before clout spent gets reset
 			CloutLimit:                          0,                // max clout allowed to spend
@@ -120,29 +120,29 @@ func NewConstantValue() *ConstantVals {
 			SecuredAssetSlipMinBps:              5,                  // Minimum secured asset swap fee in basis points
 			SynthSlipMinBps:                     0,                  // Minimum synth asset swap fee in basis points
 			DerivedSlipMinBps:                   0,                  // Minimum derived asset swap fee in basis points
-			RUNEPoolEnabled:                     0,                  // enable/disable RUNE Pool
-			RUNEPoolDepositMaturityBlocks:       14400 * 90,         // blocks from last deposit to allow withdraw
-			RUNEPoolMaxReserveBackstop:          5_000_000_00000000, // 5 million RUNE
+			SWITCHPoolEnabled:                   0,                  // enable/disable SWITCH Pool
+			SWITCHPoolDepositMaturityBlocks:     14400 * 90,         // blocks from last deposit to allow withdraw
+			SWITCHPoolMaxReserveBackstop:        5_000_000_00000000, // 5 million SWITCH
 			SaversEjectInterval:                 0,                  // number of blocks for savers check, disabled if zero
-			SystemIncomeBurnRateBps:             1,                  // burn 1bps (0.01%) RUNE of all system income per ADR 17
-			DevFundSystemIncomeBps:              500,                // allocate 500bps (5%) RUNE of all system income to dev fund per ADR 18
+			SystemIncomeBurnRateBps:             1,                  // burn 1bps (0.01%) SWITCH of all system income per ADR 17
+			DevFundSystemIncomeBps:              500,                // allocate 500bps (5%) SWITCH of all system income to dev fund per ADR 18
 			PendulumAssetsBasisPoints:           10_000,             // Incentive curve adjustment lever to proportionally underestimate or overestimate Assets needing to be secured.
 			PendulumUseEffectiveSecurity:        0,                  // If 1, use the effective security bond (the bond sacrificable to seize L1 Assets) as the securing bond for which to target double the value of the secured Assets. If 0, instead use the whole (rewards-receiving) total effective bond.
 			PendulumUseVaultAssets:              0,                  // If 1. use the L1 Assets in the vaults (the Assets seizable by the lower-bond 2/3rds of nodes in each vault) as the Assets to be secured.  If 0, instead use only the L1 Assets in pools, ignoring the L1 Assets in for instance streaming swaps, oversolvencies, and Trade/Bridge Assets.
 			TVLCapBasisPoints:                   0,                  // If 0, TVL Cap is set to the effective active bond. If non-zero, the value is interrupted as basis points relative to total active bond
 			MultipleAffiliatesMaxCount:          5,                  // maximum number of nested affiliates
-			BondSlashBan:                        5_000_00000000,     // 5000 RUNE - amount to slash bond of banned nodes
+			BondSlashBan:                        5_000_00000000,     // 5000 SWITCH - amount to slash bond of banned nodes
 			BankSendEnabled:                     0,                  // enable/disable cosmos bank send messages
-			RUNEPoolHaltDeposit:                 0,                  // enable/disable RUNEPool deposit (block height)
-			RUNEPoolHaltWithdraw:                0,                  // enable/disable RUNEPool withdraw (block height)
-			MinRuneForTCYStakeDistribution:      2_100_00000000,     // Set what is the minimum amount of rune need it on TCY fund in order to be distributed
-			MinTCYForTCYStakeDistribution:       100000,             // Set what is the minimum amount of TCY need it on TCY fund in order to be distributed
-			TCYStakeSystemIncomeBps:             1000,               // allocate 1000bps (10%) RUNE of all system income to TCY Fund
-			TCYClaimingSwapHalt:                 1,                  // enable/disable claiming module rune to tcy swap
-			TCYStakeDistributionHalt:            1,                  // enable/disable tcy stake distribution
-			TCYStakingHalt:                      1,                  // enable/disable tcy staking
-			TCYUnstakingHalt:                    1,                  // enable/disable tcy unstaking
-			TCYClaimingHalt:                     1,                  // enable/disable tcy claiming
+			SWITCHPoolHaltDeposit:               0,                  // enable/disable SWITCHPool deposit (block height)
+			SWITCHPoolHaltWithdraw:              0,                  // enable/disable SWITCHPool withdraw (block height)
+			MinSWITCHForSWCYStakeDistribution:   2_100_00000000,     // Set what is the minimum amount of rune need it on SWCY fund in order to be distributed
+			MinSWCYForSWCYStakeDistribution:     100000,             // Set what is the minimum amount of SWCY need it on SWCY fund in order to be distributed
+			SWCYStakeSystemIncomeBps:            1000,               // allocate 1000bps (10%) SWITCH of all system income to SWCY Fund
+			SWCYClaimingSwapHalt:                1,                  // enable/disable claiming module rune to tcy swap
+			SWCYStakeDistributionHalt:           1,                  // enable/disable tcy stake distribution
+			SWCYStakingHalt:                     1,                  // enable/disable tcy staking
+			SWCYUnstakingHalt:                   1,                  // enable/disable tcy unstaking
+			SWCYClaimingHalt:                    1,                  // enable/disable tcy claiming
 
 			// Stellar-specific constants
 			StellarMinAccountBalance: 10000000, // 1 XLM minimum account balance in stroops

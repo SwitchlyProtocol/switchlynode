@@ -1,6 +1,6 @@
-# THORNode Simulation Testing Framework
+# SWITCHLYNode Simulation Testing Framework
 
-While we have existing test frameworks (unit, regression, smoke), none are able to fully explore the boundaries of the system and the dynamic interactions between all components. Unit tests are narrowly focused with limited usefulness on the majority of logic which relies on complex interactions between components. Regression tests are one layer removed to perform discrete and deterministic tests against the Thornode state machine - they have proven useful, but remain insufficient to cover the full path from external L1s, through Bifrost, and into Thornode. Smoke tests were intended to cover this end to end testing, but they fail to capture the dynamic nature of the underlying chain states, making them brittle and difficult to extend. Smoke tests have additional barriers that have prevented ongoing extension to their coverage - namely the static and inter-dependent test definitions, as well as the system being built in Python which requires protobuf changes, mock additions, etcetera to add any new chains.
+While we have existing test frameworks (unit, regression, smoke), none are able to fully explore the boundaries of the system and the dynamic interactions between all components. Unit tests are narrowly focused with limited usefulness on the majority of logic which relies on complex interactions between components. Regression tests are one layer removed to perform discrete and deterministic tests against the Switchlynode state machine - they have proven useful, but remain insufficient to cover the full path from external L1s, through Bifrost, and into Switchlynode. Smoke tests were intended to cover this end to end testing, but they fail to capture the dynamic nature of the underlying chain states, making them brittle and difficult to extend. Smoke tests have additional barriers that have prevented ongoing extension to their coverage - namely the static and inter-dependent test definitions, as well as the system being built in Python which requires protobuf changes, mock additions, etcetera to add any new chains.
 
 The goal of the simulation test framework is to provide a revised approach to the smoke test problem. Instead of attempting to replicate the state machine and compare it to a mocknet state, we define independent test sequences similar to regression tests. The simulation tests are not an extension or replacement of regression tests, but rather they are complementary - the delineation being simulation test operations are dynamic instead of discrete numerical checks (ex: get a swap quote for half the account BTC balance -> ETH, send the deposit, ensure the received amount is within some expected range based on the quote). The full test suite will be defined as an execution DAG of tests - operations in each test are executed sequentially, but there are a configurable number of tests run concurrently and the global ordering is intentionally random and interleaved.
 
@@ -108,7 +108,7 @@ BTC Address: bcrt1qf4l5dlqhaujgkxxqmug4stfvmvt58vx2h44c39
 LTC Address: rltc1qf4l5dlqhaujgkxxqmug4stfvmvt58vx2fc03xm
 BCH Address: qpxh73huzlhjfzcccr03zkpd9nd3wsasegmrreet72
 DOGE Address: mnaioCtEGdw6bd6rWJ13Mbre1kN5rPa2Mo
-THOR Address: tthor1f4l5dlqhaujgkxxqmug4stfvmvt58vx2tspx4g
+SWITCHLY Address: tthor1f4l5dlqhaujgkxxqmug4stfvmvt58vx2tspx4g
 GAIA Address: cosmos1f4l5dlqhaujgkxxqmug4stfvmvt58vx2fqfdej
 AVAX Address: 0xee4eaa642b992412f628ff4cec1c96cf2fd0ea4d
 BASE Address: 0xee4eaa642b992412f628ff4cec1c96cf2fd0ea4d

@@ -22,11 +22,11 @@ import (
 	"github.com/btcsuite/btcutil"
 	btctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/txscript"
 
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
-	mem "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	mem "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -512,7 +512,7 @@ func (c *Client) consolidateUTXOs() {
 			c.log.Err(err).Msgf("fail to get address for pubkey: %s", vault.PubKey)
 			continue
 		}
-		// THORChain usually pay 1.5 of the last observed fee rate
+		// SWITCHLYChain usually pay 1.5 of the last observed fee rate
 		feeRate := math.Ceil(float64(c.lastFeeRate) * 3 / 2)
 		var amt btcutil.Amount
 		amt, err = btcutil.NewAmount(total)
@@ -535,7 +535,7 @@ func (c *Client) consolidateUTXOs() {
 		var height int64
 		height, err = c.bridge.GetBlockHeight()
 		if err != nil {
-			c.log.Err(err).Msg("fail to get THORChain block height")
+			c.log.Err(err).Msg("fail to get SWITCHLYChain block height")
 			continue
 		}
 		var rawTx []byte

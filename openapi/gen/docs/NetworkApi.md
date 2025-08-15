@@ -4,19 +4,19 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Ban**](NetworkApi.md#Ban) | **Get** /thorchain/ban/{address} | 
-[**Constants**](NetworkApi.md#Constants) | **Get** /thorchain/constants | 
-[**InboundAddresses**](NetworkApi.md#InboundAddresses) | **Get** /thorchain/inbound_addresses | 
+[**Ban**](NetworkApi.md#Ban) | **Get** /switchly/ban/{address} | 
+[**Constants**](NetworkApi.md#Constants) | **Get** /switchly/constants | 
+[**InboundAddresses**](NetworkApi.md#InboundAddresses) | **Get** /switchly/inbound_addresses | 
 [**Lastblock**](NetworkApi.md#Lastblock) | **Get** /switchly/lastblock | 
 [**LastblockChain**](NetworkApi.md#LastblockChain) | **Get** /switchly/lastblock/{chain} | 
-[**Network**](NetworkApi.md#Network) | **Get** /thorchain/network | 
-[**OutboundFeeAsset**](NetworkApi.md#OutboundFeeAsset) | **Get** /thorchain/outbound_fee/{asset} | 
-[**OutboundFees**](NetworkApi.md#OutboundFees) | **Get** /thorchain/outbound_fees | 
-[**Ragnarok**](NetworkApi.md#Ragnarok) | **Get** /thorchain/ragnarok | 
-[**UpgradeProposal**](NetworkApi.md#UpgradeProposal) | **Get** /thorchain/upgrade_proposal/{name} | 
-[**UpgradeProposals**](NetworkApi.md#UpgradeProposals) | **Get** /thorchain/upgrade_proposals | 
-[**UpgradeVotes**](NetworkApi.md#UpgradeVotes) | **Get** /thorchain/upgrade_votes/{name} | 
-[**Version**](NetworkApi.md#Version) | **Get** /thorchain/version | 
+[**Network**](NetworkApi.md#Network) | **Get** /switchly/network | 
+[**OutboundFeeAsset**](NetworkApi.md#OutboundFeeAsset) | **Get** /switchly/outbound_fee/{asset} | 
+[**OutboundFees**](NetworkApi.md#OutboundFees) | **Get** /switchly/outbound_fees | 
+[**Ragnarok**](NetworkApi.md#Ragnarok) | **Get** /switchly/ragnarok | 
+[**UpgradeProposal**](NetworkApi.md#UpgradeProposal) | **Get** /switchly/upgrade_proposal/{name} | 
+[**UpgradeProposals**](NetworkApi.md#UpgradeProposals) | **Get** /switchly/upgrade_proposals | 
+[**UpgradeVotes**](NetworkApi.md#UpgradeVotes) | **Get** /switchly/upgrade_votes/{name} | 
+[**Version**](NetworkApi.md#Version) | **Get** /switchly/version | 
 
 
 

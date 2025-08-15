@@ -1,14 +1,14 @@
 # EVM Implementation
 
-THORChain Aggregator Example
+SWITCHLYChain Aggregator Example
 
-{{#embed https://gitlab.com/thorchain/thornode/-/blob/develop/chain/ethereum/contracts/THORChain_Aggregator.sol }}
+{{#embed https://gitlab.com/switchly/switchlynode/-/blob/develop/chain/ethereum/contracts/SWITCHLYChain_Aggregator.sol }}
 
-Tokens must be on the [ETH Whitelist](https://gitlab.com/thorchain/thornode/-/blob/develop/docs/evm_whitelist_procedure.md#dex-token). The destination address should be a user control address, not a contract address.
+Tokens must be on the [ETH Whitelist](https://gitlab.com/switchly/switchlynode/-/blob/develop/docs/evm_whitelist_procedure.md#dex-token). The destination address should be a user control address, not a contract address.
 
 ## SwapIn
 
-The aggregator contract needs a **swapIn** function similar to the one below. First, swap the token via an on-chain AMM, then call into THORChain and pass the correct memo to execute the next swap.
+The aggregator contract needs a **swapIn** function similar to the one below. First, swap the token via an on-chain AMM, then call into SWITCHLYChain and pass the correct memo to execute the next swap.
 
 ```go
 function swapIn(
@@ -34,11 +34,11 @@ function swapIn(
 
 ## SwapOut
 
-The THORChain router uses `transferOutAndCall()` to call the aggregator with a max GasLimit of 400k units.
+The SWITCHLYChain router uses `transferOutAndCall()` to call the aggregator with a max GasLimit of 400k units.
 
 It is a particular function that also handles a swap fail by sending the user the base asset directly (ie, breached AmountOutMin, or could not find the finaltoken). The user will need to do the swap manually.
 
-The parameters for this function are passed to THORChain by the user's original memo.
+The parameters for this function are passed to SWITCHLYChain by the user's original memo.
 
 ```go
 function transferOutAndCall(address payable target, address finalToken, address to, uint256 amountOutMin, string memory memo) public payable nonReentrant {
@@ -51,7 +51,7 @@ function transferOutAndCall(address payable target, address finalToken, address 
     }
 ```
 
-The **swapOut** function will only be passed three parameters from the THORChain Router and it must comply with the function signature (name, parameters). It can then call an on-chain AMM to execute the swap. It will only ever be given the base asset (eg ETH).
+The **swapOut** function will only be passed three parameters from the SWITCHLYChain Router and it must comply with the function signature (name, parameters). It can then call an on-chain AMM to execute the swap. It will only ever be given the base asset (eg ETH).
 
 Here is an example to call UniV2 router:
 

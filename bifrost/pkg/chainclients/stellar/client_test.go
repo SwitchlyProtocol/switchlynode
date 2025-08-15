@@ -13,7 +13,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/signercache"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
@@ -41,7 +41,7 @@ func GetMetricForTest(c *C) *metrics.Metrics {
 
 type StellarClientTestSuite struct {
 	client *Client
-	bridge *MockThorchainBridge
+	bridge *MockSwitchlyBridge
 }
 
 var _ = Suite(&StellarClientTestSuite{})
@@ -52,7 +52,7 @@ func (s *StellarClientTestSuite) SetUpSuite(c *C) {
 	c.Assert(m, NotNil)
 
 	// Create mock bridge
-	s.bridge = &MockThorchainBridge{}
+	s.bridge = &MockSwitchlyBridge{}
 
 	// Mock configuration
 	cfg := config.BifrostChainConfiguration{
@@ -110,7 +110,7 @@ func (s *StellarClientTestSuite) SetUpSuite(c *C) {
 	// Create client
 	s.client = &Client{
 		cfg:                cfg,
-		thorchainBridge:    s.bridge,
+		switchlyBridge:     s.bridge,
 		storage:            storage,
 		blockScanner:       blockScanner,
 		signerCacheManager: signerCacheManager,
@@ -240,7 +240,7 @@ func (s *StellarClientTestSuite) TestProcessOutboundTx(c *C) {
 
 	// Test USDC transaction
 	usdcAsset := common.Asset{Chain: common.StellarChain, Symbol: "USDC", Ticker: "USDC"}
-	usdcCoin := common.NewCoin(usdcAsset, cosmos.NewUint(100000000)) // 1 USDC in THORChain units
+	usdcCoin := common.NewCoin(usdcAsset, cosmos.NewUint(100000000)) // 1 USDC in SWITCHLYChain units
 	usdcTxOutItem := stypes.TxOutItem{
 		Chain:       common.StellarChain,
 		ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),

@@ -15,17 +15,17 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/switchlyprotocol/switchlynode/v3/app"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
-func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge) error {
-	tctx := thorchain.GetContext()
+func RecoverKeyShares(conf config.Bifrost, switchly switchlyclient.SwitchlyBridge) error {
+	tctx := switchly.GetContext()
 
 	// fetch the node account
-	na, err := thorchain.GetNodeAccount(tctx.FromAddress.String())
+	na, err := switchly.GetNodeAccount(tctx.FromAddress.String())
 	if err != nil {
 		return fmt.Errorf("fail to get node account: %w", err)
 	}
@@ -52,7 +52,7 @@ func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge)
 	}
 
 	// get all vaults
-	vaults, err := thorchain.GetAsgards()
+	vaults, err := switchly.GetAsgards()
 	if err != nil {
 		return fmt.Errorf("fail to get asgards: %w", err)
 	}
@@ -71,7 +71,7 @@ func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge)
 
 	// walk backward from the churn height until we find the TssPool message we sent
 	var keysharesEncBytes []byte
-	cdc := thorclient.MakeCodec()
+	cdc := switchlyclient.MakeCodec()
 	dec := ebifrost.TxDecoder(cdc, tx.DefaultTxDecoder(cdc))
 	for i := lastVaultHeight; i > lastVaultHeight-conf.TSS.MaxKeyshareRecoverScanBlocks; i-- {
 		if i%1000 == 0 {
@@ -79,7 +79,7 @@ func RecoverKeyShares(conf config.Bifrost, thorchain thorclient.ThorchainBridge)
 		}
 
 		var b *coretypes.ResultBlock
-		b, err = thorchain.GetContext().Client.Block(context.Background(), &i)
+		b, err = switchly.GetContext().Client.Block(context.Background(), &i)
 		if err != nil {
 			return fmt.Errorf("fail to get block: %w", err)
 		}

@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Tx**](TransactionsApi.md#Tx) | **Get** /thorchain/tx/{hash} | 
-[**TxSigners**](TransactionsApi.md#TxSigners) | **Get** /thorchain/tx/details/{hash} | 
-[**TxSignersOld**](TransactionsApi.md#TxSignersOld) | **Get** /thorchain/tx/{hash}/signers | 
-[**TxStages**](TransactionsApi.md#TxStages) | **Get** /thorchain/tx/stages/{hash} | 
-[**TxStatus**](TransactionsApi.md#TxStatus) | **Get** /thorchain/tx/status/{hash} | 
+[**Tx**](TransactionsApi.md#Tx) | **Get** /switchly/tx/{hash} | 
+[**TxSigners**](TransactionsApi.md#TxSigners) | **Get** /switchly/tx/details/{hash} | 
+[**TxSignersOld**](TransactionsApi.md#TxSignersOld) | **Get** /switchly/tx/{hash}/signers | 
+[**TxStages**](TransactionsApi.md#TxStages) | **Get** /switchly/tx/stages/{hash} | 
+[**TxStatus**](TransactionsApi.md#TxStatus) | **Get** /switchly/tx/status/{hash} | 
 
 
 

@@ -191,7 +191,7 @@ class ChangelogEntry
   end
 
   def editor
-    ENV['EDITOR']
+    ENV['EDISWITCHLY']
   end
 
   def amend_commit

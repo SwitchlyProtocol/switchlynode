@@ -1,4 +1,4 @@
-# TCYStakerSummary
+# SWCYStakerSummary
 
 ## Properties
 
@@ -8,39 +8,39 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewTCYStakerSummary
+### NewSWCYStakerSummary
 
-`func NewTCYStakerSummary(amount string, ) *TCYStakerSummary`
+`func NewSWCYStakerSummary(amount string, ) *SWCYStakerSummary`
 
-NewTCYStakerSummary instantiates a new TCYStakerSummary object
+NewSWCYStakerSummary instantiates a new SWCYStakerSummary object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewTCYStakerSummaryWithDefaults
+### NewSWCYStakerSummaryWithDefaults
 
-`func NewTCYStakerSummaryWithDefaults() *TCYStakerSummary`
+`func NewSWCYStakerSummaryWithDefaults() *SWCYStakerSummary`
 
-NewTCYStakerSummaryWithDefaults instantiates a new TCYStakerSummary object
+NewSWCYStakerSummaryWithDefaults instantiates a new SWCYStakerSummary object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetAmount
 
-`func (o *TCYStakerSummary) GetAmount() string`
+`func (o *SWCYStakerSummary) GetAmount() string`
 
 GetAmount returns the Amount field if non-nil, zero value otherwise.
 
 ### GetAmountOk
 
-`func (o *TCYStakerSummary) GetAmountOk() (*string, bool)`
+`func (o *SWCYStakerSummary) GetAmountOk() (*string, bool)`
 
 GetAmountOk returns a tuple with the Amount field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAmount
 
-`func (o *TCYStakerSummary) SetAmount(v string)`
+`func (o *SWCYStakerSummary) SetAmount(v string)`
 
 SetAmount sets Amount field to given value.
 

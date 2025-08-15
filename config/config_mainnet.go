@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 const (
@@ -28,13 +28,13 @@ func getSeedAddrs() (addrs []string) {
 	// get nodes
 	res, err := http.Get(config.Switchly.SeedNodesEndpoint)
 	if err != nil {
-		log.Fatal().Err(err).Msg("failed to get thorchain nodes")
+		log.Fatal().Err(err).Msg("failed to get switchly nodes")
 	}
 
 	// parse nodes
 	var nodes []types.NodeAccount
 	if err = json.NewDecoder(res.Body).Decode(&nodes); err != nil {
-		log.Fatal().Err(err).Msg("failed to decode thorchain nodes")
+		log.Fatal().Err(err).Msg("failed to decode switchly nodes")
 	}
 	res.Body.Close()
 
@@ -55,7 +55,7 @@ func getSeedAddrs() (addrs []string) {
 		seeds[i], seeds[j] = seeds[j], seeds[i]
 	})
 
-	log.Info().Msgf("found %d thorchain seeds", len(seeds))
+	log.Info().Msgf("found %d switchly seeds", len(seeds))
 
 	return seeds
 }

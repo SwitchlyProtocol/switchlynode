@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Invariant**](InvariantsApi.md#Invariant) | **Get** /thorchain/invariant/{invariant} | 
-[**Invariants**](InvariantsApi.md#Invariants) | **Get** /thorchain/invariants | 
+[**Invariant**](InvariantsApi.md#Invariant) | **Get** /switchly/invariant/{invariant} | 
+[**Invariants**](InvariantsApi.md#Invariants) | **Get** /switchly/invariants | 
 
 
 

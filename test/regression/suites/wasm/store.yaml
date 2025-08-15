@@ -38,7 +38,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[3].action == "/cosmwasm.wasm.v1.MsgStoreCode"
   - .txs[0].result.events[4].code_checksum == "f9b2efce508ab3594d41ad0d7bd645014b1e145df64083308d37c780de7390b0"

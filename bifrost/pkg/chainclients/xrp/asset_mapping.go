@@ -16,8 +16,8 @@ type XrpAssetMapping struct {
 	SwitchlyAsset common.Asset
 }
 
-// XrpAssetMappings maps an xrp denom to a THORChain symbol and provides the asset decimals
-// CHANGEME: define assets that should be observed by THORChain here. This also acts a whitelist.
+// XrpAssetMappings maps an xrp denom to a SWITCHLYChain symbol and provides the asset decimals
+// CHANGEME: define assets that should be observed by SWITCHLYChain here. This also acts a whitelist.
 var XrpAssetMappings = []XrpAssetMapping{
 	{
 		XrpKind:       txtypes.XRP,

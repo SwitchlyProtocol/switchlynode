@@ -3,7 +3,7 @@ package types
 import (
 	"github.com/ethereum/go-ethereum/core/types"
 
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 )
 
 type SignedTxItem struct {

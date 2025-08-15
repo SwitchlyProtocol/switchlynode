@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -83,7 +83,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -175,14 +175,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9070294784580 THOR.RUNE",
+        "emit_asset": "9070294784580 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "453514739229",
         "liquidity_fee_in_rune": "453514739229",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -262,8 +262,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9925311409 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -467,7 +467,7 @@
                 "coins": [
                   {
                     "amount": "100000000000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -588,7 +588,7 @@
                     "decimals": "0"
                   }
                 ],
-                "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+                "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
                 "signer": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7"
               }
             ],
@@ -681,7 +681,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -773,8 +773,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9076447673 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -860,14 +860,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9925245882184 THOR.RUNE",
+        "emit_asset": "9925245882184 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "496262294109",
         "liquidity_fee_in_rune": "496262294109",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -926,7 +926,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -1018,8 +1018,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9152744878 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -1105,14 +1105,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9841312151231 THOR.RUNE",
+        "emit_asset": "9841312151231 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "492065607561",
         "liquidity_fee_in_rune": "492065607561",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -1171,7 +1171,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -1263,8 +1263,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9223241089 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -1350,14 +1350,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9764984072396 THOR.RUNE",
+        "emit_asset": "9764984072396 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "488249203619",
         "liquidity_fee_in_rune": "488249203619",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -1416,7 +1416,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 6,
       "time": "",
       "last_block_id": {
@@ -1508,8 +1508,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9288295971 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -1595,14 +1595,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9695566705760 THOR.RUNE",
+        "emit_asset": "9695566705760 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "484778335288",
         "liquidity_fee_in_rune": "484778335288",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -1661,7 +1661,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 7,
       "time": "",
       "last_block_id": {
@@ -1753,8 +1753,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9348260416 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -1840,14 +1840,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9632429487728 THOR.RUNE",
+        "emit_asset": "9632429487728 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "481621474386",
         "liquidity_fee_in_rune": "481621474386",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -1906,7 +1906,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 8,
       "time": "",
       "last_block_id": {
@@ -1998,8 +1998,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9403474201 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -2085,14 +2085,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9575000141180 THOR.RUNE",
+        "emit_asset": "9575000141180 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "478750007059",
         "liquidity_fee_in_rune": "478750007059",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -2151,7 +2151,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 9,
       "time": "",
       "last_block_id": {
@@ -2243,8 +2243,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9454264191 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -2330,14 +2330,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9522759178295 THOR.RUNE",
+        "emit_asset": "9522759178295 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "476137958914",
         "liquidity_fee_in_rune": "476137958914",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -2396,7 +2396,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 10,
       "time": "",
       "last_block_id": {
@@ -2488,8 +2488,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "9500943041 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -2575,14 +2575,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "9475234936331 THOR.RUNE",
+        "emit_asset": "9475234936331 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "473761746816",
         "liquidity_fee_in_rune": "473761746816",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -2641,7 +2641,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 11,
       "time": "",
       "last_block_id": {
@@ -2733,8 +2733,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "10000000000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "10000000000000 SWITCHLY.SWITCH",
         "emit_asset": "10488845592 BTC/BTC",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "04A160AAA36F9807E52A65B5F269F7E44D105D2BEF2FB79EBDF366533D6497F0",
@@ -2851,7 +2851,7 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "94861826344 BTC/BTC",
         "from": "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
         "id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -2863,10 +2863,10 @@
       },
       {
         "count": "10",
-        "deposit": "100000000000000 THOR.RUNE",
+        "deposit": "100000000000000 SWITCHLY.SWITCH",
         "failed_swap_reasons": "",
         "failed_swaps": "",
-        "in": "100000000000000 THOR.RUNE",
+        "in": "100000000000000 SWITCHLY.SWITCH",
         "interval": "1",
         "last_height": "11",
         "mode": "EndBlock",
@@ -2944,14 +2944,14 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
+        "chain": "SWITCHLY",
         "coin": "10000000000 BTC/BTC",
-        "emit_asset": "8567737468387 THOR.RUNE",
+        "emit_asset": "8567737468387 SWITCHLY.SWITCH",
         "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
         "id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "liquidity_fee": "428386873419",
         "liquidity_fee_in_rune": "428386873419",
-        "memo": "=:THOR.RUNE:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
+        "memo": "=:SWITCHLY.SWITCH:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7:0/1/10",
         "mode": "EndBlock",
         "pool": "BTC.BTC",
         "pool_slip": "476",
@@ -2963,7 +2963,7 @@
         "type": "swap"
       },
       {
-        "coins": "2000000 THOR.RUNE",
+        "coins": "2000000 SWITCHLY.SWITCH",
         "mode": "EndBlock",
         "pool_deduct": "0",
         "tx_id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
@@ -3018,8 +3018,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "95070562808072 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "95070562808072 SWITCHLY.SWITCH",
         "from": "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
         "id": "0000000000000000000000000000000000000000000000000000000000000000",
         "in_tx_id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
@@ -3037,7 +3037,7 @@
         "interval": "1",
         "last_height": "11",
         "mode": "EndBlock",
-        "out": "95070564808072 THOR.RUNE",
+        "out": "95070564808072 SWITCHLY.SWITCH",
         "quantity": "10",
         "tx_id": "E268F5BFFE3ABF2B3EE8A613A07F75098279B1F36BED45DA6CAAAADA6E3EE0E1",
         "type": "streaming_swap"
@@ -3111,7 +3111,7 @@
                 "coins": [
                   {
                     "amount": "0",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -3169,8 +3169,8 @@
             {
               "asymmetry": "0.000000000000000000",
               "basis_points": "10000",
-              "chain": "THOR",
-              "coin": "0 THOR.RUNE",
+              "chain": "SWITCHLY",
+              "coin": "0 SWITCHLY.SWITCH",
               "emit_asset": "0",
               "emit_rune": "9470052478762",
               "from": "tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
@@ -3183,7 +3183,7 @@
               "type": "withdraw"
             },
             {
-              "coins": "2000000 THOR.RUNE",
+              "coins": "2000000 SWITCHLY.SWITCH",
               "msg_index": "0",
               "pool_deduct": "0",
               "tx_id": "AD005F70163650152FA4CF0B52BF1FF93FF79035A46CB0E0F051025312771907",
@@ -3238,8 +3238,8 @@
               "type": "message"
             },
             {
-              "chain": "THOR",
-              "coin": "9470050478762 THOR.RUNE",
+              "chain": "SWITCHLY",
+              "coin": "9470050478762 SWITCHLY.SWITCH",
               "from": "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
               "id": "0000000000000000000000000000000000000000000000000000000000000000",
               "in_tx_id": "AD005F70163650152FA4CF0B52BF1FF93FF79035A46CB0E0F051025312771907",
@@ -3266,7 +3266,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 12,
       "time": "",
       "last_block_id": {
@@ -3358,7 +3358,7 @@
                 "coins": [
                   {
                     "amount": "9478186625233",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -3438,7 +3438,7 @@
               "type": "message"
             },
             {
-              "THOR_txid": "E9BCCBD12DC82C4C622900EE815DA5892516FEF3DFAFA5F365F14EBC4507847C",
+              "SWITCHLY_txid": "E9BCCBD12DC82C4C622900EE815DA5892516FEF3DFAFA5F365F14EBC4507847C",
               "asset_address": "",
               "asset_amount": "0",
               "liquidity_provider_units": "4497382771397",

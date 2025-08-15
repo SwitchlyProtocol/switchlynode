@@ -1,6 +1,6 @@
 {
   "app_hash": null,
-  "app_name": "thornode",
+  "app_name": "switchlynode",
   "app_state": {
     "auth": {
       "accounts": [
@@ -78,7 +78,7 @@
             "pub_key": null,
             "sequence": "0"
           },
-          "name": "thorchain",
+          "name": "switchly",
           "permissions": [
             "minter",
             "burner"
@@ -250,12 +250,12 @@
     "genutil": {
       "gen_txs": []
     },
-    "thorchain": {
+    "switchly": {
       "POL": {
         "rune_deposited": "0",
         "rune_withdrawn": "0"
       },
-      "THORNames": [],
+      "SWITCHNames": [],
       "adv_swap_queue_items": [],
       "affiliate_collectors": null,
       "bond_providers": [
@@ -381,11 +381,11 @@
           "value": "10000"
         },
         {
-          "key": "LENDING-THOR-BTC",
+          "key": "LENDING-SWITCHLY-BTC",
           "value": "1"
         },
         {
-          "key": "LENDING-THOR-ETH",
+          "key": "LENDING-SWITCHLY-ETH",
           "value": "1"
         },
         {
@@ -393,13 +393,13 @@
           "value": "2"
         },
         {
-          "key": "TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999"
+          "key": "SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999"
         },
         {
-          "key": "TORANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999"
+          "key": "SWITCHLYANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999"
         },
         {
-          "key": "TORANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999"
+          "key": "SWITCHLYANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999"
         }
       ],
       "network": {
@@ -432,15 +432,15 @@
           "value": "2"
         },
         {
-          "key": "TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999",
+          "key": "SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999",
           "signer": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
         },
         {
-          "key": "TORANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999",
+          "key": "SWITCHLYANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999",
           "signer": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
         },
         {
-          "key": "TORANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999",
+          "key": "SWITCHLYANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999",
           "signer": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m"
         }
       ],
@@ -547,7 +547,7 @@
         },
         {
           "LP_units": "0",
-          "asset": "THOR.BTC",
+          "asset": "SWITCHLY.BTC",
           "balance_asset": "101521684",
           "balance_rune": "98518393062",
           "pending_inbound_asset": "0",
@@ -558,7 +558,7 @@
         },
         {
           "LP_units": "0",
-          "asset": "THOR.ETH",
+          "asset": "SWITCHLY.ETH",
           "balance_asset": "998080000",
           "balance_rune": "100194355420",
           "pending_inbound_asset": "0",
@@ -644,7 +644,7 @@
         {
           "block_height": "2",
           "chains": [
-            "THOR",
+            "SWITCHLY",
             "BTC",
             "LTC",
             "BCH",
@@ -715,7 +715,7 @@
       ]
     }
   },
-  "chain_id": "thorchain",
+  "chain_id": "switchly",
   "consensus": {
     "params": {
       "abci": {

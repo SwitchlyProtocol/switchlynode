@@ -4,10 +4,10 @@
 package utxo
 
 import (
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
-	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 	. "gopkg.in/check.v1"
 )
 

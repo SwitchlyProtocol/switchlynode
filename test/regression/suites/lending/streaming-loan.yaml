@@ -14,10 +14,10 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
-# /pool/THOR.ETH can't be checked for .status == null
+# /pool/SWITCHLY.ETH can't be checked for .status == null
 # because of ERR cmd/run.go:275 > operation failed error="unexpected status code: 404"
 ---
 ########################################################################################
@@ -25,7 +25,7 @@ asserts:
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
 value: 1
 ---
 type: create-blocks
@@ -51,7 +51,7 @@ count: 2
 # test quotes endpoint
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/open
+endpoint: http://localhost:1317/switchly/quote/loan/open
 params:
   from_asset: BTC.BTC
   amount: 1000000
@@ -73,7 +73,7 @@ asserts:
   - (.fees.total|tonumber) == (.fees.liquidity|tonumber)+(.fees.outbound|tonumber)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/open
+endpoint: http://localhost:1317/switchly/quote/loan/open
 params:
   from_asset: BTC.BTC
   amount: 1000000
@@ -112,7 +112,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "LOAN+:THOR.RUNE:{{ addr_thor_fox }}"
+      memo: "LOAN+:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -121,7 +121,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
 ---
@@ -129,12 +129,12 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "${COLLATERAL_DEPOSITED=989978}"
@@ -144,7 +144,7 @@ asserts:
   - .[0]|.owner == "{{ addr_btc_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/export
+endpoint: http://localhost:1317/switchly/export
 asserts:
   - .loans|length == 1
 ---
@@ -175,7 +175,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
 ---
@@ -183,12 +183,12 @@ type: create-blocks
 count: 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "${COLLATERAL_DEPOSITED}"
@@ -198,7 +198,7 @@ asserts:
   - .[0]|.debt_repaid == "${DEBT_REPAID=975469882}" # over repaid
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].in_hash == "{{ observe_txid 6 }}"
@@ -225,7 +225,7 @@ txs:
     observed_pub_key: {{ pubkey_dog }}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "${COLLATERAL_DEPOSITED}"
@@ -238,7 +238,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---

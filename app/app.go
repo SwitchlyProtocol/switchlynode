@@ -87,12 +87,12 @@ import (
 	appparams "github.com/switchlyprotocol/switchlynode/v3/app/params"
 	"github.com/switchlyprotocol/switchlynode/v3/app/upgrades"
 	"github.com/switchlyprotocol/switchlynode/v3/openapi"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
-	thorchainkeeper "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper"
-	thorchainkeeperabci "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/abci"
-	thorchainkeeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/v1"
-	thorchaintypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
+	switchlykeeper "github.com/switchlyprotocol/switchlynode/v3/x/switchly/keeper"
+	switchlykeeperabci "github.com/switchlyprotocol/switchlynode/v3/x/switchly/keeper/abci"
+	switchlykeeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/keeper/v1"
+	switchlytypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 
 	"github.com/switchlyprotocol/switchlynode/v3/x/denom"
 	denomkeeper "github.com/switchlyprotocol/switchlynode/v3/x/denom/keeper"
@@ -134,35 +134,35 @@ var (
 		upgrade.AppModuleBasic{},
 		evidence.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		thorchain.AppModuleBasic{},
+		switchly.AppModuleBasic{},
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:       nil,
-		distrtypes.ModuleName:            nil,
-		minttypes.ModuleName:             {authtypes.Minter},
-		stakingtypes.BondedPoolName:      {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName:   {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:              {authtypes.Burner},
-		thorchain.ModuleName:             {authtypes.Minter, authtypes.Burner},
-		thorchain.AsgardName:             {},
-		thorchain.BondName:               {},
-		thorchain.ReserveName:            {},
-		thorchain.LendingName:            {},
-		thorchain.AffiliateCollectorName: {},
-		thorchain.TreasuryName:           {},
+		authtypes.FeeCollectorName:      nil,
+		distrtypes.ModuleName:           nil,
+		minttypes.ModuleName:            {authtypes.Minter},
+		stakingtypes.BondedPoolName:     {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName:  {authtypes.Burner, authtypes.Staking},
+		govtypes.ModuleName:             {authtypes.Burner},
+		switchly.ModuleName:             {authtypes.Minter, authtypes.Burner},
+		switchly.AsgardName:             {},
+		switchly.BondName:               {},
+		switchly.ReserveName:            {},
+		switchly.LendingName:            {},
+		switchly.AffiliateCollectorName: {},
+		switchly.TreasuryName:           {},
 	}
 
 	// module accounts that are allowed to receive tokens
 	allowedReceivingModAcc = map[string]bool{
-		distrtypes.ModuleName:            true,
-		thorchain.AsgardName:             true,
-		thorchain.BondName:               true,
-		thorchain.ReserveName:            true,
-		thorchain.LendingName:            true,
-		thorchain.AffiliateCollectorName: true,
-		thorchain.TreasuryName:           true,
+		distrtypes.ModuleName:           true,
+		switchly.AsgardName:             true,
+		switchly.BondName:               true,
+		switchly.ReserveName:            true,
+		switchly.LendingName:            true,
+		switchly.AffiliateCollectorName: true,
+		switchly.TreasuryName:           true,
 	}
 )
 
@@ -203,7 +203,7 @@ type SwitchlyApp struct {
 	ParamsKeeper          paramskeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 
-	SwitchlyKeeper   thorchainkeeper.Keeper
+	SwitchlyKeeper   switchlykeeper.Keeper
 	EnshrinedBifrost *ebifrost.EnshrinedBifrost
 
 	DenomKeeper      denomkeeper.Keeper
@@ -291,7 +291,7 @@ func NewChainApp(
 		consensusparamtypes.StoreKey,
 		upgradetypes.StoreKey,
 		// non sdk store keys
-		thorchaintypes.StoreKey,
+		switchlytypes.StoreKey,
 		wasmtypes.StoreKey,
 		denomtypes.StoreKey,
 	)
@@ -326,7 +326,7 @@ func NewChainApp(
 	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 		runtime.EventService{},
 	)
 	bApp.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
@@ -340,14 +340,14 @@ func NewChainApp(
 		maccPerms,
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
 		sdk.GetConfig().GetBech32AccountAddrPrefix(),
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		app.appCodec,
 		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
 		app.AccountKeeper,
 		BlockedAddresses(),
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 		logger,
 	)
 
@@ -355,7 +355,7 @@ func NewChainApp(
 	if err != nil {
 		panic(err)
 	}
-	thorchaintypes.DefineCustomGetSigners(txSigningOptions)
+	switchlytypes.DefineCustomGetSigners(txSigningOptions)
 	txConfig, err := appparams.TxConfig(app.appCodec, txmodule.NewBankKeeperCoinMetadataQueryFn(app.BankKeeper))
 	if err != nil {
 		panic(err)
@@ -367,7 +367,7 @@ func NewChainApp(
 		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper,
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
 		authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
@@ -378,7 +378,7 @@ func NewChainApp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		authtypes.FeeCollectorName,
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 	)
 
 	// get skipUpgradeHeights from the app options
@@ -394,11 +394,11 @@ func NewChainApp(
 		app.appCodec,
 		homePath,
 		app.BaseApp,
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 	)
 
-	app.SwitchlyKeeper = thorchainkeeperv1.NewKeeper(
-		app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, keys[thorchaintypes.StoreKey],
+	app.SwitchlyKeeper = switchlykeeperv1.NewKeeper(
+		app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, keys[switchlytypes.StoreKey],
 	)
 
 	wasmDir := filepath.Join(homePath, "data") // "wasm" subdirectory created here
@@ -432,7 +432,7 @@ func NewChainApp(
 		wasmDir,
 		wasmConfig,
 		wasmkeeper.BuiltInCapabilities(),
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 		wasmOpts...,
 	)
 
@@ -441,22 +441,22 @@ func NewChainApp(
 		runtime.NewKVStoreService(keys[denomtypes.StoreKey]),
 		app.AccountKeeper,
 		app.BankKeeper.WithMintCoinsRestriction(denomtypes.NewDenomMintCoinsRestriction()),
-		authtypes.NewModuleAddress(thorchain.ModuleName).String(),
+		authtypes.NewModuleAddress(switchly.ModuleName).String(),
 	)
 
 	// --- Module Options ---
 	telemetryEnabled := cast.ToBool(appOpts.Get("telemetry.enabled"))
 	testApp := cast.ToBool(appOpts.Get(TestApp))
 
-	mgrs := thorchain.NewManagers(app.SwitchlyKeeper, app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, app.WasmKeeper, keys[thorchaintypes.StoreKey])
-	app.msgServiceRouter.AddCustomRoute("cosmos.bank.v1beta1.Msg", thorchain.NewBankSendHandler(thorchain.NewSendHandler(mgrs)))
+	mgrs := switchly.NewManagers(app.SwitchlyKeeper, app.appCodec, app.BankKeeper, app.AccountKeeper, app.UpgradeKeeper, app.WasmKeeper, keys[switchlytypes.StoreKey])
+	app.msgServiceRouter.AddCustomRoute("cosmos.bank.v1beta1.Msg", switchly.NewBankSendHandler(switchly.NewSendHandler(mgrs)))
 
-	thorchainModule := thorchain.NewAppModule(mgrs, telemetryEnabled, testApp)
+	switchlyModule := switchly.NewAppModule(mgrs, telemetryEnabled, testApp)
 
 	app.EnshrinedBifrost = ebifrost.NewEnshrinedBifrost(app.appCodec, logger, ebifrostConfig)
 
 	defaultProposalHandler := baseapp.NewDefaultProposalHandler(bApp.Mempool(), bApp)
-	eBifrostProposalHandler := thorchainkeeperabci.NewProposalHandler(
+	eBifrostProposalHandler := switchlykeeperabci.NewProposalHandler(
 		&app.SwitchlyKeeper,
 		app.EnshrinedBifrost,
 		defaultProposalHandler.PrepareProposalHandler(),
@@ -494,7 +494,7 @@ func NewChainApp(
 		paramsModule,
 		consensusModule,
 		// non sdk modules
-		thorchainModule,
+		switchlyModule,
 		customWasmModule,
 		denomModule,
 	)
@@ -512,7 +512,7 @@ func NewChainApp(
 		consensusModule,
 		mint.NewAppModule(app.appCodec, app.MintKeeper, app.AccountKeeper, nil, app.GetSubspace(minttypes.ModuleName)),
 		// non sdk modules
-		thorchainModule,
+		switchlyModule,
 		wasmModule,
 		denomModule,
 	)
@@ -527,14 +527,14 @@ func NewChainApp(
 	app.ModuleManager.SetOrderBeginBlockers(
 		genutiltypes.ModuleName,
 		// additional non simd modules
-		thorchaintypes.ModuleName,
+		switchlytypes.ModuleName,
 		wasmtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
 		genutiltypes.ModuleName,
 		// additional non simd modules
-		thorchaintypes.ModuleName,
+		switchlytypes.ModuleName,
 		wasmtypes.ModuleName,
 	)
 
@@ -554,7 +554,7 @@ func NewChainApp(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		consensusparamtypes.ModuleName,
-		thorchaintypes.ModuleName,
+		switchlytypes.ModuleName,
 		wasmtypes.ModuleName,
 		denomtypes.ModuleName,
 	}
@@ -614,7 +614,7 @@ func NewChainApp(
 				SignModeHandler: txConfig.SignModeHandler(),
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			THORChainKeeper:       app.SwitchlyKeeper,
+			SWITCHLYChainKeeper:   app.SwitchlyKeeper,
 			WasmConfig:            &wasmConfig,
 			WasmKeeper:            &app.WasmKeeper,
 			TXCounterStoreService: runtime.NewKVStoreService(keys[wasmtypes.StoreKey]),
@@ -832,7 +832,7 @@ func (app *SwitchlyApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.A
 	clientCtx := apiSvr.ClientCtx
 
 	// Must call this before registering any GRPC gateway routes
-	thorchain.CustomGRPCGatewayRouter(apiSvr)
+	switchly.CustomGRPCGatewayRouter(apiSvr)
 
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
@@ -846,7 +846,7 @@ func (app *SwitchlyApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.A
 	// Register grpc-gateway routes for all modules.
 	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
-	// register thorchain-specific swagger API from root so that other applications can override easily
+	// register switchly-specific swagger API from root so that other applications can override easily
 	if err := RegisterSwaggerAPI(apiSvr.Router, apiConfig.Swagger); err != nil {
 		panic(err)
 	}
@@ -861,7 +861,7 @@ func (app *SwitchlyApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.A
 func RegisterSwaggerAPI(rtr *mux.Router, swaggerEnabled bool) error {
 	// Health Check Endpoint
 	rtr.HandleFunc(
-		fmt.Sprintf("/%s/ping", thorchain.ModuleName),
+		fmt.Sprintf("/%s/ping", switchly.ModuleName),
 		func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, `{"ping":"pong"}`)
 		},
@@ -872,10 +872,10 @@ func RegisterSwaggerAPI(rtr *mux.Router, swaggerEnabled bool) error {
 	}
 
 	// api doc handlers
-	rtr.HandleFunc(fmt.Sprintf("/%s/doc/openapi.yaml", thorchain.ModuleName), openapi.HandleSpecYAML)
-	rtr.HandleFunc(fmt.Sprintf("/%s/doc/openapi.json", thorchain.ModuleName), openapi.HandleSpecJSON)
-	rtr.HandleFunc(fmt.Sprintf("/%s/doc", thorchain.ModuleName), openapi.HandleSwaggerUI)
-	rtr.HandleFunc(fmt.Sprintf("/%s/doc/", thorchain.ModuleName), openapi.HandleSwaggerUI)
+	rtr.HandleFunc(fmt.Sprintf("/%s/doc/openapi.yaml", switchly.ModuleName), openapi.HandleSpecYAML)
+	rtr.HandleFunc(fmt.Sprintf("/%s/doc/openapi.json", switchly.ModuleName), openapi.HandleSpecJSON)
+	rtr.HandleFunc(fmt.Sprintf("/%s/doc", switchly.ModuleName), openapi.HandleSwaggerUI)
+	rtr.HandleFunc(fmt.Sprintf("/%s/doc/", switchly.ModuleName), openapi.HandleSwaggerUI)
 
 	return nil
 }
@@ -930,8 +930,8 @@ func BlockedAddresses() map[string]bool {
 	}
 
 	// Allow lending and treasury to receive funds
-	delete(modAccAddrs, authtypes.NewModuleAddress(thorchaintypes.LendingName).String())
-	delete(modAccAddrs, authtypes.NewModuleAddress(thorchaintypes.TreasuryName).String())
+	delete(modAccAddrs, authtypes.NewModuleAddress(switchlytypes.LendingName).String())
+	delete(modAccAddrs, authtypes.NewModuleAddress(switchlytypes.TreasuryName).String())
 
 	return modAccAddrs
 }

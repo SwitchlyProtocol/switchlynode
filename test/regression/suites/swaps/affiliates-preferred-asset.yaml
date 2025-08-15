@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 ########################################################################################
-# Send RUNE to pig for affiliate thorname setup
+# Send SWITCH to pig for affiliate switchlyname setup
 ########################################################################################
 type: tx-send
 from_address: {{ addr_thor_fox }}
@@ -19,48 +19,48 @@ type: create-blocks
 count: 1
 ---
 ########################################################################################
-# Create THORName w/ preferred asset for non-existent pool
-# memo structure is [~/n/name]:THORName:Chain:AliasAddress:Owner:PreferredAsset:ExpireBlockHeight
+# Create SWITCHName w/ preferred asset for non-existent pool
+# memo structure is [~/n/name]:SWITCHName:Chain:AliasAddress:Owner:PreferredAsset:ExpireBlockHeight
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_pig }}
 coins:
   - amount: "5000000000"
     asset: "rune"
-memo: "~:test:THOR:{{ addr_thor_pig }}:{{ addr_thor_pig }}:ETH.BTC"
+memo: "~:test:SWITCHLY:{{ addr_thor_pig }}:{{ addr_thor_pig }}:ETH.BTC"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 status: 500
 asserts:
   - .code == 2
-  - .message|contains("THORName doesn't exist")
+  - .message|contains("SWITCHName doesn't exist")
 ---
 ########################################################################################
-# Create THORName w/ preferred asset
+# Create SWITCHName w/ preferred asset
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_pig }}
 coins:
   - amount: "5000000000"
     asset: "rune"
-memo: "~:test:THOR:{{ addr_thor_pig }}:{{ addr_thor_pig }}:BTC.BTC"
+memo: "~:test:SWITCHLY:{{ addr_thor_pig }}:{{ addr_thor_pig }}:BTC.BTC"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .aliases[0].address == "{{ addr_thor_pig }}"
   - .owner == "{{ addr_thor_pig }}"
   - .preferred_asset == "BTC.BTC"
 ---
 ########################################################################################
-# Add BTC Alias to thorname
+# Add BTC Alias to switchlyname
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_pig }}
@@ -73,7 +73,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .aliases[0].address == "{{ addr_thor_pig }}"
   - .aliases[1].address == "{{ addr_btc_pig }}"
@@ -84,7 +84,7 @@ asserts:
 # check aff collector + addr_thor_fox balance before swap
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .affiliate_collector_rune == "0"
 ---
@@ -94,7 +94,7 @@ asserts:
   - .result[]|select(.denom == "rune")|.amount == "4994000000"
 ---
 ########################################################################################
-# swap BTC -> RUNE w/ "test" affiliate
+# swap BTC -> SWITCH w/ "test" affiliate
 ########################################################################################
 type: tx-observed-in
 signer: {{ addr_thor_dog }}
@@ -111,7 +111,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}::test:500"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}::test:500"
     block_height: 4
     finalise_height: 4
     observed_pub_key: {{ pubkey_dog }}
@@ -123,12 +123,12 @@ count: 1
 # check aff collector + addr_thor_pig balance after swap, balance should be same, aff module should increase
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .affiliate_collector_rune == "226763410"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/affiliate_collector
+endpoint: http://localhost:1317/switchly/balance/module/affiliate_collector
 asserts:
   - .coins[]|select(.denom == "rune")|.amount == "226763410"
 ---
@@ -138,7 +138,7 @@ asserts:
   - .result[]|select(.denom == "rune")|.amount == "4994000000"
 ---
 ########################################################################################
-# Swap RUNE -> BTC w/ affiliate "test"
+# Swap SWITCH -> BTC w/ affiliate "test"
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_cat }}
@@ -154,12 +154,12 @@ count: 2
 # check aff collector + addr_thor_pig balance after swap, balance should be same, aff module should increase
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .affiliate_collector_rune == "472787908"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/affiliate_collector
+endpoint: http://localhost:1317/switchly/balance/module/affiliate_collector
 asserts:
   - .coins[]|select(.denom == "rune")|.amount == "472787908"
 ---
@@ -193,12 +193,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 ########################################################################################
-# Swap RUNE -> BTC w/ affiliate "test", which should trigger preferred asset swap
+# Swap SWITCH -> BTC w/ affiliate "test", which should trigger preferred asset swap
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_cat }}
@@ -211,7 +211,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].memo == "OUT:{{ native_txid -1 }}"
@@ -242,7 +242,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -261,7 +261,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}::test:1000"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}::test:1000"
     block_height: 4
     finalise_height: 4
     observed_pub_key: {{ pubkey_dog }}
@@ -270,12 +270,12 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .affiliate_collector_rune == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/affiliate_collector
+endpoint: http://localhost:1317/switchly/balance/module/affiliate_collector
 asserts:
   - .coins|length == 0
 ---
@@ -285,7 +285,7 @@ asserts:
   - .result[]|select(.denom == "rune")|.amount == "4994000000"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[.end_block_events[]|select(.type == "scheduled_outbound")]|length == 1
   - .end_block_events[]|select(.type == "scheduled_outbound").to_address == "{{ addr_btc_pig }}"
@@ -293,7 +293,7 @@ asserts:
   - .end_block_events[]|select(.type == "scheduled_outbound").coin_asset == "BTC.BTC"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].in_hash == "${IN_HASH=1F7AB31B73C55AEFEFDB85BD1F4691B8D0862F6465ADFBFEBD1EF0A058003C33}"
@@ -324,7 +324,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -346,7 +346,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}::test:500"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}::test:500"
     block_height: 9
     finalise_height: 9
     observed_pub_key: {{ pubkey_dog }}
@@ -355,14 +355,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
-  - .affiliate_collector_rune == "${RUNE_AMOUNT=384481146}"
+  - .affiliate_collector_rune == "${SWITCH_AMOUNT=384481146}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/affiliate_collector
+endpoint: http://localhost:1317/switchly/balance/module/affiliate_collector
 asserts:
-  - .coins[]|select(.denom == "rune").amount == "${RUNE_AMOUNT}"
+  - .coins[]|select(.denom == "rune").amount == "${SWITCH_AMOUNT}"
 ---
 # BTC paused
 type: tx-mimir
@@ -374,7 +374,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .HALTBTCTRADING == 1
 ---
@@ -389,17 +389,17 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
-  - .affiliate_collector_rune == "${RUNE_AMOUNT}"
+  - .affiliate_collector_rune == "${SWITCH_AMOUNT}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/affiliate_collector
+endpoint: http://localhost:1317/switchly/balance/module/affiliate_collector
 asserts:
-  - .coins[]|select(.denom == "rune").amount == "${RUNE_AMOUNT}"
+  - .coins[]|select(.denom == "rune").amount == "${SWITCH_AMOUNT}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].in_hash == "${IN_HASH=F7B3511C55618B34293F9BC879D703152966A25AC8F346506F4017C1F23A39B5}"
@@ -430,12 +430,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 ########################################################################################
-# Swap ETH -> RUNE w/ affiliate "test", which should trigger preferred asset swap
+# Swap ETH -> SWITCH w/ affiliate "test", which should trigger preferred asset swap
 ########################################################################################
 type: tx-observed-in
 signer: {{ addr_thor_dog }}
@@ -452,7 +452,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "ETH.ETH"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}::test:600"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}::test:600"
     block_height: 10
     finalise_height: 10
     observed_pub_key: {{ pubkey_dog }}
@@ -461,22 +461,22 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
-  - .affiliate_collector_rune == "${TEST_THORNAME_RUNE=6536800126}"
-  - .preferred_asset_swap_threshold_rune == "${SWAP_THRESHOLD_RUNE=2160289600}"
-  # Also confirm full THORName response format.
+  - .affiliate_collector_rune == "${TEST_SWITCHNAME_SWITCH=6536800126}"
+  - .preferred_asset_swap_threshold_rune == "${SWAP_THRESHOLD_SWITCH=2160289600}"
+  # Also confirm full SWITCHName response format.
   - |
     . == {
       "name": "test",
       "expire_block_height": 455256004,
       "owner": "tthor1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
       "preferred_asset": "BTC.BTC",
-      "preferred_asset_swap_threshold_rune": "${SWAP_THRESHOLD_RUNE}",
-      "affiliate_collector_rune": "${TEST_THORNAME_RUNE}",
+      "preferred_asset_swap_threshold_rune": "${SWAP_THRESHOLD_SWITCH}",
+      "affiliate_collector_rune": "${TEST_SWITCHNAME_SWITCH}",
       "aliases": [
         {
-          "chain": "THOR",
+          "chain": "SWITCHLY",
           "address": "tthor1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u"
         },
         {
@@ -487,16 +487,16 @@ asserts:
     }
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/affiliate_collector
+endpoint: http://localhost:1317/switchly/balance/module/affiliate_collector
 asserts:
-  - .coins[]|select(.denom == "rune")|.amount == "${TEST_THORNAME_RUNE}"
+  - .coins[]|select(.denom == "rune")|.amount == "${TEST_SWITCHNAME_SWITCH}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[.end_block_events[]|select(.type == "refund")]|length == 0

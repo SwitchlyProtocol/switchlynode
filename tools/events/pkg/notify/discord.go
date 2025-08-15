@@ -17,8 +17,8 @@ import (
 func discord(webhook, title string, block int64, lines []string, level Level, fields *util.OrderedMap) error {
 	embed := DiscordEmbed{
 		Description: fmt.Sprintf(
-			"**%s** at [block `%d`](%s/thorchain/block?height=%d)",
-			title, block, config.Get().Links.Thornode, block,
+			"**%s** at [block `%d`](%s/switchly/block?height=%d)",
+			title, block, config.Get().Links.Switchlynode, block,
 		),
 	}
 	if len(lines) > 0 {
@@ -29,7 +29,7 @@ func discord(webhook, title string, block int64, lines []string, level Level, fi
 	reBlock := regexp.MustCompile("^`\\[([0-9]+)\\]`")
 	if reBlock.MatchString(title) {
 		block := reBlock.FindStringSubmatch(title)[1]
-		embed.URL = fmt.Sprintf("%s/thorchain/block?height=%s", config.Get().Links.Thornode, block)
+		embed.URL = fmt.Sprintf("%s/switchly/block?height=%s", config.Get().Links.Switchlynode, block)
 	}
 
 	// add fields to the message

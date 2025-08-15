@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**LiquidityProvider**](LiquidityProvidersApi.md#LiquidityProvider) | **Get** /thorchain/pool/{asset}/liquidity_provider/{address} | 
-[**LiquidityProviders**](LiquidityProvidersApi.md#LiquidityProviders) | **Get** /thorchain/pool/{asset}/liquidity_providers | 
+[**LiquidityProvider**](LiquidityProvidersApi.md#LiquidityProvider) | **Get** /switchly/pool/{asset}/liquidity_provider/{address} | 
+[**LiquidityProviders**](LiquidityProvidersApi.md#LiquidityProviders) | **Get** /switchly/pool/{asset}/liquidity_providers | 
 
 
 

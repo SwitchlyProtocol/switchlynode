@@ -11,7 +11,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
-// One is useful type so THORNode doesn't need to manage 8 zeroes all the time
+// One is useful type so SWITCHLYNode doesn't need to manage 8 zeroes all the time
 const One = 100000000
 
 // GetSafeShare does the same as GetUncappedShare , but GetSafeShare will guarantee the result will not more than total.

@@ -36,7 +36,7 @@ TBD - there have been many discussions around this, and the options listed in al
 
 ## Detailed Design
 
-The proposed design extends the `TssPool` message sent after vault creation to include a `keyshares_backup` field, which contains the bytes for the newly created keyshares after churn, compressed with `lzma` (to reduce chain bloat), and symmetrically encrypted using the node's mnemonic as the passphrase (the same mnemonic generated at node creation used for the `thornode` private key). The initial pass of this implementation began before the introduction of the ADR process and is currently under review at https://gitlab.com/thorchain/thornode/-/merge_requests/2235. These keyshares will intentionally skip storage in a KV store in the `thornode` application state to avoid further bloat, instead a CLI utility will be provided to via [tci](https://gitlab.com/ninerealms/thorchain-inspector) to pull and decrypt the latest keyshare backup for the node from an RPC endpoint, via `tci nodes recover-keyshares --address <node-address>`
+The proposed design extends the `TssPool` message sent after vault creation to include a `keyshares_backup` field, which contains the bytes for the newly created keyshares after churn, compressed with `lzma` (to reduce chain bloat), and symmetrically encrypted using the node's mnemonic as the passphrase (the same mnemonic generated at node creation used for the `switchlynode` private key). The initial pass of this implementation began before the introduction of the ADR process and is currently under review at https://gitlab.com/switchly/switchlynode/-/merge_requests/2235. These keyshares will intentionally skip storage in a KV store in the `switchlynode` application state to avoid further bloat, instead a CLI utility will be provided to via [tci](https://gitlab.com/ninerealms/switchly-inspector) to pull and decrypt the latest keyshare backup for the node from an RPC endpoint, via `tci nodes recover-keyshares --address <node-address>`
 
 ### Checks
 
@@ -93,7 +93,7 @@ This would keep the current approach to backup creation and extend `make backup`
 
 #### 3. Node Operators Manage Separate Cron Backup
 
-This would basically require node operators to manage a machine that has persistent authorization to their Kubernetes cluster, and adding `TC_NO_CONFIRM=true NAME=thornode make backup` to a crontab.
+This would basically require node operators to manage a machine that has persistent authorization to their Kubernetes cluster, and adding `TC_NO_CONFIRM=true NAME=switchlynode make backup` to a crontab.
 
 ##### <!-- markdownlint-disable --> Negatives
 

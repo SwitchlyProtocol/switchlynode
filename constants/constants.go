@@ -1,4 +1,4 @@
-// Package constants  contains all the constants used by thorchain
+// Package constants  contains all the constants used by switchly
 // by default all the settings in this is for mainnet
 package constants
 
@@ -14,7 +14,7 @@ import (
 var (
 	GitCommit       = "null"  // sha1 revision used to build the program
 	BuildTime       = "null"  // when the executable was built
-	Version         = "3.0.0" // software version
+	Version         = "3.7.0" // software version
 	int64Overrides  = map[ConstantName]int64{}
 	boolOverrides   = map[ConstantName]bool{}
 	stringOverrides = map[ConstantName]string{}
@@ -22,8 +22,8 @@ var (
 
 var SWVersion, _ = semver.Make(Version)
 
-// ThorchainBlockTime Block time of THORChain
-var ThorchainBlockTime = 5 * time.Second
+// SwitchlyBlockTime Block time of SWITCHLYChain
+var SwitchlyBlockTime = 5 * time.Second
 
 // max basis points
 const MaxBasisPts = uint64(10_000)

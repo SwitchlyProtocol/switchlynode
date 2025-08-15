@@ -17,18 +17,18 @@ Given the complexity of memos, they can become very long, beyond the limits of c
 The examples below use the following features to reduce memo length:
 
 1. [Shortened Asset Names](memo-length-reduction.md#shortened-asset-names)
-2. [THORNames](memo-length-reduction.md#mechanism-for-transaction-intent-1)
+2. [SWITCHNames](memo-length-reduction.md#mechanism-for-transaction-intent-1)
 3. [Shortened Function](memo-length-reduction.md#mechanism-for-transaction-intent-2)
 4. [Asset Abbreviations](memo-length-reduction.md#asset-abbreviations)
 5. [Scientific Notation](memo-length-reduction.md#scientific-notation)
 
 ### **Shortened Asset Names**
 
-Native asset names can be shortened to reduce the length of the memo. The exact list is [here](https://gitlab.com/thorchain/thornode/-/blob/develop/common/asset.go#L231).
+Native asset names can be shortened to reduce the length of the memo. The exact list is [here](https://gitlab.com/switchly/switchlynode/-/blob/develop/common/asset.go#L231).
 
 | Shorten Asset | Asset Notation |
 | ------------- | -------------- |
-| r or rune     | THOR.RUNE      |
+| r or rune     | SWITCHLY.SWITCH      |
 | a             | AVAX.AVAX      |
 | b             | BTC.BTC        |
 | c             | BCH.BCH        |
@@ -44,7 +44,7 @@ Native asset names can be shortened to reduce the length of the memo. The exact 
 **Example Swaps**:
 
 - `=:ETH.ETH:0x388C818CA8B9251b393131C08a736A67ccB19297` is reduced to `=:e:0x388C818CA8B9251b393131C08a736A67ccB19297,` Swap for Ether.
-- `=:r:thor1el4ufmhll3yw7zxzszvfakrk66j7fx0tvcslym` - Swap to RUNE.
+- `=:r:thor1el4ufmhll3yw7zxzszvfakrk66j7fx0tvcslym` - Swap to SWITCH.
 
 ### Asset Abbreviations
 
@@ -57,15 +57,15 @@ Assets can be abbreviated using fuzzy logic. The following will all be matched a
 | ETH.USDT-6994597c13d831ec7                          |
 | ETH.USDT-0xdac17f958d2ee523a2206206994597c13d831ec7 |
 
-### THORNames
+### SWITCHNames
 
-THORNames allows a custom name to be assigned to an address, like an alias, so the address does not need to be specified.
+SWITCHNames allows a custom name to be assigned to an address, like an alias, so the address does not need to be specified.
 
 Example:
 
 - `thor1nt2d4kmj0xd6xxm3m82tac3d20y05dm0vv7ur3` can be specified as `tr`.
 
-See the [THORName Creation Guide](../affiliate-guide/thorname-guide.md) to create your own. This is used greatly to specify the affiliate address.
+See the [SWITCHName Creation Guide](../affiliate-guide/switchlyname-guide.md) to create your own. This is used greatly to specify the affiliate address.
 
 ### Shortened Functions
 
@@ -78,7 +78,7 @@ Memos contain functions such as Swap or Add, which describe the user's intent an
 | Withdraw      | wd          | -           |
 | Loan Open     | Loan+       | $+          |
 | Loan Close    | Loan-       | $-          |
-| THORName      | name, n     | \~          |
+| SWITCHName      | name, n     | \~          |
 | Limit Swap    | =>          | =>          |
 
 **Example**:
@@ -87,14 +87,14 @@ Memos contain functions such as Swap or Add, which describe the user's intent an
 
 ### Scientific Notation
 
-In THORChain memos and the state machine, asset amounts are expressed as Base in 1e8 format requiring many digits to express an amount. E.g. 0.01 BTC is expressed as `1000000` and 5 Ether is expressed as `500000000`.
+In SWITCHLYChain memos and the state machine, asset amounts are expressed as Base in 1e8 format requiring many digits to express an amount. E.g. 0.01 BTC is expressed as `1000000` and 5 Ether is expressed as `500000000`.
 
 To help save space in memos, scientific notation can shorten memos by specifying both significant digits and the amount of trailing zeros. Note that using scientific notation in memos always leads to a loss of precision, so ensure enough significant digits are used to express the amount properly. For example, using `161e6` to represent `1612345678` results in a loss of precision.
 
 **Examples:**
 
-- In memo: `1e8` -> THORChain reads: `100000000`
-- In memo: `51e7` -> THORChain reads: `510000000`
+- In memo: `1e8` -> SWITCHLYChain reads: `100000000`
+- In memo: `51e7` -> SWITCHLYChain reads: `510000000`
 
 **Full Memo Example:**
 

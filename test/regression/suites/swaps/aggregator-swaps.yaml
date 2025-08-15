@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -27,7 +27,7 @@ count: 1
 # check explicit match on queue/keysign as types have bit us multiple times
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - | # Note incidentally that this == does not check the field order.
     .[0] == {
@@ -56,7 +56,7 @@ asserts:
     }
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/keysign/2/tthorpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4
+endpoint: http://localhost:1317/switchly/keysign/2/tthorpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4
 asserts:
   - |
     .keysign.tx_array[0] == {

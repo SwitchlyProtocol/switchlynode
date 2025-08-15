@@ -22,13 +22,13 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/utxo"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 	"github.com/syndtr/goleveldb/leveldb"
 	ldbstorage "github.com/syndtr/goleveldb/leveldb/storage"
 )
@@ -36,10 +36,10 @@ import (
 type DogecoinSuite struct {
 	client *Client
 	server *httptest.Server
-	bridge thorclient.ThorchainBridge
+	bridge switchlyclient.SwitchlyBridge
 	cfg    config.BifrostChainConfiguration
 	m      *metrics.Metrics
-	keys   *thorclient.Keys
+	keys   *switchlyclient.Keys
 }
 
 var _ = Suite(&DogecoinSuite{})
@@ -52,7 +52,7 @@ func (s *DogecoinSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.SwitchlyHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.keys = thorclient.NewKeysWithKeybase(kb, bob, password)
+	s.keys = switchlyclient.NewKeysWithKeybase(kb, bob, password)
 }
 
 var chainRPCs = map[string]map[string]interface{}{}
@@ -99,7 +99,7 @@ func (s *DogecoinSuite) SetUpTest(c *C) {
 		DisableTLS:  true,
 		HTTPostMode: true,
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			GasPriceResolution: 500_000,
 		},
 	}
@@ -110,7 +110,7 @@ func (s *DogecoinSuite) SetUpTest(c *C) {
 
 	thordir := filepath.Join(os.TempDir(), ns, ".thorcli")
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       "localhost",
 		SignerName:      bob,
 		SignerPasswd:    password,
@@ -174,7 +174,7 @@ func (s *DogecoinSuite) SetUpTest(c *C) {
 			} else {
 				handleRPC(body, rw)
 			}
-		} else if strings.HasPrefix(req.RequestURI, "/thorchain/node/") {
+		} else if strings.HasPrefix(req.RequestURI, "/switchly/node/") {
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/nodeaccount/template.json")
 		} else if req.RequestURI == "/switchly/lastblock" {
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/lastblock/doge.json")
@@ -184,12 +184,12 @@ func (s *DogecoinSuite) SetUpTest(c *C) {
 		} else if req.RequestURI == "/txs" {
 			_, err := rw.Write([]byte(`{"height": "1", "txhash": "AAAA000000000000000000000000000000000000000000000000000000000000", "logs": [{"success": "true", "log": ""}]}`))
 			c.Assert(err, IsNil)
-		} else if strings.HasPrefix(req.RequestURI, thorclient.AsgardVault) {
+		} else if strings.HasPrefix(req.RequestURI, switchlyclient.AsgardVault) {
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/vaults/asgard.json")
-		} else if req.RequestURI == "/thorchain/mimir/key/MaxUTXOsToSpend" {
+		} else if req.RequestURI == "/switchly/mimir/key/MaxUTXOsToSpend" {
 			_, err := rw.Write([]byte(`-1`))
 			c.Assert(err, IsNil)
-		} else if req.RequestURI == "/thorchain/vaults/pubkeys" {
+		} else if req.RequestURI == "/switchly/vaults/pubkeys" {
 			if common.CurrentChainNetwork == common.MainNet {
 				httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/vaults/pubKeys-Mainnet.json")
 			} else {
@@ -199,7 +199,7 @@ func (s *DogecoinSuite) SetUpTest(c *C) {
 	}))
 	var err error
 	cfg.ChainHost = s.server.Listener.Addr().String()
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, s.keys)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.m, s.keys)
 	c.Assert(err, IsNil)
 	s.cfg.RPCHost = s.server.Listener.Addr().String()
 	s.client, err = NewClient(s.keys, s.cfg, nil, s.bridge, s.m)

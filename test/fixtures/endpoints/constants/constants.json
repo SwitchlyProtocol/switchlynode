@@ -8,7 +8,7 @@
     "FailKeygenSlashPoints": 720,
     "FundMigrationInterval": 10,
     "LackOfObservationPenalty": 2,
-    "MinimumBondInRune": 100000000,
+    "MinimumBondInSWITCH": 100000000,
     "MinimumNodesForBFT": 4,
     "MinimumNodesForYggdrasil": 6,
     "PoolCycle": 50000,

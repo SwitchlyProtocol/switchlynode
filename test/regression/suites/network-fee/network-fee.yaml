@@ -14,7 +14,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/inbound_addresses
+endpoint: http://localhost:1317/switchly/inbound_addresses
 asserts:
   - .|length == 10
   - .[0].chain == "BTC"
@@ -37,7 +37,7 @@ asserts:
   - .result.value.sequence == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/inbound_addresses
+endpoint: http://localhost:1317/switchly/inbound_addresses
 asserts:
   - .|length == 10
   - .[0].chain == "BTC"

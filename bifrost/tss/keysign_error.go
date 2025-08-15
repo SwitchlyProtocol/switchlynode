@@ -5,7 +5,7 @@ import (
 
 	tssMessages "github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
 
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 // KeysignError is a custom error create to include which party to blame

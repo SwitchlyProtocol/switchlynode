@@ -17,12 +17,12 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 // -------------------------------------------------------------------------------------
@@ -43,10 +43,10 @@ type P2PStatusPeer struct {
 }
 
 type P2PStatusResponse struct {
-	ThornodeHeight int64           `json:"thornode_height"`
-	Peers          []P2PStatusPeer `json:"peers"`
-	PeerCount      int             `json:"peer_count"`
-	Errors         []string        `json:"errors"`
+	SwitchlynodeHeight int64           `json:"switchlynode_height"`
+	Peers              []P2PStatusPeer `json:"peers"`
+	PeerCount          int             `json:"peer_count"`
+	Errors             []string        `json:"errors"`
 }
 
 type ScannerResponse struct {
@@ -125,23 +125,23 @@ func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 
 	// get switchly nodes
 	nodesByIP := map[string]openapi.Node{}
-	thornode := config.GetBifrost().Switchly.ChainHost
-	url := fmt.Sprintf("http://%s/switchly/nodes", thornode)
+	switchlynode := config.GetBifrost().Switchly.ChainHost
+	url := fmt.Sprintf("http://%s/switchly/nodes", switchlynode)
 	resp, err := http.Get(url)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("fail to get thornode status")
+		s.logger.Error().Err(err).Msg("fail to get switchlynode status")
 	} else {
 		defer resp.Body.Close()
 
 		// set the height from header
-		res.ThornodeHeight, err = strconv.ParseInt(resp.Header.Get("grpc-metadata-x-cosmos-block-height"), 10, 64)
+		res.SwitchlynodeHeight, err = strconv.ParseInt(resp.Header.Get("grpc-metadata-x-cosmos-block-height"), 10, 64)
 		if err != nil {
-			s.logger.Error().Err(err).Msg("fail to parse thornode height")
+			s.logger.Error().Err(err).Msg("fail to parse switchlynode height")
 		}
 
 		nodes := make([]openapi.Node, 0)
 		if err = json.NewDecoder(resp.Body).Decode(&nodes); err != nil {
-			s.logger.Error().Err(err).Msg("fail to decode thornode status")
+			s.logger.Error().Err(err).Msg("fail to decode switchlynode status")
 		} else {
 			for _, node := range nodes {
 				otherNode, exists := nodesByIP[node.IpAddress]
@@ -184,7 +184,7 @@ func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 				return
 			}
 
-			// check if the node is in thornode
+			// check if the node is in switchlynode
 			if node, ok := nodesByIP[pi.Address]; ok {
 				peer.Address = node.NodeAddress
 				peer.Status = node.Status
@@ -234,17 +234,17 @@ func (s *HealthServer) p2pStatus(w http.ResponseWriter, _ *http.Request) {
 func (s *HealthServer) currentSigning(w http.ResponseWriter, _ *http.Request) {
 	res := make([]VaultResponse, 0)
 
-	thornode := config.GetBifrost().Switchly.ChainHost
-	url := fmt.Sprintf("http://%s%s", thornode, thorclient.AsgardVault)
+	switchlynode := config.GetBifrost().Switchly.ChainHost
+	url := fmt.Sprintf("http://%s%s", switchlynode, switchlyclient.AsgardVault)
 	resp, err := http.Get(url)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("fail to get thornode status")
+		s.logger.Error().Err(err).Msg("fail to get switchlynode status")
 	} else {
 		defer resp.Body.Close()
 
 		vaults := make([]openapi.Vault, 0)
 		if err = json.NewDecoder(resp.Body).Decode(&vaults); err != nil {
-			s.logger.Error().Err(err).Msg("fail to decode thornode status")
+			s.logger.Error().Err(err).Msg("fail to decode switchlynode status")
 		}
 		for _, vault := range vaults {
 			valRes := VaultResponse{
@@ -340,22 +340,22 @@ func (s *HealthServer) chainScanner(w http.ResponseWriter, _ *http.Request) {
 	wg.Wait()
 
 	// Fetch switchly height
-	thornode := config.GetBifrost().Switchly.ChainHost
-	url := fmt.Sprintf("http://%s/switchly/lastblock", thornode)
+	switchlynode := config.GetBifrost().Switchly.ChainHost
+	url := fmt.Sprintf("http://%s/switchly/lastblock", switchlynode)
 	resp, err := http.Get(url)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("fail to get thornode status")
+		s.logger.Error().Err(err).Msg("fail to get switchlynode status")
 	} else {
 		defer resp.Body.Close()
 		var height int64
 		height, err = strconv.ParseInt(resp.Header.Get("grpc-metadata-x-cosmos-block-height"), 10, 64)
 		if err != nil {
-			s.logger.Error().Err(err).Msg("fail to parse thornode height")
+			s.logger.Error().Err(err).Msg("fail to parse switchlynode height")
 		}
 		res[common.SWITCHLYChain.String()] = ScannerResponse{
 			Chain:              common.SWITCHLYChain.String(),
 			ChainHeight:        height,
-			BlockScannerHeight: -1, // TODO: pending for thorchain
+			BlockScannerHeight: -1, // TODO: pending for switchly
 			ScannerHeightDiff:  -1,
 		}
 	}

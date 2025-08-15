@@ -7,8 +7,8 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/actors/common"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
@@ -35,11 +35,11 @@ func NewDualLPActor(asset common.Asset) *Actor {
 		asset: asset,
 	}
 
-	// lock a user that has L1 and RUNE balance
+	// lock a user that has L1 and SWITCH balance
 	a.Ops = append(a.Ops, a.acquireUser)
 
-	// deposit 10% of the user RUNE balance
-	a.Ops = append(a.Ops, a.depositRune)
+	// deposit 10% of the user SWITCH balance
+	a.Ops = append(a.Ops, a.depositSWITCH)
 
 	// deposit 10% of the user L1 balance to match
 	if asset.Chain.IsEVM() && !asset.IsGasAsset() {
@@ -59,7 +59,7 @@ func NewDualLPActor(asset common.Asset) *Actor {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func (a *DualLPActor) acquireUser(config *OpConfig) OpResult {
-	userMaxRune := cosmos.NewUint(0)
+	userMaxSWITCH := cosmos.NewUint(0)
 
 	for _, user := range config.Users {
 		a.SetLogger(a.Log().With().Str("user", user.Name()).Logger())
@@ -69,21 +69,21 @@ func (a *DualLPActor) acquireUser(config *OpConfig) OpResult {
 			continue
 		}
 
-		// skip users that don't have RUNE balance
-		thorAddress, err := user.PubKey().GetAddress(common.THORChain)
+		// skip users that don't have SWITCH balance
+		thorAddress, err := user.PubKey().GetAddress(common.SWITCHLYChain)
 		if err != nil {
 			a.Log().Error().Err(err).Msg("failed to get thor address")
 			user.Release()
 			continue
 		}
-		thorBalances, err := thornode.GetBalances(thorAddress)
+		thorBalances, err := switchlynode.GetBalances(thorAddress)
 		if err != nil {
-			a.Log().Error().Err(err).Msg("failed to get thorchain balances")
+			a.Log().Error().Err(err).Msg("failed to get switchly balances")
 			user.Release()
 			continue
 		}
 		if thorBalances.GetCoin(common.SwitchNative).Amount.IsZero() {
-			a.Log().Error().Msg("user has no RUNE balance")
+			a.Log().Error().Msg("user has no SWITCH balance")
 			user.Release()
 			continue
 		}
@@ -111,12 +111,12 @@ func (a *DualLPActor) acquireUser(config *OpConfig) OpResult {
 			continue
 		}
 
-		// find the user with the most RUNE balance
-		if thorBalances.GetCoin(common.SwitchNative).Amount.LTE(userMaxRune) {
+		// find the user with the most SWITCH balance
+		if thorBalances.GetCoin(common.SwitchNative).Amount.LTE(userMaxSWITCH) {
 			user.Release()
 			continue
 		}
-		userMaxRune = thorBalances.GetCoin(common.SwitchNative).Amount
+		userMaxSWITCH = thorBalances.GetCoin(common.SwitchNative).Amount
 
 		// set acquired account and amounts in state context
 		a.Log().Info().
@@ -170,7 +170,7 @@ func (a *DualLPActor) depositL1(config *OpConfig) OpResult {
 	}
 }
 
-func (a *DualLPActor) depositRune(config *OpConfig) OpResult {
+func (a *DualLPActor) depositSWITCH(config *OpConfig) OpResult {
 	memo := fmt.Sprintf("+:%s:%s", a.asset, a.l1Address)
 	accAddr, err := a.account.PubKey().GetThorAddress()
 	if err != nil {
@@ -184,7 +184,7 @@ func (a *DualLPActor) depositRune(config *OpConfig) OpResult {
 		memo,
 		accAddr,
 	)
-	txid, err := a.account.Thorchain.Broadcast(deposit)
+	txid, err := a.account.Switchly.Broadcast(deposit)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to broadcast tx")
 		return OpResult{
@@ -192,14 +192,14 @@ func (a *DualLPActor) depositRune(config *OpConfig) OpResult {
 		}
 	}
 
-	a.Log().Info().Stringer("txid", txid).Msg("broadcasted RUNE add liquidity tx")
+	a.Log().Info().Stringer("txid", txid).Msg("broadcasted SWITCH add liquidity tx")
 	return OpResult{
 		Continue: true,
 	}
 }
 
 func (a *DualLPActor) verifyLP(config *OpConfig) OpResult {
-	lps, err := thornode.GetLiquidityProviders(a.asset)
+	lps, err := switchlynode.GetLiquidityProviders(a.asset)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get liquidity providers")
 		return OpResult{
@@ -209,16 +209,16 @@ func (a *DualLPActor) verifyLP(config *OpConfig) OpResult {
 
 	for _, lp := range lps {
 		// skip pending lps
-		if lp.PendingAsset != "0" || lp.PendingRune != "0" {
+		if lp.PendingAsset != "0" || lp.PendingSWITCH != "0" {
 			continue
 		}
 
 		// find the matching lp record
-		if lp.RuneAddress == nil || lp.AssetAddress == nil {
+		if lp.SWITCHAddress == nil || lp.AssetAddress == nil {
 			continue
 		}
 
-		if common.Address(*lp.RuneAddress).Equals(a.thorAddress) &&
+		if common.Address(*lp.SWITCHAddress).Equals(a.thorAddress) &&
 			common.Address(*lp.AssetAddress).Equals(a.l1Address) {
 
 			// found the matching lp record
@@ -227,8 +227,8 @@ func (a *DualLPActor) verifyLP(config *OpConfig) OpResult {
 			}
 
 			// verify the amounts
-			if lp.RuneDepositValue != a.runeAmount.String() {
-				err = fmt.Errorf("mismatch RUNE amount: %s != %s", lp.RuneDepositValue, a.runeAmount)
+			if lp.SWITCHDepositValue != a.runeAmount.String() {
+				err = fmt.Errorf("mismatch SWITCH amount: %s != %s", lp.SWITCHDepositValue, a.runeAmount)
 				res.Error = multierror.Append(res.Error, err)
 			}
 			if lp.AssetDepositValue != a.l1Amount.String() {

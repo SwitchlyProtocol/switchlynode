@@ -15,9 +15,9 @@
 >
 >     Accepted
 >
->     [Tracking issue](https://gitlab.com/thorchain/thornode/issues/123)
->     [Milestone](https://gitlab.com/thorchain/thornode/milestones/123)
->     [Project board](https://gitlab.com/orgs/thorchain/projects/123)
+>     [Tracking issue](https://gitlab.com/switchly/switchlynode/issues/123)
+>     [Milestone](https://gitlab.com/switchly/switchlynode/milestones/123)
+>     [Project board](https://gitlab.com/orgs/switchly/projects/123)
 >
 > Rejected ADRs are captured as a record of recommendations that we specifically
 > do not (and possibly never) want to implement. The ADR itself must, for

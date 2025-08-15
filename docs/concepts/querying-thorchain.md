@@ -1,4 +1,4 @@
-# Querying THORChain
+# Querying SWITCHLYChain
 
 ## Supported Address Formats
 
@@ -21,9 +21,9 @@ All inbound_address support this format.
 
 Vaults are fetched from the `/inbound_addresses` endpoint:
 
-[https://thornode.ninerealms.com/thorchain/inbound_addresses](https://thornode.ninerealms.com/thorchain/inbound_addresses)
+[https://switchlynode.ninerealms.com/switchly/inbound_addresses](https://switchlynode.ninerealms.com/switchly/inbound_addresses)
 
-You need to select the address of the Chain the inbound transaction. See [supported address formats](./querying-thorchain.md#supported-address-formats).
+You need to select the address of the Chain the inbound transaction. See [supported address formats](./querying-switchly.md#supported-address-formats).
 
 The address will be the current active Asgard Address that accepts inbounds. Do not cache these address as they change regularly. Do not delay inbound transactions (e.g. do not use future timeLocks).
 
@@ -52,7 +52,7 @@ Never cache vault addresses, they churn regularly!
 ```
 
 ```admonish danger
-Inbound transactions should not be delayed for any reason else there is risk funds will be sent to an unreachable address. Use standard transactions, check the `inbound address` before sending and use the recommended [`gas rate`](querying-thorchain.md#getting-the-asgard-vault) to ensure transactions are confirmed in the next block to the latest `Inbound_Address`.
+Inbound transactions should not be delayed for any reason else there is risk funds will be sent to an unreachable address. Use standard transactions, check the `inbound address` before sending and use the recommended [`gas rate`](querying-switchly.md#getting-the-asgard-vault) to ensure transactions are confirmed in the next block to the latest `Inbound_Address`.
 ```
 
 ```admonish danger
@@ -60,7 +60,7 @@ Check for the `halted` parameter and never send funds if it is set to true
 ```
 
 ````admonish warning
-If a chain has a `router` on the inbound address endpoint, then everything must be deposited via the router. The router is a contract that the user first approves, and the deposit call transfers the asset into the network and emits an event to THORChain.
+If a chain has a `router` on the inbound address endpoint, then everything must be deposited via the router. The router is a contract that the user first approves, and the deposit call transfers the asset into the network and emits an event to SWITCHLYChain.
 
 \
 This is done because "tokens" on protocols don't support memos on-chain, thus need to be wrapped by a router which can force a memo.
@@ -81,7 +81,7 @@ Note: you can transfer the base asset, eg ETH, directly to the address and skip 
 ````
 
 ```admonish warning
-If you connect to a public Midgard, you must be conscious of the fact that you can be phished and could send money to the WRONG vault. You should do safety checks, i.e. comparing with other nodes, or even inspecting the vault itself for the presence of funds. You should also consider running your own '[fullnode](https://docs.thorchain.org/thornodes/overview)' instance to query for trusted data.
+If you connect to a public Midgard, you must be conscious of the fact that you can be phished and could send money to the WRONG vault. You should do safety checks, i.e. comparing with other nodes, or even inspecting the vault itself for the presence of funds. You should also consider running your own '[fullnode](https://docs.switchly.org/switchlynodes/overview)' instance to query for trusted data.
 ```
 
 - `Chain`: Chain Name
@@ -91,7 +91,7 @@ If you connect to a public Midgard, you must be conscious of the fact that you c
 
 ### Displaying available pairs
 
-Use the `/pools` [endpoint](https://midgard.ninerealms.com/v2/pools) of Midgard to retrieve all swappable assets on THORChain. The response will be an array of objects like this:
+Use the `/pools` [endpoint](https://midgard.ninerealms.com/v2/pools) of Midgard to retrieve all swappable assets on SWITCHLYChain. The response will be an array of objects like this:
 
 ```json
 {
@@ -115,7 +115,7 @@ Use the `/pools` [endpoint](https://midgard.ninerealms.com/v2/pools) of Midgard 
   "synthSupply": "458398271824424",
   "synthUnits": "14626376130101",
   "totalCollateral": "0",
-  "totalDebtTor": "0",
+  "totalDebtSwitchly": "0",
   "units": "44984475705132",
   "volume24h": "265009796099941"
 }
@@ -126,24 +126,24 @@ Only pools with `"status": "available"` are available to trade
 ```
 
 ```admonish info
-Make sure to manually add Native $RUNE as a swappable asset.
+Make sure to manually add Native $SWITCH as a swappable asset.
 ```
 
 ```admonish info
-`"assetPrice" tells you the asset's price in RUNE (RUNE Depth/AssetDepth ). In the above example`
+`"assetPrice" tells you the asset's price in SWITCH (SWITCH Depth/AssetDepth ). In the above example`
 
-`1 ETH.USDC = 0.279571 RUNE`
+`1 ETH.USDC = 0.279571 SWITCH`
 ```
 
 ### Decimals and Base Units
 
-All values on THORChain (thornode and Midgard) are given in 1e8 eg, 100000000 base units (like Bitcoin), and unless postpended by "USD", they are in units of RUNE. Even 1e18 assets, such as ETH.ETH, are shortened to 1e8. 1e6 Assets like ETH.USDC, are padded to 1e8. THORNode will tell you the decimals for each asset, giving you the opportunity to convert back to native units in your interface.
+All values on SWITCHLYChain (switchlynode and Midgard) are given in 1e8 eg, 100000000 base units (like Bitcoin), and unless postpended by "USD", they are in units of SWITCH. Even 1e18 assets, such as ETH.ETH, are shortened to 1e8. 1e6 Assets like ETH.USDC, are padded to 1e8. SWITCHLYNode will tell you the decimals for each asset, giving you the opportunity to convert back to native units in your interface.
 
-See code examples using the THORChain xchain package here [https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-thorchain](https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-thorchain)
+See code examples using the SWITCHLYChain xchain package here [https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-switchly](https://github.com/xchainjs/xchainjs-lib/tree/master/packages/xchain-switchly)
 
 ### Finding Chain Status
 
 There are two ways to see if a Chain is halted.
 
-1. Looking at the `/inbound_addresses` [endpoint](https://thornode.ninerealms.com/thorchain/inbound_addresses) and inspecting the halted flag.
+1. Looking at the `/inbound_addresses` [endpoint](https://switchlynode.ninerealms.com/switchly/inbound_addresses) and inspecting the halted flag.
 2. Looking at Mimir and inspecting the HALT\[Chain]TRADING setting. See [network-halts.md](network-halts.md "mention") for more details.

@@ -55,11 +55,11 @@ export PATH=$(brew --prefix)/opt/make/libexec/gnubin:$PATH
 brew install homebrew/cask/docker
 ```
 
-### THORNode
+### SWITCHLYNode
 
 ```shell
 # Clone repo and install dependencies
-git clone https://gitlab.com/thorchain/thornode
+git clone https://gitlab.com/switchly/switchlynode
 # Docker must be started...
 make openapi
 make proto-gen
@@ -69,18 +69,18 @@ make install
 Build mainnet binary with Ledger support:
 
 ```shell
-go build -ldflags '-X github.com/cosmos/cosmos-sdk/version.Name=THORChain -X github.com/cosmos/cosmos-sdk/version.AppName=thornode -X github.com/cosmos/cosmos-sdk/version.BuildTags=mainnet,ledger' -tags "mainnet ledger" -o ./cmd/thornode ./cmd/thornode
+go build -ldflags '-X github.com/cosmos/cosmos-sdk/version.Name=SWITCHLYChain -X github.com/cosmos/cosmos-sdk/version.AppName=switchlynode -X github.com/cosmos/cosmos-sdk/version.BuildTags=mainnet,ledger' -tags "mainnet ledger" -o ./cmd/switchlynode ./cmd/switchlynode
 ```
 
 ## Commands
 
-`thornode --help`
+`switchlynode --help`
 
 ```text
-THORChain Network
+SWITCHLYChain Network
 
 Usage:
-  THORChain [command]
+  SWITCHLYChain [command]
 
 Available Commands:
   add-genesis-account Add a genesis account to genesis.json
@@ -96,24 +96,24 @@ Available Commands:
   migrate             Migrate genesis to a specified target version
   pubkey              Convert Proto3 JSON encoded pubkey to bech32 format
   query               Querying subcommands
-  render-config       renders tendermint and cosmos config from thornode base config
+  render-config       renders tendermint and cosmos config from switchlynode base config
   rollback            rollback cosmos-sdk and tendermint state by one height
   start               Run the full node
   status              Query remote node for status
   tendermint          Tendermint subcommands
   tx                  Transactions subcommands
-  util                Utility commands for the THORChain module
+  util                Utility commands for the SWITCHLYChain module
   validate-genesis    validates the genesis file at the default location or at the location passed as an arg
   version             Print the application binary version information
 
 Flags:
-  -h, --help                help for THORChain
-      --home string         directory for config and data (default "/Users/dev/.thornode")
+  -h, --help                help for SWITCHLYChain
+      --home string         directory for config and data (default "/Users/dev/.switchlynode")
       --log_format string   The logging format (json|plain) (default "plain")
       --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
       --trace               print out full stack trace on errors
 
-Use "THORChain [command] --help" for more information about a command.
+Use "SWITCHLYChain [command] --help" for more information about a command.
 ```
 
 ### Popular Commands
@@ -121,19 +121,19 @@ Use "THORChain [command] --help" for more information about a command.
 #### Add new account
 
 ```text
-thornode keys add {accountName}
+switchlynode keys add {accountName}
 ```
 
 #### Add existing account (via mnemonic)
 
 ```text
-thornode keys add {accountName} --recover
+switchlynode keys add {accountName} --recover
 ```
 
 #### List all accounts
 
 ```text
-thornode keys list
+switchlynode keys list
 ```
 
 ## Send Transaction
@@ -143,8 +143,8 @@ thornode keys list
 ```text
 # Sender: thor1505gp5h48zd24uexrfgka70fg8ccedafsnj0e3
 # Receiver: thor1gutjhrw4xlu3n3p3k3r0vexl2xknq3nv8ux9fy
-# Amount: 1 RUNE (in 1e8 notation)
-thornode tx bank send thor1505gp5h48zd24uexrfgka70fg8ccedafsnj0e3 thor1gutjhrw4xlu3n3p3k3r0vexl2xknq3nv8ux9fy 100000000rune --chain-id thorchain-1 --node https://rpc.ninerealms.com:443 --gas 3000000 --generate-only > tx_raw.json
+# Amount: 1 SWITCH (in 1e8 notation)
+switchlynode tx bank send thor1505gp5h48zd24uexrfgka70fg8ccedafsnj0e3 thor1gutjhrw4xlu3n3p3k3r0vexl2xknq3nv8ux9fy 100000000rune --chain-id switchly-1 --node https://rpc.ninerealms.com:443 --gas 3000000 --generate-only > tx_raw.json
 ```
 
 This will output a file called `tx_raw.json`. Edit this file and change the `@type` field from `/cosmos.bank.v1beta1.MsgSend` to `/types.MsgSend`.
@@ -178,7 +178,7 @@ The `tx_raw.json` transaction should look like this:
 ### Sign Transaction
 
 ```text
-thornode tx sign tx_raw.json --from {accountName} --sign-mode amino-json --chain-id thorchain-1 --node https://rpc.ninerealms.com:443 > tx.json
+switchlynode tx sign tx_raw.json --from {accountName} --sign-mode amino-json --chain-id switchly-1 --node https://rpc.ninerealms.com:443 > tx.json
 ```
 
 This will output a file called `tx.json`.
@@ -186,5 +186,5 @@ This will output a file called `tx.json`.
 ### Broadcast Transaction
 
 ```text
-thornode tx broadcast tx.json --chain-id thorchain-1 --node https://rpc.ninerealms.com:443 --gas auto
+switchlynode tx broadcast tx.json --chain-id switchly-1 --node https://rpc.ninerealms.com:443 --gas auto
 ```

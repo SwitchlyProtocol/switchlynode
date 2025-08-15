@@ -27,7 +27,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 	"gopkg.in/yaml.v3"
 )
 
@@ -55,7 +55,7 @@ func opFuncMap(routine int) template.FuncMap {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 type Operation interface {
-	Execute(out io.Writer, path string, line, routine int, thornode *os.Process, logs chan string) error
+	Execute(out io.Writer, path string, line, routine int, switchlynode *os.Process, logs chan string) error
 	OpType() string
 }
 
@@ -243,7 +243,7 @@ func (op *OpState) Execute(_ io.Writer, _ string, _, routine int, _ *os.Process,
 	home := fmt.Sprintf("/%d", routine)
 
 	// load genesis file
-	f, err := os.OpenFile(filepath.Join(home, ".thornode/config/genesis.json"), os.O_RDWR, 0o644)
+	f, err := os.OpenFile(filepath.Join(home, ".switchlynode/config/genesis.json"), os.O_RDWR, 0o644)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to open genesis file")
 	}
@@ -600,7 +600,7 @@ func (op *OpCreateBlocks) Execute(out io.Writer, path string, _, routine int, p 
 		time.Sleep(100 * time.Millisecond * getTimeFactor())
 
 		// get the block response
-		url := fmt.Sprintf("http://localhost:%d/thorchain/block?height=%d", 1317+routine, height)
+		url := fmt.Sprintf("http://localhost:%d/switchly/block?height=%d", 1317+routine, height)
 		var res *http.Response
 		for j := 0; j < 5; j++ {
 			res, err = httpClient.Get(url)
@@ -672,7 +672,7 @@ func checkInvariants(routine int) error {
 		go func(inv string) {
 			defer wg.Done()
 
-			endpoint := fmt.Sprintf("%s/thorchain/invariant/%s", api, inv)
+			endpoint := fmt.Sprintf("%s/switchly/invariant/%s", api, inv)
 			req, err := http.NewRequest("GET", endpoint, nil)
 			if err != nil {
 				mu.Lock()

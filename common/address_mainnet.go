@@ -24,7 +24,7 @@ func newAddress(address string) (Address, error) {
 	outputAddr, err := btcutil.DecodeAddress(address, &chaincfg.MainNetParams)
 	switch outputAddr.(type) {
 	case *btcutil.AddressPubKey:
-		// AddressPubKey format is not supported by THORChain.
+		// AddressPubKey format is not supported by SWITCHLYChain.
 	default:
 		if err == nil {
 			return Address(address), nil
@@ -35,7 +35,7 @@ func newAddress(address string) (Address, error) {
 	outputAddr, err = ltcutil.DecodeAddress(address, &ltcchaincfg.MainNetParams)
 	switch outputAddr.(type) {
 	case *ltcutil.AddressPubKey:
-		// AddressPubKey format is not supported by THORChain.
+		// AddressPubKey format is not supported by SWITCHLYChain.
 	default:
 		if err == nil {
 			return Address(address), nil
@@ -46,7 +46,7 @@ func newAddress(address string) (Address, error) {
 	outputAddr, err = bchutil.DecodeAddress(address, &bchchaincfg.MainNetParams)
 	switch outputAddr.(type) {
 	case *bchutil.AddressPubKey:
-		// AddressPubKey format is not supported by THORChain.
+		// AddressPubKey format is not supported by SWITCHLYChain.
 	default:
 		if err == nil {
 			return Address(address), nil
@@ -57,7 +57,7 @@ func newAddress(address string) (Address, error) {
 	outputAddr, err = dogutil.DecodeAddress(address, &dogchaincfg.MainNetParams)
 	switch outputAddr.(type) {
 	case *dogutil.AddressPubKey:
-		// AddressPubKey format is not supported by THORChain.
+		// AddressPubKey format is not supported by SWITCHLYChain.
 	default:
 		if err == nil {
 			return Address(address), nil

@@ -48,9 +48,9 @@ SLASH=$(echo "$JSON" | jq -r ".slash_points")
 STATUS=$(echo "$JSON" | jq -r ".status")
 PREFLIGHT=$(echo "$JSON" | jq -r ".preflight_status")
 PUB_KEY=$(echo "$JSON" | jq -r ".pub_key_set.secp256k1")
-[ "$VALIDATOR" = "false" ] && IP=$EXTERNAL_IP
+[ "$VALIDASWITCHLY" = "false" ] && IP=$EXTERNAL_IP
 
-if [ "$VALIDATOR" = "true" ]; then
+if [ "$VALIDASWITCHLY" = "true" ]; then
   # calculate BTC chain sync progress
   BTC_RESULT=$(curl -sL --fail -m 10 --data-binary '{"jsonrpc": "1.0", "id": "node-status", "method": "getblockchaininfo", "params": []}' -H 'content-type: text/plain;' http://switchly:password@"$BITCOIN_ENDPOINT")
   BTC_HEIGHT=$(echo "$BTC_RESULT" | jq -r ".result.headers")
@@ -202,7 +202,7 @@ cat <<"EOF"
 EOF
 echo
 
-if [ "$VALIDATOR" = "true" ]; then
+if [ "$VALIDASWITCHLY" = "true" ]; then
   echo "ADDRESS     $ADDRESS"
   echo "IP          $IP"
   echo "VERSION     $VERSION"
@@ -242,7 +242,7 @@ echo
 printf "%-18s %-10s %-14s %-10s\n" CHAIN SYNC BEHIND TIP
 printf "%-18s %-10s %-14s %-10s\n" SWITCHLY "$SWITCHLY_PROGRESS" "$(format_int $((SWITCHLY_SYNC_HEIGHT - SWITCHLY_HEIGHT)))" "$(format_int "$SWITCHLY_HEIGHT")"
 
-if [ "$VALIDATOR" = "true" ]; then
+if [ "$VALIDASWITCHLY" = "true" ]; then
   printf "%-18s %-10s %-14s %-10s\n" BTC "$BTC_PROGRESS" "$(format_int $((BTC_SYNC_HEIGHT - BTC_HEIGHT)))" "$(format_int "$BTC_HEIGHT")"
   printf "%-18s %-10s %-14s %-10s\n" "ETH" "$ETH_PROGRESS" "$(format_int $((ETH_SYNC_HEIGHT - ETH_HEIGHT)))" "$(format_int "$ETH_HEIGHT")"
   printf "%-18s %-10s %-14s %-10s\n" "ETH (beacon slot)" "$ETH_BEACON_PROGRESS" "$(format_int $((ETH_BEACON_SYNC_HEIGHT - ETH_BEACON_HEIGHT)))" "$(format_int "$ETH_BEACON_HEIGHT")"

@@ -25,7 +25,7 @@ genesis:
           coins:
             - amount: "150000000000"
               denom: rune  
-    thorchain:
+    switchly:
       node_accounts:
         - active_block_height: "0"
           bond: "150000000000" # reduced by factor of 10 from default
@@ -47,7 +47,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -69,7 +69,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "BTC.BTC"
-    memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+    memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   block_height: 1
   finalise_height: 1
   observed_pub_key: {{ pubkey_dog }}
@@ -79,7 +79,7 @@ txs:
 # when b < p 100% of rewards go to bonds
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/block?height=1
+endpoint: http://localhost:1317/switchly/block?height=1
 asserts:
   - .end_block_events[] | select(.type == "rewards") | .bond_reward == "110984"
   - .end_block_events[] | select(.type == "rewards") | keys | length == 6

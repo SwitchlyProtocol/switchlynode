@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -28,7 +28,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
     block_height: 1
     finalise_height: 3
     observed_pub_key: {{ pubkey_dog }}
@@ -38,13 +38,13 @@ count: 1
 ---
 # inbound should not be finalised
 type: check
-endpoint: http://localhost:1317/thorchain/tx/status/{{ observe_txid 1 }}
+endpoint: http://localhost:1317/switchly/tx/status/{{ observe_txid 1 }}
 asserts:
   - .stages.inbound_finalised.completed == false
 ---
 # asgard vault balance should not be updated
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0]|.coins[]|select(.asset == "BTC.BTC")|.amount|tonumber == ${VAULT_AMOUNT=100000000}
   - ${UNCONFIRMED_VAULT_BALANCE=105000000} == ${VAULT_AMOUNT} + ${INBOUND_AMOUNT}
@@ -77,7 +77,7 @@ count: 1
 ---
 # asgard vault balance should lose consolidate gas
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0]|.coins[]|select(.asset == "BTC.BTC")|.amount|tonumber == ${VAULT_AMOUNT}-${CONSOLIDATE_GAS}
 ---
@@ -106,7 +106,7 @@ count: 1
 ---
 # asgard vault balance should remain the same
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0]|.coins[]|select(.asset == "BTC.BTC")|.amount|tonumber == ${VAULT_AMOUNT}-${CONSOLIDATE_GAS}
 ---
@@ -128,7 +128,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
     block_height: 3
     finalise_height: 3
     observed_pub_key: {{ pubkey_dog }}
@@ -138,6 +138,6 @@ count: 1
 ---
 # asgard vault balance should include finalized inbound
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0]|.coins[]|select(.asset == "BTC.BTC")|.amount|tonumber == ${VAULT_AMOUNT}-${CONSOLIDATE_GAS}+${INBOUND_AMOUNT}

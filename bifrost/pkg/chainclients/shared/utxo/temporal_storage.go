@@ -57,7 +57,7 @@ type TransactionFee struct {
 
 // TemporalStorage provides persistent storage of block and transaction data over a
 // window of recent time. This is used to track transactions we have sent, during re-org
-// processing, and to ensure duplicate observations are not posted to Thorchain
+// processing, and to ensure duplicate observations are not posted to Switchly
 // which could result in bond slash.
 type TemporalStorage struct {
 	db               *leveldb.DB

@@ -13,7 +13,7 @@ count: 1
 ---
 type: tx-mimir
 key: WasmMinGasPrice
-value: 1000000000000000 # 0.001 RUNE per gas unit
+value: 1000000000000000 # 0.001 SWITCH per gas unit
 signer: {{ addr_thor_dog }}
 ---
 type: create-blocks
@@ -50,7 +50,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[2].amount == "100rune"
   - .txs[0].result.events[2].recipient == "tthor17xpfvakm2amg962yls6f84z3kell8c5ljftt88"

@@ -12,9 +12,9 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/actors/common"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ func NewArbActor() *Actor {
 
 func (a *ArbActor) init(config *OpConfig) OpResult {
 	// get all pools
-	pools, err := thornode.GetPools()
+	pools, err := switchlynode.GetPools()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get pools")
 		return OpResult{
@@ -73,8 +73,8 @@ func (a *ArbActor) init(config *OpConfig) OpResult {
 
 	for _, pool := range pools {
 		a.originalPools[pool.Asset] = types.Pool{
-			BalanceRune:  cosmos.NewUintFromString(pool.BalanceRune),
-			BalanceAsset: cosmos.NewUintFromString(pool.BalanceAsset),
+			BalanceSWITCH: cosmos.NewUintFromString(pool.BalanceSWITCH),
+			BalanceAsset:  cosmos.NewUintFromString(pool.BalanceAsset),
 		}
 	}
 
@@ -96,7 +96,7 @@ func (a *ArbActor) acquireUser(config *OpConfig) OpResult {
 		// set acquired account and amounts in state context
 		a.account = user
 
-		// set thorchain address for later use
+		// set switchly address for later use
 		thorAddress, err := user.PubKey().GetThorAddress()
 		if err != nil {
 			a.Log().Error().Err(err).Msg("failed to get thor address")
@@ -142,7 +142,7 @@ func (a *ArbActor) enableTradeAssets(config *OpConfig) OpResult {
 		}
 	}
 	mimirMsg := types.NewMsgMimir("TradeAccountsEnabled", 1, accAddr)
-	txid, err := node.Thorchain.Broadcast(mimirMsg)
+	txid, err := node.Switchly.Broadcast(mimirMsg)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to broadcast tx")
 		return OpResult{
@@ -160,7 +160,7 @@ func (a *ArbActor) enableTradeAssets(config *OpConfig) OpResult {
 
 func (a *ArbActor) bootstrapTradeAssets(config *OpConfig) OpResult {
 	// get all pools
-	pools, err := thornode.GetPools()
+	pools, err := switchlynode.GetPools()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get pools")
 		return OpResult{
@@ -243,7 +243,7 @@ func (a *ArbActor) bootstrapTradeAssets(config *OpConfig) OpResult {
 
 func (a *ArbActor) arb(config *OpConfig) OpResult {
 	// get all pools
-	pools, err := thornode.GetPools()
+	pools, err := switchlynode.GetPools()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get pools")
 		return OpResult{
@@ -266,7 +266,7 @@ func (a *ArbActor) arb(config *OpConfig) OpResult {
 	arbPools := []openapi.Pool{}
 	for _, pool := range pools {
 		// skip unavailable pools and those with no liquidity
-		if pool.BalanceRune == "0" || pool.BalanceAsset == "0" || pool.Status != types.PoolStatus_Available.String() {
+		if pool.BalanceSWITCH == "0" || pool.BalanceAsset == "0" || pool.Status != types.PoolStatus_Available.String() {
 			continue
 		}
 
@@ -284,8 +284,8 @@ func (a *ArbActor) arb(config *OpConfig) OpResult {
 	// sort pools by price change
 	priceChangeBps := func(pool openapi.Pool) int64 {
 		originalPool := a.originalPools[pool.Asset]
-		originalPrice := originalPool.BalanceRune.MulUint64(1e8).Quo(originalPool.BalanceAsset)
-		currentPrice := cosmos.NewUintFromString(pool.BalanceRune).MulUint64(1e8).Quo(cosmos.NewUintFromString(pool.BalanceAsset))
+		originalPrice := originalPool.BalanceSWITCH.MulUint64(1e8).Quo(originalPool.BalanceAsset)
+		currentPrice := cosmos.NewUintFromString(pool.BalanceSWITCH).MulUint64(1e8).Quo(cosmos.NewUintFromString(pool.BalanceAsset))
 		return int64(currentPrice.MulUint64(constants.MaxBasisPts).Quo(originalPrice).Uint64()) - int64(constants.MaxBasisPts)
 	}
 	sort.Slice(arbPools, func(i, j int) bool {
@@ -308,9 +308,9 @@ func (a *ArbActor) arb(config *OpConfig) OpResult {
 	adjustmentBps := int64(10)
 
 	// build the swap
-	minRuneDepth := common.Min(cosmos.NewUintFromString(send.BalanceRune).Uint64(), cosmos.NewUintFromString(receive.BalanceRune).Uint64())
-	runeValue := cosmos.NewUint(uint64(adjustmentBps)).MulUint64(minRuneDepth).QuoUint64(2).QuoUint64(constants.MaxBasisPts)
-	assetAmount := runeValue.Mul(cosmos.NewUintFromString(send.BalanceAsset)).Quo(cosmos.NewUintFromString(send.BalanceRune))
+	minSWITCHDepth := common.Min(cosmos.NewUintFromString(send.BalanceSWITCH).Uint64(), cosmos.NewUintFromString(receive.BalanceSWITCH).Uint64())
+	runeValue := cosmos.NewUint(uint64(adjustmentBps)).MulUint64(minSWITCHDepth).QuoUint64(2).QuoUint64(constants.MaxBasisPts)
+	assetAmount := runeValue.Mul(cosmos.NewUintFromString(send.BalanceAsset)).Quo(cosmos.NewUintFromString(send.BalanceSWITCH))
 	memo := fmt.Sprintf("=:%s", strings.Replace(receive.Asset, ".", "~", 1))
 	asset, err := common.NewAsset(strings.Replace(send.Asset, ".", "~", 1))
 	if err != nil {
@@ -323,7 +323,7 @@ func (a *ArbActor) arb(config *OpConfig) OpResult {
 	a.Log().Info().Interface("deposit", deposit).Msg("arbing most diverged pool")
 
 	// broadcast the swap
-	txid, err := a.account.Thorchain.Broadcast(deposit)
+	txid, err := a.account.Switchly.Broadcast(deposit)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to broadcast tx")
 		return OpResult{

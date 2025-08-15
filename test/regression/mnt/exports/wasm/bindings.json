@@ -1,6 +1,6 @@
 {
   "app_hash": null,
-  "app_name": "thornode",
+  "app_name": "switchlynode",
   "app_state": {
     "auth": {
       "accounts": [
@@ -47,7 +47,7 @@
             "pub_key": null,
             "sequence": "0"
           },
-          "name": "thorchain",
+          "name": "switchly",
           "permissions": [
             "minter",
             "burner"
@@ -199,12 +199,12 @@
     "genutil": {
       "gen_txs": []
     },
-    "thorchain": {
+    "switchly": {
       "POL": {
         "rune_deposited": "0",
         "rune_withdrawn": "0"
       },
-      "THORNames": [],
+      "SWITCHNames": [],
       "adv_swap_queue_items": [],
       "affiliate_collectors": null,
       "bond_providers": [
@@ -313,7 +313,7 @@
         {
           "block_height": "2",
           "chains": [
-            "THOR",
+            "SWITCHLY",
             "BTC",
             "LTC",
             "BCH",
@@ -364,7 +364,7 @@
             {
               "code_id": "1",
               "msg": {},
-              "operation": "CONTRACT_CODE_HISTORY_OPERATION_TYPE_INIT",
+              "operation": "CONTRACT_CODE_HISSWITCHLYY_OPERATION_TYPE_INIT",
               "updated": {
                 "block_height": "10",
                 "tx_index": "0"
@@ -396,7 +396,7 @@
             {
               "code_id": "1",
               "msg": {},
-              "operation": "CONTRACT_CODE_HISTORY_OPERATION_TYPE_INIT",
+              "operation": "CONTRACT_CODE_HISSWITCHLYY_OPERATION_TYPE_INIT",
               "updated": {
                 "block_height": "4",
                 "tx_index": "0"
@@ -442,7 +442,7 @@
       ]
     }
   },
-  "chain_id": "thorchain",
+  "chain_id": "switchly",
   "consensus": {
     "params": {
       "abci": {

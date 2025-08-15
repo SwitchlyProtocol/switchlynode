@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
 ---
@@ -15,19 +15,19 @@ asserts:
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 0
 ---
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDY-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDY-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 1
 ---
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDZ-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDZ-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 2
 ---
@@ -47,20 +47,20 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .DERIVEDDEPTHBASISPTS == 10000
-  - ."TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
-  - ."TORANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999" == 1
-  - ."TORANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999" == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 10000
   - .balance_asset|tonumber == 299999999999
@@ -68,20 +68,20 @@ asserts:
 ---
 # thor.tor should not be available in the pool querier
 type: check
-endpoint: http://localhost:1317/thorchain/pool/thor.tor
+endpoint: http://localhost:1317/switchly/pool/thor.tor
 status: 400
 asserts:
   - .message|test("thor.tor is a derived asset")
 ---
 # layer 1 assets should not be available in the dpool querier
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/btc.btc
+endpoint: http://localhost:1317/switchly/dpool/btc.btc
 status: 400
 asserts:
   - .message|test("asset is not a derived asset")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.btc
+endpoint: http://localhost:1317/switchly/dpool/thor.btc
 asserts:
   - .derived_depth_bps|tonumber == 10000
 ---
@@ -99,7 +99,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 8913
   - .balance_asset|tonumber == 271721142140 # median still ~1:1
@@ -120,7 +120,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 7853
   - .balance_asset|tonumber == 221719650611 # price shift with affected median
@@ -140,7 +140,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 6827
   - .balance_asset|tonumber == 195750974471
@@ -153,7 +153,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 7887
 ---
@@ -161,7 +161,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 8947
 ---
@@ -169,7 +169,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 10000
 ---
@@ -177,7 +177,7 @@ asserts:
 # clear outbounds to cleanup
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 3
   - .[0].memo == "OUT:{{ native_txid -3 }}"
@@ -243,6 +243,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 0

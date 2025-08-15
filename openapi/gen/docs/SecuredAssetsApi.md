@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**SecuredAssets**](SecuredAssetsApi.md#SecuredAssets) | **Get** /thorchain/securedassets | 
+[**SecuredAssets**](SecuredAssetsApi.md#SecuredAssets) | **Get** /switchly/securedassets | 
 
 
 

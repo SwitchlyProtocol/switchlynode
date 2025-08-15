@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **InboundAddress** | Pointer to **string** | the inbound address for the transaction on the source chain | [optional] 
 **InboundConfirmationBlocks** | Pointer to **int64** | the approximate number of source chain blocks required before processing | [optional] 
 **InboundConfirmationSeconds** | Pointer to **int64** | the approximate seconds for block confirmations required before processing | [optional] 
-**OutboundDelayBlocks** | **int64** | the number of thorchain blocks the outbound will be delayed | 
+**OutboundDelayBlocks** | **int64** | the number of switchly blocks the outbound will be delayed | 
 **OutboundDelaySeconds** | **int64** | the approximate seconds for the outbound delay before it will be sent | 
 **Fees** | [**QuoteFees**](QuoteFees.md) |  | 
 **Router** | Pointer to **string** | the EVM chain router contract address | [optional] 
@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 **ExpectedAmountOut** | **string** | the amount of the target asset the user can expect to receive after fees in 1e8 decimals | 
 **ExpectedCollateralizationRatio** | **string** | the expected collateralization ratio in basis points | 
 **ExpectedCollateralDeposited** | **string** | the expected amount of collateral increase on the loan | 
-**ExpectedDebtIssued** | **string** | the expected amount of TOR debt increase on the loan | 
+**ExpectedDebtIssued** | **string** | the expected amount of SWITCHLY debt increase on the loan | 
 **StreamingSwapBlocks** | **int64** | The number of blocks involved in the streaming swaps during the open loan process. | 
 **StreamingSwapSeconds** | **int64** | The approximate number of seconds taken by the streaming swaps involved in the open loan process. | 
 **TotalOpenLoanSeconds** | **int64** | The total expected duration for a open loan, measured in seconds, which includes the time for inbound confirmation, the duration of streaming swaps, and any outbound delays. | 

@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
@@ -44,7 +44,7 @@ type pubKeyInfo struct {
 
 // PubKeyManager manager an always up to date pubkeys , which implement PubKeyValidator interface
 type PubKeyManager struct {
-	bridge     thorclient.ThorchainBridge
+	bridge     switchlyclient.SwitchlyBridge
 	pubkeys    []pubKeyInfo
 	rwMutex    *sync.RWMutex
 	logger     zerolog.Logger
@@ -55,7 +55,7 @@ type PubKeyManager struct {
 }
 
 // NewPubKeyManager create a new instance of PubKeyManager
-func NewPubKeyManager(bridge thorclient.ThorchainBridge, m *metrics.Metrics) (*PubKeyManager, error) {
+func NewPubKeyManager(bridge switchlyclient.SwitchlyBridge, m *metrics.Metrics) (*PubKeyManager, error) {
 	return &PubKeyManager{
 		logger:     log.With().Str("module", "public_key_mgr").Logger(),
 		bridge:     bridge,
@@ -67,17 +67,17 @@ func NewPubKeyManager(bridge thorclient.ThorchainBridge, m *metrics.Metrics) (*P
 	}, nil
 }
 
-// Start to poll pubkeys from thorchain
+// Start to poll pubkeys from switchly
 func (pkm *PubKeyManager) Start() error {
 	pubkeys, err := pkm.getPubkeys()
 	if err != nil {
-		return fmt.Errorf("fail to get pubkeys from thorchain: %w", err)
+		return fmt.Errorf("fail to get pubkeys from switchly: %w", err)
 	}
 	for _, pk := range pubkeys {
 		pkm.AddPubKey(pk.PubKey, false)
 	}
 
-	// get smart contract address from THORNode , and update it's internal
+	// get smart contract address from SWITCHLYNode , and update it's internal
 	pkm.updateContractAddresses(pubkeys)
 	go pkm.updatePubKeys()
 	return nil
@@ -90,7 +90,7 @@ func (pkm *PubKeyManager) Stop() error {
 	return nil
 }
 
-func (pkm *PubKeyManager) updateContractAddresses(pairs []thorclient.PubKeyContractAddressPair) {
+func (pkm *PubKeyManager) updateContractAddresses(pairs []switchlyclient.PubKeyContractAddressPair) {
 	pkm.rwMutex.Lock()
 	defer pkm.rwMutex.Unlock()
 	for _, pair := range pairs {
@@ -229,7 +229,7 @@ func (pkm *PubKeyManager) removePubKeyInternal(pk common.PubKey) {
 func (pkm *PubKeyManager) fetchPubKeys(prune bool) {
 	addressPairs, err := pkm.getPubkeys()
 	if err != nil {
-		pkm.logger.Error().Err(err).Msg("fail to get pubkeys from THORChain")
+		pkm.logger.Error().Err(err).Msg("fail to get pubkeys from SWITCHLYChain")
 		return
 	}
 	var pubkeys common.PubKeys
@@ -275,7 +275,7 @@ func (pkm *PubKeyManager) updatePubKeys() {
 		select {
 		case <-pkm.stopChan:
 			return
-		case <-time.After(constants.ThorchainBlockTime):
+		case <-time.After(constants.SwitchlyBlockTime):
 			pkm.fetchPubKeys(i%100 == 0) // only prune every 100 blocks
 		}
 	}
@@ -306,8 +306,8 @@ func (pkm *PubKeyManager) IsValidPoolAddress(addr string, chain common.Chain) (b
 	return false, common.EmptyChainPoolInfo
 }
 
-// getPubkeys from THORChain
-func (pkm *PubKeyManager) getPubkeys() ([]thorclient.PubKeyContractAddressPair, error) {
+// getPubkeys from SWITCHLYChain
+func (pkm *PubKeyManager) getPubkeys() ([]switchlyclient.PubKeyContractAddressPair, error) {
 	return pkm.bridge.GetPubKeys()
 }
 

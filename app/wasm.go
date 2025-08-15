@@ -27,7 +27,7 @@ var WasmMaxSize = 2_624_000
 
 // CustomWasmModule re-exposes the underlying module's methods,
 // but prevents Services from being registered, as these
-// should be registered and handled in x/thorchain
+// should be registered and handled in x/switchly
 type CustomWasmModule struct {
 	*wasm.AppModule
 }

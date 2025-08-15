@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
 )
 
 func TxConfig(cdc codec.Codec, textualCoinMetadataQueryFn textual.CoinMetadataQueryFn) (client.TxConfig, error) {

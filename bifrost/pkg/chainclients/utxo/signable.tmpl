@@ -21,11 +21,11 @@ import (
 
 type tssSignable{{ ToUpper $chain }} struct {
 	poolPubKey    common.PubKey
-	tssKeyManager tss.ThorchainKeyManager
+	tssKeyManager tss.SwitchlyKeyManager
 	log           zerolog.Logger
 }
 
-func newTssSignable{{ ToUpper $chain }}(poolPubKey common.PubKey, tssKeyManager tss.ThorchainKeyManager, log zerolog.Logger) *tssSignable{{ ToUpper $chain }} {
+func newTssSignable{{ ToUpper $chain }}(poolPubKey common.PubKey, tssKeyManager tss.SwitchlyKeyManager, log zerolog.Logger) *tssSignable{{ ToUpper $chain }} {
 	return &tssSignable{{ ToUpper $chain }}{
 		poolPubKey:    poolPubKey,
 		tssKeyManager: tssKeyManager,

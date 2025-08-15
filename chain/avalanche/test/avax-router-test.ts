@@ -63,7 +63,7 @@ describe("AvaxRouter", function () {
         asgard1,
         AVAX,
         amount,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
         { value: amount },
       );
       const receipt = await tx.wait();
@@ -71,7 +71,7 @@ describe("AvaxRouter", function () {
       expect(receipt?.events?.[0].event).to.equal("Deposit");
       expect(tx.value).to.equal(amount);
       expect(receipt?.events?.[0]?.args?.asset).to.equal(AVAX);
-      expect(receipt?.events?.[0]?.args?.memo).to.equal("SWAP:THOR.RUNE");
+      expect(receipt?.events?.[0]?.args?.memo).to.equal("SWAP:SWITCHLY.SWITCH");
 
       const endBal = BigNumber.from(await ethers.provider.getBalance(asgard1));
       const changeBal = BigNumber.from(endBal).sub(startBal);
@@ -86,11 +86,11 @@ describe("AvaxRouter", function () {
           asgard1,
           AVAX,
           amount,
-          "SWAP:THOR.RUNE:tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "SWAP:SWITCHLY.SWITCH:tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           BigNumber.from(0),
           { value: amount },
         ),
-      ).to.be.revertedWith("THORChain_Router: expired");
+      ).to.be.revertedWith("SWITCHLYChain_Router: expired");
     });
     it("Should Deposit Token to Asgard1", async function () {
       const { wallet1, asgard1 } = await getNamedAccounts();
@@ -109,7 +109,7 @@ describe("AvaxRouter", function () {
         asgard1,
         usdceToken.address,
         amount,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
       );
       const receipt: Receipt = await tx.wait();
 
@@ -117,7 +117,7 @@ describe("AvaxRouter", function () {
       expect(event.event).to.equal("Deposit");
       expect(event.args?.asset.toLowerCase()).to.equal(USDCE_ADDRESS);
       expect(event.args?.to).to.equal(asgard1);
-      expect(event.args?.memo).to.equal("SWAP:THOR.RUNE");
+      expect(event.args?.memo).to.equal("SWAP:SWITCHLY.SWITCH");
       expect(event.args?.amount).to.equal(amount);
 
       expect(await usdceToken.balanceOf(avaxRouter.address)).to.equal(amount);
@@ -134,10 +134,10 @@ describe("AvaxRouter", function () {
           asgard1,
           usdceToken.address,
           amount,
-          "SWAP:THOR.RUNE:tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+          "SWAP:SWITCHLY.SWITCH:tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           BigNumber.from(0),
         ),
-      ).to.be.revertedWith("THORChain_Router: expired");
+      ).to.be.revertedWith("SWITCHLYChain_Router: expired");
     });
     it("Should revert when AVAX sent during ARC20 Deposit", async function () {
       const { asgard1 } = await getNamedAccounts();
@@ -148,7 +148,7 @@ describe("AvaxRouter", function () {
           asgard1,
           usdceToken.address,
           amount,
-          "SWAP:THOR.RUNE",
+          "SWAP:SWITCHLY.SWITCH",
           { value: amount },
         ),
       ).to.be.revertedWith("unexpected avax");
@@ -211,7 +211,7 @@ describe("AvaxRouter", function () {
         asgard1,
         usdceToken.address,
         amount,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
       );
 
       const avaxRouterAsgard1 = avaxRouter.connect(asgard1Signer as Signer);
@@ -339,7 +339,7 @@ describe("AvaxRouter", function () {
         asgard1,
         usdceToken.address,
         initialAmount,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
       );
 
       await avaxRouterAsgard1Signer.transferAllowance(
@@ -413,7 +413,7 @@ describe("AvaxRouter", function () {
         asgard1,
         usdceToken.address,
         tokenAmount,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
       );
 
       // approve usdce transfer
@@ -481,7 +481,7 @@ describe("AvaxRouter", function () {
         asgard1,
         usdceToken.address,
         amount,
-        "SWAP:THOR.RUNE",
+        "SWAP:SWITCHLY.SWITCH",
       );
 
       // approve usdce transfer

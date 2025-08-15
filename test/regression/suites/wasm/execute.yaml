@@ -39,7 +39,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[3].action == "/cosmwasm.wasm.v1.MsgExecuteContract"
   - .txs[0].result.events[4]._contract_address == "tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f"
@@ -56,7 +56,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5].new_value == "2"
 ---
@@ -70,7 +70,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5].new_value == "1"
 ---
@@ -84,7 +84,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[5].new_value == "0"
 ---
@@ -98,6 +98,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '.txs[0].result.log == "failed to execute message; message index: 0: Cannot Sub with given operands: execute wasm contract failed"'

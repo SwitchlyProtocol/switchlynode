@@ -5,7 +5,7 @@
 The app-layer is based on COSM-WASM.
 
 Contract code is written in rust, the compiled to WASM bytecode with a checksum.
-The bytecode can be deployed on THORChain using nominated accounts.
+The bytecode can be deployed on SWITCHLYChain using nominated accounts.
 
 ## App Layer Process
 
@@ -27,7 +27,7 @@ Get the code audited and submit into `/audits`
 
 ### STAGENET
 
-Apply to have it deployed on THORChain Stagenet. Provide:
+Apply to have it deployed on SWITCHLYChain Stagenet. Provide:
 
 1. The checksum
 2. The link to the audit and code
@@ -41,4 +41,4 @@ Deploy and link your app, conduct thorough testing.
 
 ### Mainnet
 
-Once the process is complete, apply through THORChain's ADR governace to have the code approved for mainnet.
+Once the process is complete, apply through SWITCHLYChain's ADR governace to have the code approved for mainnet.

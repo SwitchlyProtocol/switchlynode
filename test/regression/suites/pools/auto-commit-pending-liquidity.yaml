@@ -6,13 +6,13 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
   - .[0].asset == "BTC.BTC"
 ---
 ########################################################################################
-# allow THOR.BTC derived asset pool
+# allow SWITCHLY.BTC derived asset pool
 ########################################################################################
 type: tx-mimir
 key: PendingLiquidityAgeLimit
@@ -33,14 +33,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_providers
 asserts:
   - .|length == 1
   - .[0].pending_rune | tonumber == 200000000
   - .[0].units | tonumber == 100000000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC
 asserts:
   - .pending_inbound_rune | tonumber == 200000000
   - .LP_units | tonumber == 100000000000
@@ -49,14 +49,14 @@ type: create-blocks
 count: 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_providers
 asserts:
   - .|length == 1
   - .[0].pending_rune | tonumber == 0
   - .[0].units | tonumber == 100099894672
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC
 asserts:
   - .pending_inbound_rune | tonumber == 0
   - .LP_units | tonumber == 100099894672

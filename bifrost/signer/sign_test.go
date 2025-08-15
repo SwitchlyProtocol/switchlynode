@@ -32,16 +32,16 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -53,14 +53,14 @@ func TestPackage(t *testing.T) { TestingT(t) }
 // -------------------------------- bridge ---------------------------------
 
 type fakeBridge struct {
-	thorclient.ThorchainBridge
+	switchlyclient.SwitchlyBridge
 }
 
 func (b fakeBridge) GetBlockHeight() (int64, error) {
 	return 100, nil
 }
 
-func (b fakeBridge) GetThorchainVersion() (semver.Version, error) {
+func (b fakeBridge) GetSwitchlyVersion() (semver.Version, error) {
 	return semver.MustParse("1.0.0"), nil
 }
 
@@ -325,8 +325,8 @@ func GetMetricForTest(c *C) *metrics.Metrics {
 }
 
 type SignSuite struct {
-	thorKeys *thorclient.Keys
-	bridge   thorclient.ThorchainBridge
+	thorKeys *switchlyclient.Keys
+	bridge   switchlyclient.SwitchlyBridge
 	metrics  *metrics.Metrics
 	rpcHost  string
 	storage  *SignerStore
@@ -335,7 +335,7 @@ type SignSuite struct {
 var _ = Suite(&SignSuite{})
 
 func (s *SignSuite) SetUpSuite(c *C) {
-	thorchain.SetupConfigForTest()
+	switchly.SetupConfigForTest()
 	s.metrics = GetMetricForTest(c)
 	c.Assert(s.metrics, NotNil)
 
@@ -343,7 +343,7 @@ func (s *SignSuite) SetUpSuite(c *C) {
 		http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			c.Logf("requestUri:%s", req.RequestURI)
 			switch {
-			case strings.HasPrefix(req.RequestURI, thorclient.MimirEndpoint):
+			case strings.HasPrefix(req.RequestURI, switchlyclient.MimirEndpoint):
 				buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
 				c.Assert(err, IsNil)
 				_, err = rw.Write(buf)
@@ -354,11 +354,11 @@ func (s *SignSuite) SetUpSuite(c *C) {
             "chain": "NOOP",
             "lastobservedin": 0,
             "lastsignedout": 0,
-            "thorchain": 0
+            "switchly": 0
           }
         ]`))
 				c.Assert(err, IsNil)
-			case strings.HasPrefix(req.RequestURI, "/thorchain/keysign"):
+			case strings.HasPrefix(req.RequestURI, "/switchly/keysign"):
 				// unused since tests override signer storage, but must return valid json
 				_, err := rw.Write([]byte(`{}`))
 				c.Assert(err, IsNil)
@@ -368,7 +368,7 @@ func (s *SignSuite) SetUpSuite(c *C) {
 	split := strings.SplitAfter(server.URL, ":")
 	s.rpcHost = split[len(split)-1]
 	cfg := config.BifrostClientConfiguration{
-		ChainID:      "thorchain",
+		ChainID:      "switchly",
 		ChainHost:    "localhost:" + s.rpcHost,
 		SignerName:   "bob",
 		SignerPasswd: "password",
@@ -380,9 +380,9 @@ func (s *SignSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.thorKeys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 	c.Assert(err, IsNil)
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.metrics, s.thorKeys)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.metrics, s.thorKeys)
 	c.Assert(err, IsNil)
 	s.storage, err = NewSignerStore("", config.LevelDBOptions{}, "")
 	c.Assert(err, IsNil)
@@ -413,25 +413,25 @@ func (s *SignSuite) TestProcess(c *C) {
 		},
 	}
 
-	blockScan, err := NewThorchainBlockScan(cfg.BlockScanner, s.storage, s.bridge, s.metrics, pubkeymanager.NewMockPoolAddressValidator())
+	blockScan, err := NewSwitchlyBlockScan(cfg.BlockScanner, s.storage, s.bridge, s.metrics, pubkeymanager.NewMockPoolAddressValidator())
 	c.Assert(err, IsNil)
 
 	blockScanner, err := blockscanner.NewBlockScanner(cfg.BlockScanner, s.storage, m, s.bridge, blockScan)
 	c.Assert(err, IsNil)
 
 	sign := &Signer{
-		logger:                log.With().Str("module", "signer").Logger(),
-		cfg:                   config.Bifrost{Signer: cfg},
-		wg:                    &sync.WaitGroup{},
-		stopChan:              make(chan struct{}),
-		blockScanner:          blockScanner,
-		thorchainBlockScanner: blockScan,
-		chains:                chains,
-		m:                     s.metrics,
-		storage:               s.storage,
-		errCounter:            s.metrics.GetCounterVec(metrics.SignerError),
-		pubkeyMgr:             pubkeymanager.NewMockPoolAddressValidator(),
-		thorchainBridge:       s.bridge,
+		logger:               log.With().Str("module", "signer").Logger(),
+		cfg:                  config.Bifrost{Signer: cfg},
+		wg:                   &sync.WaitGroup{},
+		stopChan:             make(chan struct{}),
+		blockScanner:         blockScanner,
+		switchlyBlockScanner: blockScan,
+		chains:               chains,
+		m:                    s.metrics,
+		storage:              s.storage,
+		errCounter:           s.metrics.GetCounterVec(metrics.SignerError),
+		pubkeyMgr:            pubkeymanager.NewMockPoolAddressValidator(),
+		switchlyBridge:       s.bridge,
 	}
 	c.Assert(sign, NotNil)
 	err = sign.Start()
@@ -462,7 +462,7 @@ func (s *SignSuite) TestBroadcastRetry(c *C) {
 		pubkeyMgr:           pubkeymanager.NewMockPoolAddressValidator(),
 		stopChan:            make(chan struct{}),
 		wg:                  &sync.WaitGroup{},
-		thorchainBridge:     bridge,
+		switchlyBridge:      bridge,
 		constantsProvider:   NewConstantsProvider(bridge),
 		tssKeysignMetricMgr: metrics.NewTssKeysignMetricMgr(),
 		logger:              log.With().Str("module", "signer").Logger(),
@@ -545,7 +545,7 @@ func (s *SignSuite) TestRound7Retry(c *C) {
 		pubkeyMgr:           pubkeymanager.NewMockPoolAddressValidator(),
 		stopChan:            make(chan struct{}),
 		wg:                  &sync.WaitGroup{},
-		thorchainBridge:     bridge,
+		switchlyBridge:      bridge,
 		constantsProvider:   NewConstantsProvider(bridge),
 		tssKeysignMetricMgr: metrics.NewTssKeysignMetricMgr(),
 		logger:              log.With().Str("module", "signer").Logger(),

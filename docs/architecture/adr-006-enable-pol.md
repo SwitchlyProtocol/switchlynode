@@ -21,9 +21,9 @@ The issue is that POL does not stay in the pools long enough to make enough yiel
 
 ```text
 BlockHeight: 13,326,840
-Overall RUNE deposited: 7,590,445.22 RUNE
-Overall RUNE Withdrawn: 5,704,572.68 RUNE
-Current RUNE PnL: -430,760.85 RUNE
+Overall SWITCH deposited: 7,590,445.22 SWITCH
+Overall SWITCH Withdrawn: 5,704,572.68 SWITCH
+Current SWITCH PnL: -430,760.85 SWITCH
 ```
 
 To let PoL stay in the pools for much longer (but still exit if a pool is being removed from the network or utilisation drops off), mimir should refine PoL parameters:
@@ -55,7 +55,7 @@ DOGE.DOGE 1
 GAIA.ATOM 1
 ```
 
-StableCoin (TOR Anchor) Pools
+StableCoin (SWITCHLY Anchor) Pools
 
 ```text
 POL-AVAX.USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E 1
@@ -66,16 +66,16 @@ POL-ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7 1
 
 ## Context
 
-Protocol Owned Liquidity is a mechanism whereby the protocol utilizes the Protocol Reserve to deposit $RUNE asymmetrically into liquidity pools. In effect, it is taking the RUNE-side exposure in dual-sided LPs, reducing synth utilization, so that Savers Vaults can grow. Protocol Owned Liquidity may generate profit or losses to the Protocol Reserve, and care should be taken to determine the timing, assets and amount of POL that is deployed to the network.
+Protocol Owned Liquidity is a mechanism whereby the protocol utilizes the Protocol Reserve to deposit $SWITCH asymmetrically into liquidity pools. In effect, it is taking the SWITCH-side exposure in dual-sided LPs, reducing synth utilization, so that Savers Vaults can grow. Protocol Owned Liquidity may generate profit or losses to the Protocol Reserve, and care should be taken to determine the timing, assets and amount of POL that is deployed to the network.
 
 A vote is currently underway to raise the `MAXSYNTHPERPOOLDEPTH` from `5000` to `6000`. Nodes have already been instructed that raising the vote to `6000` comes with an implicit understanding that Protocol Owned Liquidity (POL) will be activated as a result (https://discord.com/channels/838986635756044328/839001804812451873/1074682919886528542). This ADR serves to codify the exact parameters being proposed to enable POL.
 
 ## Proposed Change
 
-- `POLTargetSynthPerPoolDepth` to `4500`: POL will continue adding RUNE to a pool until the synth depth of that pool is 45%.
+- `POLTargetSynthPerPoolDepth` to `4500`: POL will continue adding SWITCH to a pool until the synth depth of that pool is 45%.
 - `POLBuffer` to `500`: Synth utilization must be >5% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below 40% synth utilization and deposited above 50% synth utilization.
 - `POLMaxPoolMovement` to `1`: POL will move the pool price at most 0.01% in one block
-- `POLMaxNetworkDeposit` to `1000000000000`: start at 10,000 RUNE, with authorization to add up to 10,000,000 RUNE on an incremental basis at developer's discretion. After 10m RUNE, a new vote must be called to further raise the `POLMaxNetworkDeposit`.
+- `POLMaxNetworkDeposit` to `1000000000000`: start at 10,000 SWITCH, with authorization to add up to 10,000,000 SWITCH on an incremental basis at developer's discretion. After 10m SWITCH, a new vote must be called to further raise the `POLMaxNetworkDeposit`.
 - `POL-BTC-BTC` to `1`: POL will start adding to the BTC pool immediately, as the pool has reached its synth cap at the time of publication.
 - `POL-ETH-ETH` to `1`: POL will start adding to the ETH pool once it has reached the its synth cap.
 
@@ -91,5 +91,5 @@ The pros/cons and alternatives to Protocol Owned Liquidity have been discussed o
 
 ## References
 
-- [GitLab Issue](https://gitlab.com/thorchain/thornode/-/issues/1342#protocol-owned-liquidity-pol)
+- [GitLab Issue](https://gitlab.com/switchly/switchlynode/-/issues/1342#protocol-owned-liquidity-pol)
 - [GrassRoots Crypto](https://www.youtube.com/watch?v=Up2-arSzH5k)

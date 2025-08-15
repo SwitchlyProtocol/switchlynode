@@ -15,7 +15,7 @@ interface IRouter {
     ) external payable;
 }
 
-// THORChain_Aggregator is permissionless
+// SWITCHLYChain_Aggregator is permissionless
 contract AvaxAggregator {
     using SafeERC20 for IERC20;
 
@@ -44,9 +44,9 @@ contract AvaxAggregator {
 
     /**
      * @notice Calls deposit with an expiration
-     * @param tcVault address - THORchain vault address
-     * @param tcRouter address - THORchain vault address
-     * @param tcMemo string - THORchain memo
+     * @param tcVault address - SWITCHLYchain vault address
+     * @param tcRouter address - SWITCHLYchain vault address
+     * @param tcMemo string - SWITCHLYchain memo
      * @param amount uint - amount to swap
      * @param amountOutMin uint - minimum amount to receive
      * @param deadline string - timestamp for expiration

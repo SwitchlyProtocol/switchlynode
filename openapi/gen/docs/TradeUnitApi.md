@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**TradeUnit**](TradeUnitApi.md#TradeUnit) | **Get** /thorchain/trade/unit/{asset} | 
+[**TradeUnit**](TradeUnitApi.md#TradeUnit) | **Get** /switchly/trade/unit/{asset} | 
 
 
 

@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/rs/zerolog"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 )
 
@@ -19,10 +19,10 @@ type SignCheckpoint struct {
 }
 
 func PostKeysignFailure(
-	thorchainBridge thorclient.ThorchainBridge,
+	switchlyBridge switchlyclient.SwitchlyBridge,
 	tx stypes.TxOutItem,
 	logger zerolog.Logger,
-	thorchainHeight int64,
+	switchlyHeight int64,
 	utxoErr error,
 ) error {
 	// PostKeysignFailure only once per SignTx, to not broadcast duplicate messages.
@@ -34,14 +34,14 @@ func PostKeysignFailure(
 			return fmt.Errorf("fail to sign the message: %w", utxoErr)
 		}
 
-		// key sign error forward the keysign blame to thorchain
-		txID, err := thorchainBridge.PostKeysignFailure(keysignError.Blame, thorchainHeight, tx.Memo, tx.Coins, tx.VaultPubKey)
+		// key sign error forward the keysign blame to switchly
+		txID, err := switchlyBridge.PostKeysignFailure(keysignError.Blame, switchlyHeight, tx.Memo, tx.Coins, tx.VaultPubKey)
 		if err != nil {
-			logger.Error().Err(err).Msg("fail to post keysign failure to thorchain")
-			utxoErr = multierror.Append(utxoErr, fmt.Errorf("fail to post keysign failure to THORChain: %w", err))
+			logger.Error().Err(err).Msg("fail to post keysign failure to switchly")
+			utxoErr = multierror.Append(utxoErr, fmt.Errorf("fail to post keysign failure to SWITCHLYChain: %w", err))
 			return fmt.Errorf("fail to sign the message: %w", utxoErr)
 		}
-		logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to thorchain")
+		logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to switchly")
 	}
 	return utxoErr
 }

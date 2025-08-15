@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Poolslip**](PoolSlipApi.md#Poolslip) | **Get** /thorchain/slip/{asset} | 
-[**Poolslips**](PoolSlipApi.md#Poolslips) | **Get** /thorchain/slips | 
+[**Poolslip**](PoolSlipApi.md#Poolslip) | **Get** /switchly/slip/{asset} | 
+[**Poolslips**](PoolSlipApi.md#Poolslips) | **Get** /switchly/slips | 
 
 
 

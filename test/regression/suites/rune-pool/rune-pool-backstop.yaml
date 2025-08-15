@@ -6,12 +6,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
 ---
 ########################################################################################
-# Enable POL and RUNEPool
+# Enable POL and SWITCHPool
 ########################################################################################
 type: tx-mimir
 key: MaxSynthPerPoolDepth
@@ -50,7 +50,7 @@ signer: {{ addr_thor_dog }}
 sequence: 5
 ---
 type: tx-mimir
-key: RUNEPoolEnabled
+key: SWITCHPoolEnabled
 value: 1
 signer: {{ addr_thor_dog }}
 sequence: 6
@@ -86,7 +86,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.current_deposit == "${POL_DEPOSIT=1719644313}"
   - .pol.rune_deposited == "${POL_DEPOSIT}"
@@ -100,7 +100,7 @@ asserts:
   - (.reserve.current_deposit|tonumber)+(.providers.current_deposit|tonumber)-(.providers.pending_rune|tonumber) == (.pol.current_deposit|tonumber)
 ---
 ########################################################################################
-# RUNEPool deposit acquires POL ownership from reserve
+# SWITCHPool deposit acquires POL ownership from reserve
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_fox }}
@@ -113,7 +113,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/rune_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/rune_provider/{{ addr_thor_fox }}
 asserts:
   - .rune_address == "{{ addr_thor_fox }}"
   - .deposit_amount == "${POL_VALUE}"
@@ -123,7 +123,7 @@ asserts:
   - .pnl == "0" # provider entered after loss incurred
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.pnl == "${RESERVE_PNL=-2534941}"
   - .reserve.units == "0" # provider owns all pol
@@ -150,7 +150,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.pnl == "17489749"
   - .pol.rune_withdrawn == "0" # no rune withdrawn
@@ -176,7 +176,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/rune_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/rune_provider/{{ addr_thor_fox }}
 asserts:
   - .deposit_amount == "${POL_VALUE}"
   - .last_deposit_height == 4
@@ -186,7 +186,7 @@ asserts:
 # increase backstop to unblock withdraw
 ########################################################################################
 type: tx-mimir
-key: RUNEPoolMaxReserveBackstop
+key: SWITCHPoolMaxReserveBackstop
 value: 1000000000
 signer: {{ addr_thor_dog }}
 ---
@@ -201,7 +201,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/rune_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/rune_provider/{{ addr_thor_fox }}
 asserts:
   - .deposit_amount == "${POL_VALUE}"
   - .last_deposit_height == 4
@@ -210,7 +210,7 @@ asserts:
   - .pnl == "20024690"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.pnl == "17489749"
   - .reserve.units == "${POL_DEPOSIT}"

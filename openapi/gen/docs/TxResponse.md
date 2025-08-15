@@ -5,9 +5,9 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ObservedTx** | Pointer to [**ObservedTx**](ObservedTx.md) |  | [optional] 
-**ConsensusHeight** | Pointer to **int64** | the thorchain height at which the inbound reached consensus | [optional] 
-**FinalisedHeight** | Pointer to **int64** | the thorchain height at which the outbound was finalised | [optional] 
-**OutboundHeight** | Pointer to **int64** | the thorchain height for which the outbound was scheduled | [optional] 
+**ConsensusHeight** | Pointer to **int64** | the switchly height at which the inbound reached consensus | [optional] 
+**FinalisedHeight** | Pointer to **int64** | the switchly height at which the outbound was finalised | [optional] 
+**OutboundHeight** | Pointer to **int64** | the switchly height for which the outbound was scheduled | [optional] 
 **KeysignMetric** | Pointer to [**TssKeysignMetric**](TssKeysignMetric.md) |  | [optional] 
 
 ## Methods

@@ -31,7 +31,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[3].action == "/cosmwasm.wasm.v1.MsgInstantiateContract"
   - .txs[0].result.events[4]._contract_address == "tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f"
@@ -52,7 +52,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 4
   - .txs[0].result.log|contains("unauthorized")
@@ -67,7 +67,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 0
   - .txs[0].result.events[3].new_admin_address == "{{ addr_thor_cat }}"
@@ -86,7 +86,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 4
   - .txs[0].result.log|contains("unauthorized")
@@ -100,7 +100,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 0
   - .txs[0].result.events[3].new_admin_address == ""
@@ -120,7 +120,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 4
   - .txs[0].result.log|contains("unauthorized")

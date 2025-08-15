@@ -11,7 +11,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_dog }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_dog }}
 asserts:
   - .ip_address == "10.0.0.1"
 ---
@@ -31,7 +31,7 @@ asserts:
   - .result.value.sequence == "1"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_fox }}
 asserts:
   - .total_bond == "1"
 ---

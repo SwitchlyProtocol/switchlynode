@@ -11,7 +11,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/evm"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
@@ -22,7 +22,7 @@ import (
 
 func DepositL1(log *zerolog.Logger, client LiteChainClient, asset common.Asset, memo string, amount cosmos.Uint) (string, error) {
 	// get inbound address
-	inboundAddr, _, err := thornode.GetInboundAddress(asset.Chain)
+	inboundAddr, _, err := switchlynode.GetInboundAddress(asset.Chain)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get inbound address")
 		return "", err
@@ -58,7 +58,7 @@ func DepositL1(log *zerolog.Logger, client LiteChainClient, asset common.Asset, 
 
 func DepositL1Token(log *zerolog.Logger, client LiteChainClient, asset common.Asset, memo string, amount cosmos.Uint) (string, error) {
 	// get router address
-	inboundAddr, routerAddr, err := thornode.GetInboundAddress(asset.Chain)
+	inboundAddr, routerAddr, err := switchlynode.GetInboundAddress(asset.Chain)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get inbound address")
 		return "", err

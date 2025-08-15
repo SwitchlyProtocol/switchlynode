@@ -12,17 +12,17 @@ Proposed
 
 ## Context
 
-THORChain is a complex protocol that requires a full-time protocol engineering, security and maintenance team. It is also a "moving" protocol that needs to react to external entropy (changing dominance of L1s, L1 architecture, user feature requests and more), thus requires continual upgrade efforts. This ADR discusses a long-term sustainable incentivisation proposal designed to motivate a full-time engineering team to work towards a single key protocol KPI: fee-revenue.
+SWITCHLYChain is a complex protocol that requires a full-time protocol engineering, security and maintenance team. It is also a "moving" protocol that needs to react to external entropy (changing dominance of L1s, L1 architecture, user feature requests and more), thus requires continual upgrade efforts. This ADR discusses a long-term sustainable incentivisation proposal designed to motivate a full-time engineering team to work towards a single key protocol KPI: fee-revenue.
 
 ## Background
 
 Protocol engineering in past was funded and managed by "OG" who handed over operationally to "9R" in the period beginning 2021.
-The OG team provided an outlay of capital and vested incentives to NineRealms and THORSec for a 3-year period beginning late June 2021 and concluding June 2024.
+The OG team provided an outlay of capital and vested incentives to NineRealms and SWITCHLYSec for a 3-year period beginning late June 2021 and concluding June 2024.
 It has been extremely important that "OG team" hand over the protocol to a community-led team as part of "Planned Obsolescence" as a proof of decentralisation.
 
-9R+THORSec is an engineering, security and operational collective to manage the business development, maintenance and feature rollout of THORChain. 9R's primary business is as node-operator team, but heavily incentivised to ensure the longevity and sustainability of the protocol. 9R self-funded and emerged from the community in mid-2021.
+9R+SWITCHLYSec is an engineering, security and operational collective to manage the business development, maintenance and feature rollout of SWITCHLYChain. 9R's primary business is as node-operator team, but heavily incentivised to ensure the longevity and sustainability of the protocol. 9R self-funded and emerged from the community in mid-2021.
 
-9R (Core 2.0) currently do not have any additional incentives beyond being normal Node Operators, yet do the bulk of THORChain's maintenance work. This ADR partitions out incentives over 3 years directly to 9R to continue to motivate their efforts.
+9R (Core 2.0) currently do not have any additional incentives beyond being normal Node Operators, yet do the bulk of SWITCHLYChain's maintenance work. This ADR partitions out incentives over 3 years directly to 9R to continue to motivate their efforts.
 
 ## Objectives
 
@@ -53,13 +53,13 @@ At any time Core will be aligned to update, engage and be accountable to the com
 
 ## Economics
 
-At current price of RUNE ($4.00), around $150k is made by the system every day (fees + rewards) (up to $300k on high-volume days). At 5%, thus
+At current price of SWITCH ($4.00), around $150k is made by the system every day (fees + rewards) (up to $300k on high-volume days). At 5%, thus
 
 ```text
 (150000*0.05)*365 = ~$3m/year (base case)
 ```
 
-If RUNE prices doubles, and system volume doubles then the accumulated funding would be $12m/year.
+If SWITCH prices doubles, and system volume doubles then the accumulated funding would be $12m/year.
 
 This would be enough funding to pay for Core Protocol Maintenance needs, as well as provide ample alignment to grow System Income.
 
@@ -70,7 +70,7 @@ TBD
 ## Consequences
 
 The System Income will start allocating 5% System Income to a Core Protocol Funding wallet. Custody of this wallet will be handed to Core 2.0 for full discretion on spending, but with community oversight.
-Separately, and not part of this ADR, Treasury will boost this wallet with 1m RUNE to be a Genesis Incentive Boost to Core 2.0. This will form the first 12-18months of Incentives to Core 2.0.
+Separately, and not part of this ADR, Treasury will boost this wallet with 1m SWITCH to be a Genesis Incentive Boost to Core 2.0. This will form the first 12-18months of Incentives to Core 2.0.
 Nodes have an ability to user mimir to 1) pause, lower, increase the Dev Fund; or use ADR to 2) change the destination wallet.
 
 For reference, the holding address will be this: thor1jw4ujum9a7wxwfuy9j7233aezm3yapc3s379gv

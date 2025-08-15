@@ -6,9 +6,9 @@ import (
 
 	atypes "github.com/switchlyprotocol/switchlynode/v3/api/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ func NewRagnarokPoolActor(asset common.Asset) *Actor {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func (a *RagnarokPoolActor) sendMimir(config *OpConfig) OpResult {
-	nodes, err := thornode.GetNodes()
+	nodes, err := switchlynode.GetNodes()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get nodes")
 		return OpResult{
@@ -77,7 +77,7 @@ func (a *RagnarokPoolActor) sendMimir(config *OpConfig) OpResult {
 		}
 
 		mimir := types.NewMsgMimir(fmt.Sprintf("RAGNAROK-%s", a.asset.MimirString()), 1, accAddr)
-		txid, err := node.Thorchain.Broadcast(mimir)
+		txid, err := node.Switchly.Broadcast(mimir)
 		if err != nil {
 			a.Log().Error().Err(err).Msg("failed to broadcast mimir")
 			return OpResult{
@@ -93,7 +93,7 @@ func (a *RagnarokPoolActor) sendMimir(config *OpConfig) OpResult {
 
 func (a *RagnarokPoolActor) verifyPoolRemoval(config *OpConfig) OpResult {
 	// fetch pools
-	pools, err := thornode.GetPools()
+	pools, err := switchlynode.GetPools()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get pools")
 		return OpResult{

@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **InboundAddress** | Pointer to **string** | the inbound address for the transaction on the source chain | [optional] 
 **InboundConfirmationBlocks** | Pointer to **int64** | the approximate number of source chain blocks required before processing | [optional] 
 **InboundConfirmationSeconds** | Pointer to **int64** | the approximate seconds for block confirmations required before processing | [optional] 
-**OutboundDelayBlocks** | **int64** | the number of thorchain blocks the outbound will be delayed | 
+**OutboundDelayBlocks** | **int64** | the number of switchly blocks the outbound will be delayed | 
 **OutboundDelaySeconds** | **int64** | the approximate seconds for the outbound delay before it will be sent | 
 **Fees** | [**QuoteFees**](QuoteFees.md) |  | 
 **Router** | Pointer to **string** | the EVM chain router contract address | [optional] 
@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 **ExpectedAmountOut** | **string** | the amount of collateral asset the user can expect to receive after fees in 1e8 decimals | 
 **ExpectedAmountIn** | **string** | The quantity of the repayment asset to be sent by the user, calculated as the desired percentage of the loan&#39;s value, expressed in units of 1e8 | 
 **ExpectedCollateralWithdrawn** | **string** | the expected amount of collateral decrease on the loan | 
-**ExpectedDebtRepaid** | **string** | the expected amount of TOR debt decrease on the loan | 
+**ExpectedDebtRepaid** | **string** | the expected amount of SWITCHLY debt decrease on the loan | 
 **StreamingSwapBlocks** | **int64** | The number of blocks involved in the streaming swaps during the repayment process. | 
 **StreamingSwapSeconds** | **int64** | The approximate number of seconds taken by the streaming swaps involved in the repayment process. | 
 **TotalRepaySeconds** | **int64** | The total expected duration for a repayment, measured in seconds, which includes the time for inbound confirmation, the duration of streaming swaps, and any outbound delays. | 

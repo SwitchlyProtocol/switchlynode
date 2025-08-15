@@ -6,8 +6,8 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Tx** | [**Tx**](Tx.md) |  | 
 **ObservedPubKey** | Pointer to **string** |  | [optional] 
-**ExternalObservedHeight** | Pointer to **int64** | the block height on the external source chain when the transaction was observed, not provided if chain is THOR | [optional] 
-**ExternalConfirmationDelayHeight** | Pointer to **int64** | the block height on the external source chain when confirmation counting will be complete, not provided if chain is THOR | [optional] 
+**ExternalObservedHeight** | Pointer to **int64** | the block height on the external source chain when the transaction was observed, not provided if chain is SWITCHLY | [optional] 
+**ExternalConfirmationDelayHeight** | Pointer to **int64** | the block height on the external source chain when confirmation counting will be complete, not provided if chain is SWITCHLY | [optional] 
 **Aggregator** | Pointer to **string** | the outbound aggregator to use, will also match a suffix | [optional] 
 **AggregatorTarget** | Pointer to **string** | the aggregator target asset provided to transferOutAndCall | [optional] 
 **AggregatorTargetLimit** | Pointer to **string** | the aggregator target asset limit provided to transferOutAndCall | [optional] 

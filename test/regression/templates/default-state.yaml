@@ -25,10 +25,10 @@ genesis:
         - "@type": /cosmos.auth.v1beta1.ModuleAccount
           base_account:
             account_number: "2"
-            address: {{ addr_module_thorchain }}
+            address: {{ addr_module_switchly }}
             pub_key: ~
             sequence: "0"
-          name: thorchain
+          name: switchly
           permissions:
             - minter
             - burner
@@ -98,7 +98,7 @@ genesis:
     transfer:
       params:
         send_enabled: false
-    thorchain:
+    switchly:
       node_accounts:
         - active_block_height: "0"
           bond: "5000000000000"

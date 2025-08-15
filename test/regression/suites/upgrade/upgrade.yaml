@@ -4,7 +4,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposals
+endpoint: http://localhost:1317/switchly/upgrade_proposals
 asserts:
   - .|length == 0
 ---
@@ -24,7 +24,7 @@ asserts:
   - .result.value.sequence == "1"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposals
+endpoint: http://localhost:1317/switchly/upgrade_proposals
 asserts:
   - .|length == 1
   - .[0].name == "1.2.3"
@@ -35,7 +35,7 @@ asserts:
   - .[0].validators_to_quorum == 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposal/1.2.3
+endpoint: http://localhost:1317/switchly/upgrade_proposal/1.2.3
 asserts:
   - .name == "1.2.3"
   - .height == 100
@@ -52,7 +52,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposal/1.2.3
+endpoint: http://localhost:1317/switchly/upgrade_proposal/1.2.3
 asserts:
   - .approved == false
   - .approved_percent == "40.00"
@@ -75,7 +75,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposal/1.2.3
+endpoint: http://localhost:1317/switchly/upgrade_proposal/1.2.3
 asserts:
   - .approved == true
   - .approved_percent == "80.00"
@@ -89,7 +89,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposal/1.2.3
+endpoint: http://localhost:1317/switchly/upgrade_proposal/1.2.3
 asserts:
   - .approved == true
   - .approved_percent == "100.00"
@@ -119,7 +119,7 @@ asserts:
   - .result.value.sequence == "2"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposals
+endpoint: http://localhost:1317/switchly/upgrade_proposals
 asserts:
   - .|length == 2
 ---
@@ -140,7 +140,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposal/1.2.3-expedited
+endpoint: http://localhost:1317/switchly/upgrade_proposal/1.2.3-expedited
 asserts:
   - .approved == false
   - .approved_percent == "60.00"
@@ -159,7 +159,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposal/1.2.3
+endpoint: http://localhost:1317/switchly/upgrade_proposal/1.2.3
 asserts:
   - .approved == false
   - .approved_percent == "60.00"
@@ -174,7 +174,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/upgrade_proposal/1.2.3-expedited
+endpoint: http://localhost:1317/switchly/upgrade_proposal/1.2.3-expedited
 asserts:
   - .approved == true
   - .approved_percent == "80.00"

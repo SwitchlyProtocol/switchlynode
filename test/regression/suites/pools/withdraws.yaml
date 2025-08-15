@@ -19,16 +19,16 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.log? and .code != 0)] | length == 1
   - ..|select(.log?).log | contains("pool-ETH.NONSENSE doesn't exist")
   # TODO:  This is a failed withdraw PoolExist validation
-  # ( https://gitlab.com/thorchain/thornode/-/blob/v1.124.0/x/thorchain/withdraw.go#L332-335 )
+  # ( https://gitlab.com/switchly/switchlynode/-/blob/v1.124.0/x/switchly/withdraw.go#L332-335 )
   # but the handler_withdraw validation should check this much earlier at the same time as EnsureValidPoolStatus
-  # ( https://gitlab.com/thorchain/thornode/-/blob/v1.124.0/x/thorchain/handler_withdraw.go#L79-81 )
+  # ( https://gitlab.com/switchly/switchlynode/-/blob/v1.124.0/x/switchly/handler_withdraw.go#L79-81 )
   # by using IsEmpty like handler_add_liquidity .
-  # ( https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/handler_add_liquidity.go#L269-270 )
+  # ( https://gitlab.com/switchly/switchlynode/-/blob/develop/x/switchly/handler_add_liquidity.go#L269-270 )
   # For handler_withdraw, a format without a hyphen ('pool-') to distinguish the withdraw.go and handler_withdraw errors.
 ---
 ########################################################################################
@@ -45,12 +45,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.log? and .code != 0)] | length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1 # The outbound exists.
   - .[]|.in_hash == "{{ native_txid 2 }}"
@@ -79,6 +79,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0 # The outbound was resolved.

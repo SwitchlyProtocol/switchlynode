@@ -4,10 +4,10 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Dpool**](PoolsApi.md#Dpool) | **Get** /thorchain/dpool/{asset} | 
-[**Dpools**](PoolsApi.md#Dpools) | **Get** /thorchain/dpools | 
-[**Pool**](PoolsApi.md#Pool) | **Get** /thorchain/pool/{asset} | 
-[**Pools**](PoolsApi.md#Pools) | **Get** /thorchain/pools | 
+[**Dpool**](PoolsApi.md#Dpool) | **Get** /switchly/dpool/{asset} | 
+[**Dpools**](PoolsApi.md#Dpools) | **Get** /switchly/dpools | 
+[**Pool**](PoolsApi.md#Pool) | **Get** /switchly/pool/{asset} | 
+[**Pools**](PoolsApi.md#Pools) | **Get** /switchly/pools | 
 
 
 

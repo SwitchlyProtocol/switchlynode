@@ -78,7 +78,7 @@
   "vaults": [
     {
       "block_height": "24",
-      "chains": ["THOR", "BTC", "LTC", "BCH", "ETH", "AVAX"],
+      "chains": ["SWITCHLY", "BTC", "LTC", "BCH", "ETH", "AVAX"],
       "coins": [
         {
           "amount": "40000000000",

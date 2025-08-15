@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -63,7 +63,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/securedassets
+endpoint: http://localhost:1317/switchly/securedassets
 asserts:
 - .|length == 0
 ---
@@ -117,7 +117,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/securedassets
+endpoint: http://localhost:1317/switchly/securedassets
 asserts:
 - .|length == 0
 ---
@@ -204,7 +204,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/securedassets
+endpoint: http://localhost:1317/switchly/securedassets
 asserts:
 - .|length == 1
 - .[0].supply|tonumber == 50000000
@@ -235,7 +235,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - ."HALTSECUREDDEPOSIT-BTC" == 5
 ---
@@ -263,7 +263,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 1'
   - .txs[]|.result.events[]|select(.type=="refund")|.from == "{{ addr_btc_pig }}"
@@ -271,7 +271,7 @@ asserts:
 ---
 # Verify that deposit balance hasn't changed
 type: check
-endpoint: http://localhost:1317/thorchain/securedassets
+endpoint: http://localhost:1317/switchly/securedassets
 asserts:
 - .|length == 1
 - .[0].supply|tonumber == 50000000
@@ -287,7 +287,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - ."HALTSECUREDDEPOSIT-BTC" == 0
 ---
@@ -315,7 +315,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/securedassets
+endpoint: http://localhost:1317/switchly/securedassets
 asserts:
 - .|length == 1
 - .[0].supply|tonumber == 100000000
@@ -348,7 +348,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 1'
   - .txs[]|.result.events[]|select(.type=="refund")|.from == "{{ addr_btc_pig }}"
@@ -389,7 +389,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 1'
   - .txs[]|.result.events[]|select(.type=="refund")|.from == "{{ addr_btc_pig }}"
@@ -422,7 +422,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.end_block_events[]|select(.type=="refund")]|length == 1'
   - .end_block_events[]|select(.type=="refund")|.from == "{{ addr_btc_pig }}"

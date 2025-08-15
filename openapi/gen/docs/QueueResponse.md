@@ -7,8 +7,8 @@ Name | Type | Description | Notes
 **Swap** | **int64** |  | 
 **Outbound** | **int64** | number of signed outbound tx in the queue | 
 **Internal** | **int64** |  | 
-**ScheduledOutboundValue** | **string** | scheduled outbound value in RUNE | 
-**ScheduledOutboundClout** | **string** | scheduled outbound clout in RUNE | 
+**ScheduledOutboundValue** | **string** | scheduled outbound value in SWITCH | 
+**ScheduledOutboundClout** | **string** | scheduled outbound clout in SWITCH | 
 
 ## Methods
 

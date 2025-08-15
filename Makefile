@@ -28,8 +28,8 @@ BUILDTAG?=$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null)
 # compiler flags
 VERSION:=$(shell cat version)
 TAG?=mocknet
-ldflags = -X github.com/switchlynode/switchlynode/v3/constants.Version=$(VERSION) \
-      -X github.com/switchlynode/switchlynode/v3/constants.GitCommit=$(COMMIT) \
+ldflags = -X github.com/switchlyprotocol/switchlynode/v3/constants.Version=$(VERSION) \
+      -X github.com/switchlyprotocol/switchlynode/v3/constants.GitCommit=$(COMMIT) \
       -X github.com/cosmos/cosmos-sdk/version.Name=SwitchlyProtocol \
       -X github.com/cosmos/cosmos-sdk/version.AppName=switchlynode \
       -X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
@@ -255,7 +255,7 @@ build-mocknet:
 bootstrap-mocknet:
 	@docker run --rm ${DOCKER_TTY_ARGS} \
 		-e PARALLELISM -e STAGES=seed,bootstrap --network host -w /app \
-		thornode-simtest sh -c 'make _test-simulation'
+		switchlynode-simtest sh -c 'make _test-simulation'
 
 ps-mocknet:
 	@docker compose -f build/docker/docker-compose.yml --profile mocknet --profile midgard images
@@ -317,12 +317,12 @@ docker-gitlab-build:
 # Tools
 ########################################################################################
 
-thorscan-build:
-	@docker build tools/thorscan -f tools/thorscan/Dockerfile \
-		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version))
+switchlyscan-build:
+	@docker build tools/switchlyscan -f tools/switchlyscan/Dockerfile \
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode switchlyscan-${BRANCH} $(shell cat version))
 
-thorscan-gitlab-push: docker-gitlab-login
-	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version) \
+switchlyscan-gitlab-push: docker-gitlab-login
+	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode switchlyscan-${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}
 
 events-build:
@@ -333,13 +333,13 @@ events-gitlab-push: docker-gitlab-login
 	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode events-${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}
 
-docker-gitlab-build-thorscan:
+docker-gitlab-build-switchlyscan:
 	docker build \
-		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version)) \
-		-f build/docker/Dockerfile.thorscan .
+		$(shell sh ./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode switchlyscan-${BRANCH} $(shell cat version)) \
+		-f build/docker/Dockerfile.switchlyscan .
 
-docker-gitlab-push-thorscan:
-	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode thorscan-${BRANCH} $(shell cat version) \
+docker-gitlab-push-switchlyscan:
+	@./build/docker/semver_tags.sh registry.gitlab.com/switchlynode/switchlynode switchlyscan-${BRANCH} $(shell cat version) \
 		| xargs -I {} docker push {}
 
 docker-gitlab-build-events:

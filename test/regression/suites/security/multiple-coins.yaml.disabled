@@ -7,7 +7,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -27,7 +27,7 @@ coins:
   - amount: "0"
     asset: "BTC~BTC"
   - amount: "35000000000000"
-    asset: "RUNE"
+    asset: "SWITCH"
 memo: "name:foo:BTC:bc1fx6fsev97atsm5j62kgecpslv6vx2nffv0qq2q"
 ---
 type: create-blocks
@@ -40,7 +40,7 @@ asserts:
   - .balances[]|select(.denom == "rune")|.amount|tonumber == 2500000000000-2000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---

@@ -17,8 +17,8 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
@@ -31,7 +31,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 )
 
-// SolvencyReporter is to report solvency info to THORNode
+// SolvencyReporter is to report solvency info to SWITCHLYNode
 type SolvencyReporter func(int64) error
 
 const (
@@ -63,7 +63,7 @@ type StellarBlockScanner struct {
 	cfg              config.BifrostBlockScannerConfiguration
 	logger           zerolog.Logger
 	db               blockscanner.ScannerStorage
-	bridge           thorclient.ThorchainBridge
+	bridge           switchlyclient.SwitchlyBridge
 	solvencyReporter SolvencyReporter
 	horizonClient    *horizonclient.Client
 	sorobanRPCClient *SorobanRPCClient
@@ -93,7 +93,7 @@ type StellarBlockScanner struct {
 func NewStellarBlockScanner(rpcHost string,
 	cfg config.BifrostBlockScannerConfiguration,
 	scanStorage blockscanner.ScannerStorage,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	solvencyReporter SolvencyReporter,
 	horizonClient *horizonclient.Client,

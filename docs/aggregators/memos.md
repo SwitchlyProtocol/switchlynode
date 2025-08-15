@@ -1,6 +1,6 @@
 # Memos
 
-## Swap Memo (from [here](https://gitlab.com/thorchain/thornode/-/merge_requests/2218))
+## Swap Memo (from [here](https://gitlab.com/switchly/switchlynode/-/merge_requests/2218))
 
 In order to support SwapOut DEX Aggregation feature, a few more fields added into the swap memo.
 
@@ -10,7 +10,7 @@ In order to support SwapOut DEX Aggregation feature, a few more fields added int
 | -------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `:DEXAggregatorAddr` | The whitelisted aggregator contract.                      | Can use the last x characters of the address to fuzz match it.                                                                                                                                                                                                                                                                                                   |
 | `:FinalTokenAddr`    | The final token (must be on 1INCH Whitelist)              | Can be shortened                                                                                                                                                                                                                                                                                                                                                 |
-| `:minAmountOut`      | The parameter to pass into AmountOutMin in AMM contracts. | Handled by the aggregator, so:<br>1. Can be 0 (no protection). <br>2. Can be in any decimals<br>3. Can be in % or BasisPoints, then converted to a price at the time of swap by the aggregator contract.<br><br> Thornode accepts integers and scientific notation. Both `100000000` and `1e8` would forward `uint256 100000000` to the aggregator contract.</p> |
+| `:minAmountOut`      | The parameter to pass into AmountOutMin in AMM contracts. | Handled by the aggregator, so:<br>1. Can be 0 (no protection). <br>2. Can be in any decimals<br>3. Can be in % or BasisPoints, then converted to a price at the time of swap by the aggregator contract.<br><br> Switchlynode accepts integers and scientific notation. Both `100000000` and `1e8` would forward `uint256 100000000` to the aggregator contract.</p> |
 
 ```admonish success
 If you include a vertical pipe (|) at the end of the memo, any data following it will be sent as an outbound memo to the specified outbound address. This feature enables developers to send generic data to contracts cross-chain.
@@ -47,14 +47,14 @@ In order to support SwapOut Dex Aggregation feature safely , a few more fields h
 ]
 ```
 
-Also the same fields have been added to `ObservedTx` so THORNode can verify that bifrost did send out the transaction per instruction, use the aggregator per instructed , and pass target asset and target limit to the aggregator correctly
+Also the same fields have been added to `ObservedTx` so SWITCHLYNode can verify that bifrost did send out the transaction per instruction, use the aggregator per instructed , and pass target asset and target limit to the aggregator correctly
 
 ### How to swap out with dex aggregator?
 
-If i want to swap RUNE to random ERC20 asset that is not list on THORChain , but is list on SushiSwap for example
+If i want to swap SWITCH to random ERC20 asset that is not list on SWITCHLYChain , but is list on SushiSwap for example
 
 ```text
-thornode tx thorchain deposit 200000000000 RUNE '=:ETH.ETH:0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473::::2386f3848:0x0a44986b70527154e9F4290eC14e5f0D1C861822' --chain-id thorchain --node tcp://$THORNODE_IP:26657 --from {from user} --keyring-backend=file --yes --gas 20000000
+switchlynode tx switchly deposit 200000000000 SWITCH '=:ETH.ETH:0x3fd2d4ce97b082d4bce3f9fee2a3d60668d2f473::::2386f3848:0x0a44986b70527154e9F4290eC14e5f0D1C861822' --chain-id switchly --node tcp://$SWITCHLYNODE_IP:26657 --from {from user} --keyring-backend=file --yes --gas 20000000
 ```
 
 **Note:**

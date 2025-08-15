@@ -12,18 +12,18 @@ import (
 	etypes "github.com/ethereum/go-ethereum/core/types"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 const MaxContractGas = 80000
 
 type KeysignWrapperTestSuite struct {
-	thorKeys *thorclient.Keys
+	thorKeys *switchlyclient.Keys
 	wrapper  *KeySignWrapper
 }
 
@@ -34,7 +34,7 @@ var _ = Suite(
 // SetUpSuite setup the test conditions
 func (s *KeysignWrapperTestSuite) SetUpSuite(c *C) {
 	cfg := config.BifrostClientConfiguration{
-		ChainID:      "thorchain",
+		ChainID:      "switchly",
 		SignerName:   "bob",
 		SignerPasswd: "password",
 	}
@@ -45,7 +45,7 @@ func (s *KeysignWrapperTestSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.thorKeys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 
 	privateKey, err := s.thorKeys.GetPrivateKey()
 	c.Assert(err, IsNil)
@@ -53,7 +53,7 @@ func (s *KeysignWrapperTestSuite) SetUpSuite(c *C) {
 	c.Assert(err, IsNil)
 	pk, err := common.NewPubKeyFromCrypto(temp)
 	c.Assert(err, IsNil)
-	keyMgr := &tss.MockThorchainKeyManager{}
+	keyMgr := &tss.MockSwitchlyKeyManager{}
 	ethPrivateKey, err := GetPrivateKey(privateKey)
 	c.Assert(err, IsNil)
 	c.Assert(ethPrivateKey, NotNil)

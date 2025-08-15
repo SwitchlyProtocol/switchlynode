@@ -31,7 +31,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
-// PubKey used in thorchain, it should be bech32 encoded string
+// PubKey used in switchly, it should be bech32 encoded string
 // switchpub1addwnpepqt7qug8vk9r3saw8n4r803ydj2g3dqwx0mvq5akhnze86fc536xcyc6nxl7k
 // switchpub1addwnpepqdqvd4r84lq9m54m5kk9sf4k6kdgavvch723pcgadulxd6ey9u70k6z3xqjz
 type (
@@ -255,7 +255,7 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 	return address, nil
 }
 
-// GetThorAddress will return the address for THORChain (legacy method)
+// GetThorAddress will return the address for SWITCHLYChain (legacy method)
 // NOTE: This method is deprecated, use GetSwitchlyAddress instead
 func (p PubKey) GetThorAddress() (cosmos.AccAddress, error) {
 	return p.GetSwitchlyAddress()

@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **InboundAddress** | **string** | the inbound address for the transaction on the source chain | 
 **InboundConfirmationBlocks** | Pointer to **int64** | the approximate number of source chain blocks required before processing | [optional] 
 **InboundConfirmationSeconds** | Pointer to **int64** | the approximate seconds for block confirmations required before processing | [optional] 
-**OutboundDelayBlocks** | Pointer to **int64** | the number of thorchain blocks the outbound will be delayed | [optional] 
+**OutboundDelayBlocks** | Pointer to **int64** | the number of switchly blocks the outbound will be delayed | [optional] 
 **OutboundDelaySeconds** | Pointer to **int64** | the approximate seconds for the outbound delay before it will be sent | [optional] 
 **Fees** | [**QuoteFees**](QuoteFees.md) |  | 
 **Router** | Pointer to **string** | the EVM chain router contract address | [optional] 

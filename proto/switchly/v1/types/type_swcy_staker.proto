@@ -1,0 +1,13 @@
+syntax = "proto3";
+package types;
+
+option go_package = "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types";
+option (gogoproto.goproto_getters_all) = false;
+
+import "gogoproto/gogo.proto";
+import "common/common.proto";
+
+message SWCYStaker {
+  string address = 1 [(gogoproto.casttype) = "github.com/switchlyprotocol/switchlynode/v3/common.Address"];
+  string amount = 2 [(gogoproto.customtype) = "cosmossdk.io/math.Uint", (gogoproto.nullable) = false];
+}

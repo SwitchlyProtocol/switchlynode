@@ -40,20 +40,20 @@ The network works out the optimal streaming swap solution based on the Mimumn Sw
 **Single Swap**: To calculate the minimum swap size for a single swap, you take 5 basis points (bps) of the depth of the pool. The formula is as follows:
 
 $$
-{MinimumSwapSize} = MinBPStreamingSwap * Rune Pool Depth
+{MinimumSwapSize} = MinBPStreamingSwap * SWITCH Pool Depth
 $$
 
 Example using BTC Pool:
 
-- BTC Rune Depth = 20,007,476 RUNE
+- BTC SWITCH Depth = 20,007,476 SWITCH
 - StreamingSwapMinBPFee = 5 bp
 
-MinimumSwapSize = 0.0005 \* 20,007,476 = 10,003. RUNE
+MinimumSwapSize = 0.0005 \* 20,007,476 = 10,003. SWITCH
 
 **Double Swap**: When dealing with two pools of arbitrary depths and aiming for a precise 5 bps swap fee (set by `StreamingSwapMinBPFee`), you need to create a virtual pool size called `runeDepth` using the following formula:
 
 $$
-virtualRuneDepth  =(2*r1*r2) / (r1+r2)
+virtualSWITCHDepth  =(2*r1*r2) / (r1+r2)
 $$
 
 `r1` represents the rune depth of pool1, and `r2` represents the rune depth of pool2.
@@ -61,7 +61,7 @@ $$
 The `runeDepth` is then used with 1.25 bps (half of 2.5 bps since there are two swaps), which gives you the minimum swap size that results in a 5 bps swap fee.
 
 $$
-{MinimumSwapSize} = (MinBPStreamingSwap / 2) * virtualRuneDepth
+{MinimumSwapSize} = (MinBPStreamingSwap / 2) * virtualSWITCHDepth
 $$
 
 ```admonish success
@@ -70,13 +70,13 @@ The larger the difference between the pools, the more the virtual pool skews tow
 
 Example using BTC and ETH Pool
 
-- BTC Rune Depth = 20,007,476 RUNE
-- ETH Rune Depth = 8,870,648 RUNE
+- BTC SWITCH Depth = 20,007,476 SWITCH
+- ETH SWITCH Depth = 8,870,648 SWITCH
 - StreamingSwapMinBPFee = 5 bp
 
-virtualRuneDepth = (2\*20,007,476\*8,870,648) / (20,007,476 + 8,870,648) = 12,291,607 RUNE
+virtualSWITCHDepth = (2\*20,007,476\*8,870,648) / (20,007,476 + 8,870,648) = 12,291,607 SWITCH
 
-MinimumSwapSize = (0.0005/4) \* 12,291,607 = 1536.45 RUNE
+MinimumSwapSize = (0.0005/4) \* 12,291,607 = 1536.45 SWITCH
 
 ### Swap Count
 
@@ -88,7 +88,7 @@ $$
 
 The `swapAmount` represents the total amount to be swapped.
 
-Example: swap 20,000 RUNE worth of BTC to ETH. (approx 0.653 BTC).
+Example: swap 20,000 SWITCH worth of BTC to ETH. (approx 0.653 BTC).
 
 20,000 / 3,072.90 = 6.5 = 7 Swaps.
 

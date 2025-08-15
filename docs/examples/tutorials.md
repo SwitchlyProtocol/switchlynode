@@ -4,9 +4,9 @@
 
 Endpoints have been made to look up a savers position quickly.
 
-### **Savers Position using Thornode**
+### **Savers Position using Switchlynode**
 
-**Request**: _Get BTC saver information for the address 33XBYjiR3B7g8755mCB56aHtxQYL2Go9xf_ [https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/saver/33XBYjiR3B7g8755mCB56aHtxQYL2Go9xf](https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/saver/33XBYjiR3B7g8755mCB56aHtxQYL2Go9xf)
+**Request**: _Get BTC saver information for the address 33XBYjiR3B7g8755mCB56aHtxQYL2Go9xf_ [https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/saver/33XBYjiR3B7g8755mCB56aHtxQYL2Go9xf](https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/saver/33XBYjiR3B7g8755mCB56aHtxQYL2Go9xf)
 
 **Response:**
 
@@ -22,7 +22,7 @@ Endpoints have been made to look up a savers position quickly.
 }
 ```
 
-Returns all savers for a given asset. To get all savers you can use [https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/savers](https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/savers)
+Returns all savers for a given asset. To get all savers you can use [https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/savers](https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/savers)
 
 ### **Savers Position using Midgard**
 
@@ -52,9 +52,9 @@ Returns all savers for a given asset. To get all savers you can use [https://tho
 
 Similar to savers, looking up the liquidity position with a given address is possible.
 
-### **Liquidity Provider Position using Thornode**
+### **Liquidity Provider Position using Switchlynode**
 
-**Request**: _Get liquidity provider information in the BTC pool for the address_ bc1q00nrswtpp3zddgc0uvppuszhnr8k8zfcdps9gn [https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/liquidity_provider/bc1q00nrswtpp3zddgc0uvppuszhnr8k8zfcdps9gn](https://thornode.ninerealms.com/thorchain/pool/BTC.BTC/liquidity_provider/bc1q00nrswtpp3zddgc0uvppuszhnr8k8zfcdps9gn)
+**Request**: _Get liquidity provider information in the BTC pool for the address_ bc1q00nrswtpp3zddgc0uvppuszhnr8k8zfcdps9gn [https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/liquidity_provider/bc1q00nrswtpp3zddgc0uvppuszhnr8k8zfcdps9gn](https://switchlynode.ninerealms.com/switchly/pool/BTC.BTC/liquidity_provider/bc1q00nrswtpp3zddgc0uvppuszhnr8k8zfcdps9gn)
 
 **Response:**
 
@@ -114,7 +114,7 @@ Any address can be used with this endpoint, e.g. bc1q0kmdagyqhkzw4sgs7f0vycxw7jh
 
 ### **User Transaction History**
 
-Actions within THORChain can be obtained from Midgard which will list the actions taken by any given address.
+Actions within SWITCHLYChain can be obtained from Midgard which will list the actions taken by any given address.
 
 **Request**: _List actions by the address bc1qn9esxuw8ca7ts8l6w66kdh800s09msvutydc46_
 
@@ -134,7 +134,7 @@ Actions within THORChain can be obtained from Midgard which will list the action
           "coins": [
             {
               "amount": "63684757953",
-              "asset": "THOR.RUNE"
+              "asset": "SWITCHLY.SWITCH"
             }
           ],
           "txID": "ED1384012BA129B889CCF3285A1FB73B127101A0924F49B64FE58A6939FA47C4"
@@ -172,9 +172,9 @@ Will also include savers' actions. The Action endpoint is very flexible, see the
 
 ### Check the status of a Transaction
 
-Transactions can [take time to fully process](../concepts/delays.md) once sent to THORChain.
+Transactions can [take time to fully process](../concepts/delays.md) once sent to SWITCHLYChain.
 
-**Request**: Get the status for BTC tx A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A sent to the Savers vault. [https://thornode.ninerealms.com/thorchain/alpha/tx/status/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A](https://thornode.ninerealms.com/thorchain/alpha/tx/status/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A)
+**Request**: Get the status for BTC tx A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A sent to the Savers vault. [https://switchlynode.ninerealms.com/switchly/alpha/tx/status/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A](https://switchlynode.ninerealms.com/switchly/alpha/tx/status/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A)
 
 **Response**:
 
@@ -212,4 +212,4 @@ Transactions can [take time to fully process](../concepts/delays.md) once sent t
 
 Note this endpoint is in alpha and the response will differ for swaps.
 
-For more details information, [https://thornode.ninerealms.com/thorchain/tx/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A/signers](https://thornode.ninerealms.com/thorchain/tx/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A/signers) can be used looking for `updated_vault`
+For more details information, [https://switchlynode.ninerealms.com/switchly/tx/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A/signers](https://switchlynode.ninerealms.com/switchly/tx/A56B423250020E4960D9836C6F843E1D3333FAE583C9CA26776F0D68DA69CE4A/signers) can be used looking for `updated_vault`

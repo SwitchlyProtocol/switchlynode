@@ -71,7 +71,7 @@ asserts:
 ---
 # Check the tx events.
 type: check
-endpoint: http://localhost:1317/thorchain/block?height=3
+endpoint: http://localhost:1317/switchly/block?height=3
 asserts:
   - .txs|length == 1
   - .txs[0]|.result.events|length == 11
@@ -101,7 +101,7 @@ asserts:
 # attempt send to lending module
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/lending
+endpoint: http://localhost:1317/switchly/balance/module/lending
 asserts:
   - .|[.coins[]|select(.denom == "rune")]|length == 0
 ---
@@ -116,7 +116,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/balance/module/lending
+endpoint: http://localhost:1317/switchly/balance/module/lending
 asserts:
   - .|[.coins[]|select(.denom == "rune")]|length == 0
 ---
@@ -125,7 +125,7 @@ asserts:
 ########################################################################################
 type: tx-bank-send
 from_address: {{ addr_thor_wolf }}
-to_address: {{ addr_module_thorchain }}
+to_address: {{ addr_module_switchly }}
 amount:
   - denom: rune
     amount: "50000"
@@ -140,7 +140,7 @@ asserts:
   - .result.value.sequence == "2"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_wolf }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_wolf }}
 asserts:
   - .total_bond == "50000"
 ---
@@ -149,7 +149,7 @@ asserts:
 ########################################################################################
 type: tx-bank-send
 from_address: {{ addr_thor_wolf }}
-to_address: {{ addr_module_thorchain }}
+to_address: {{ addr_module_switchly }}
 amount:
   - denom: rune
     amount: "0"
@@ -164,7 +164,7 @@ asserts:
   - .result.value.sequence == "3"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_wolf }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_wolf }}
 asserts:
   - .total_bond == "0"
 ---
@@ -172,13 +172,13 @@ asserts:
 # leave with bank send
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_dog }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_dog }}
 asserts:
   - .leave_height == 0
 ---
 type: tx-bank-send
 from_address: {{ addr_thor_dog }}
-to_address: {{ addr_module_thorchain }}
+to_address: {{ addr_module_switchly }}
 amount:
   - denom: rune
     amount: "0"
@@ -188,7 +188,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_dog }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_dog }}
 asserts:
   - .leave_height == 800000000
 ---
@@ -196,7 +196,7 @@ asserts:
 # test bank send disabled
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .|length == 0
 ---
@@ -209,7 +209,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .BANKSENDENABLED == 0
 ---

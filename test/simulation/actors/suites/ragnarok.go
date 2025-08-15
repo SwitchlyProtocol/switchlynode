@@ -5,7 +5,7 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/actors/core"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
@@ -18,7 +18,7 @@ func Ragnarok() *Actor {
 
 	// ragnarok all gas asset pools (should apply to tokens implicitly)
 	for _, chain := range common.AllChains {
-		if chain == common.THORChain {
+		if chain == common.SWITCHLYChain {
 			continue
 		}
 		// BSC not compatible with sim tests
@@ -31,7 +31,7 @@ func Ragnarok() *Actor {
 	// verify pool removals
 	verify := NewActor("Ragnarok-Verify")
 	verify.Ops = append(verify.Ops, func(config *OpConfig) OpResult {
-		pools, err := thornode.GetPools()
+		pools, err := switchlynode.GetPools()
 		if err != nil {
 			return OpResult{Finish: true, Error: err}
 		}

@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - length == 1
 ---
@@ -17,7 +17,7 @@ type: check
 endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - length >= 1
-  - .[0].thorchain == ${HEIGHT_1=1}
+  - .[0].switchly == ${HEIGHT_1=1}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_reserve }}/by_denom?denom=rune
@@ -33,7 +33,7 @@ type: check
 endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - length >= 1
-  - .[0].thorchain == ${HEIGHT_2=2}
+  - .[0].switchly == ${HEIGHT_2=2}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_reserve }}/by_denom?denom=rune

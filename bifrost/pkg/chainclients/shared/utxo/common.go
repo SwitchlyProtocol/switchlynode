@@ -3,11 +3,11 @@ package utxo
 import (
 	"fmt"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
-func GetAsgardAddress(chain common.Chain, bridge thorclient.ThorchainBridge) ([]common.Address, error) {
+func GetAsgardAddress(chain common.Chain, bridge switchlyclient.SwitchlyBridge) ([]common.Address, error) {
 	vaults, err := bridge.GetAsgardPubKeys()
 	if err != nil {
 		return nil, fmt.Errorf("fail to get asgards : %w", err)

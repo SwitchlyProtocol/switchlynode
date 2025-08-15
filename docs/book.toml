@@ -1,8 +1,8 @@
 [book]
-title = "THORChain Dev Docs"
-description = "Developer Documentation for THORChain. Integrate with THORChain; Cross-Chain Swapping."
+title = "SWITCHLYChain Dev Docs"
+description = "Developer Documentation for SWITCHLYChain. Integrate with SWITCHLYChain; Cross-Chain Swapping."
 language = "en"
-authors = ["THORChain"]
+authors = ["SWITCHLYChain"]
 src = ""
 
 [preprocessor.katex]
@@ -21,7 +21,7 @@ assets_version = "2.1.0" # DO NOT EDIT: Managed by `mdbook-catppuccin install`
 [output.html]
 default-theme = "latte"
 preferred-dark-theme = "coal"
-git-repository-url = "https://gitlab.com/thorchain/thornode/"
+git-repository-url = "https://gitlab.com/switchly/switchlynode/"
 git-repository-icon = "fa-github"
 no-section-label = true
 additional-css = [

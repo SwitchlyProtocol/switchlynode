@@ -1,0 +1,8 @@
+syntax = "proto3";
+package types;
+
+option go_package = "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types";
+
+// GenesisState defines the capability module's genesis state.
+message GenesisState {
+}

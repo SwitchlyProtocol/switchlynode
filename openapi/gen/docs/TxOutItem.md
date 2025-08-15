@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 **Aggregator** | Pointer to **string** | whitelisted DEX Aggregator contract address | [optional] 
 **AggregatorTargetAsset** | Pointer to **string** | target asset for the aggregator contract to attempt a swap to | [optional] 
 **AggregatorTargetLimit** | Pointer to **string** | the minimum number of tokens the swapper wants to receive of the output asset | [optional] 
-**CloutSpent** | Pointer to **string** | clout spent in RUNE for the outbound | [optional] 
+**CloutSpent** | Pointer to **string** | clout spent in SWITCH for the outbound | [optional] 
 
 ## Methods
 

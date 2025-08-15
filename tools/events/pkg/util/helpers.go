@@ -132,10 +132,10 @@ func Moneybags(usdValue uint64) string {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Rune Value
+// SWITCH Value
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func RuneValue(height int64, coin common.Coin) float64 {
+func SWITCHValue(height int64, coin common.Coin) float64 {
 	if coin.IsSwitch() {
 		amt, _ := new(big.Float).Quo(
 			new(big.Float).SetInt(coin.Amount.BigInt()),
@@ -145,14 +145,14 @@ func RuneValue(height int64, coin common.Coin) float64 {
 
 	}
 
-	if coin.Asset.Equals(common.TOR) {
+	if coin.Asset.Equals(common.SWITCHLY) {
 		network := openapi.NetworkResponse{}
-		err := ThornodeCachedRetryGet("thorchain/network", height, &network)
+		err := SwitchlynodeCachedRetryGet("switchly/network", height, &network)
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to get network")
 		}
 
-		price, err := strconv.ParseFloat(network.TorPriceInRune, 64)
+		price, err := strconv.ParseFloat(network.SwitchlyPriceInSwitch, 64)
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to parse network rune price")
 		}
@@ -170,7 +170,7 @@ func RuneValue(height int64, coin common.Coin) float64 {
 
 	// get pools response
 	pools := []openapi.Pool{}
-	err := ThornodeCachedRetryGet("thorchain/pools", height, &pools)
+	err := SwitchlynodeCachedRetryGet("switchly/pools", height, &pools)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to get pools")
 	}
@@ -195,8 +195,8 @@ func RuneValue(height int64, coin common.Coin) float64 {
 			new(big.Float).SetInt(coin.Amount.BigInt()),
 			runePerAsset,
 		)
-		amountRuneFloat, _ := amountFloat.Quo(amountFloat, big.NewFloat(common.One)).Float64()
-		return amountRuneFloat
+		amountSWITCHFloat, _ := amountFloat.Quo(amountFloat, big.NewFloat(common.One)).Float64()
+		return amountSWITCHFloat
 	}
 
 	log.Error().Str("asset", asset.String()).Msg("failed to find pool")
@@ -208,18 +208,18 @@ func RuneValue(height int64, coin common.Coin) float64 {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func USDValue(height int64, coin common.Coin) float64 {
-	if coin.Asset.Equals(common.TOR) {
+	if coin.Asset.Equals(common.SWITCHLY) {
 		return float64(coin.Amount.Uint64()) / common.One
 	}
 
 	if coin.IsSwitch() {
 		network := openapi.NetworkResponse{}
-		err := ThornodeCachedRetryGet("thorchain/network", height, &network)
+		err := SwitchlynodeCachedRetryGet("switchly/network", height, &network)
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to get network")
 		}
 
-		price, err := strconv.ParseFloat(network.RunePriceInTor, 64)
+		price, err := strconv.ParseFloat(network.SwitchPriceInSwitchly, 64)
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to parse network rune price")
 		}
@@ -228,7 +228,7 @@ func USDValue(height int64, coin common.Coin) float64 {
 
 	// get pools response
 	pools := []openapi.Pool{}
-	err := ThornodeCachedRetryGet("thorchain/pools", height, &pools)
+	err := SwitchlynodeCachedRetryGet("switchly/pools", height, &pools)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to get pools")
 	}
@@ -293,7 +293,7 @@ func Clout(height int64, address string) common.Coin {
 
 	// retrieve address clout
 	clout := openapi.SwapperCloutResponse{}
-	err := ThornodeCachedRetryGet("thorchain/clout/swap/"+address, height, &clout, http.StatusNotFound)
+	err := SwitchlynodeCachedRetryGet("switchly/clout/swap/"+address, height, &clout, http.StatusNotFound)
 	if err != nil {
 		log.Error().Err(err).
 			Str("address", address).
@@ -311,10 +311,10 @@ func Clout(height int64, address string) common.Coin {
 // Address Checks
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func IsThorchainModule(address string) bool {
-	thorchainModulesAddresses := map[string]bool{
+func IsSwitchlyModule(address string) bool {
+	switchlyModulesAddresses := map[string]bool{
 		"thor1v8ppstuf6e3x0r4glqc68d5jqcs2tf38cg2q6y":  true,
 		"sthor1v8ppstuf6e3x0r4glqc68d5jqcs2tf38v3kkv6": true,
 	}
-	return thorchainModulesAddresses[address]
+	return switchlyModulesAddresses[address]
 }

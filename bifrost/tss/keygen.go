@@ -13,26 +13,26 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 // KeyGen is
 type KeyGen struct {
-	keys           *thorclient.Keys
+	keys           *switchlyclient.Keys
 	logger         zerolog.Logger
 	client         *http.Client
 	server         *tss.TssServer
-	bridge         thorclient.ThorchainBridge
+	bridge         switchlyclient.SwitchlyBridge
 	currentVersion semver.Version
 	lastCheck      time.Time
 }
 
 // NewTssKeyGen create a new instance of TssKeyGen which will look after TSS key stuff
-func NewTssKeyGen(keys *thorclient.Keys, server *tss.TssServer, bridge thorclient.ThorchainBridge) (*KeyGen, error) {
+func NewTssKeyGen(keys *switchlyclient.Keys, server *tss.TssServer, bridge switchlyclient.SwitchlyBridge) (*KeyGen, error) {
 	if keys == nil {
 		return nil, fmt.Errorf("keys is nil")
 	}
@@ -49,12 +49,12 @@ func NewTssKeyGen(keys *thorclient.Keys, server *tss.TssServer, bridge thorclien
 
 func (kg *KeyGen) getVersion() semver.Version {
 	requestTime := time.Now()
-	if !kg.currentVersion.Equals(semver.Version{}) && requestTime.Sub(kg.lastCheck).Seconds() < constants.ThorchainBlockTime.Seconds() {
+	if !kg.currentVersion.Equals(semver.Version{}) && requestTime.Sub(kg.lastCheck).Seconds() < constants.SwitchlyBlockTime.Seconds() {
 		return kg.currentVersion
 	}
-	version, err := kg.bridge.GetThorchainVersion()
+	version, err := kg.bridge.GetSwitchlyVersion()
 	if err != nil {
-		kg.logger.Err(err).Msg("fail to get current thorchain version")
+		kg.logger.Err(err).Msg("fail to get current switchly version")
 		return kg.currentVersion
 	}
 	kg.currentVersion = version
@@ -152,6 +152,6 @@ func (kg *KeyGen) GenerateNewKey(keygenBlockHeight int64, pKeys common.PubKeys) 
 		return common.EmptyPubKeySet, blame, fmt.Errorf("fail to create common.PubKey,%w", err)
 	}
 
-	// TODO later on THORNode need to have both secp256k1 key and ed25519
+	// TODO later on SWITCHLYNode need to have both secp256k1 key and ed25519
 	return common.NewPubKeySet(cpk, cpk), blame, nil
 }

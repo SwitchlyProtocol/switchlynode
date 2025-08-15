@@ -12,7 +12,7 @@ pub_keys:
   - {{ pubkey_dog }}
   - {{ pubkey_dog }}
 chains:
-  - THOR
+  - SWITCHLY
 ---
 type: create-blocks
 count: 1
@@ -30,7 +30,7 @@ pub_keys:
   - {{ pubkey_fox }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
 ---
 type: create-blocks
 count: 1

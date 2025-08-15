@@ -25,7 +25,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/signer"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	btss "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	tcommon "github.com/switchlyprotocol/switchlynode/v3/common"
@@ -34,7 +34,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 )
 
-// THORNode define version / revision here , so THORNode could inject the version from CI pipeline if THORNode want to
+// SWITCHLYNode define version / revision here , so SWITCHLYNode could inject the version from CI pipeline if SWITCHLYNode want to
 var (
 	version  string
 	revision string
@@ -80,22 +80,22 @@ func main() {
 	if len(cfg.Switchly.SignerPasswd) == 0 {
 		log.Fatal().Msg("signer password is empty")
 	}
-	kb, _, err := thorclient.GetKeyringKeybase(cfg.Switchly.ChainHomeFolder, cfg.Switchly.SignerName, cfg.Switchly.SignerPasswd)
+	kb, _, err := switchlyclient.GetKeyringKeybase(cfg.Switchly.ChainHomeFolder, cfg.Switchly.SignerName, cfg.Switchly.SignerPasswd)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to get keyring keybase")
 	}
 
-	k := thorclient.NewKeysWithKeybase(kb, cfg.Switchly.SignerName, cfg.Switchly.SignerPasswd)
-	// thorchain bridge
-	thorchainBridge, err := thorclient.NewThorchainBridge(cfg.Switchly, m, k)
+	k := switchlyclient.NewKeysWithKeybase(kb, cfg.Switchly.SignerName, cfg.Switchly.SignerPasswd)
+	// switchly bridge
+	switchlyBridge, err := switchlyclient.NewSwitchlyBridge(cfg.Switchly, m, k)
 	if err != nil {
-		log.Fatal().Err(err).Msg("fail to create new thorchain bridge")
+		log.Fatal().Err(err).Msg("fail to create new switchly bridge")
 	}
-	if err = thorchainBridge.EnsureNodeWhitelistedWithTimeout(); err != nil {
+	if err = switchlyBridge.EnsureNodeWhitelistedWithTimeout(); err != nil {
 		log.Fatal().Err(err).Msg("node account is not whitelisted, can't start")
 	}
 	// PubKey Manager
-	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(thorchainBridge, m)
+	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(switchlyBridge, m)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to create pubkey manager")
 	}
@@ -104,7 +104,7 @@ func main() {
 	}
 
 	// automatically attempt to recover TSS keyshares if they are missing
-	if err = btss.RecoverKeyShares(cfg, thorchainBridge); err != nil {
+	if err = btss.RecoverKeyShares(cfg, switchlyBridge); err != nil {
 		log.Error().Err(err).Msg("fail to recover key shares")
 	}
 
@@ -117,8 +117,8 @@ func main() {
 	tmPrivateKey := tcommon.CosmosPrivateKeyToTMPrivateKey(priKey)
 
 	consts := constants.NewConstantValue()
-	jailTimeKeygen := time.Duration(consts.GetInt64Value(constants.JailTimeKeygen)) * constants.ThorchainBlockTime
-	jailTimeKeysign := time.Duration(consts.GetInt64Value(constants.JailTimeKeysign)) * constants.ThorchainBlockTime
+	jailTimeKeygen := time.Duration(consts.GetInt64Value(constants.JailTimeKeygen)) * constants.SwitchlyBlockTime
+	jailTimeKeysign := time.Duration(consts.GetInt64Value(constants.JailTimeKeysign)) * constants.SwitchlyBlockTime
 	if cfg.Signer.KeygenTimeout >= jailTimeKeygen {
 		log.Fatal().
 			Stringer("keygenTimeout", cfg.Signer.KeygenTimeout).
@@ -177,8 +177,8 @@ func main() {
 			chainCfg.RPCHost = fmt.Sprintf("http://%s", chainCfg.RPCHost)
 		}
 	}
-	poolMgr := thorclient.NewPoolMgr(thorchainBridge)
-	chains, restart := chainclients.LoadChains(k, cfgChains, tssIns, thorchainBridge, m, pubkeyMgr, poolMgr)
+	poolMgr := switchlyclient.NewPoolMgr(switchlyBridge)
+	chains, restart := chainclients.LoadChains(k, cfgChains, tssIns, switchlyBridge, m, pubkeyMgr, poolMgr)
 	if len(chains) == 0 {
 		log.Fatal().Msg("fail to load any chains")
 	}
@@ -194,10 +194,10 @@ func main() {
 	ctx := context.Background()
 
 	// start observer notifier
-	ag, err := observer.NewAttestationGossip(comm.GetHost(), k, cfg.Switchly.ChainEBifrost, thorchainBridge, m, cfg.AttestationGossip)
+	ag, err := observer.NewAttestationGossip(comm.GetHost(), k, cfg.Switchly.ChainEBifrost, switchlyBridge, m, cfg.AttestationGossip)
 
 	// start observer
-	obs, err := observer.NewObserver(pubkeyMgr, chains, thorchainBridge, m, cfgChains[tcommon.BTCChain].BlockScanner.DBPath, tssKeysignMetricMgr, ag, *deckDump)
+	obs, err := observer.NewObserver(pubkeyMgr, chains, switchlyBridge, m, cfgChains[tcommon.BTCChain].BlockScanner.DBPath, tssKeysignMetricMgr, ag, *deckDump)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to create observer")
 	}
@@ -205,12 +205,12 @@ func main() {
 		log.Fatal().Err(err).Msg("fail to start observer")
 	}
 
-	// enable observer to react to notifications from thornode
+	// enable observer to react to notifications from switchlynode
 	// that come through the grpc connection within AttestationGossip.
 	ag.SetObserverHandleObservedTxCommitted(obs)
 
 	// start signer
-	sign, err := signer.NewSigner(cfg, thorchainBridge, k, pubkeyMgr, tssIns, chains, m, tssKeysignMetricMgr, obs)
+	sign, err := signer.NewSigner(cfg, switchlyBridge, k, pubkeyMgr, tssIns, chains, m, tssKeysignMetricMgr, obs)
 	if err != nil {
 		log.Fatal().Err(err).Msg("fail to create instance of signer")
 	}

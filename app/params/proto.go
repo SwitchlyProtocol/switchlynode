@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 
-	thorchaintypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	switchlytypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 // MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.
@@ -26,7 +26,7 @@ func MakeEncodingConfig() EncodingConfig {
 			Bech32Prefix: sdk.GetConfig().GetBech32ValidatorAddrPrefix(),
 		},
 	}
-	thorchaintypes.DefineCustomGetSigners(&interfaceRegistrySigningOptions)
+	switchlytypes.DefineCustomGetSigners(&interfaceRegistrySigningOptions)
 	interfaceRegistry, err := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
 		ProtoFiles:     proto.HybridResolver,
 		SigningOptions: interfaceRegistrySigningOptions,
@@ -41,7 +41,7 @@ func MakeEncodingConfig() EncodingConfig {
 	if err != nil {
 		panic(err)
 	}
-	thorchaintypes.DefineCustomGetSigners(txSigningOptions)
+	switchlytypes.DefineCustomGetSigners(txSigningOptions)
 	txCfg, err := TxConfig(marshaler, nil)
 	if err != nil {
 		panic(err)

@@ -27,17 +27,17 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/signercache"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	tokenlist "github.com/switchlyprotocol/switchlynode/v3/common/tokenlist"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	memo "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	memo "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 )
 
-// SolvencyReporter is to report solvency info to THORNode
+// SolvencyReporter is to report solvency info to SWITCHLYNode
 type SolvencyReporter func(int64) error
 
 const (
@@ -69,7 +69,7 @@ type ETHScanner struct {
 	vaultABI              *abi.ABI
 	erc20ABI              *abi.ABI
 	tokens                *evm.LevelDBTokenMeta
-	bridge                thorclient.ThorchainBridge
+	bridge                switchlyclient.SwitchlyBridge
 	pubkeyMgr             pubkeymanager.PubKeyValidator
 	eipSigner             etypes.Signer
 	currentBlockHeight    int64
@@ -84,7 +84,7 @@ func NewETHScanner(cfg config.BifrostBlockScannerConfiguration,
 	storage blockscanner.ScannerStorage,
 	chainID *big.Int,
 	client *ethclient.Client,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	pubkeyMgr pubkeymanager.PubKeyValidator,
 	solvencyReporter SolvencyReporter,
@@ -221,7 +221,7 @@ func (e *ETHScanner) FetchTxs(height, chainHeight int64) (stypes.TxIn, error) {
 		tcGasPrice = 1
 	}
 
-	// post to thorchain if there is a fee and it has changed
+	// post to switchly if there is a fee and it has changed
 	if gasPrice.Cmp(big.NewInt(0)) != 0 && tcGasPrice != e.lastReportedGasPrice {
 		e.globalNetworkFeeQueue <- common.NetworkFee{
 			Chain:           common.ETHChain,
@@ -235,7 +235,7 @@ func (e *ETHScanner) FetchTxs(height, chainHeight int64) (stypes.TxIn, error) {
 
 	if e.solvencyReporter != nil {
 		if err = e.solvencyReporter(height); err != nil {
-			e.logger.Err(err).Msg("fail to report Solvency info to THORNode")
+			e.logger.Err(err).Msg("fail to report Solvency info to SWITCHLYNode")
 		}
 	}
 	return txIn, nil
@@ -500,7 +500,7 @@ func (e *ETHScanner) processReorg(block *etypes.Header) ([]stypes.TxIn, error) {
 // it will read through all the block meta data from local storage, and go through all the txs.
 // For each transaction, it will send a RPC request to ethereuem chain, double check whether the TX exist or not
 // if the tx still exist, then it is all good, if a transaction previous we detected, however doesn't exist anymore, that means
-// the transaction had been removed from chain, chain client should report to thorchain
+// the transaction had been removed from chain, chain client should report to switchly
 // []int64 is the block heights that need to be rescanned
 func (e *ETHScanner) reprocessTxs() ([]int64, error) {
 	blockMetas, err := e.blockMetaAccessor.GetBlockMetas()
@@ -642,7 +642,7 @@ func (e *ETHScanner) getDecimals(token string) (uint64, error) {
 	return defaultDecimals, fmt.Errorf("%s is %T fail to parse it", output[0], output[0])
 }
 
-// . and - had been reserved to use in THORChain symbol
+// . and - had been reserved to use in SWITCHLYChain symbol
 // and + similarly is not accepted by common package NewSymbol's isAlphaNumeric
 var symbolReplacer = strings.NewReplacer(".", "", "-", "", `\u0000`, "", "\u0000", "", "+", "")
 
@@ -680,9 +680,9 @@ func (e *ETHScanner) getSymbol(token string) (string, error) {
 	return sanitiseSymbol(symbol), nil
 }
 
-// isToValidContractAddress this method make sure the transaction to address is to THORChain router or a whitelist address
+// isToValidContractAddress this method make sure the transaction to address is to SWITCHLYChain router or a whitelist address
 func (e *ETHScanner) isToValidContractAddress(addr *ecommon.Address, includeWhiteList bool) bool {
-	// get the smart contract used by thornode
+	// get the smart contract used by switchlynode
 	contractAddresses := e.pubkeyMgr.GetContracts(common.ETHChain)
 	if includeWhiteList || useWhitelistSmartContract {
 		contractAddresses = append(contractAddresses, whitelistSmartContractAddress...)
@@ -732,7 +732,7 @@ func (e *ETHScanner) getTokenMeta(token string) (types.TokenMeta, error) {
 	return tokenMeta, nil
 }
 
-// convertAmount will convert the amount to 1e8 , the decimals used by THORChain
+// convertAmount will convert the amount to 1e8 , the decimals used by SWITCHLYChain
 func (e *ETHScanner) convertAmount(token string, amt *big.Int) cosmos.Uint {
 	if IsETH(token) {
 		return cosmos.NewUintFromBigInt(amt).QuoUint64(common.One * 100)
@@ -859,7 +859,7 @@ func (e *ETHScanner) getTxInFromTransaction(tx *etypes.Transaction, receipt *ety
 		if txInItem.Sender == txInItem.To {
 			// When the Sender and To is the same then there's no balance chance whatever the Coins,
 			// and for Tx-received Valid() a non-zero Amount is needed to observe
-			// the transaction fees (THORChain gas cost) of unstuck.go's cancel transactions.
+			// the transaction fees (SWITCHLYChain gas cost) of unstuck.go's cancel transactions.
 			observableAmount := common.ETHChain.DustThreshold()
 			txInItem.Coins = common.NewCoins(common.NewCoin(common.ETHAsset, observableAmount))
 
@@ -931,7 +931,7 @@ func (e *ETHScanner) fromTxToTxIn(tx *etypes.Transaction) (*stypes.TxInItem, err
 }
 
 // getTxInFromFailedTransaction when a transaction failed due to out of gas, this method will check whether the transaction is an outbound
-// it fake a txInItem if the failed transaction is an outbound , and report it back to THORNode , thus the gas fee can be subsidised
+// it fake a txInItem if the failed transaction is an outbound , and report it back to SWITCHLYNode , thus the gas fee can be subsidised
 // need to know that this will also cause the vault that send out the outbound to be slashed 1.5x gas
 // it is for security purpose
 func (e *ETHScanner) getTxInFromFailedTransaction(tx *etypes.Transaction, receipt *etypes.Receipt) *stypes.TxInItem {

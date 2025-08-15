@@ -36,14 +36,14 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
 
-// SolvencyReporter is to report solvency info to THORNode
+// SolvencyReporter is to report solvency info to SWITCHLYNode
 type SolvencyReporter func(int64) error
 
 const (
@@ -79,14 +79,14 @@ type CosmosBlockScanner struct {
 	cdc                   *codec.ProtoCodec
 	txConfig              client.TxConfig
 	rpc                   TendermintRPC
-	bridge                thorclient.ThorchainBridge
+	bridge                switchlyclient.SwitchlyBridge
 	solvencyReporter      SolvencyReporter
 	globalNetworkFeeQueue chan common.NetworkFee
 
 	// feeCache contains a rolling window of suggested gas fees which are computed as the
 	// gas price paid in each observed transaction multiplied by the default GasLimit.
 	// Fees are stored at 100x the values on the observed chain due to compensate for the
-	// difference in base chain decimals (thorchain:1e8, gaia:1e6).
+	// difference in base chain decimals (switchly:1e8, gaia:1e6).
 	feeCache []sdkmath.Uint
 	lastFee  sdkmath.Uint
 }
@@ -95,7 +95,7 @@ type CosmosBlockScanner struct {
 func NewCosmosBlockScanner(rpcHost string,
 	cfg config.BifrostBlockScannerConfiguration,
 	scanStorage blockscanner.ScannerStorage,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	solvencyReporter SolvencyReporter,
 ) (*CosmosBlockScanner, error) {
@@ -113,7 +113,7 @@ func NewCosmosBlockScanner(rpcHost string,
 
 	// Registry for decoding gaia txs
 	// Note: we register gaia's cosmos sdk types
-	// don't use thorchain's codec as it is a smaller subset of codecs
+	// don't use switchly's codec as it is a smaller subset of codecs
 	registry := codectypes.NewInterfaceRegistry()
 	authtypes.RegisterInterfaces(registry)
 	banktypes.RegisterInterfaces(registry)
@@ -198,7 +198,7 @@ func (c *CosmosBlockScanner) updateGasCache(tx ctypes.FeeTx) {
 	}
 
 	// only consider transactions with fee paid in uatom
-	coin, err := c.fromCosmosToThorchain(fees[0])
+	coin, err := c.fromCosmosToSwitchly(fees[0])
 	if err != nil || !coin.Asset.Equals(c.cfg.ChainID.GetGasAsset()) {
 		return
 	}
@@ -274,7 +274,7 @@ func (c *CosmosBlockScanner) updateGasFees(height int64) error {
 		// NOTE: We post the fee to the network instead of the transaction rate, and set the
 		// transaction size 1 to ensure the MaxGas in the generated TxOut contains the
 		// correct fee. We cannot pass the proper size and rate without a deeper change to
-		// Thornode, as the rate on Cosmos chains is less than 1 and cannot be represented
+		// Switchlynode, as the rate on Cosmos chains is less than 1 and cannot be represented
 		// by the uint.
 		c.globalNetworkFeeQueue <- common.NetworkFee{
 			Chain:           c.cfg.ChainID,
@@ -286,7 +286,7 @@ func (c *CosmosBlockScanner) updateGasFees(height int64) error {
 		c.logger.Info().
 			Uint64("fee", gasFee.Uint64()).
 			Int64("height", height).
-			Msg("sent network fee to THORChain")
+			Msg("sent network fee to SWITCHLYChain")
 	}
 
 	return nil
@@ -338,11 +338,11 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]*t
 					continue
 				}
 
-				// Convert cosmos coins to thorchain coins (taking into account asset decimal precision)
+				// Convert cosmos coins to switchly coins (taking into account asset decimal precision)
 				coins := common.Coins{}
 				for _, coin := range msg.Amount {
 					var cCoin common.Coin
-					cCoin, err = c.fromCosmosToThorchain(coin)
+					cCoin, err = c.fromCosmosToSwitchly(coin)
 					if err != nil {
 						c.logger.Debug().Err(err).Interface("coins", c).Msg("unable to convert coin, not whitelisted. skipping...")
 						continue
@@ -355,18 +355,18 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]*t
 					continue
 				}
 
-				// Convert cosmos gas to thorchain coins (taking into account gas asset decimal precision)
+				// Convert cosmos gas to switchly coins (taking into account gas asset decimal precision)
 				gasFees := common.Gas{}
 				for _, fee := range fees {
 					var cCoin common.Coin
-					cCoin, err = c.fromCosmosToThorchain(fee)
+					cCoin, err = c.fromCosmosToSwitchly(fee)
 					if err != nil {
 						c.logger.Debug().Err(err).Interface("fees", fees).Msg("unable to convert coin, not whitelisted. skipping...")
 						continue
 					}
 					gasFees = append(gasFees, cCoin)
 				}
-				// THORChain only supports gas paid in ATOM, if gas is paid in another asset
+				// SWITCHLYChain only supports gas paid in ATOM, if gas is paid in another asset
 				// then fake gas as `0.000001 ATOM`, the fee is not used but cannot be empty
 				if gasFees.IsEmpty() {
 					gasFees = append(gasFees, common.NewCoin(c.cfg.ChainID.GetGasAsset(), cosmos.NewUint(1)))
@@ -382,7 +382,7 @@ func (c *CosmosBlockScanner) processTxs(height int64, rawTxs []tmtypes.Tx) ([]*t
 				})
 
 				// If there are more than one TxIn item per transaction hash,
-				// thornode will fail to process any after the first.
+				// switchlynode will fail to process any after the first.
 				// Therefore, limit to 1 MsgSend per transaction.
 				break
 			}
@@ -422,7 +422,7 @@ func (c *CosmosBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, er
 	}
 
 	if err = c.solvencyReporter(height); err != nil {
-		c.logger.Err(err).Msg("fail to send solvency to THORChain")
+		c.logger.Err(err).Msg("fail to send solvency to SWITCHLYChain")
 	}
 
 	return txIn, nil

@@ -17,13 +17,13 @@ import (
 	. "gopkg.in/check.v1"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -32,7 +32,7 @@ type SolvencyTestSuite struct {
 	sp   *DummySolvencyCheckProvider
 	m    *metrics.Metrics
 	cfg  config.BifrostClientConfiguration
-	keys *thorclient.Keys
+	keys *switchlyclient.Keys
 }
 
 var _ = Suite(&SolvencyTestSuite{})
@@ -51,7 +51,7 @@ func (s *SolvencyTestSuite) SetUpSuite(c *C) {
 	s.m = m
 
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       "localhost",
 		SignerName:      "bob",
 		SignerPasswd:    "password",
@@ -64,7 +64,7 @@ func (s *SolvencyTestSuite) SetUpSuite(c *C) {
 	_, _, err := kb.NewMnemonic(cfg.SignerName, ckeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
 	s.cfg = cfg
-	s.keys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.keys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 
 	c.Assert(err, IsNil)
 }
@@ -77,7 +77,7 @@ func (s *SolvencyTestSuite) TestSolvencyCheck(c *C) {
 
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Logf("================>:%s", r.RequestURI)
-		if strings.HasPrefix(r.RequestURI, thorclient.MimirEndpoint) {
+		if strings.HasPrefix(r.RequestURI, switchlyclient.MimirEndpoint) {
 			parts := strings.Split(r.RequestURI, "/key/")
 			mimirKey := parts[1]
 
@@ -94,8 +94,8 @@ func (s *SolvencyTestSuite) TestSolvencyCheck(c *C) {
 
 	server := httptest.NewServer(h)
 	defer server.Close()
-	bridge, _ := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+	bridge, _ := switchlyclient.NewSwitchlyBridge(config.BifrostClientConfiguration{
+		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
 		SignerName:      "bob",
@@ -109,7 +109,7 @@ func (s *SolvencyTestSuite) TestSolvencyCheck(c *C) {
 	// Happy path, shouldn't check solvency if nothing halted (chain clients will report solvency)
 	s.sp.ResetChecks()
 	wg.Add(1)
-	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.ThorchainBlockTime)
+	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.SwitchlyBlockTime)
 	time.Sleep(time.Second * 6)
 
 	c.Assert(s.sp.ShouldReportSolvencyRan, Equals, false)
@@ -119,7 +119,7 @@ func (s *SolvencyTestSuite) TestSolvencyCheck(c *C) {
 	mimirMap["HaltETHChain"] = 1
 	s.sp.ResetChecks()
 	wg.Add(1)
-	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.ThorchainBlockTime)
+	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.SwitchlyBlockTime)
 	time.Sleep(time.Second * 6)
 
 	c.Assert(s.sp.ShouldReportSolvencyRan, Equals, false)
@@ -129,7 +129,7 @@ func (s *SolvencyTestSuite) TestSolvencyCheck(c *C) {
 	mimirMap["HaltETHChain"] = 10
 	s.sp.ResetChecks()
 	wg.Add(1)
-	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.ThorchainBlockTime)
+	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.SwitchlyBlockTime)
 	time.Sleep(time.Second * 6)
 
 	c.Assert(s.sp.ShouldReportSolvencyRan, Equals, true)
@@ -140,7 +140,7 @@ func (s *SolvencyTestSuite) TestSolvencyCheck(c *C) {
 	mimirMap["SolvencyHaltETHChain"] = 1
 	s.sp.ResetChecks()
 	wg.Add(1)
-	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.ThorchainBlockTime)
+	go SolvencyCheckRunner(common.ETHChain, s.sp, bridge, stopchan, wg, constants.SwitchlyBlockTime)
 	time.Sleep(time.Second * 6)
 
 	c.Assert(s.sp.ShouldReportSolvencyRan, Equals, true)

@@ -8,12 +8,12 @@ Vault Contract for Bifrost.
 
 This mirrors how vaults behave on other chains.
 
-## THORChain Integration
+## SWITCHLYChain Integration
 
 ### Bifrost - Observer
 
 **ETH & ERC-20 Deposits**
-Users query THORChain for the correct asgard, then call deposit with a memo:
+Users query SWITCHLYChain for the correct asgard, then call deposit with a memo:
 
 - ETH: `await VAULT.depositETH(asgard, amount, memo)`
 - ERC20: `await VAULT.deposit(asgard, asset, amount, memo)`

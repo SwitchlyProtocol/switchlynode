@@ -15,7 +15,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/utxo"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/xrp"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
@@ -24,13 +24,13 @@ import (
 type ChainClient = types.ChainClient
 
 // LoadChains returns chain clients from chain configuration
-func LoadChains(thorKeys *thorclient.Keys,
+func LoadChains(thorKeys *switchlyclient.Keys,
 	cfg map[common.Chain]config.BifrostChainConfiguration,
 	server *tss.TssServer,
-	thorchainBridge thorclient.ThorchainBridge,
+	switchlyBridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	pubKeyValidator pubkeymanager.PubKeyValidator,
-	poolMgr thorclient.PoolManager,
+	poolMgr switchlyclient.PoolManager,
 ) (chains map[common.Chain]ChainClient, restart chan struct{}) {
 	logger := log.Logger.With().Str("module", "bifrost").Logger()
 
@@ -41,17 +41,17 @@ func LoadChains(thorKeys *thorclient.Keys,
 	loadChain := func(chain config.BifrostChainConfiguration) (ChainClient, error) {
 		switch chain.ChainID {
 		case common.ETHChain:
-			return ethereum.NewClient(thorKeys, chain, server, thorchainBridge, m, pubKeyValidator, poolMgr)
+			return ethereum.NewClient(thorKeys, chain, server, switchlyBridge, m, pubKeyValidator, poolMgr)
 		case common.AVAXChain, common.BSCChain, common.BASEChain:
-			return evm.NewEVMClient(thorKeys, chain, server, thorchainBridge, m, pubKeyValidator, poolMgr)
+			return evm.NewEVMClient(thorKeys, chain, server, switchlyBridge, m, pubKeyValidator, poolMgr)
 		case common.GAIAChain:
-			return gaia.NewCosmosClient(thorKeys, chain, server, thorchainBridge, m)
+			return gaia.NewCosmosClient(thorKeys, chain, server, switchlyBridge, m)
 		case common.BTCChain, common.BCHChain, common.LTCChain, common.DOGEChain:
-			return utxo.NewClient(thorKeys, chain, server, thorchainBridge, m)
+			return utxo.NewClient(thorKeys, chain, server, switchlyBridge, m)
 		case common.XRPChain:
-			return xrp.NewClient(thorKeys, chain, server, thorchainBridge, m)
+			return xrp.NewClient(thorKeys, chain, server, switchlyBridge, m)
 		case common.StellarChain:
-			return stellar.NewClient(thorKeys, chain, server, thorchainBridge, m)
+			return stellar.NewClient(thorKeys, chain, server, switchlyBridge, m)
 		default:
 			log.Fatal().Msgf("chain %s is not supported", chain.ChainID)
 			return nil, nil

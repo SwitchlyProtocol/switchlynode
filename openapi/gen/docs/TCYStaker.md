@@ -1,4 +1,4 @@
-# TCYStaker
+# SWCYStaker
 
 ## Properties
 
@@ -9,64 +9,64 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewTCYStaker
+### NewSWCYStaker
 
-`func NewTCYStaker(amount string, ) *TCYStaker`
+`func NewSWCYStaker(amount string, ) *SWCYStaker`
 
-NewTCYStaker instantiates a new TCYStaker object
+NewSWCYStaker instantiates a new SWCYStaker object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewTCYStakerWithDefaults
+### NewSWCYStakerWithDefaults
 
-`func NewTCYStakerWithDefaults() *TCYStaker`
+`func NewSWCYStakerWithDefaults() *SWCYStaker`
 
-NewTCYStakerWithDefaults instantiates a new TCYStaker object
+NewSWCYStakerWithDefaults instantiates a new SWCYStaker object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetAddress
 
-`func (o *TCYStaker) GetAddress() string`
+`func (o *SWCYStaker) GetAddress() string`
 
 GetAddress returns the Address field if non-nil, zero value otherwise.
 
 ### GetAddressOk
 
-`func (o *TCYStaker) GetAddressOk() (*string, bool)`
+`func (o *SWCYStaker) GetAddressOk() (*string, bool)`
 
 GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAddress
 
-`func (o *TCYStaker) SetAddress(v string)`
+`func (o *SWCYStaker) SetAddress(v string)`
 
 SetAddress sets Address field to given value.
 
 ### HasAddress
 
-`func (o *TCYStaker) HasAddress() bool`
+`func (o *SWCYStaker) HasAddress() bool`
 
 HasAddress returns a boolean if a field has been set.
 
 ### GetAmount
 
-`func (o *TCYStaker) GetAmount() string`
+`func (o *SWCYStaker) GetAmount() string`
 
 GetAmount returns the Amount field if non-nil, zero value otherwise.
 
 ### GetAmountOk
 
-`func (o *TCYStaker) GetAmountOk() (*string, bool)`
+`func (o *SWCYStaker) GetAmountOk() (*string, bool)`
 
 GetAmountOk returns a tuple with the Amount field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAmount
 
-`func (o *TCYStaker) SetAmount(v string)`
+`func (o *SWCYStaker) SetAmount(v string)`
 
 SetAmount sets Amount field to given value.
 

@@ -4,10 +4,10 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Asgard**](VaultsApi.md#Asgard) | **Get** /thorchain/vaults/asgard | 
-[**Vault**](VaultsApi.md#Vault) | **Get** /thorchain/vault/{pubkey} | 
-[**VaultPubkeys**](VaultsApi.md#VaultPubkeys) | **Get** /thorchain/vaults/pubkeys | 
-[**Yggdrasil**](VaultsApi.md#Yggdrasil) | **Get** /thorchain/vaults/yggdrasil | 
+[**Asgard**](VaultsApi.md#Asgard) | **Get** /switchly/vaults/asgard | 
+[**Vault**](VaultsApi.md#Vault) | **Get** /switchly/vault/{pubkey} | 
+[**VaultPubkeys**](VaultsApi.md#VaultPubkeys) | **Get** /switchly/vaults/pubkeys | 
+[**Yggdrasil**](VaultsApi.md#Yggdrasil) | **Get** /switchly/vaults/yggdrasil | 
 
 
 

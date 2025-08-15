@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
 ---
@@ -20,7 +20,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .SAVERSEJECTINTERVAL == 5
 ---
@@ -28,7 +28,7 @@ asserts:
 # deposit btc
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/saver/deposit
+endpoint: http://localhost:1317/switchly/quote/saver/deposit
 params:
   asset: BTC.BTC
   amount: 5000000
@@ -69,7 +69,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/savers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/savers
 asserts:
   - .|length == 1
   - .[0].asset_deposit_value|tonumber == 4770146
@@ -89,18 +89,18 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/savers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/savers
 asserts:
   - .|length == 1
   - .[0].asset_deposit_value|tonumber == 4770146
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC
 asserts:
   - .savers_depth|tonumber == 4777740
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_btc_pig }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_btc_pig }}
 asserts:
   - .units|tonumber == 4770146
 ---
@@ -108,17 +108,17 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/savers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/savers
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC
 asserts:
   - .savers_depth|tonumber == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_btc_pig }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_btc_pig }}
 asserts:
   - .units|tonumber == 0
 ---
@@ -126,7 +126,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.to_address == "{{ addr_btc_pig }}"

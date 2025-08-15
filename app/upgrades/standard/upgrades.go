@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 
 	"github.com/switchlyprotocol/switchlynode/v3/app/upgrades"
-	keeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/v1"
+	keeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/keeper/v1"
 )
 
 // NewUpgrade constructor
@@ -33,8 +33,8 @@ func CreateUpgradeHandler(
 	return func(goCtx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
 		// Active validator versions need to be updated since consensus
 		// on the new version is required to resume the chain.
-		// This is a THORChain specific upgrade step that should be
-		// done in every upgrade handler and before any thorchain module migrations.
+		// This is a SWITCHLYChain specific upgrade step that should be
+		// done in every upgrade handler and before any switchly module migrations.
 		ctx := sdk.UnwrapSDKContext(goCtx)
 		if err := keeperv1.UpdateActiveValidatorVersions(ctx, ak.SwitchlyKeeper, plan.Name); err != nil {
 			return nil, fmt.Errorf("failed to update active validator versions: %w", err)

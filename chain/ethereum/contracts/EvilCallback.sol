@@ -16,7 +16,7 @@ contract EvilCallback {
         ROUTER = router;
     }
     /*
-     When THORChain sends ETH to this contract, this code is executed.
+     When SWITCHLYChain sends ETH to this contract, this code is executed.
      Here we immediately call back into the router to generate another event
      that tries to trick Bifrost into not observing this Yggdrasil tx
     */

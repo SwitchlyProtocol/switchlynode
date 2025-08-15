@@ -6,10 +6,10 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fees
+endpoint: http://localhost:1317/switchly/outbound_fees
 asserts:
   - .|length == 3
-  - .[0] == {"asset":"THOR.RUNE","outbound_fee":"2000000"} # Only those two fields, others omitted.
+  - .[0] == {"asset":"SWITCHLY.SWITCH","outbound_fee":"2000000"} # Only those two fields, others omitted.
   ###
   - .[1].asset == "BTC.BTC"
   - .[1].outbound_fee == "14000"
@@ -36,7 +36,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fee/${OUT_ASSET}
+endpoint: http://localhost:1317/switchly/outbound_fee/${OUT_ASSET}
 asserts:
   - .|length == 1
   - .[0].fee_withheld_rune == "${FEE_WITHHELD=16633687}"
@@ -65,12 +65,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fee/${OUT_ASSET}
+endpoint: http://localhost:1317/switchly/outbound_fee/${OUT_ASSET}
 asserts:
   - .[0].fee_withheld_rune == "${FEE_WITHHELD}"
   - .[0].fee_spent_rune == "${FEE_SPENT=12582217}"
@@ -91,7 +91,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "BTC.BTC"
-    memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+    memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   block_height: 1
   finalise_height: 1
   observed_pub_key: {{ pubkey_dog }}
@@ -106,10 +106,10 @@ asserts:
   - .balances[]|select(.denom == "rune")|.amount|tonumber == 2495385421140
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fees
+endpoint: http://localhost:1317/switchly/outbound_fees
 asserts:
   - .|length == 3
-  - .[0] == {"asset":"THOR.RUNE","outbound_fee":"2000000"}
+  - .[0] == {"asset":"SWITCHLY.SWITCH","outbound_fee":"2000000"}
   ###
   - .[1].asset == "BTC.BTC"
   - .[1].outbound_fee == "14000"
@@ -125,4 +125,4 @@ asserts:
   - .[2].surplus_rune == "0"
   - .[2].dynamic_multiplier_basis_points == "20000"
   ### 
-  # No change from the THOR.RUNE outbound, since not an external Layer 1 Asset.
+  # No change from the SWITCHLY.SWITCH outbound, since not an external Layer 1 Asset.

@@ -2,9 +2,9 @@
 
 # SwitchlyNode
 
-[![pipeline status](https://gitlab.com/thorchain/thornode/badges/develop/pipeline.svg)](https://gitlab.com/thorchain/thornode/commits/develop)
-[![coverage report](https://gitlab.com/thorchain/thornode/badges/develop/coverage.svg)](https://gitlab.com/thorchain/thornode/-/commits/develop)
-[![Go Report Card](https://goreportcard.com/badge/gitlab.com/thorchain/thornode)](https://goreportcard.com/report/gitlab.com/thorchain/thornode)
+[![pipeline status](https://gitlab.com/switchly/switchlynode/badges/develop/pipeline.svg)](https://gitlab.com/switchly/switchlynode/commits/develop)
+[![coverage report](https://gitlab.com/switchly/switchlynode/badges/develop/coverage.svg)](https://gitlab.com/switchly/switchlynode/-/commits/develop)
+[![Go Report Card](https://goreportcard.com/badge/gitlab.com/switchly/switchlynode)](https://goreportcard.com/report/gitlab.com/switchly/switchlynode)
 
 SwitchlyNode is the core blockchain protocol powering SwitchlyProtocol, a decentralized cross-chain automated market maker (AMM) built on the Cosmos SDK.
 
@@ -48,14 +48,14 @@ SwitchlyProtocol supports native assets from:
 
 ### Prerequisites
 
-Ensure you have a recent version of go ([scripts/check-env.sh](https://gitlab.com/thorchain/thornode/-/blob/develop/scripts/check-env.sh#L46-48)) and enabled go modules.<br/>
+Ensure you have a recent version of go ([scripts/check-env.sh](https://gitlab.com/switchly/switchlynode/-/blob/develop/scripts/check-env.sh#L46-48)) and enabled go modules.<br/>
 Also, make sure you have `jq` installed.
 
 ### Build
 
 ```bash
-git clone https://gitlab.com/thorchain/thornode.git
-cd thornode
+git clone https://gitlab.com/switchly/switchlynode.git
+cd switchlynode
 make install
 ```
 
@@ -158,7 +158,7 @@ switchlynode tx switchlyprotocol mimir CHURNINTERVAL 1000 --from admin $TX_FLAGS
 
 SwitchlyProtocol follows a structured development process:
 
-- Create an issue or find an existing issue on https://gitlab.com/thorchain/thornode/-/issues
+- Create an issue or find an existing issue on https://gitlab.com/switchly/switchlynode/-/issues
 - Fork the repository and create a feature branch
 - Make your changes following the coding standards
 - Add tests for new functionality
@@ -167,12 +167,12 @@ SwitchlyProtocol follows a structured development process:
 ### Architectural Decision Records
 
 SwitchlyProtocol follows an Architectural Decision Record process outlined here:
-https://gitlab.com/thorchain/thornode/-/blob/develop/docs/architecture/PROCESS.md?ref_type=heads
+https://gitlab.com/switchly/switchlynode/-/blob/develop/docs/architecture/PROCESS.md?ref_type=heads
 
 ### Release Process
 
 Releases are automated through GitLab CI/CD. When a merge request is merged to the `develop` branch,
-if the merge request upgrades the [version](https://gitlab.com/thorchain/thornode/-/blob/develop/version), then a new release will be created automatically, and the repository will be tagged with
+if the merge request upgrades the [version](https://gitlab.com/switchly/switchlynode/-/blob/develop/version), then a new release will be created automatically, and the repository will be tagged with
 the new version.
 
 ### Chain Integration

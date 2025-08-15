@@ -11,43 +11,43 @@ Proposed
 
 ## Context
 
-During a Ragnarok, all funds remaining in pools are returned in a best-effort fashion and any synthetic tokens are burned. When these tokens are burned, they are effectively converted to RUNE and transferred to the Reserve. While synthetic tokens are tracked and associated with specific addresses, enumerating these addresses is not feasible in the current code and therefore this converted RUNE cannot be returned to its owner during the Ragnarok.
+During a Ragnarok, all funds remaining in pools are returned in a best-effort fashion and any synthetic tokens are burned. When these tokens are burned, they are effectively converted to SWITCH and transferred to the Reserve. While synthetic tokens are tracked and associated with specific addresses, enumerating these addresses is not feasible in the current code and therefore this converted SWITCH cannot be returned to its owner during the Ragnarok.
 
-While it can't be done in the current code, Multipartite has come up with a method to identify these addresses using THORNode logs and the Flipside databases.
+While it can't be done in the current code, Multipartite has come up with a method to identify these addresses using SWITCHLYNode logs and the Flipside databases.
 
-After the recent Ragnarok of the BNB blockchain, roughly 24,601 RUNE was transferred to the Reserve in this manner. This proposal seeks to return the RUNE liquidity behind any burned synthetic tokens to their respective owners.
+After the recent Ragnarok of the BNB blockchain, roughly 24,601 SWITCH was transferred to the Reserve in this manner. This proposal seeks to return the SWITCH liquidity behind any burned synthetic tokens to their respective owners.
 
 ### Method
 
-By searching through THORNode logs it is possible to identify all pools that sent synth-associated RUNE to the reserve.
+By searching through SWITCHLYNode logs it is possible to identify all pools that sent synth-associated SWITCH to the reserve.
 
 ```text
 $ docker logs fullnode-v1 |& grep -A3 'redeeming synth to reserve'
 
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.ETH-1C9
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=115286909700 synth_supply=283716656
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1292 > setting pool to staged pool=BNB.ETH-1C9
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.ETH-1C9
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=115286909700 synth_supply=283716656
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1292 > setting pool to staged pool=BNB.ETH-1C9
 
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.TWT-8C2
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=315117680195 synth_supply=2018826348469
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1292 > setting pool to staged pool=BNB.TWT-8C2
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.TWT-8C2
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=315117680195 synth_supply=2018826348469
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1292 > setting pool to staged pool=BNB.TWT-8C2
 
-5:47PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BTCB-1DE
-5:47PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=1543832682001 synth_supply=197741221
-5:47PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1292 > setting pool to staged pool=BNB.BTCB-1DE
+5:47PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BTCB-1DE
+5:47PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=1543832682001 synth_supply=197741221
+5:47PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1292 > setting pool to staged pool=BNB.BTCB-1DE
 
-7:00PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BUSD-BD1
-7:00PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=278944032906 synth_supply=2178219990168
-7:00PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1292 > setting pool to staged pool=BNB.BUSD-BD1
+7:00PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BUSD-BD1
+7:00PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=278944032906 synth_supply=2178219990168
+7:00PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1292 > setting pool to staged pool=BNB.BUSD-BD1
 
-6:50PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BNB
-6:50PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=206909292040 synth_supply=2178708870
-6:50PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1292 > setting pool to staged pool=BNB.BNB
+6:50PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BNB
+6:50PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=206909292040 synth_supply=2178708870
+6:50PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1292 > setting pool to staged pool=BNB.BNB
 ```
 
-From these logs, we can identify the pools that transferred RUNE to the Reserve as well as the synth value in RUNE at the time of transfer.
+From these logs, we can identify the pools that transferred SWITCH to the Reserve as well as the synth value in SWITCH at the time of transfer.
 
-In the THORNode code, pools are set to `Staged` immediately after RUNE transfer to Reserve. We can use this to identify the block number where the RUNE was transferred to Resreve for each pool.
+In the SWITCHLYNode code, pools are set to `Staged` immediately after SWITCH transfer to Reserve. We can use this to identify the block number where the SWITCH was transferred to Resreve for each pool.
 
 ```text
 $ docker run --rm --network host -e RPC_ENDPOINT=http://localhost:27148 registry.gitlab.com/ninerealms/cosmoscan 'block_events_listener(lambda h,e: (h,e), types={"pool"}), start=15206145, end=15269760, progress=True'
@@ -59,9 +59,9 @@ $ docker run --rm --network host -e RPC_ENDPOINT=http://localhost:27148 registry
 [15265440, {"type": "pool", "pool": "BNB.BNB", "pool_status": "Staged"}]
 ```
 
-We are interested in all addresses that still held synthetic positions at the block number just before the RUNE was transferred. We can use the Flipside databases to identify these addresses.
+We are interested in all addresses that still held synthetic positions at the block number just before the SWITCH was transferred. We can use the Flipside databases to identify these addresses.
 
-With a given address, it is then possible to check exactly how much of a synthetic position that address held at the RUNE transfer height where the synths' value was effectively converted to RUNE.
+With a given address, it is then possible to check exactly how much of a synthetic position that address held at the SWITCH transfer height where the synths' value was effectively converted to SWITCH.
 
 For example, the following is the query in the case of the BNB.BNB pool:
 
@@ -69,7 +69,7 @@ For example, the following is the query in the case of the BNB.BNB pool:
 WITH
 transfers_to AS (
   SELECT to_address AS address, asset, amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BNB'
     AND block_id <= 15265440
@@ -77,7 +77,7 @@ transfers_to AS (
 
 transfers_from AS (
   SELECT from_address AS address, asset, -1 * amount_e8 AS amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BNB'
     AND block_id <= 15265440
@@ -97,10 +97,10 @@ ORDER BY asset ASC, amount DESC
 
 ### Summary
 
-Using this method, we find roughly 24,601 RUNE to be returned to 1,309 addresses. As a refund must be done by hand with a store-migration, we suggest that only balances greater than 10 RUNE be returned. This reduces the number of addresses which must be refunded to 46 and the amount of RUNE to 24,192.83.
+Using this method, we find roughly 24,601 SWITCH to be returned to 1,309 addresses. As a refund must be done by hand with a store-migration, we suggest that only balances greater than 10 SWITCH be returned. This reduces the number of addresses which must be refunded to 46 and the amount of SWITCH to 24,192.83.
 
 ```text
-ADDRESS,ASSET,AMOUNT,RUNE_AMOUNT
+ADDRESS,ASSET,AMOUNT,SWITCH_AMOUNT
 thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0,BNB/BNB,15.884561,1508.537150664005
 thor1vsnj373g9uqke6z5fdpps8p8udrls3a8m75t86,BNB/BNB,1.233685,117.16154162
 thor1hkyzhmf85kfl87mgjdh42yplgumj7gsrlvjyk9,BNB/BNB,0.495036,47.012957859906
@@ -150,7 +150,7 @@ thor1sth9gz5asawsvfrq08ag7wzwqqlrjxl0egxuym,BNB/TWT-8C2,87.193871,13.61005139326
 
 Total:
   addresses: 46
-  RUNE: 24192.830096617447
+  SWITCH: 24192.830096617447
 ```
 
 Note that two addresses held multiple positions. Specifically,
@@ -175,12 +175,12 @@ The following are the details for each pool.
 
 ```text
 [15265440, {"type": "pool", "pool": "BNB.BNB", "pool_status": "Staged"}]
-6:50PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BNB
-6:50PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=206909292040 synth_supply=2178708870
+6:50PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BNB
+6:50PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=206909292040 synth_supply=2178708870
 ```
 
 ```text
-ADDRESS,ASSET,AMOUNT,RUNE_AMOUNT
+ADDRESS,ASSET,AMOUNT,SWITCH_AMOUNT
 thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0,BNB/BNB,15.884561,1508.537150664005
 thor1vsnj373g9uqke6z5fdpps8p8udrls3a8m75t86,BNB/BNB,1.233685,117.16154162
 thor1hkyzhmf85kfl87mgjdh42yplgumj7gsrlvjyk9,BNB/BNB,0.495036,47.012957859906
@@ -204,7 +204,7 @@ The following is the SQL code used to query the Flipside database:
 WITH
 transfers_to AS (
   SELECT to_address AS address, asset, amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BNB'
     AND block_id <= 15265440
@@ -212,7 +212,7 @@ transfers_to AS (
 
 transfers_from AS (
   SELECT from_address AS address, asset, -1 * amount_e8 AS amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BNB'
     AND block_id <= 15265440
@@ -234,12 +234,12 @@ ORDER BY asset ASC, amount DESC
 
 ```text
 [15208560, {"type": "pool", "pool": "BNB.BTCB-1DE", "pool_status": "Staged"}]
-5:47PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BTCB-1DE
-5:47PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=1543832682001 synth_supply=197741221
+5:47PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BTCB-1DE
+5:47PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=1543832682001 synth_supply=197741221
 ```
 
 ```text
-ADDRESS,ASSET,AMOUNT,RUNE_AMOUNT
+ADDRESS,ASSET,AMOUNT,SWITCH_AMOUNT
 thor12z9pwgw50pepl7mazv4nf2868c6ke882a6aw8x,BNB/BTCB-1DE,1.035567,8085.022287799718
 thor1mq8mzl9272dzhee3flkndyz2lux9nvzq8zn0f7,BNB/BTCB-1DE,0.295774,2309.207788729917
 thor1uunxme33cufhtcm00ygkfx6th3vvjmatv8tanl,BNB/BTCB-1DE,0.150318,1173.583534679531
@@ -266,7 +266,7 @@ The following is the SQL code used to query the Flipside database:
 WITH
 transfers_to AS (
   SELECT to_address AS address, asset, amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BTCB-1DE'
     AND block_id <= 15208560
@@ -274,7 +274,7 @@ transfers_to AS (
 
 transfers_from AS (
   SELECT from_address AS address, asset, -1 * amount_e8 AS amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BTCB-1DE'
     AND block_id <= 15208560
@@ -296,12 +296,12 @@ ORDER BY asset ASC, amount DESC
 
 ```text
 [15209280, {"type": "pool", "pool": "BNB.BUSD-BD1", "pool_status": "Staged"}]
-7:00PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BUSD-BD1
-7:00PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=278944032906 synth_supply=2178219990168
+7:00PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.BUSD-BD1
+7:00PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=278944032906 synth_supply=2178219990168
 ```
 
 ```text
-ADDRESS,ASSET,AMOUNT,RUNE_AMOUNT
+ADDRESS,ASSET,AMOUNT,SWITCH_AMOUNT
 thor1x4d5g75v67affmr9qjuu75swjsgme4jscxj7pl,BNB/BUSD-BD1,9170.798605,1174.417441486301
 thor1dmgdpkqngg3amua5hffjcharngzdp4wv39azjs,BNB/BUSD-BD1,3496.943135,447.820433805043
 thor1atev7k3xzsqsenrwjht3k3r70t9mtz0p58qn6d,BNB/BUSD-BD1,2776.701122,355.585851126799
@@ -321,7 +321,7 @@ The following is the SQL code used to query the Flipside database:
 WITH
 transfers_to AS (
   SELECT to_address AS address, asset, amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BUSD-BD1'
     AND block_id <= 15209280
@@ -329,7 +329,7 @@ transfers_to AS (
 
 transfers_from AS (
   SELECT from_address AS address, asset, -1 * amount_e8 AS amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/BUSD-BD1'
     AND block_id <= 15209280
@@ -351,12 +351,12 @@ ORDER BY asset ASC, amount DESC
 
 ```text
 [15207120, {"type": "pool", "pool": "BNB.ETH-1C9", "pool_status": "Staged"}]
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.ETH-1C9
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=115286909700 synth_supply=283716656
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.ETH-1C9
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=115286909700 synth_supply=283716656
 ```
 
 ```text
-ADDRESS,ASSET,AMOUNT,RUNE_AMOUNT
+ADDRESS,ASSET,AMOUNT,SWITCH_AMOUNT
 thor1j47es49m8llprlpcxrt3a2hqyhperwc7ta6ksm,BNB/ETH-1C9,1.132255,460.086417846309
 thor1rpu6ndvg0r25y6xqdl2svqlwglc3yhh3wv7j9v,BNB/ETH-1C9,1.009999,410.408275466528
 thor1kv4jdrnekdfqcajez78d2drvhp3ep6akx6865j,BNB/ETH-1C9,0.239639,97.376164456127
@@ -377,7 +377,7 @@ The following is the SQL code used to query the Flipside database:
 WITH
 transfers_to AS (
   SELECT to_address AS address, asset, amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/ETH-1C9'
     AND block_id <= 15207120
@@ -385,7 +385,7 @@ transfers_to AS (
 
 transfers_from AS (
   SELECT from_address AS address, asset, -1 * amount_e8 AS amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/ETH-1C9'
     AND block_id <= 15207120
@@ -407,12 +407,12 @@ ORDER BY asset ASC, amount DESC
 
 ```text
 [15207120, {"type": "pool", "pool": "BNB.TWT-8C2", "pool_status": "Staged"}]
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.TWT-8C2
-3:17PM INF gitlab.com/thorchain/thornode/x/thorchain/manager_network_current.go:1750 > sending synth redeem RUNE to Reserve rune_amount=315117680195 synth_supply=2018826348469
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1287 > redeeming synth to reserve pool=BNB.TWT-8C2
+3:17PM INF gitlab.com/switchly/switchlynode/x/switchly/manager_network_current.go:1750 > sending synth redeem SWITCH to Reserve rune_amount=315117680195 synth_supply=2018826348469
 ```
 
 ```text
-ADDRESS,ASSET,AMOUNT,RUNE_AMOUNT
+ADDRESS,ASSET,AMOUNT,SWITCH_AMOUNT
 thor1rzxvqhepnqqcn7973jp4y0ygasr709gpj673lw,BNB/TWT-8C2,20000.788343,3121.913892939335
 thor1sth9gz5asawsvfrq08ag7wzwqqlrjxl0egxuym,BNB/TWT-8C2,87.193871,13.610051393266
 
@@ -426,7 +426,7 @@ The following is the SQL code used to query the Flipside database:
 WITH
 transfers_to AS (
   SELECT to_address AS address, asset, amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/TWT-8C2'
     AND block_id <= 15207120
@@ -434,7 +434,7 @@ transfers_to AS (
 
 transfers_from AS (
   SELECT from_address AS address, asset, -1 * amount_e8 AS amount_e8
-  FROM (thorchain.core.fact_transfer_events AS reftable INNER JOIN thorchain.core.dim_block
+  FROM (switchly.core.fact_transfer_events AS reftable INNER JOIN switchly.core.dim_block
     ON reftable.dim_block_id = dim_block.dim_block_id)
   WHERE asset = 'BNB/TWT-8C2'
     AND block_id <= 15207120

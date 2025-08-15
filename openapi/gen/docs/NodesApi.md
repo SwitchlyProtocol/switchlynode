@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Node**](NodesApi.md#Node) | **Get** /thorchain/node/{address} | 
-[**Nodes**](NodesApi.md#Nodes) | **Get** /thorchain/nodes | 
+[**Node**](NodesApi.md#Node) | **Get** /switchly/node/{address} | 
+[**Nodes**](NodesApi.md#Nodes) | **Get** /switchly/nodes | 
 
 
 

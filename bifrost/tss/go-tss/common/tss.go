@@ -449,7 +449,7 @@ func (t *TssCommon) hashCheck(localCacheItem *LocalCacheItem, threshold int) err
 	return blame.ErrNotMajority
 }
 
-func (t *TssCommon) sendBulkMsg(wiredMsgType string, tssMsgType messages.THORChainTSSMessageType, wiredMsgList []BulkWireMsg) error {
+func (t *TssCommon) sendBulkMsg(wiredMsgType string, tssMsgType messages.SWITCHLYChainTSSMessageType, wiredMsgList []BulkWireMsg) error {
 	// since all the messages in the list is the same round, so it must have the same dest
 	// we just need to get the routing info of the first message
 	r := wiredMsgList[0].Routing
@@ -504,7 +504,7 @@ func (t *TssCommon) sendBulkMsg(wiredMsgType string, tssMsgType messages.THORCha
 	return nil
 }
 
-func (t *TssCommon) ProcessOutCh(msg btss.Message, msgType messages.THORChainTSSMessageType) error {
+func (t *TssCommon) ProcessOutCh(msg btss.Message, msgType messages.SWITCHLYChainTSSMessageType) error {
 	msgData, r, err := msg.WireBytes()
 	// if we cannot get the wire share, the tss will fail, we just quit.
 	if err != nil {
@@ -567,7 +567,7 @@ func (t *TssCommon) ProcessOutCh(msg btss.Message, msgType messages.THORChainTSS
 	return nil
 }
 
-func (t *TssCommon) applyShare(localCacheItem *LocalCacheItem, threshold int, key string, msgType messages.THORChainTSSMessageType) error {
+func (t *TssCommon) applyShare(localCacheItem *LocalCacheItem, threshold int, key string, msgType messages.SWITCHLYChainTSSMessageType) error {
 	unicast := true
 	if localCacheItem.Msg.Routing.IsBroadcast {
 		unicast = false
@@ -604,7 +604,7 @@ func (t *TssCommon) applyShare(localCacheItem *LocalCacheItem, threshold int, ke
 	return nil
 }
 
-func (t *TssCommon) requestShareFromPeer(localCacheItem *LocalCacheItem, threshold int, key string, msgType messages.THORChainTSSMessageType) error {
+func (t *TssCommon) requestShareFromPeer(localCacheItem *LocalCacheItem, threshold int, key string, msgType messages.SWITCHLYChainTSSMessageType) error {
 	targetHash, err := t.getMsgHash(localCacheItem, threshold)
 	if err != nil {
 		t.logger.Debug().Msg("we do not know which message to request, so we quit")
@@ -645,7 +645,7 @@ func (t *TssCommon) requestShareFromPeer(localCacheItem *LocalCacheItem, thresho
 	}
 }
 
-func (t *TssCommon) processVerMsg(broadcastConfirmMsg *messages.BroadcastConfirmMessage, msgType messages.THORChainTSSMessageType) error {
+func (t *TssCommon) processVerMsg(broadcastConfirmMsg *messages.BroadcastConfirmMessage, msgType messages.SWITCHLYChainTSSMessageType) error {
 	t.logger.Debug().Msg("process ver msg")
 	defer t.logger.Debug().Msg("finish process ver msg")
 	if nil == broadcastConfirmMsg {
@@ -678,7 +678,7 @@ func (t *TssCommon) processVerMsg(broadcastConfirmMsg *messages.BroadcastConfirm
 	return t.applyShare(localCacheItem, threshold, key, msgType)
 }
 
-func (t *TssCommon) broadcastHashToPeers(key, msgHash string, peerIDs []peer.ID, msgType messages.THORChainTSSMessageType) error {
+func (t *TssCommon) broadcastHashToPeers(key, msgHash string, peerIDs []peer.ID, msgType messages.SWITCHLYChainTSSMessageType) error {
 	if len(peerIDs) == 0 {
 		t.logger.Error().Msg("fail to get any peer ID")
 		return errors.New("fail to get any peer ID")
@@ -709,7 +709,7 @@ func (t *TssCommon) broadcastHashToPeers(key, msgHash string, peerIDs []peer.ID,
 	return nil
 }
 
-func (t *TssCommon) receiverBroadcastHashToPeers(wireMsg *messages.WireMessage, msgType messages.THORChainTSSMessageType) error {
+func (t *TssCommon) receiverBroadcastHashToPeers(wireMsg *messages.WireMessage, msgType messages.SWITCHLYChainTSSMessageType) error {
 	var peerIDs []peer.ID
 	dataOwnerPartyID := wireMsg.Routing.From.Id
 	dataOwnerPeerID, ok := t.PartyIDtoP2PID[dataOwnerPartyID]
@@ -739,7 +739,7 @@ func (t *TssCommon) receiverBroadcastHashToPeers(wireMsg *messages.WireMessage, 
 }
 
 // processTSSMsg
-func (t *TssCommon) processTSSMsg(wireMsg *messages.WireMessage, msgType messages.THORChainTSSMessageType, forward bool) error {
+func (t *TssCommon) processTSSMsg(wireMsg *messages.WireMessage, msgType messages.SWITCHLYChainTSSMessageType, forward bool) error {
 	t.logger.Debug().Msg("process wire message")
 	defer t.logger.Debug().Msg("finish process wire message")
 
@@ -805,7 +805,7 @@ func (t *TssCommon) processTSSMsg(wireMsg *messages.WireMessage, msgType message
 	return t.applyShare(localCacheItem, threshold, key, msgType)
 }
 
-func getBroadcastMessageType(msgType messages.THORChainTSSMessageType) messages.THORChainTSSMessageType {
+func getBroadcastMessageType(msgType messages.SWITCHLYChainTSSMessageType) messages.SWITCHLYChainTSSMessageType {
 	switch msgType {
 	case messages.TSSKeyGenMsg:
 		return messages.TSSKeyGenVerMsg

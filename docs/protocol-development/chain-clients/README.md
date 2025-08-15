@@ -2,18 +2,18 @@
 
 ## Chain Client
 
-The chain client sits in the `/bifrost` package which is outside of the core THORChain consensus engine. This is because its purpose is simply to witness events to THORChain. THORChain itself comes to consensus on witnessed events and acts from there.
+The chain client sits in the `/bifrost` package which is outside of the core SWITCHLYChain consensus engine. This is because its purpose is simply to witness events to SWITCHLYChain. SWITCHLYChain itself comes to consensus on witnessed events and acts from there.
 
 There are two main parts to each Chain Client:
 
-1. **Observer** (Scans blocks and packages up events to be witnessed to THORChain)
-2. **Signer** (receives `txOut` data from THORChain and converts into chain-specific signing data, to be signed by either the YGG node or TSS routine)
+1. **Observer** (Scans blocks and packages up events to be witnessed to SWITCHLYChain)
+2. **Signer** (receives `txOut` data from SWITCHLYChain and converts into chain-specific signing data, to be signed by either the YGG node or TSS routine)
 
 In addition there are some supporting routines, such as that to store cached witness transactions in local storage. This is used for tracking confs and handling re-orgs.
 
 ### Scanning Blocks
 
-The block scanner monitors the Asgard Addresses and looks for incoming UTXOs spending to those addresses. When it sees one performs validation on it and witnesses to THORChain. It will also store it in local storage.
+The block scanner monitors the Asgard Addresses and looks for incoming UTXOs spending to those addresses. When it sees one performs validation on it and witnesses to SWITCHLYChain. It will also store it in local storage.
 
 ### Confirmation Counting
 
@@ -27,10 +27,10 @@ The `blockValue` is typically just the coinbase reward, which already sums up th
 
 To do this, the Bifrost reports every tx immediately, but also specifies a `finalisation` blockheight. If the confs required is 1, then the tx is immediately processed. If the finalisation height exceeds the current blockheight, then the Bifrost will also wait that many blocks, then send \*another\* witness transaction as soon as those blocks occur. At this point the transaction can be finalised in the state machine.
 
-{{#embed https://gitlab.com/thorchain/thornode/-/blob/develop/bifrost/observer/observe.go#L117 }}
+{{#embed https://gitlab.com/switchly/switchlynode/-/blob/develop/bifrost/observer/observe.go#L117 }}
 
 ```admonish warning
-Although THORChain will not act on an inbound transaction that is undergoing conf-counting, it will consume it when it migrates vaults. This means conf-counted UTXOs will not be abandoned if still being finalised.
+Although SWITCHLYChain will not act on an inbound transaction that is undergoing conf-counting, it will consume it when it migrates vaults. This means conf-counted UTXOs will not be abandoned if still being finalised.
 ```
 
 ```admonish info
@@ -45,14 +45,14 @@ If so, the Bifrost will prepare an `ErrataTx` which instructs the state machine 
 
 ### Network Fees
 
-THORChain maintains accurate block-by-block awareness of gas fees, and reports them on `/inbound_addresses` [end-point](https://thornode.ninerealms.com/thorchain/inbound_addresses) for anyone to query. These gas fees ensure that state machine can always perform transactions at "next-block" speed. If the network uses too low gas rates then bad things happen, although it can recover. See Outbound Fee.
+SWITCHLYChain maintains accurate block-by-block awareness of gas fees, and reports them on `/inbound_addresses` [end-point](https://switchlynode.ninerealms.com/switchly/inbound_addresses) for anyone to query. These gas fees ensure that state machine can always perform transactions at "next-block" speed. If the network uses too low gas rates then bad things happen, although it can recover. See Outbound Fee.
 
 To do this:
 
 1. Detect the gas spent in each block, then detect the block size. The gas rate is thus the `gasSpent / blockSize`
 2. This is now the average gasRate, which is typically 50--100% higher than the lowest gas rate to get in the block.
-3. Witness this to THORChain every block that it changes over a 20 block period, whereby the highest is chosen. This means it ratchets up fast, but comes down slow.
+3. Witness this to SWITCHLYChain every block that it changes over a 20 block period, whereby the highest is chosen. This means it ratchets up fast, but comes down slow.
 
 ### Handling Gas
 
-Every transaction in and out from THORChain vaults need to have gas amount reported, as well as the gas asset used. This is needed by THORChain to accurately deduct this gas from the pools in order to keep the system solvent.
+Every transaction in and out from SWITCHLYChain vaults need to have gas amount reported, as well as the gas asset used. This is needed by SWITCHLYChain to accurately deduct this gas from the pools in order to keep the system solvent.

@@ -1,6 +1,6 @@
 {
   "app_hash": null,
-  "app_name": "thornode",
+  "app_name": "switchlynode",
   "app_state": {
     "auth": {
       "accounts": [
@@ -85,7 +85,7 @@
             "pub_key": null,
             "sequence": "0"
           },
-          "name": "thorchain",
+          "name": "switchly",
           "permissions": [
             "minter",
             "burner"
@@ -256,12 +256,12 @@
     "genutil": {
       "gen_txs": []
     },
-    "thorchain": {
+    "switchly": {
       "POL": {
         "rune_deposited": "0",
         "rune_withdrawn": "0"
       },
-      "THORNames": [],
+      "SWITCHNames": [],
       "adv_swap_queue_items": [],
       "affiliate_collectors": null,
       "bond_providers": [
@@ -325,18 +325,18 @@
           "value": "10"
         },
         {
-          "key": "RUNEPOOLDEPOSITMATURITYBLOCKS",
+          "key": "SWITCHPOOLDEPOSITMATURITYBLOCKS",
           "value": "2"
         },
         {
-          "key": "RUNEPOOLENABLED",
+          "key": "SWITCHPOOLENABLED",
           "value": "1"
         },
         {
-          "key": "RUNEPOOLHALTDEPOSIT"
+          "key": "SWITCHPOOLHALTDEPOSIT"
         },
         {
-          "key": "RUNEPOOLHALTWITHDRAW"
+          "key": "SWITCHPOOLHALTWITHDRAW"
         }
       ],
       "network": {
@@ -379,51 +379,51 @@
           "value": "10"
         },
         {
-          "key": "RUNEPOOLDEPOSITMATURITYBLOCKS",
+          "key": "SWITCHPOOLDEPOSITMATURITYBLOCKS",
           "signer": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "value": "2"
         },
         {
-          "key": "RUNEPOOLDEPOSITMATURITYBLOCKS",
+          "key": "SWITCHPOOLDEPOSITMATURITYBLOCKS",
           "signer": "tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
           "value": "2"
         },
         {
-          "key": "RUNEPOOLDEPOSITMATURITYBLOCKS",
+          "key": "SWITCHPOOLDEPOSITMATURITYBLOCKS",
           "signer": "tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
           "value": "2"
         },
         {
-          "key": "RUNEPOOLDEPOSITMATURITYBLOCKS",
+          "key": "SWITCHPOOLDEPOSITMATURITYBLOCKS",
           "signer": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
           "value": "2"
         },
         {
-          "key": "RUNEPOOLENABLED",
+          "key": "SWITCHPOOLENABLED",
           "signer": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
           "value": "1"
         },
         {
-          "key": "RUNEPOOLENABLED",
+          "key": "SWITCHPOOLENABLED",
           "signer": "tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
           "value": "1"
         },
         {
-          "key": "RUNEPOOLENABLED",
+          "key": "SWITCHPOOLENABLED",
           "signer": "tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
           "value": "1"
         },
         {
-          "key": "RUNEPOOLENABLED",
+          "key": "SWITCHPOOLENABLED",
           "signer": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
           "value": "1"
         },
         {
-          "key": "RUNEPOOLHALTDEPOSIT",
+          "key": "SWITCHPOOLHALTDEPOSIT",
           "signer": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm"
         },
         {
-          "key": "RUNEPOOLHALTWITHDRAW",
+          "key": "SWITCHPOOLHALTWITHDRAW",
           "signer": "tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm"
         }
       ],
@@ -570,7 +570,7 @@
         {
           "block_height": "2",
           "chains": [
-            "THOR",
+            "SWITCHLY",
             "BTC",
             "LTC",
             "BCH",
@@ -629,7 +629,7 @@
       ]
     }
   },
-  "chain_id": "thorchain",
+  "chain_id": "switchly",
   "consensus": {
     "params": {
       "abci": {

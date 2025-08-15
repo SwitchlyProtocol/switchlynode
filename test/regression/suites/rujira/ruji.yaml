@@ -40,19 +40,19 @@ asserts:
   - .balances[1].amount == "10000000000000000"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[3].action == "/cosmwasm.wasm.v1.MsgInstantiateContract"
   - .txs[0].result.events[4]._contract_address == "tthor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9sw58u9f"
   - .txs[0].result.events[4].code_id == "1"
 ---
-# Create RUJI/RUNE pool
+# Create RUJI/SWITCH pool
 type: tx-deposit
 signer: {{ addr_thor_dog }}
 coins:
   - amount: "100000000000000"
-    asset: "THOR.RUJI"
-memo: "ADD:THOR.RUJI:{{ addr_thor_dog }}"
+    asset: "SWITCHLY.RUJI"
+memo: "ADD:SWITCHLY.RUJI:{{ addr_thor_dog }}"
 ---
 type: create-blocks
 count: 1
@@ -62,7 +62,7 @@ signer: {{ addr_thor_dog }}
 coins:
   - amount: "250000000000"
     asset: "rune"
-memo: "ADD:THOR.RUJI:{{ addr_thor_dog }}"
+memo: "ADD:SWITCHLY.RUJI:{{ addr_thor_dog }}"
 ---
 type: create-blocks
 count: 1
@@ -77,7 +77,7 @@ asserts:
   - .balances[1].amount == "9900000000000000"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/THOR.RUJI
+endpoint: http://localhost:1317/switchly/pool/SWITCHLY.RUJI
 asserts:
   - .status == "Available"
   - .balance_asset == "100000000000000"
@@ -90,7 +90,7 @@ signer: {{ addr_thor_dog }}
 coins:
   - amount: "10000000000"
     asset: "rune"
-memo: "SWAP:THOR.RUJI:{{ addr_thor_dog }}"
+memo: "SWAP:SWITCHLY.RUJI:{{ addr_thor_dog }}"
 ---
 type: create-blocks
 count: 1
@@ -108,8 +108,8 @@ type: tx-deposit
 signer: {{ addr_thor_dog }}
 coins:
   - amount: "10000000000"
-    asset: "THOR.RUJI"
-memo: "SWAP:THOR.RUNE:{{ addr_thor_dog }}"
+    asset: "SWITCHLY.RUJI"
+memo: "SWAP:SWITCHLY.SWITCH:{{ addr_thor_dog }}"
 ---
 type: create-blocks
 count: 1
@@ -128,7 +128,7 @@ signer: {{ addr_thor_dog }}
 coins:
   - amount: "10000000000"
     asset: "rune"
-memo: "WITHDRAW:THOR.RUJI:5000"
+memo: "WITHDRAW:SWITCHLY.RUJI:5000"
 ---
 type: create-blocks
 count: 1

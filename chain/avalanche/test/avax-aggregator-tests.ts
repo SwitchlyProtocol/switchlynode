@@ -117,7 +117,7 @@ describe("AvaxAggregator", function () {
       const tx = await avaxAggregatorWallet2.swapIn(
         asgard1,
         avaxRouter.address,
-        "SWAP:THOR.RUNE:tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
+        "SWAP:SWITCHLY.SWITCH:tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
         usdceToken.address,
         transferAmount,
         0,

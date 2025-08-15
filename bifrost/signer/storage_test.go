@@ -5,10 +5,10 @@ import (
 
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 )
 
 type StorageSuite struct{}
@@ -16,7 +16,7 @@ type StorageSuite struct{}
 var _ = Suite(&StorageSuite{})
 
 func (s *StorageSuite) SetUpSuite(c *C) {
-	thorchain.SetupConfigForTest()
+	switchly.SetupConfigForTest()
 }
 
 func (s *StorageSuite) TestStorage(c *C) {

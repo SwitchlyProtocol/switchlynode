@@ -12,7 +12,7 @@ import (
 
 	apicommon "github.com/switchlyprotocol/switchlynode/v3/api/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func bech32Encoder(_ *aminojson.Encoder, v protoreflect.Value, w io.Writer) error {

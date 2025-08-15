@@ -21,7 +21,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
-	keeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/v1"
+	keeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/keeper/v1"
 
 	"github.com/cosmos/cosmos-sdk/crypto/hd"
 	eddsaKey "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
@@ -56,7 +56,7 @@ func init() {
 	ModuleAddrTransfer = authtypes.NewModuleAddress("transfer").String() // "tswitch1yl6hdjhmkf37639730gffanpzndzdpmhv07zme"
 	// "transfer" is special, as http://localhost:1317/auth/accounts/tswitch1yl6hdjhmkf37639730gffanpzndzdpmhv07zme
 	// gets the name from the address, but no address from name from http://localhost:1317/switchly/balance/module/transfer
-	ModuleAddrThorchain = authtypes.NewModuleAddress("switchly").String()                     // "tswitch1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp"
+	ModuleAddrSwitchly = authtypes.NewModuleAddress("switchly").String()                      // "tswitch1v8ppstuf6e3x0r4glqc68d5jqcs2tf38ulmsrp"
 	ModuleAddrAsgard = authtypes.NewModuleAddress("asgard").String()                          // "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2"
 	ModuleAddrBond = authtypes.NewModuleAddress("bond").String()                              // "tswitch17gw75axcnr8747pkanye45pnrwk7p9c3uhzgff"
 	ModuleAddrReserve = authtypes.NewModuleAddress("reserve").String()                        // "tswitch1dheycdevq39qlkxs2a6wuuzyn4aqxhve3hhmlw"
@@ -64,9 +64,9 @@ func init() {
 	ModuleAddrLending = authtypes.NewModuleAddress("lending").String()                        // "tswitch1x0kgm82cnj0vtmzdvz4avk3e7sj427t0al8wky"
 	ModuleAddrAffiliateCollector = authtypes.NewModuleAddress("affiliate_collector").String() // "tswitch1dl7un46w7l7f3ewrnrm6nq58nerjtp0d82uzjg"
 	ModuleAddrTreasury = authtypes.NewModuleAddress("treasury").String()                      // "tswitch1vmafl8f3s6uuzwnxkqz0eza47v6ecn0ttstnny"
-	ModuleAddrRUNEPool = authtypes.NewModuleAddress("rune_pool").String()                     // "tswitch1rzqfv62dzu585607s5awqtgnvvwz5rzhfuaw80"
+	ModuleAddrSWITCHPool = authtypes.NewModuleAddress("rune_pool").String()                   // "tswitch1rzqfv62dzu585607s5awqtgnvvwz5rzhfuaw80"
 	ModuleAddrClaiming = authtypes.NewModuleAddress("tcy_claim").String()                     // "tswitch1ss8rrf3twa20kf9frdyru05dmu2kg9llwwcgag"
-	ModuleAddrTCYStake = authtypes.NewModuleAddress("tcy_stake").String()                     // "tswitch128a8hqnkaxyqv7qwajpggmfyudh64jl3uxmuaf"
+	ModuleAddrSWCYStake = authtypes.NewModuleAddress("tcy_stake").String()                    // "tswitch128a8hqnkaxyqv7qwajpggmfyudh64jl3uxmuaf"
 }
 
 func clientContextAndFactory(routine int) (client.Context, tx.Factory) {
@@ -150,13 +150,13 @@ var httpClient = &http.Client{
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Thorchain Module Addresses
+// Switchly Module Addresses
 ////////////////////////////////////////////////////////////////////////////////////////
 
 var (
 	// Set these in `init` after the address prefix has been set.
 	ModuleAddrTransfer           string
-	ModuleAddrThorchain          string
+	ModuleAddrSwitchly           string
 	ModuleAddrAsgard             string
 	ModuleAddrBond               string
 	ModuleAddrReserve            string
@@ -164,9 +164,9 @@ var (
 	ModuleAddrLending            string
 	ModuleAddrAffiliateCollector string
 	ModuleAddrTreasury           string
-	ModuleAddrRUNEPool           string
+	ModuleAddrSWITCHPool         string
 	ModuleAddrClaiming           string
-	ModuleAddrTCYStake           string
+	ModuleAddrSWCYStake          string
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////

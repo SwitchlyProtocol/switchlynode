@@ -9,6 +9,7 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
+	"gitlab.com/switchly/thornode/x/switchly"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ecommon "github.com/ethereum/go-ethereum/common"
@@ -17,10 +18,9 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/evm"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 	wg := &sync.WaitGroup{}
 	sem := make(chan struct{}, 8)
 
-	// since we reuse the bifrost thorclient, load endpoints into config package
+	// since we reuse the bifrost switchlyclient, load endpoints into config package
 	os.Setenv("BIFROST_SWITCHLY_CHAIN_HOST", "localhost:1317")
 	os.Setenv("BIFROST_SWITCHLY_CHAIN_RPC", "localhost:26657")
 	os.Setenv("BIFROST_SWITCHLY_CHAIN_EBIFROST", "localhost:50051")
@@ -124,8 +124,8 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 			if err != nil {
 				log.Error().Err(err).Msg("failed to get thor address")
 			}
-			mimir := thorchain.NewMsgMimir("HALTCHURNING", 1, accAddr)
-			_, err = a.Thorchain.Broadcast(mimir)
+			mimir := switchly.NewMsgMimir("HALTCHURNING", 1, accAddr)
+			_, err = a.Switchly.Broadcast(mimir)
 			if err != nil {
 				log.Error().Err(err).Msg("failed to broadcast mimir")
 			}
@@ -145,7 +145,7 @@ func InitConfig(parallelism int, seed bool) *OpConfig {
 			for _, fee := range defaultFees {
 				log.Info().Msgf("posting %s network fee", fee.chain)
 				for {
-					_, err := a.Thorchain.PostNetworkFee(1, fee.chain, fee.size, fee.rate)
+					_, err := a.Switchly.PostNetworkFee(1, fee.chain, fee.size, fee.rate)
 					if err == nil {
 						break
 					}
@@ -363,18 +363,18 @@ func fundUserThorAccount(master, user *User) bool {
 		log.Fatal().Err(err).Msg("failed to get master thor address")
 	}
 
-	// skip seeding user if thorchain account has balance
-	userThorAddress, err := user.PubKey().GetAddress(common.THORChain)
+	// skip seeding user if switchly account has balance
+	userThorAddress, err := user.PubKey().GetAddress(common.SWITCHLYChain)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to get user thor address")
 	}
-	coins, _ := thornode.GetBalances(userThorAddress)
+	coins, _ := switchlynode.GetBalances(userThorAddress)
 	if len(coins) > 0 {
 		log.Info().Str("account", user.Name()).Msg("user has rune, skipping seed")
 		return false
 	}
 
-	// seed thorchain account
+	// seed switchly account
 	userThorAccAddress, err := user.PubKey().GetThorAddress()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to get user thor address")
@@ -386,14 +386,14 @@ func fundUserThorAccount(master, user *User) bool {
 		ToAddress:   userThorAccAddress,
 		Amount:      sdk.NewCoins(sdk.NewCoin("switchcoin", seedAmount)),
 	}
-	thorTxid, err := master.Thorchain.Broadcast(tx)
+	thorTxid, err := master.Switchly.Broadcast(tx)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to broadcast tx")
 	}
 	log.Info().
 		Stringer("txid", thorTxid).
 		Str("account", user.Name()).
-		Stringer("chain", common.THORChain).
+		Stringer("chain", common.SWITCHLYChain).
 		Stringer("address", userThorAccAddress).
 		Str("amount", fmt.Sprintf("%08f", seedAmountFloat)).
 		Msg("account funded")

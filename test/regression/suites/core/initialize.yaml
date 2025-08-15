@@ -4,7 +4,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 0
 ---
@@ -14,7 +14,7 @@ asserts:
   - .supply[]|select(.denom == "rune")|.amount|tonumber == 500000e8
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/inbound_addresses
+endpoint: http://localhost:1317/switchly/inbound_addresses
 asserts:
   - .|length == 10
   # all addresses should be for the dog mnemonic
@@ -32,7 +32,7 @@ asserts:
   - '[.[]|select(.pub_key == "{{ pubkey_dog }}")]|length == 10'
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/network?height=1000
+endpoint: http://localhost:1317/switchly/network?height=1000
 status: 500
 asserts:
   - .message|test("cannot query with height in the future")

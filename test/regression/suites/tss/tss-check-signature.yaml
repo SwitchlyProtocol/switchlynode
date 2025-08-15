@@ -18,7 +18,7 @@ genesis:
           coins:
             - amount: "10000000000000"
               denom: rune
-    thorchain:
+    switchly:
       node_accounts:
         - active_block_height: "0"
           bond: "5000000000000"
@@ -56,7 +56,7 @@ genesis:
       vaults:
         - block_height: "0"
           chains:
-            - THOR
+            - SWITCHLY
           membership:
             - {{ pubkey_dog }}
           pub_key: tthorpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4
@@ -79,7 +79,7 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 ---
 type: tx-tss-pool
@@ -92,7 +92,7 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 ---
 type: tx-tss-pool
@@ -105,14 +105,14 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0].block_height == 2
   - .[0].membership|length == 1
@@ -133,7 +133,7 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 secp256k1_signature: ${SIGNATURE=TAmrPfb9LqTkvdCld4iUqVi/YB7BLRDCpuH7bJV0ByJiv5aJOw/0XkxabmVmF55FItcygEMoiNv5dTZV0U0BKQ==}
 ---
@@ -147,7 +147,7 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 ---
 type: tx-tss-pool
@@ -160,14 +160,14 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0].block_height == 2
   - .[0].membership|length == 1
@@ -188,7 +188,7 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 secp256k1_signature: YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYQ==
 ---
@@ -196,12 +196,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 6
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0].block_height == 2
   - .[0].membership|length == 1
@@ -222,7 +222,7 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 secp256k1_signature: ${SIGNATURE}
 ---
@@ -236,7 +236,7 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 secp256k1_signature: ${SIGNATURE}
 ---
@@ -250,14 +250,14 @@ pub_keys:
   - {{ pubkey_cat }}
   - {{ pubkey_fox }}
 chains:
-  - THOR
+  - SWITCHLY
   - BTC
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[0].block_height == 11
   - .[0].membership|length == 3

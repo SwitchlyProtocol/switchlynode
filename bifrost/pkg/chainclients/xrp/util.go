@@ -26,7 +26,7 @@ func parseCurrencyAmount(coin txtypes.CurrencyAmount) (*big.Int, error) {
 	return nil, fmt.Errorf("invalid xrp currency type")
 }
 
-func fromXrpToThorchain(coin txtypes.CurrencyAmount) (common.Coin, error) {
+func fromXrpToSwitchly(coin txtypes.CurrencyAmount) (common.Coin, error) {
 	asset, exists := GetAssetByXrpCurrency(coin)
 	if !exists {
 		return common.NoCoin, fmt.Errorf("asset does not exist / not whitelisted by client")
@@ -38,12 +38,12 @@ func fromXrpToThorchain(coin txtypes.CurrencyAmount) (common.Coin, error) {
 		return common.NoCoin, err
 	}
 	var exp big.Int
-	// Decimals are more than native THORChain, so divide...
+	// Decimals are more than native SWITCHLYChain, so divide...
 	if decimals > common.SwitchlyDecimals {
 		decimalDiff := decimals - common.SwitchlyDecimals
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	} else if decimals < common.SwitchlyDecimals {
-		// Decimals are less than native THORChain, so multiply...
+		// Decimals are less than native SWITCHLYChain, so multiply...
 		decimalDiff := common.SwitchlyDecimals - decimals
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
@@ -54,7 +54,7 @@ func fromXrpToThorchain(coin txtypes.CurrencyAmount) (common.Coin, error) {
 	}, nil
 }
 
-func fromThorchainToXrp(coin common.Coin) (txtypes.CurrencyAmount, error) {
+func fromSwitchlyToXrp(coin common.Coin) (txtypes.CurrencyAmount, error) {
 	asset, exists := GetAssetBySwitchlyAsset(coin.Asset)
 	if !exists {
 		return nil, fmt.Errorf("asset (%s) does not exist / not whitelisted by client", coin.Asset)
@@ -64,11 +64,11 @@ func fromThorchainToXrp(coin common.Coin) (txtypes.CurrencyAmount, error) {
 	amount := coin.Amount.BigInt()
 	var exp big.Int
 	if decimals > common.SwitchlyDecimals {
-		// Decimals are more than native THORChain, so multiply...
+		// Decimals are more than native SWITCHLYChain, so multiply...
 		decimalDiff := decimals - common.SwitchlyDecimals
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	} else if decimals < common.SwitchlyDecimals {
-		// Decimals are less than native THORChain, so divide...
+		// Decimals are less than native SWITCHLYChain, so divide...
 		decimalDiff := common.SwitchlyDecimals - decimals
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}

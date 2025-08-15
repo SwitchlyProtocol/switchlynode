@@ -33,8 +33,8 @@ var funcMap = template.FuncMap{
 	"version": func() string {
 		return constants.Version
 	},
-	"addr_module_thorchain": func() string {
-		return ModuleAddrThorchain
+	"addr_module_switchly": func() string {
+		return ModuleAddrSwitchly
 	},
 	"addr_module_asgard": func() string {
 		return ModuleAddrAsgard
@@ -61,13 +61,13 @@ var funcMap = template.FuncMap{
 		return ModuleAddrTreasury
 	},
 	"addr_module_rune_pool": func() string {
-		return ModuleAddrRUNEPool
+		return ModuleAddrSWITCHPool
 	},
 	"addr_module_tcy_claim": func() string {
 		return ModuleAddrClaiming
 	},
 	"addr_module_tcy_stake": func() string {
-		return ModuleAddrTCYStake
+		return ModuleAddrSWCYStake
 	},
 }
 

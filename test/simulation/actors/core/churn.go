@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/switchlyprotocol/switchlynode/v3/api/types"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	"gitlab.com/switchly/thornode/x/switchly"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ func NewChurnActor() *Actor {
 
 func (a *ChurnActor) startChurn(config *OpConfig) OpResult {
 	// should be one active node
-	nodes, err := thornode.GetNodes()
+	nodes, err := switchlynode.GetNodes()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get nodes")
 		return OpResult{
@@ -75,8 +75,8 @@ func (a *ChurnActor) startChurn(config *OpConfig) OpResult {
 		}
 	}
 
-	mimir := thorchain.NewMsgMimir("HALTCHURNING", 0, accAddr)
-	txid, err := node.Thorchain.Broadcast(mimir)
+	mimir := switchly.NewMsgMimir("HALTCHURNING", 0, accAddr)
+	txid, err := node.Switchly.Broadcast(mimir)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to broadcast mimir")
 		return OpResult{
@@ -91,7 +91,7 @@ func (a *ChurnActor) startChurn(config *OpConfig) OpResult {
 }
 
 func (a *ChurnActor) waitForChurnComplete(config *OpConfig) OpResult {
-	network, err := thornode.GetNetwork()
+	network, err := switchlynode.GetNetwork()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get network")
 		return OpResult{
@@ -99,7 +99,7 @@ func (a *ChurnActor) waitForChurnComplete(config *OpConfig) OpResult {
 		}
 	}
 
-	nodes, err := thornode.GetNodes()
+	nodes, err := switchlynode.GetNodes()
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get nodes")
 		return OpResult{

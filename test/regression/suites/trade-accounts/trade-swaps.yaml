@@ -13,7 +13,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -127,14 +127,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/unit/BTC~BTC
+endpoint: http://localhost:1317/switchly/trade/unit/BTC~BTC
 asserts:
   - .asset == "BTC~BTC"
   - .units|tonumber == 10000000
   - .depth|tonumber == 10000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -143,7 +143,7 @@ asserts:
 ---
 # Swap trade asset to trade asset, quote should match actual
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC~BTC"
   to_asset: "ETH~ETH"
@@ -159,7 +159,7 @@ asserts:
 ---
 # synth swap should be nearly equivalent
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC/BTC"
   to_asset: "ETH/ETH"
@@ -169,7 +169,7 @@ asserts:
   - .fees.outbound|tonumber == ${OUTBOUND_FEE} + ${OUTFEE_DISCREPANCY=794}
   - .expected_amount_out|tonumber == ${SWAP_OUT} - ${OUTFEE_DISCREPANCY}
   # This discrepancy is because a Trade Asset swap lowers the ETH.ETH BalanceAsset
-  # and thus the amount of ETH.ETH corresponding to the 0.02 RUNE native outbound fee,
+  # and thus the amount of ETH.ETH corresponding to the 0.02 SWITCH native outbound fee,
   # whereas a Synth Asset swap leaves the ETH.ETH BalanceAsset unchanged.
   - .fees.liquidity|tonumber == ${LIQFEE} + ${LIQFEE_DISCREPANCY=-85191}
   - .fees.total|tonumber == ${FEES_TOTAL} + ${OUTFEE_DISCREPANCY} + ${LIQFEE_DISCREPANCY}
@@ -189,7 +189,7 @@ count: 1
 # we should have 0.05 BTC~BTC remaining, and ETH~ETH
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 2
   - .[0].asset == "BTC~BTC"
@@ -199,7 +199,7 @@ asserts:
   - .[1].units == "${SWAP_OUT}" # 0.41 ETH
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/details/{{ native_txid -1 }}
+endpoint: http://localhost:1317/switchly/tx/details/{{ native_txid -1 }}
 asserts:
   - .tx.tx.coins | length == 1
   - .tx.tx.coins[0].amount == "${SWAP_IN}"
@@ -212,14 +212,14 @@ asserts:
   - ${SWAP_OUT} / 2 | floor == ${SWAP_IN=20741703}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[.end_block_events[]|select(.type? == "fee")] | length == 1
   - .end_block_events[]|select(.type? == "fee").coins == "18374 ETH~ETH"
 ---
 # swap half ETH~ETH to BTC~BTC, quote should match actual
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "ETH~ETH"
   to_asset: "BTC~BTC"
@@ -240,7 +240,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 2
   - .[0].asset == "BTC~BTC"
@@ -251,7 +251,7 @@ asserts:
 ---
 # stream swap remaining ETH, quote should match actual
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "ETH~ETH"
   to_asset: "BTC~BTC"
@@ -274,7 +274,7 @@ count: 1
 ---
 # check for streaming swap
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1 # streaming swap in progress complete
   - .[0].destination == "{{ addr_thor_fox }}"
@@ -287,7 +287,7 @@ type: create-blocks
 count: 4
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -298,7 +298,7 @@ asserts:
 # trade accounts respects slip min bps
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC~BTC"
   to_asset: "ETH~ETH"
@@ -335,7 +335,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC~BTC"
   to_asset: "ETH~ETH"
@@ -347,7 +347,7 @@ asserts:
   - .fees.total_bps == 3259
 ---
 ########################################################################################
-# try obtaining THOR.BTC with EnabledDerivedAssets 0
+# try obtaining SWITCHLY.BTC with EnabledDerivedAssets 0
 ########################################################################################
 type: check
 endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fox }}
@@ -425,22 +425,22 @@ value: 10000
 sequence: 4
 ---
 type: create-blocks
-count: 2 # One block to set the Mimirs by the end, one to spawn the THOR.BTC pool at the beginning.
+count: 2 # One block to set the Mimirs by the end, one to spawn the SWITCHLY.BTC pool at the beginning.
 ---
 # Confirm the Mimir values
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .["DerivedDepthBasisPts" | ascii_upcase] == 10000
   - .["EnableDerivedAssets" | ascii_upcase] == 0
   - .["TradeAccountsSlipMinBps" | ascii_upcase] == 1000
   - .["TradeAccountsEnabled" | ascii_upcase] == 1
 ---
-# Confirm that the THOR.BTC pool exists.
+# Confirm that the SWITCHLY.BTC pool exists.
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.BTC
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.BTC
 asserts:
-  - .asset == "THOR.BTC"
+  - .asset == "SWITCHLY.BTC"
   - .status == "Available"
   - .balance_asset | tonumber > 0
   - .balance_rune | tonumber > 0
@@ -450,22 +450,22 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000" # 0.01 BTC
     asset: "BTC~BTC"
-memo: "=:THOR~BTC:{{ addr_thor_fox }}"
+memo: "=:SWITCHLY~BTC:{{ addr_thor_fox }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "refund")] | length == 1
   - ..|select(.type? == "refund").reason | contains("swapping to a trade asset of a native coin is not allowed")
 ---
 ########################################################################################
-# swap to RUNE (for instance if there were an arbitrage opportunity)
+# swap to SWITCH (for instance if there were an arbitrage opportunity)
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -477,20 +477,20 @@ endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fox }}
 asserts:
   - .result | length == 1
   - .result[0].denom == "rune"
-  - .result[0].amount == "${INITIAL_RUNE=2499992000000}"
+  - .result[0].amount == "${INITIAL_SWITCH=2499992000000}"
 ---
 type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000" # 0.01 BTC
     asset: "BTC~BTC"
-memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -502,25 +502,25 @@ endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fox }}
 asserts:
   - .result | length == 1
   - .result[0].denom == "rune"
-  - .result[0].amount|tonumber > ${INITIAL_RUNE} # Swap to RUNE succeeds.
+  - .result[0].amount|tonumber > ${INITIAL_SWITCH} # Swap to SWITCH succeeds.
 ---
 ########################################################################################
-# swap from RUNE
+# swap from SWITCH
 ########################################################################################
 type: check
 endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fox }}
 asserts:
   - .result | length == 1
   - .result[0].denom == "rune"
-  - .result[0].amount == "${INITIAL_RUNE=2500871890295}"
+  - .result[0].amount == "${INITIAL_SWITCH=2500871890295}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/network
+endpoint: http://localhost:1317/switchly/network
 asserts:
-  - .native_tx_fee_rune == "${NATIVE_TX_FEE_RUNE=2000000}"
+  - .native_tx_fee_rune == "${NATIVE_TX_FEE_SWITCH=2000000}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
@@ -531,7 +531,7 @@ type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000000"
-    asset: "THOR.RUNE"
+    asset: "SWITCHLY.SWITCH"
 memo: "=:BTC~BTC:{{ addr_thor_fox }}"
 ---
 type: create-blocks
@@ -542,12 +542,12 @@ endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fox }}
 asserts:
   - .result | length == 1
   - .result[0].denom == "rune"
-  - .result[0].amount|tonumber < ${INITIAL_RUNE} - ${NATIVE_TX_FEE_RUNE}
+  - .result[0].amount|tonumber < ${INITIAL_SWITCH} - ${NATIVE_TX_FEE_SWITCH}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/trade/account/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/trade/account/{{ addr_thor_fox }}
 asserts:
   - .|length == 1
   - .[0].asset == "BTC~BTC"
-  - .[0].units|tonumber > ${INITIAL_UNITS} # Swap from RUNE succeeds.
+  - .[0].units|tonumber > ${INITIAL_UNITS} # Swap from SWITCH succeeds.
   - .[0].owner == "{{ addr_thor_fox }}"

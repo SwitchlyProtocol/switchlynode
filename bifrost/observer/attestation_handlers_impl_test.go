@@ -13,7 +13,7 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
 )
 
 // Test the AttestMessage interface implementations
@@ -210,8 +210,8 @@ func TestProcessAttestation(t *testing.T) {
 	})
 }
 
-// TestSendAttestationsToThornode tests sending attestations to Thornode
-func TestSendAttestationsToThornode(t *testing.T) {
+// TestSendAttestationsToSwitchlynode tests sending attestations to Switchlynode
+func TestSendAttestationsToSwitchlynode(t *testing.T) {
 	// Create test instances
 	ag, _, _, grpcClient, _, _ := setupTestGossip(t)
 
@@ -252,8 +252,8 @@ func TestSendAttestationsToThornode(t *testing.T) {
 		return &ebifrost.SendQuorumTxResult{}, nil
 	}
 
-	// Send attestations to Thornode
-	ag.sendObservedTxAttestationsToThornode(context.Background(), *obsTx, state, true, false, true)
+	// Send attestations to Switchlynode
+	ag.sendObservedTxAttestationsToSwitchlynode(context.Background(), *obsTx, state, true, false, true)
 
 	// Verify the tx was sent with the correct data
 	require.NotNil(t, sentTx)
@@ -450,11 +450,11 @@ func TestRefactoredHandlersIntegration(t *testing.T) {
 		// Wait for processing to complete
 		time.Sleep(200 * time.Millisecond)
 
-		// Verify all types were sent to thornode
-		assert.Len(t, sentTxs, 2, "Should have sent txs to thornode")
-		assert.Len(t, sentFees, 2, "Should have sent network fee to thornode")
-		assert.Len(t, sentSolvencies, 2, "Should have sent solvency to thornode")
-		assert.Len(t, sentErratas, 2, "Should have sent errata tx to thornode")
+		// Verify all types were sent to switchlynode
+		assert.Len(t, sentTxs, 2, "Should have sent txs to switchlynode")
+		assert.Len(t, sentFees, 2, "Should have sent network fee to switchlynode")
+		assert.Len(t, sentSolvencies, 2, "Should have sent solvency to switchlynode")
+		assert.Len(t, sentErratas, 2, "Should have sent errata tx to switchlynode")
 
 		// Verify correct data was sent for each type
 		sentAttestations := 0

@@ -1,32 +1,32 @@
 # How to add a new chain
 
-On a high level, this is how THORChain interact with external chains
+On a high level, this is how SWITCHLYChain interact with external chains
 
 ![images/newchain.png](images/newchain.png)
 
-For those chains that using cosmos sdk, and has IBC enabled, should be able to integrate with THORChain using IBC, at the moment, IBC is not enabled on THORChain yet.
+For those chains that using cosmos sdk, and has IBC enabled, should be able to integrate with SWITCHLYChain using IBC, at the moment, IBC is not enabled on SWITCHLYChain yet.
 
-In order to add a new chain to THORChain, there are a few changes you will need to make.
+In order to add a new chain to SWITCHLYChain, there are a few changes you will need to make.
 
-- Thornode changes
+- Switchlynode changes
 - Bifrost changes
 - Node launcher changes
-- Smoke test changes ([heimdall](https://gitlab.com/thorchain/heimdall))
+- Smoke test changes ([heimdall](https://gitlab.com/switchly/heimdall))
 - xchainjs changes
 
-Note: At the moment, THORChain only support ECDSA keys, ED25519 will be supported in the near future, you can keep track the progress from [here](https://gitlab.com/thorchain/thornode/-/issues/972)
+Note: At the moment, SWITCHLYChain only support ECDSA keys, ED25519 will be supported in the near future, you can keep track the progress from [here](https://gitlab.com/switchly/switchlynode/-/issues/972)
 
-## Thornode changes
+## Switchlynode changes
 
-There are some changes need to be made in Thornode, detail as following
+There are some changes need to be made in Switchlynode, detail as following
 
 | file                                         | func                                                                       | logic                                                                                                                  |
 | -------------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | common/address.go                            | func NewAddress(address string) (Address, error)                           | Add logic to parse an address                                                                                          |
 | common/chain.go                              | func (c Chain) GetGasAsset() Asset                                         | Return gas asset for the chain                                                                                         |
-| common/chain.go                              | define a chain variable at the top                                         | like https://gitlab.com/thorchain/thornode/-/blob/develop/common/chain.go#L22                                          |
+| common/chain.go                              | define a chain variable at the top                                         | like https://gitlab.com/switchly/switchlynode/-/blob/develop/common/chain.go#L22                                          |
 | common/gas.go                                | func UpdateGasPrice(tx Tx, asset Asset, units []cosmos.Uint) []cosmos.Uint | add logic in regards to how to update gas                                                                              |
-| common/asset.go                              | define an asset                                                            | like https://gitlab.com/thorchain/thornode/-/blob/develop/common/asset.go#L22                                          |
+| common/asset.go                              | define an asset                                                            | like https://gitlab.com/switchly/switchlynode/-/blob/develop/common/asset.go#L22                                          |
 | common/pubkey.go                             | func (pubKey PubKey) GetAddress(chain Chain) (Address, error)              | add logic to get address from a pubic key                                                                              |
 | build/docker/components/newchain.yml         |                                                                            | docker composer file to run the chain client , run it in regtest mode , so as the client will be used for mocknet test |
 | build/docker/components/validator.yml        |                                                                            | Update the files according to run chain client in docker composer, used it for test purpose                            |
@@ -36,7 +36,7 @@ There are some changes need to be made in Thornode, detail as following
 
 ## Node launcher changes
 
-Node launcher is the repository used to launch thorchain node, [https://gitlab.com/thorchain/devops/node-launcher.git](https://gitlab.com/thorchain/devops/node-launcher.git)
+Node launcher is the repository used to launch switchly node, [https://gitlab.com/switchly/devops/node-launcher.git](https://gitlab.com/switchly/devops/node-launcher.git)
 
 1. Create a new folder under the root folder, like "newchain-daemon"
 2. Add new helm chart to run the chain client daemon
@@ -44,7 +44,7 @@ Node launcher is the repository used to launch thorchain node, [https://gitlab.c
 
 ## Bifrost changes
 
-Bifrost is a key component in THORChain, it is a bridge between THORChain and external chains
+Bifrost is a key component in SWITCHLYChain, it is a bridge between SWITCHLYChain and external chains
 
 1. First, create a new folder under bifrost\pkg\chainclients
 1. Implement interface `ChainClient` interface, refer to [here](../bifrost/pkg/chainclients/chainclient.go)
@@ -57,7 +57,7 @@ Bifrost is a key component in THORChain, it is a bridge between THORChain and ex
 // GetChain     get chain
 // GetHeight    get chain height
 // GetAddress   gets address for public key pool in chain
-// GetAccount   gets account from thorclient in cain
+// GetAccount   gets account from switchlyclient in cain
 // GetConfig    gets the chain configuration
 // GetConfirmationCount given a tx in , return the number of blocks it need to wait for confirmation
 // ConfirmationCountRead given a tx in , return true/false to indicate whether the tx in is ready to be confirmed
@@ -99,6 +99,6 @@ type BlockScannerFetcher interface {
 
 1. update bifrost/pkg/chainclients/loadchains.go to initialise new chain client
 
-This is a sample PR to add bitcoin cash support, in thornode & bifrost
+This is a sample PR to add bitcoin cash support, in switchlynode & bifrost
 
-[https://gitlab.com/thorchain/thornode/-/merge_requests/1395](https://gitlab.com/thorchain/thornode/-/merge_requests/1395)
+[https://gitlab.com/switchly/switchlynode/-/merge_requests/1395](https://gitlab.com/switchly/switchlynode/-/merge_requests/1395)

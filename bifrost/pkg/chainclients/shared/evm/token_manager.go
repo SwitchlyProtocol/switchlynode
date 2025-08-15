@@ -158,15 +158,15 @@ func (h *TokenManager) ConvertAmount(token string, amt *big.Int) *big.Int {
 	return amt
 }
 
-// ConvertThorchainAmountToWei converts amt in 1e8 decimals to wei (1e18 decimals)
-func (h *TokenManager) ConvertThorchainAmountToWei(amt *big.Int) *big.Int {
+// ConvertSwitchlyAmountToWei converts amt in 1e8 decimals to wei (1e18 decimals)
+func (h *TokenManager) ConvertSwitchlyAmountToWei(amt *big.Int) *big.Int {
 	return big.NewInt(0).Mul(amt, big.NewInt(common.One*100))
 }
 
 // ConvertSigningAmount converts a value of a token to wei (1e18 decimals)
 func (h *TokenManager) ConvertSigningAmount(amt *big.Int, token string) *big.Int {
 	// convert 1e8 to 1e18
-	amt = h.ConvertThorchainAmountToWei(amt)
+	amt = h.ConvertSwitchlyAmountToWei(amt)
 	if IsNative(token) {
 		return amt
 	}
@@ -246,7 +246,7 @@ func (h *TokenManager) getDecimals(token string) (uint64, error) {
 	return h.defaultDecimals, fmt.Errorf("%s is %T fail to parse it", output[0], output[0])
 }
 
-// . and - had been reserved to use in THORChain symbol
+// . and - had been reserved to use in SWITCHLYChain symbol
 // and + similarly is not accepted by common package NewSymbol's isAlphaNumeric
 var symbolReplacer = strings.NewReplacer(".", "", "-", "", `\u0000`, "", "\u0000", "", "+", "")
 

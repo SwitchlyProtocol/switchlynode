@@ -4,7 +4,7 @@ We provide convenience tools to run mocknet against forked mainnet EVM chains fo
 
 ## Contract Testing Prerequisites
 
-1. The contract must exist in the mocknet whitelist at `x/thorchain/aggregators/dex_mocknet.go`.
+1. The contract must exist in the mocknet whitelist at `x/switchly/aggregators/dex_mocknet.go`.
 1. If using `evm-tool.py`, the default account (`0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc`) must contain token balances for the swap-in token (see section below for fake balances).
 
 ## Fake Token Balances
@@ -51,10 +51,10 @@ for i in 1 2 3; do
 done
 ```
 
-Then deposit the RUNE side to create the pool - run the following in the `docker compose -f build/docker/docker-compose.yml run cli` shell to create the RUNE side of the pools:
+Then deposit the SWITCH side to create the pool - run the following in the `docker compose -f build/docker/docker-compose.yml run cli` shell to create the SWITCH side of the pools:
 
 ```bash
-thornode tx thorchain deposit 10000000000 rune ADD:ETH.ETH:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
+switchlynode tx switchly deposit 10000000000 rune ADD:ETH.ETH:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
 ```
 
 ### Swap In
@@ -73,14 +73,14 @@ for i in 1 2; do
 done
 ```
 
-The account balance at http://localhost:1317/cosmos/bank/v1beta1/balances/tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej should include the RUNE output from the swap in.
+The account balance at http://localhost:1317/cosmos/bank/v1beta1/balances/tthor1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej should include the SWITCH output from the swap in.
 
 ### Swap Out
 
 Run the following in the `docker compose -f build/docker/docker-compose.yml run cli` shell to swap out USDC (or another token of choice) to the default `evm-tool` address (or an address of choice and use the `--address` flag below to check the balance):
 
 ```bash
-thornode tx thorchain deposit 10000000000 rune SWAP:ETH.ETH:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc::::0xbd68cbe6c247e2c3a0e36b8f0e24964914f26ee8:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48  --from cat $TX_FLAGS
+switchlynode tx switchly deposit 10000000000 rune SWAP:ETH.ETH:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc::::0xbd68cbe6c247e2c3a0e36b8f0e24964914f26ee8:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48  --from cat $TX_FLAGS
 ```
 
 Check the token balance on the target account:

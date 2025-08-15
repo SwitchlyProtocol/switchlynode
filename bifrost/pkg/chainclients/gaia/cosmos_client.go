@@ -33,14 +33,14 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/runners"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/signercache"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	memo "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	memo "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -65,7 +65,7 @@ type CosmosClient struct {
 	accts               *CosmosMetaDataStore
 	tssKeyManager       *tss.KeySign
 	localKeyManager     *keyManager
-	thorchainBridge     thorclient.ThorchainBridge
+	switchlyBridge      switchlyclient.SwitchlyBridge
 	storage             *blockscanner.BlockScannerStorage
 	blockScanner        *blockscanner.BlockScanner
 	signerCacheManager  *signercache.CacheManager
@@ -77,15 +77,15 @@ type CosmosClient struct {
 
 // NewCosmosClient creates a new instance of a Cosmos-based chain client
 func NewCosmosClient(
-	thorKeys *thorclient.Keys,
+	thorKeys *switchlyclient.Keys,
 	cfg config.BifrostChainConfiguration,
 	server *tssp.TssServer,
-	thorchainBridge thorclient.ThorchainBridge,
+	switchlyBridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 ) (*CosmosClient, error) {
 	logger := log.With().Str("module", cfg.ChainID.String()).Logger()
 
-	tssKm, err := tss.NewKeySign(server, thorchainBridge)
+	tssKm, err := tss.NewKeySign(server, switchlyBridge)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create tss signer: %w", err)
 	}
@@ -103,8 +103,8 @@ func NewCosmosClient(
 	if err != nil {
 		return nil, fmt.Errorf("fail to get pub key: %w", err)
 	}
-	if thorchainBridge == nil {
-		return nil, errors.New("thorchain bridge is nil")
+	if switchlyBridge == nil {
+		return nil, errors.New("switchly bridge is nil")
 	}
 
 	localKm := &keyManager{
@@ -123,7 +123,7 @@ func NewCosmosClient(
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
 	txConfig := authtx.NewTxConfig(marshaler, []signingtypes.SignMode{signingtypes.SignMode_SIGN_MODE_DIRECT})
 
-	// CHANGEME: each THORNode network (e.g. mainnet, mocknet, etc.) may connect to a Cosmos chain with a different chain ID
+	// CHANGEME: each SWITCHLYNode network (e.g. mainnet, mocknet, etc.) may connect to a Cosmos chain with a different chain ID
 	// Implement the logic here for determinine which chain ID to use.
 	chainID := ""
 	switch os.Getenv("NET") {
@@ -144,7 +144,7 @@ func NewCosmosClient(
 		accts:           NewCosmosMetaDataStore(),
 		tssKeyManager:   tssKm,
 		localKeyManager: localKm,
-		thorchainBridge: thorchainBridge,
+		switchlyBridge:  switchlyBridge,
 		wg:              &sync.WaitGroup{},
 		stopchan:        make(chan struct{}),
 	}
@@ -162,7 +162,7 @@ func NewCosmosClient(
 		c.cfg.RPCHost,
 		c.cfg.BlockScanner,
 		c.storage,
-		c.thorchainBridge,
+		c.switchlyBridge,
 		m,
 		c.ReportSolvency,
 	)
@@ -170,7 +170,7 @@ func NewCosmosClient(
 		return nil, fmt.Errorf("failed to create cosmos scanner: %w", err)
 	}
 
-	c.blockScanner, err = blockscanner.NewBlockScanner(c.cfg.BlockScanner, c.storage, m, c.thorchainBridge, c.cosmosScanner)
+	c.blockScanner, err = blockscanner.NewBlockScanner(c.cfg.BlockScanner, c.storage, m, c.switchlyBridge, c.cosmosScanner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create block scanner: %w", err)
 	}
@@ -196,7 +196,7 @@ func (c *CosmosClient) Start(
 	c.tssKeyManager.Start()
 	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
-	go runners.SolvencyCheckRunner(c.GetChain(), c, c.thorchainBridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
+	go runners.SolvencyCheckRunner(c.GetChain(), c, c.switchlyBridge, c.stopchan, c.wg, constants.SwitchlyBlockTime)
 }
 
 // Stop Cosmos chain client
@@ -280,7 +280,7 @@ func (c *CosmosClient) GetAccountByAddress(address string, height *big.Int) (com
 	nativeCoins := make([]common.Coin, 0)
 	for _, balance := range balances.Balances {
 		var coin common.Coin
-		coin, err = c.cosmosScanner.fromCosmosToThorchain(balance)
+		coin, err = c.cosmosScanner.fromCosmosToSwitchly(balance)
 		if err != nil {
 			c.logger.Err(err).Interface("balances", balances.Balances).Msg("wasn't able to convert coins that passed whitelist")
 			continue
@@ -310,7 +310,7 @@ func (c *CosmosClient) GetAccountByAddress(address string, height *big.Int) (com
 	}, nil
 }
 
-func (c *CosmosClient) processOutboundTx(tx stypes.TxOutItem, thorchainHeight int64) (*btypes.MsgSend, error) {
+func (c *CosmosClient) processOutboundTx(tx stypes.TxOutItem, switchlyHeight int64) (*btypes.MsgSend, error) {
 	fromAddr, err := tx.VaultPubKey.GetAddress(c.GetChain())
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert address (%s) to bech32: %w", tx.VaultPubKey.String(), err)
@@ -320,9 +320,9 @@ func (c *CosmosClient) processOutboundTx(tx stypes.TxOutItem, thorchainHeight in
 	for _, coin := range tx.Coins {
 		// convert to cosmos coin
 		var cosmosCoin ctypes.Coin
-		cosmosCoin, err = c.cosmosScanner.fromThorchainToCosmos(coin)
+		cosmosCoin, err = c.cosmosScanner.fromSwitchlyToCosmos(coin)
 		if err != nil {
-			c.logger.Warn().Err(err).Interface("tx", tx).Msg("unable to convert coin fromThorchainToCosmos")
+			c.logger.Warn().Err(err).Interface("tx", tx).Msg("unable to convert coin fromSwitchlyToCosmos")
 			continue
 		}
 
@@ -337,7 +337,7 @@ func (c *CosmosClient) processOutboundTx(tx stypes.TxOutItem, thorchainHeight in
 }
 
 // SignTx sign the the given TxArrayItem
-func (c *CosmosClient) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
+func (c *CosmosClient) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
 	defer func() {
 		if err != nil {
 			var keysignError tss.KeysignError
@@ -347,14 +347,14 @@ func (c *CosmosClient) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signe
 					return
 				}
 
-				// key sign error forward the keysign blame to thorchain
+				// key sign error forward the keysign blame to switchly
 				var txID common.TxID
-				txID, err = c.thorchainBridge.PostKeysignFailure(keysignError.Blame, thorchainHeight, tx.Memo, tx.Coins, tx.VaultPubKey)
+				txID, err = c.switchlyBridge.PostKeysignFailure(keysignError.Blame, switchlyHeight, tx.Memo, tx.Coins, tx.VaultPubKey)
 				if err != nil {
-					c.logger.Err(err).Msg("fail to post keysign failure to THORChain")
+					c.logger.Err(err).Msg("fail to post keysign failure to SWITCHLYChain")
 					return
 				}
-				c.logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to thorchain")
+				c.logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to switchly")
 			}
 			c.logger.Err(err).Msg("failed to sign tx")
 			return
@@ -366,7 +366,7 @@ func (c *CosmosClient) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signe
 		return nil, nil, nil, nil
 	}
 
-	msg, err := c.processOutboundTx(tx, thorchainHeight)
+	msg, err := c.processOutboundTx(tx, switchlyHeight)
 	if err != nil {
 		c.logger.Err(err).Msg("failed to process outbound tx")
 		return nil, nil, nil, err
@@ -437,7 +437,7 @@ func (c *CosmosClient) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signe
 		c.logger.Err(err).Interface("coin", gasCoins[0]).Msg(err.Error())
 		return nil, nil, nil, err
 	}
-	cCoin, err := c.cosmosScanner.fromThorchainToCosmos(gasCoins[0])
+	cCoin, err := c.cosmosScanner.fromSwitchlyToCosmos(gasCoins[0])
 	if err != nil {
 		err = errors.New("gas coin is not defined in cosmos_assets.go, unable to pay fee")
 		c.logger.Err(err).Msg(err.Error())
@@ -594,7 +594,7 @@ func (c *CosmosClient) ReportSolvency(blockHeight int64) error {
 	}
 
 	// fetch all asgard vaults
-	asgardVaults, err := c.thorchainBridge.GetAsgards()
+	asgardVaults, err := c.switchlyBridge.GetAsgards()
 	if err != nil {
 		return fmt.Errorf("fail to get asgards,err: %w", err)
 	}
@@ -631,7 +631,7 @@ func (c *CosmosClient) ReportSolvency(blockHeight int64) error {
 	// report that all the vaults are solvent.
 	// If there are any insolvent vaults, report only them.
 	// Not reporting both solvent and insolvent vaults is to avoid noise (spam):
-	// Reporting both could halt-and-unhalt SolvencyHalt in the same THOR block
+	// Reporting both could halt-and-unhalt SolvencyHalt in the same SWITCHLY block
 	// (resetting its height), plus making it harder to know at a glance from solvency reports which vaults were insolvent.
 	solvent := false
 	if !c.IsBlockScannerHealthy() && len(solventMsgs) == len(asgardVaults) {
@@ -646,11 +646,11 @@ func (c *CosmosClient) ReportSolvency(blockHeight int64) error {
 			Bool("solvent", solvent).
 			Msg("reporting solvency")
 
-		// send solvency to thorchain via global queue consumed by the observer
+		// send solvency to switchly via global queue consumed by the observer
 		select {
 		case c.globalSolvencyQueue <- msgs[i]:
-		case <-time.After(constants.ThorchainBlockTime):
-			c.logger.Info().Msgf("fail to send solvency info to THORChain, timeout")
+		case <-time.After(constants.SwitchlyBlockTime):
+			c.logger.Info().Msgf("fail to send solvency info to SWITCHLYChain, timeout")
 		}
 	}
 	return nil
@@ -668,7 +668,7 @@ func (c *CosmosClient) ShouldReportSolvency(height int64) bool {
 func (c *CosmosClient) OnObservedTxIn(txIn stypes.TxInItem, blockHeight int64) {
 	m, err := memo.ParseMemo(common.LatestVersion, txIn.Memo)
 	if err != nil {
-		// Debug log only as ParseMemo error is expected for THORName inbounds.
+		// Debug log only as ParseMemo error is expected for SWITCHName inbounds.
 		c.logger.Debug().Err(err).Msgf("fail to parse memo: %s", txIn.Memo)
 		return
 	}

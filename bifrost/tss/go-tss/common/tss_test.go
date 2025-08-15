@@ -124,7 +124,7 @@ func (t *TssTestSuite) TestTssProcessOutCh(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func fabricateTssMsg(c *C, privKey tcrypto.PrivKey, partyID *btss.PartyID, roundInfo, msg, msgID string, msgType messages.THORChainTSSMessageType) (*messages.WrappedMessage, []byte) {
+func fabricateTssMsg(c *C, privKey tcrypto.PrivKey, partyID *btss.PartyID, roundInfo, msg, msgID string, msgType messages.SWITCHLYChainTSSMessageType) (*messages.WrappedMessage, []byte) {
 	routingInfo := btss.MessageRouting{
 		From:                    partyID,
 		To:                      nil,

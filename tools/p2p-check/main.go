@@ -20,7 +20,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func extractIPAddress(s string) (string, error) {
@@ -100,16 +100,16 @@ func main() {
 
 	nodesByPeerID := make(map[string]string)
 	nodes := make([]openapi.Node, 0)
-	url := fmt.Sprintf("%s/thorchain/nodes", getEnvOrDefault("THORNODE", "https://thornode.ninerealms.com"))
+	url := fmt.Sprintf("%s/switchly/nodes", getEnvOrDefault("SWITCHLYNODE", "https://switchlynode.ninerealms.com"))
 	// nolint
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("fail to get thornode status", err.Error())
+		fmt.Println("fail to get switchlynode status", err.Error())
 	} else {
 		defer resp.Body.Close()
 
 		if err = json.NewDecoder(resp.Body).Decode(&nodes); err != nil {
-			fmt.Println("fail to decode thornode status", err.Error())
+			fmt.Println("fail to decode switchlynode status", err.Error())
 		} else {
 			for _, node := range nodes {
 				if node.PreflightStatus.Status == types.NodeStatus_Ready.String() {
@@ -202,7 +202,7 @@ func main() {
 				return
 			}
 
-			// check the thornode port
+			// check the switchlynode port
 			ok = checkPortOpen(ipAddr, 27147)
 			if !ok {
 				r.description = "port 27147 not open"
@@ -210,7 +210,7 @@ func main() {
 				return
 			}
 
-			// check thornode sync at tip
+			// check switchlynode sync at tip
 			var nodeHeight int64
 			nodeHeight, err = fetchBlockHeight(fmt.Sprintf("http://%s:27147", ipAddr))
 			if err != nil {
@@ -219,7 +219,7 @@ func main() {
 				return
 			}
 			if height > nodeHeight+5 {
-				r.description = fmt.Sprintf("thornode behind the tip %d", height-nodeHeight)
+				r.description = fmt.Sprintf("switchlynode behind the tip %d", height-nodeHeight)
 				results[node.NodeAddress] = r
 				return
 			}
@@ -294,7 +294,7 @@ func fetchBlockHeight(addr string) (int64, error) {
 			// retry
 			return fetchBlockHeight(addr)
 		}
-		return 0, fmt.Errorf("thornode status bad request: %d", resp.StatusCode)
+		return 0, fmt.Errorf("switchlynode status bad request: %d", resp.StatusCode)
 	}
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {

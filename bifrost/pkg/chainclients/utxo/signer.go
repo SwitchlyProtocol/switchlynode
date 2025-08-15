@@ -21,7 +21,7 @@ import (
 	"github.com/eager7/dogutil"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/utxo"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
@@ -32,7 +32,7 @@ import (
 
 // SignTx builds and signs the outbound transaction. Returns the signed transaction, a
 // serialized checkpoint on error, and an error.
-func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) ([]byte, []byte, *stypes.TxInItem, error) {
+func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) ([]byte, []byte, *stypes.TxInItem, error) {
 	if !tx.Chain.Equals(c.cfg.ChainID) {
 		return nil, nil, nil, errors.New("wrong chain")
 	}
@@ -207,7 +207,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) ([]byte, []b
 	}
 	wg.Wait()
 	if utxoErr != nil {
-		err = utxo.PostKeysignFailure(c.bridge, tx, c.log, thorchainHeight, utxoErr)
+		err = utxo.PostKeysignFailure(c.bridge, tx, c.log, switchlyHeight, utxoErr)
 		return nil, checkpointBytes, nil, fmt.Errorf("fail to sign the message: %w", err)
 	}
 
@@ -236,7 +236,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) ([]byte, []b
 
 	// create the observation to be sent by the signer before broadcast
 	chainHeight, err := c.rpc.GetBlockCount()
-	if err != nil { // fall back to the scanner height, thornode voter does not use height
+	if err != nil { // fall back to the scanner height, switchlynode voter does not use height
 		chainHeight = c.currentBlockHeight.Load()
 	}
 	amt := redeemTx.TxOut[0].Value // the first output is the outbound amount

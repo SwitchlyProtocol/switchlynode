@@ -10,12 +10,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/constants
+endpoint: http://localhost:1317/switchly/constants
 asserts:
   - .int_64_values.SigningTransactionPeriod == 3
 ---
@@ -33,7 +33,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid 1 }}"
@@ -46,7 +46,7 @@ type: create-blocks
 count: 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid 1 }}"
@@ -64,7 +64,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .RESCHEDULECOALESCEBLOCKS == 5
 ---
@@ -72,7 +72,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid 1 }}"
@@ -85,7 +85,7 @@ type: create-blocks
 count: 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid 1 }}"
@@ -98,7 +98,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid 1 }}"

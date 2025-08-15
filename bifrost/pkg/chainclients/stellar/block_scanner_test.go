@@ -6,7 +6,7 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
@@ -14,7 +14,7 @@ import (
 type StellarBlockScannerTestSuite struct {
 	scanner *StellarBlockScanner
 	m       *metrics.Metrics
-	bridge  *MockThorchainBridge
+	bridge  *MockSwitchlyBridge
 }
 
 var _ = Suite(&StellarBlockScannerTestSuite{})
@@ -26,7 +26,7 @@ func (s *StellarBlockScannerTestSuite) SetUpSuite(c *C) {
 	c.Assert(s.m, NotNil)
 
 	// Create mock bridge
-	s.bridge = &MockThorchainBridge{}
+	s.bridge = &MockSwitchlyBridge{}
 
 	// Mock configuration
 	cfg := config.BifrostBlockScannerConfiguration{

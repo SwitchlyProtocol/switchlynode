@@ -16,7 +16,7 @@ As of Blockheight `13,333,333`, ILP is as follows:
 ```text
 ETH.FOX 29,683
 BTC.BTC 22,984
-ETH.XRUNE 18,431
+ETH.XSWITCH 18,431
 ETH.TGT 1,914
 ETH.ETH 1,433
 ETH.UOS 814
@@ -38,16 +38,16 @@ FULLIMPLOSSPROTECTIONBLOCKS 0
 
 ## Context
 
-Having been necessary to bootstrap liquidity pools and attract capital during THORChain’s early-stage growth, Impermanent Loss Protection has served its purpose. The protocol has since evolved to offer Savings Vaults and Protocol Owned Liquidity (PoL), which give the protocol reserve the ability to take a more long-term outlook. Rather than subsidize LPs impermanent loss, the protocol reserve can take a stake in the pools directly via PoL. Paired with Savings Vaults, the need for dual-sided LP incentives becomes less apparent.
+Having been necessary to bootstrap liquidity pools and attract capital during SWITCHLYChain’s early-stage growth, Impermanent Loss Protection has served its purpose. The protocol has since evolved to offer Savings Vaults and Protocol Owned Liquidity (PoL), which give the protocol reserve the ability to take a more long-term outlook. Rather than subsidize LPs impermanent loss, the protocol reserve can take a stake in the pools directly via PoL. Paired with Savings Vaults, the need for dual-sided LP incentives becomes less apparent.
 
-As demonstrated by Bancor’s rapid death spiral—attributed to their implementation of impermanent loss protection—we have seen how the feature can be dangerous at scale (particularly if offered on volatile assets). In THORChain’s case, a sudden loss of value of $RUNE price comparable to the price(s) of other assets may lead to a rapid, large-scale drawdown from the protocol reserve. Some external event (other than ILP being paid out over typical market cycles), such as an exploit or sanctions, could cause such a price drop. In such a scenario, dual-sided LPs may begin exiting and selling $RUNE-denominated impermanent loss protection (ILP) to cover losses, requiring an increasing amount of $RUNE to be pulled from the protocol reserve, further exacerbating the issue.
+As demonstrated by Bancor’s rapid death spiral—attributed to their implementation of impermanent loss protection—we have seen how the feature can be dangerous at scale (particularly if offered on volatile assets). In SWITCHLYChain’s case, a sudden loss of value of $SWITCH price comparable to the price(s) of other assets may lead to a rapid, large-scale drawdown from the protocol reserve. Some external event (other than ILP being paid out over typical market cycles), such as an exploit or sanctions, could cause such a price drop. In such a scenario, dual-sided LPs may begin exiting and selling $SWITCH-denominated impermanent loss protection (ILP) to cover losses, requiring an increasing amount of $SWITCH to be pulled from the protocol reserve, further exacerbating the issue.
 
 Therefore, it is necessary to re-evaluate the need for Impermanent Loss Protection.
-While we have seen that THORChain’s Impermanent Loss Protection (ILP) has remained robust over bull (‘20-21) and bear markets (‘22+), impermanent loss protection remains an outstanding, potentially unbounded liability to the protocol.
+While we have seen that SWITCHLYChain’s Impermanent Loss Protection (ILP) has remained robust over bull (‘20-21) and bear markets (‘22+), impermanent loss protection remains an outstanding, potentially unbounded liability to the protocol.
 
 ## Proposed Change
 
-1. Grandfather existing ILP liabilities. Existing depositors would remain covered in perpetuity. This ensures there is not a rush for the exit. Without grandfathering existing liabilities, LPs wanting to claim existing protections would withdraw. It is estimated that a $RUNE price of $6 negates all existing liabilities. Above that price, ILP liabilities would be effectively zero RUNE.
+1. Grandfather existing ILP liabilities. Existing depositors would remain covered in perpetuity. This ensures there is not a rush for the exit. Without grandfathering existing liabilities, LPs wanting to claim existing protections would withdraw. It is estimated that a $SWITCH price of $6 negates all existing liabilities. Above that price, ILP liabilities would be effectively zero SWITCH.
 2. Thirty (30) days after the vote passes, Impermanent Loss Protection will be disabled for all new LPs. This gives prospective LPs the ability to lock-in ILP for the next until the cutoff date, which may attract new capital to the system.
 
 ## Alternatives Considered
@@ -56,4 +56,4 @@ An alternative to ILP was considered: “Deposit Protection”. The goal of Depo
 
 ## References
 
-- Deposit Protection: https://gitlab.com/thorchain/thornode/-/issues/1408
+- Deposit Protection: https://gitlab.com/switchly/switchlynode/-/issues/1408

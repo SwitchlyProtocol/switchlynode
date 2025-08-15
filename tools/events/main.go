@@ -13,7 +13,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/switchlyscan"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ func InitNetwork() {
 // ScanBlock
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func ScanBlock(block *thorscan.BlockResponse) {
+func ScanBlock(block *switchlyscan.BlockResponse) {
 	ScanInfo(block)
 	ScanActivity(block)
 	ScanSecurity(block)
@@ -104,7 +104,7 @@ func main() {
 	// initialize
 	util.InitCache()
 	InitNetwork()
-	thorscan.APIEndpoint = config.Get().Endpoints.Thornode
+	switchlyscan.APIEndpoint = config.Get().Endpoints.Switchlynode
 
 	// prune local storage
 	util.Prune("scheduled-outbound")
@@ -134,14 +134,14 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	}
 
-	for block := range thorscan.Scan(height, config.Get().Scan.Stop) {
+	for block := range switchlyscan.Scan(height, config.Get().Scan.Stop) {
 		// trail by one block to avoid race with downstream midgard use
 		var blockTime time.Time
 		blockTime, err = time.Parse(time.RFC3339, block.Header.Time)
 		if err != nil {
 			log.Fatal().Err(err).Msg("unable to parse block time")
 		}
-		time.Sleep(time.Until(blockTime.Add(constants.ThorchainBlockTime)))
+		time.Sleep(time.Until(blockTime.Add(constants.SwitchlyBlockTime)))
 
 		ScanBlock(block)
 

@@ -16,14 +16,14 @@ import (
 type RouterIntegrationTestSuite struct {
 	client        *Client
 	routerScanner *RouterEventScanner
-	bridge        *MockThorchainBridge
+	bridge        *MockSwitchlyBridge
 	server        *httptest.Server
 }
 
 var _ = Suite(&RouterIntegrationTestSuite{})
 
 func (s *RouterIntegrationTestSuite) SetUpTest(c *C) {
-	s.bridge = &MockThorchainBridge{}
+	s.bridge = &MockSwitchlyBridge{}
 
 	// Create mock HTTP server for testing (like other chain clients)
 	s.server = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -72,10 +72,10 @@ func (s *RouterIntegrationTestSuite) SetUpTest(c *C) {
 	sorobanRPCClient := NewSorobanRPCClient(cfg, logger, StellarTestnet)
 
 	client := &Client{
-		cfg:             cfg,
-		thorchainBridge: s.bridge,
-		horizonClient:   horizonClient,
-		routerAddress:   "",
+		cfg:            cfg,
+		switchlyBridge: s.bridge,
+		horizonClient:  horizonClient,
+		routerAddress:  "",
 	}
 	s.client = client
 

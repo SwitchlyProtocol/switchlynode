@@ -17,7 +17,7 @@ count: 1
 # deposit savers (non-streaming, quote only)
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/saver/deposit
+endpoint: http://localhost:1317/switchly/quote/saver/deposit
 params:
   asset: BTC.BTC
   amount: 10000000
@@ -47,7 +47,7 @@ count: 1
 # streaming savers deposit (quote)
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/saver/deposit
+endpoint: http://localhost:1317/switchly/quote/saver/deposit
 params:
   asset: BTC.BTC
   amount: 10000000
@@ -89,7 +89,7 @@ type: create-blocks
 count: 21
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/savers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/savers
 asserts:
   - .|length == 1
   - .[0].asset_deposit_value|tonumber == 9923995
@@ -98,7 +98,7 @@ asserts:
 # streaming savers withdraw (quote)
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/saver/withdraw
+endpoint: http://localhost:1317/switchly/quote/saver/withdraw
 params:
   asset: BTC.BTC
   withdraw_bps: 10000
@@ -119,22 +119,22 @@ asserts:
 # streaming savers affiliate tests
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_thor_fish }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_thor_fish }}
 asserts:
-  - .units == "0" # No Savers position for the address to be used as the Affiliate's THOR Alias.
+  - .units == "0" # No Savers position for the address to be used as the Affiliate's SWITCHLY Alias.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_btc_fish }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_btc_fish }}
 asserts:
   - .units == "0" # No Savers position for the address to be used as the Affiliate's BTC Alias.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0 # No pending outbounds.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0 # No ongoing streaming swaps.
 ---
@@ -154,7 +154,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "+:BTC/BTC::nothorname:1000" # Non-existent thorname.
+      memo: "+:BTC/BTC::noswitchlyname:1000" # Non-existent switchlyname.
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -163,17 +163,17 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "refund")] | length == 1
   - .|..|select(.type? == "refund") | .reason | contains("fail to refund") | not # Refund possible.
-  - .|..|select(.type? == "refund") | .reason | contains("nothorname is not recognizable")
+  - .|..|select(.type? == "refund") | .reason | contains("noswitchlyname is not recognizable")
   - .|..|select(.type? == "refund") | .coin == "${IN_AMOUNT} ${IN_ASSET}"
   # Input-asset refund, not a synth after swapping.
   # Amount is for the full inbound (unsplit by affiliate fee).
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0].coin.asset == "${IN_ASSET}"
@@ -206,7 +206,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0 # No pending outbounds.
 ---
@@ -216,7 +216,7 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "2000000000"
     asset: "rune"
-memo: "NAME:fishthorname:THOR:{{ addr_thor_fish }}"
+memo: "NAME:fishswitchlyname:SWITCHLY:{{ addr_thor_fish }}"
 ---
 type: tx-observed-in
 signer: {{ addr_thor_dog }}
@@ -233,7 +233,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "+:BTC/BTC::fishthorname:1000" # THOR-Alias-only THORName.
+      memo: "+:BTC/BTC::fishswitchlyname:1000" # SWITCHLY-Alias-only SWITCHName.
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -242,15 +242,15 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/fishthorname
+endpoint: http://localhost:1317/switchly/switchlyname/fishswitchlyname
 asserts:
   - .owner == "{{ addr_thor_fox }}"
   - .aliases | length == 1
-  - .aliases == [{"address":"{{ addr_thor_fish }}","chain":"THOR"}]
-  # THOR Alias only.
+  - .aliases == [{"address":"{{ addr_thor_fish }}","chain":"SWITCHLY"}]
+  # SWITCHLY Alias only.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "refund")] | length == 1
   - .|..|select(.type? == "refund") | .reason | contains("fail to refund") | not # Refund possible.
@@ -262,7 +262,7 @@ asserts:
   #  rather than swapped to synth and then unrefundable synth cleaned up.)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0].coin.asset == "${IN_ASSET}"
@@ -295,7 +295,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -305,7 +305,7 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "2000000000"
     asset: "rune"
-memo: "NAME:fishthorname:BTC:{{ addr_btc_fish }}" # BTC Alias.
+memo: "NAME:fishswitchlyname:BTC:{{ addr_btc_fish }}" # BTC Alias.
 ---
 type: tx-observed-in
 signer: {{ addr_thor_dog }}
@@ -322,7 +322,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "+:BTC/BTC::fishthorname:1000" # BTC-Alias-present THORName.
+      memo: "+:BTC/BTC::fishswitchlyname:1000" # BTC-Alias-present SWITCHName.
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -331,20 +331,20 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/fishthorname
+endpoint: http://localhost:1317/switchly/switchlyname/fishswitchlyname
 asserts:
   - .owner == "{{ addr_thor_fox }}"
   - .aliases | length == 2
-  - .aliases == [{"address":"{{ addr_thor_fish }}","chain":"THOR"},{"address":"{{ addr_btc_fish }}","chain":"BTC"}]
-  # THOR and BTC Aliases.
+  - .aliases == [{"address":"{{ addr_thor_fish }}","chain":"SWITCHLY"},{"address":"{{ addr_btc_fish }}","chain":"BTC"}]
+  # SWITCHLY and BTC Aliases.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "refund")] | length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
   - .[0].tx_id == "${IN_TXID}"
@@ -354,7 +354,7 @@ asserts:
   # The Savers add is streaming, and the streaming swap is the full unsplit amount.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_btc_fish }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_btc_fish }}
 asserts:
   - .units == "0" # Savers position yet for the Affiliate's BTC address.
 ---
@@ -362,12 +362,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "refund")] | length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_btc_fish }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_btc_fish }}
 asserts:
   - .units == "${SAVER_UNITS=148739}" # Successful Savers add for the Affiliate BTC address.
 ---
@@ -387,7 +387,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "+:BTC/BTC::{{ addr_btc_fish }}:1000" # BTC Affiliate Address directly, with no THORName.
+      memo: "+:BTC/BTC::{{ addr_btc_fish }}:1000" # BTC Affiliate Address directly, with no SWITCHName.
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -396,12 +396,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "refund")] | length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
   - .[0].tx_id == "${IN_TXID}"
@@ -411,7 +411,7 @@ asserts:
   # The Savers add is streaming, and the streaming swap is the full unsplit amount.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_btc_fish }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_btc_fish }}
 asserts:
   - .units == "${SAVER_UNITS}"
 ---
@@ -419,6 +419,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/saver/{{ addr_btc_fish }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/saver/{{ addr_btc_fish }}
 asserts:
   - .units | tonumber > ${SAVER_UNITS} # Successful Savers add for the Affiliate BTC address.

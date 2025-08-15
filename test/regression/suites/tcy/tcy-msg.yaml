@@ -1,17 +1,17 @@
 type: env
-key: TCY_CLAIMING_HALT
+key: SWCY_CLAIMING_HALT
 value: "0"
 ---
 type: env
-key: TCY_STAKING_HALT
+key: SWCY_STAKING_HALT
 value: "0"
 ---
 type: env
-key: TCY_UNSTAKING_HALT
+key: SWCY_UNSTAKING_HALT
 value: "0"
 ---
 type: env
-key: TCY_STAKE_SYSTEM_INCOME_BPS
+key: SWCY_STAKE_SYSTEM_INCOME_BPS
 value: "1000"
 ---
 {{ template "default-state.yaml" }}
@@ -26,7 +26,7 @@ genesis:
       balances:
         - address: {{ addr_module_tcy_claim }}
           coins:
-            - amount: "${BAL_TCY_STAKE=20500000000}"
+            - amount: "${BAL_SWCY_STAKE=20500000000}"
               denom: tcy
         - address: {{ addr_thor_fish }}
           coins:
@@ -34,7 +34,7 @@ genesis:
               denom: rune
         - address: {{ addr_thor_cat }}
           coins:
-            - amount: "${CAT_TCY=100000000}"
+            - amount: "${CAT_SWCY=100000000}"
               denom: tcy
             - amount: "1000000000"
               denom: rune
@@ -86,27 +86,27 @@ genesis:
           pub_key: null
           account_number: "7"
           sequence: "0"
-    thorchain:
+    switchly:
       tcy_claimers:
         - l1_address: {{ addr_btc_goat }}
-          amount: "${GOAT_TCY=1000}"
+          amount: "${GOAT_SWCY=1000}"
           asset: "BTC.BTC"
         # Frog address has 2 claims from different ETH assets
         - l1_address: {{ addr_eth_frog }}
           asset: "ETH.ETH"
-          amount: "${FROG_TCY_PART_1=2000}"
+          amount: "${FROG_SWCY_PART_1=2000}"
         - l1_address: {{ addr_eth_frog }}
           asset: "ETH.USDX-0X1239999999999999999999999999999999123999"
-          amount: "${FROG_TCY_PART_2=2000}"
+          amount: "${FROG_SWCY_PART_2=2000}"
         - l1_address: {{ addr_eth_wolf }}
           asset: "ETH.USDX-0X9999999999999999999999999999999999999999"
-          amount: "${WOLF_TCY=3000}"
+          amount: "${WOLF_SWCY=3000}"
         - l1_address: {{ addr_eth_pig }}
           asset: "ETH.USDX-0X9999999999999999999999999999999999999123"
-          amount: "${PIG_TCY=4000}"
+          amount: "${PIG_SWCY=4000}"
         - l1_address: {{ addr_thor_fish }}
           asset: "DOGE.DOGE"
-          amount: "${FISH_TCY=5000}"
+          amount: "${FISH_SWCY=5000}"
 ---
 type: create-blocks
 count: 2
@@ -115,42 +115,42 @@ type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_tcy_claim }}
 asserts:
   - .balances|length == 1
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_TCY_STAKE}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_SWCY_STAKE}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_pig }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_pig }}
 status: 400
 asserts:
   - .code == 3
-  - .message|contains("TCYStaker doesn't exist")
+  - .message|contains("SWCYStaker doesn't exist")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_goat }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_goat }}
 status: 400
 asserts:
   - .code == 3
-  - .message|contains("TCYStaker doesn't exist")
+  - .message|contains("SWCYStaker doesn't exist")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_frog }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_frog }}
 status: 400
 asserts:
   - .code == 3
-  - .message|contains("TCYStaker doesn't exist")
+  - .message|contains("SWCYStaker doesn't exist")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_wolf }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_wolf }}
 status: 400
 asserts:
   - .code == 3
-  - .message|contains("TCYStaker doesn't exist")
+  - .message|contains("SWCYStaker doesn't exist")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_fish }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_fish }}
 status: 400
 asserts:
   - .code == 3
-  - .message|contains("TCYStaker doesn't exist")
+  - .message|contains("SWCYStaker doesn't exist")
 ---
 type: create-blocks
 count: 1
@@ -170,7 +170,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "BTC.BTC"
-    memo: "TCY:{{ addr_thor_goat }}"
+    memo: "SWCY:{{ addr_thor_goat }}"
   block_height: 1
   finalise_height: 1
   observed_pub_key: {{ pubkey_dog }}
@@ -193,7 +193,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "ETH.ETH"
-    memo: "TCY:{{ addr_thor_frog }}"
+    memo: "SWCY:{{ addr_thor_frog }}"
   block_height: 1
   finalise_height: 1
   observed_pub_key: {{ pubkey_dog }}
@@ -216,7 +216,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "ETH.ETH"
-    memo: "TCY:{{ addr_thor_wolf }}"
+    memo: "SWCY:{{ addr_thor_wolf }}"
   block_height: 1
   finalise_height: 1
   observed_pub_key: {{ pubkey_dog }}
@@ -239,7 +239,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "ETH.ETH"
-    memo: "TCY:{{ addr_thor_pig }}"
+    memo: "SWCY:{{ addr_thor_pig }}"
   block_height: 1
   finalise_height: 1
   observed_pub_key: {{ pubkey_dog }}
@@ -250,71 +250,71 @@ count: 1
 type: tx-deposit
 signer: {{ addr_thor_fish }}
 coins:
-  - amount: "${FISH_RUNE_TCY_TX=100000000}"
+  - amount: "${FISH_SWITCH_SWCY_TX=100000000}"
     asset: "rune"
-memo: "TCY:{{ addr_thor_fish }}"
+memo: "SWCY:{{ addr_thor_fish }}"
 ---
 type: create-blocks
 count: 1
 ---
 #######################################################################################
-# Claiming module should send the corresponding TCY to the different address and      #
-# should receive the RUNE send from TCY txs                                           #
+# Claiming module should send the corresponding SWCY to the different address and      #
+# should receive the SWITCH send from SWCY txs                                           #
 #######################################################################################
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_tcy_claim }}
 asserts:
   - .balances|length == 1
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_TCY_STAKE}-${PIG_TCY}-${GOAT_TCY}-${FROG_TCY_PART_1}-${FROG_TCY_PART_2}-${WOLF_TCY}-${FISH_TCY}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_SWCY_STAKE}-${PIG_SWCY}-${GOAT_SWCY}-${FROG_SWCY_PART_1}-${FROG_SWCY_PART_2}-${WOLF_SWCY}-${FISH_SWCY}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_tcy_stake }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${PIG_TCY}+${GOAT_TCY}+${FROG_TCY_PART_1}+${FROG_TCY_PART_2}+${WOLF_TCY}+${FISH_TCY}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${PIG_SWCY}+${GOAT_SWCY}+${FROG_SWCY_PART_1}+${FROG_SWCY_PART_2}+${WOLF_SWCY}+${FISH_SWCY}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_pig }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_pig }}
 asserts:
-  - .amount|tonumber == ${PIG_TCY}
+  - .amount|tonumber == ${PIG_SWCY}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_goat }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_goat }}
 asserts:
-  - .amount|tonumber == ${GOAT_TCY}
+  - .amount|tonumber == ${GOAT_SWCY}
 ---
 #################################################################################
-# FROG address has TCY claim for 2 different assets, it should receive for both #
+# FROG address has SWCY claim for 2 different assets, it should receive for both #
 #################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_frog }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_frog }}
 asserts:
-  - .amount|tonumber == ${FROG_TCY_PART_1}+${FROG_TCY_PART_2}
+  - .amount|tonumber == ${FROG_SWCY_PART_1}+${FROG_SWCY_PART_2}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_wolf }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_wolf }}
 asserts:
-  - .amount|tonumber == ${WOLF_TCY}
+  - .amount|tonumber == ${WOLF_SWCY}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_fish }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_fish }}
 asserts:
-  - .amount|tonumber == ${FISH_TCY}
+  - .amount|tonumber == ${FISH_SWCY}
 ---
 #################################################################################
 # Stake and unstake tests                                                       #
 #################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_cat }}
 status: 400
 asserts:
   - .code == 3
-  - .message|contains("TCYStaker doesn't exist")
+  - .message|contains("SWCYStaker doesn't exist")
 ---
 type: tx-deposit
 signer: {{ addr_thor_cat }}
 coins:
-  - amount: "${CAT_TCY}"
+  - amount: "${CAT_SWCY}"
     asset: "tcy"
 memo: "tcy+"
 ---
@@ -328,15 +328,15 @@ asserts:
   - .balances[0].denom == "rune"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_cat }}
 asserts:
-  - .amount|tonumber == ${CAT_TCY}
+  - .amount|tonumber == ${CAT_SWCY}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_tcy_stake }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${PIG_TCY}+${GOAT_TCY}+${FROG_TCY_PART_1}+${FROG_TCY_PART_2}+${WOLF_TCY}+${FISH_TCY}+${CAT_TCY}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${PIG_SWCY}+${GOAT_SWCY}+${FROG_SWCY_PART_1}+${FROG_SWCY_PART_2}+${WOLF_SWCY}+${FISH_SWCY}+${CAT_SWCY}
 ---
 # Unstake 50%
 type: tx-deposit
@@ -350,15 +350,15 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_cat }}
 asserts:
-  - .amount|tonumber == ${CAT_TCY}/2
+  - .amount|tonumber == ${CAT_SWCY}/2
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_cat }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${CAT_TCY}/2
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${CAT_SWCY}/2
 ---
 # Unstake 100%
 type: tx-deposit
@@ -372,23 +372,23 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tcy_staker/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/tcy_staker/{{ addr_thor_cat }}
 status: 400
 asserts:
   - .code == 3
-  - .message|contains("TCYStaker doesn't exist")
+  - .message|contains("SWCYStaker doesn't exist")
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_cat }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${CAT_TCY}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${CAT_SWCY}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_tcy_stake }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${PIG_TCY}+${GOAT_TCY}+${FROG_TCY_PART_1}+${FROG_TCY_PART_2}+${WOLF_TCY}+${FISH_TCY}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${PIG_SWCY}+${GOAT_SWCY}+${FROG_SWCY_PART_1}+${FROG_SWCY_PART_2}+${WOLF_SWCY}+${FISH_SWCY}
 ---
 # vault will have more than pool
 type: fail-export-invariants

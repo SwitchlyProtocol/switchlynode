@@ -6,7 +6,7 @@ parent:
 
 # Architecture Decision Records (ADR)
 
-This is a location to record all high-level architecture decisions in the THORChain project.
+This is a location to record all high-level architecture decisions in the SWITCHLYChain project.
 
 You can read more about the ADR concept in this [blog post](https://product.reverb.com/documenting-architecture-decisions-the-reverb-way-a3563bb24bd0#.78xhdix6t).
 
@@ -41,7 +41,7 @@ Note the context/background should be written in the present tense.
 - [008 - Implement a Dynamic Outbound Fee Multiplier (DOFM)](./adr-008-implement-dynamic-outbound-fee-multiplier.md)
 - [009 - Reserve Income and Fee Overhaul](./adr-009-reserve-income-fee-overhaul.md)
 - [010 - Introduction of Streaming Swaps](./adr-010-streaming-swaps.md)
-- [011 - THORFi Lending Feature](./adr-011-lending.md)
+- [011 - SWITCHLYFi Lending Feature](./adr-011-lending.md)
 - [012 - Scale Lending](./adr-012-scale-lending.md)
 - [013 - Synth Backstop](./adr-013-synth-backstop.md)
 - [014 - Reduce Saver Yield Synth Target to Match POL Target](./adr-014-reduce-saver-yield-target.md)
@@ -56,7 +56,7 @@ Note the context/background should be written in the present tense.
 - [006 - Enable POL](./adr-006-enable-pol.md)
 - [008 - Implement a Dynamic Outbound Fee Multiplier (DOFM)](./adr-008-implement-dynamic-outbound-fee-multiplier.md)
 - [010 - Introduction of Streaming Swaps](./adr-010-streaming-swaps.md)
-- [011 - THORFi Lending Feature](./adr-011-lending.md)
+- [011 - SWITCHLYFi Lending Feature](./adr-011-lending.md)
 - [012 - Scale Lending](./adr-012-scale-lending.md)
 - [013 - Synth Backstop](./adr-013-synth-backstop.md)
 - [014 - Reduce Saver Yield Synth Target to Match POL Target](./adr-014-reduce-saver-yield-target.md)

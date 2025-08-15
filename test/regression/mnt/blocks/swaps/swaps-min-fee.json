@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -133,7 +133,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -181,8 +181,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "30000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "30000000 SWITCHLY.SWITCH",
         "emit_asset": "29981 BTC.BTC",
         "from": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
         "id": "8BBD73231CFF30AEF1E9CD21A89041E3F2550A8194620BF250CEFD081792198F",
@@ -342,7 +342,7 @@
                 "coins": [
                   {
                     "amount": "30000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -439,7 +439,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -1004,7 +1004,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -1580,7 +1580,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -1628,8 +1628,8 @@
         "type": "message"
       },
       {
-        "chain": "THOR",
-        "coin": "30000000 THOR.RUNE",
+        "chain": "SWITCHLY",
+        "coin": "30000000 SWITCHLY.SWITCH",
         "emit_asset": "28476 BTC.BTC",
         "from": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
         "id": "84362BEECF3712A3C8D6E46F10A2C63C1B2F3E53659E3A5BDF803660F5C9D49A",
@@ -1789,7 +1789,7 @@
                 "coins": [
                   {
                     "amount": "30000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],

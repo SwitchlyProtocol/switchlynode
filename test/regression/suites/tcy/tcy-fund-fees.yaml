@@ -3,7 +3,7 @@ key: EMISSION_CURVE
 value: "100000000"
 ---
 type: env
-key: TCY_STAKE_SYSTEM_INCOME_BPS
+key: SWCY_STAKE_SYSTEM_INCOME_BPS
 value: "1000"
 ---
 {{ template "default-state.yaml" }}
@@ -32,7 +32,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"
@@ -61,12 +61,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 ############################################################################
-# After swap is executed we get ~10% of the fees to TCY Fund:              # 
+# After swap is executed we get ~10% of the fees to SWCY Fund:              # 
 # Block 2:                                                                 #
 #   - init_system_income = 990990645                                      #
 #     (system_income + tcy_stake_reward + dev_fund_reward + income_burn)   #

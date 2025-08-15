@@ -16,7 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ func export(out io.Writer, path string, routine int, failExportInvariants bool) 
 
 	// export state
 	localLog.Debug().Msg("Exporting state")
-	cmd := exec.Command("thornode", "export", "--log_level=disabled")
+	cmd := exec.Command("switchlynode", "export", "--log_level=disabled")
 	cmd.Env = append(os.Environ(), "HOME="+home)
 	exportOut, err := cmd.CombinedOutput()
 	if err != nil {
@@ -55,11 +55,11 @@ func export(out io.Writer, path string, routine int, failExportInvariants bool) 
 	delete(export, "app_version")
 	delete(export, "genesis_time")
 	appState, _ := export["app_state"].(map[string]any)
-	thorchain, _ := appState["thorchain"].(map[string]any)
-	delete(thorchain, "store_version")
+	switchly, _ := appState["switchly"].(map[string]any)
+	delete(switchly, "store_version")
 
 	// ignore node account version for comparison
-	nodeAccounts, _ := thorchain["node_accounts"].([]interface{})
+	nodeAccounts, _ := switchly["node_accounts"].([]interface{})
 	for i, na := range nodeAccounts {
 		na, _ := na.(map[string]interface{})
 		delete(na, "version")
@@ -190,17 +190,17 @@ func checkExportInvariants(out io.Writer, genesis map[string]any) error {
 	localLog.Debug().Msg("Checking export invariants")
 	appState, _ := genesis["app_state"].(map[string]any)
 
-	// encode thorchain state to json for custom unmarshal
+	// encode switchly state to json for custom unmarshal
 	buf := bytes.NewBuffer(nil)
 	enc := json.NewEncoder(buf)
 	enc.SetIndent("", "  ")
-	err := enc.Encode(appState["thorchain"])
+	err := enc.Encode(appState["switchly"])
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to encode genesis state")
 	}
 
 	// unmarshal json to genesis state
-	genesisState := &thorchain.GenesisState{}
+	genesisState := &switchly.GenesisState{}
 	err = encodingConfig.Codec.UnmarshalJSON(buf.Bytes(), genesisState)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to decode genesis state")

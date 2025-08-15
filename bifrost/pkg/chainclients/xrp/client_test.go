@@ -16,9 +16,9 @@ import (
 	cKeys "github.com/cosmos/cosmos-sdk/crypto/keyring"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
@@ -35,8 +35,8 @@ func TestPackage(t *testing.T) { TestingT(t) }
 
 type XrpTestSuite struct {
 	thordir  string
-	thorKeys *thorclient.Keys
-	bridge   thorclient.ThorchainBridge
+	thorKeys *switchlyclient.Keys
+	bridge   switchlyclient.SwitchlyBridge
 	m        *metrics.Metrics
 }
 
@@ -71,7 +71,7 @@ func (s *XrpTestSuite) SetUpSuite(c *C) {
 
 	s.thordir = filepath.Join(os.TempDir(), ns, ".thorcli")
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       "localhost",
 		SignerName:      "bob",
 		SignerPasswd:    "password",
@@ -84,8 +84,8 @@ func (s *XrpTestSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, s.thorKeys)
+	s.thorKeys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.m, s.thorKeys)
 	c.Assert(err, IsNil)
 }
 
@@ -187,7 +187,7 @@ func (s *XrpTestSuite) TestProcessOutboundTx(c *C) {
 			ChainNetwork: "1234",
 			RPCHost:      "http://testnode/",
 			BlockScanner: config.BifrostBlockScannerConfiguration{
-				StartBlockHeight: 1, // avoids querying thorchain for block height
+				StartBlockHeight: 1, // avoids querying switchly for block height
 			},
 		},
 		nil,
@@ -238,7 +238,7 @@ func (s *XrpTestSuite) TestXAddresses(c *C) {
 			ChainNetwork: "1234",
 			RPCHost:      "http://testnode/",
 			BlockScanner: config.BifrostBlockScannerConfiguration{
-				StartBlockHeight: 1, // avoids querying thorchain for block height
+				StartBlockHeight: 1, // avoids querying switchly for block height
 			},
 		},
 		nil,
@@ -286,7 +286,7 @@ func (s *XrpTestSuite) TestSign(c *C) {
 			RPCHost:      "http://testnode/",
 			BlockScanner: config.BifrostBlockScannerConfiguration{
 				ChainID:          common.XRPChain,
-				StartBlockHeight: 1, // avoids querying thorchain for block height
+				StartBlockHeight: 1, // avoids querying switchly for block height
 			},
 		},
 		nil,

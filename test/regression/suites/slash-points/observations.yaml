@@ -74,7 +74,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 1
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 1
@@ -110,7 +110,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 0
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -146,7 +146,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 0
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -182,7 +182,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 0
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -218,7 +218,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 1
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -294,7 +294,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 2
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 1
@@ -304,7 +304,7 @@ asserts:
   - .[] | select(.node_address == "{{ addr_thor_hawk }}") | .slash_points == 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 0
 ---
@@ -335,7 +335,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 1
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -345,7 +345,7 @@ asserts:
   - .[] | select(.node_address == "{{ addr_thor_hawk }}") | .slash_points == 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
 ---
@@ -376,7 +376,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 1
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -412,7 +412,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 1
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -448,7 +448,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 2
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -461,7 +461,7 @@ asserts:
 # unfinalized outbound - slash early observers
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
 ---
@@ -529,7 +529,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 3
   - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 1
@@ -542,7 +542,7 @@ asserts:
 # unfinalized outbound - slash non-observers on consensus
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
 ---
@@ -572,12 +572,12 @@ count: 1
 # Being an outbound (to avoid apparent insolvency),
 # unfinalised consensus is sufficient for internal handler action.
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 2
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -613,7 +613,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 2
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -649,7 +649,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 2
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -685,7 +685,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 3
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -761,7 +761,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 4
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 1
@@ -774,7 +774,7 @@ asserts:
 # finalized outbound - slash non-observers on consensus
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 0
 ---
@@ -802,7 +802,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 3
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -812,7 +812,7 @@ asserts:
  - .[] | select(.node_address == "{{ addr_thor_hawk }}") | .slash_points == 11
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 0
 ---
@@ -864,7 +864,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 4
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -900,7 +900,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 4
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0
@@ -936,7 +936,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
  - .[] | select(.node_address == "{{ addr_thor_cat }}") | .slash_points == 5
  - .[] | select(.node_address == "{{ addr_thor_fox }}") | .slash_points == 0

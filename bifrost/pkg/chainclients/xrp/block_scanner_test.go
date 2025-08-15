@@ -13,7 +13,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 
@@ -31,8 +31,8 @@ import (
 
 type BlockScannerTestSuite struct {
 	m      *metrics.Metrics
-	bridge thorclient.ThorchainBridge
-	keys   *thorclient.Keys
+	bridge switchlyclient.SwitchlyBridge
+	keys   *switchlyclient.Keys
 }
 
 var _ = Suite(&BlockScannerTestSuite{})
@@ -41,7 +41,7 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	s.m = GetMetricForTest(c)
 	c.Assert(s.m, NotNil)
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       "localhost",
 		SignerName:      "bob",
 		SignerPasswd:    "password",
@@ -54,9 +54,9 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	thorKeys := thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	thorKeys := switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 	c.Assert(err, IsNil)
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, thorKeys)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.m, thorKeys)
 	c.Assert(err, IsNil)
 	s.keys = thorKeys
 }

@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   contact:
-    email: devs@thorchain.org
-  description: Thornode REST API.
-  title: Thornode API
+    email: devs@switchly.org
+  description: Switchlynode REST API.
+  title: Switchlynode API
   version: 3.7.0
 servers:
 - url: /
@@ -72,7 +72,7 @@ paths:
           description: OK
       tags:
       - Bank
-  /thorchain/ping:
+  /switchly/ping:
     get:
       operationId: ping
       responses:
@@ -84,7 +84,7 @@ paths:
           description: OK
       tags:
       - Health
-  /thorchain/pool/{asset}:
+  /switchly/pool/{asset}:
     get:
       description: Returns the pool information for the provided asset.
       operationId: pool
@@ -116,7 +116,7 @@ paths:
           description: OK
       tags:
       - Pools
-  /thorchain/pools:
+  /switchly/pools:
     get:
       description: Returns the pool information for all assets.
       operationId: pools
@@ -140,7 +140,7 @@ paths:
           description: OK
       tags:
       - Pools
-  /thorchain/slip/{asset}:
+  /switchly/slip/{asset}:
     get:
       description: Returns the pool slip information for the provided asset.
       operationId: poolslip
@@ -172,7 +172,7 @@ paths:
           description: OK
       tags:
       - PoolSlip
-  /thorchain/slips:
+  /switchly/slips:
     get:
       description: Returns the pool slip information for all Available Layer 1 pool
         assets.
@@ -197,7 +197,7 @@ paths:
           description: OK
       tags:
       - PoolSlip
-  /thorchain/dpool/{asset}:
+  /switchly/dpool/{asset}:
     get:
       description: Returns the pool information for the provided derived asset.
       operationId: dpool
@@ -229,7 +229,7 @@ paths:
           description: OK
       tags:
       - Pools
-  /thorchain/dpools:
+  /switchly/dpools:
     get:
       description: Returns the pool information for all derived assets.
       operationId: dpools
@@ -253,7 +253,7 @@ paths:
           description: OK
       tags:
       - Pools
-  /thorchain/pool/{asset}/liquidity_provider/{address}:
+  /switchly/pool/{asset}/liquidity_provider/{address}:
     get:
       description: Returns the liquidity provider information for an address and asset.
       operationId: liquidityProvider
@@ -293,7 +293,7 @@ paths:
           description: OK
       tags:
       - Liquidity Providers
-  /thorchain/pool/{asset}/liquidity_providers:
+  /switchly/pool/{asset}/liquidity_providers:
     get:
       description: Returns all liquidity provider information for an asset.
       operationId: liquidityProviders
@@ -325,7 +325,7 @@ paths:
           description: OK
       tags:
       - Liquidity Providers
-  /thorchain/codes:
+  /switchly/codes:
     get:
       description: Returns all whitelisted contract codes
       operationId: codes
@@ -349,7 +349,7 @@ paths:
           description: OK
       tags:
       - Codes
-  /thorchain/tcy_staker/{address}:
+  /switchly/tcy_staker/{address}:
     get:
       description: Returns the tcy staker information for an address.
       operationId: tcyStaker
@@ -377,11 +377,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TCYStakerResponse'
+                $ref: '#/components/schemas/SWCYStakerResponse'
           description: OK
       tags:
-      - TCY Stakers
-  /thorchain/tcy_stakers:
+      - SWCY Stakers
+  /switchly/tcy_stakers:
     get:
       description: Returns all tcy stakers information.
       operationId: tcyStakers
@@ -401,11 +401,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TCYStakersResponse'
+                $ref: '#/components/schemas/SWCYStakersResponse'
           description: OK
       tags:
-      - TCY Stakers
-  /thorchain/tcy_claimer/{address}:
+      - SWCY Stakers
+  /switchly/tcy_claimer/{address}:
     get:
       description: Returns the tcy claimer information for an address.
       operationId: tcyClaimer
@@ -433,11 +433,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TCYClaimerResponse'
+                $ref: '#/components/schemas/SWCYClaimerResponse'
           description: OK
       tags:
-      - TCY Claimers
-  /thorchain/tcy_claimers:
+      - SWCY Claimers
+  /switchly/tcy_claimers:
     get:
       description: Returns all tcy claimers information.
       operationId: tcyClaimers
@@ -457,13 +457,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TCYClaimersResponse'
+                $ref: '#/components/schemas/SWCYClaimersResponse'
           description: OK
       tags:
-      - TCY Claimers
-  /thorchain/runepool:
+      - SWCY Claimers
+  /switchly/runepool:
     get:
-      description: Returns the pool information for the RUNE pool.
+      description: Returns the pool information for the SWITCH pool.
       operationId: runePool
       parameters:
       - description: "optional block height, defaults to current tip"
@@ -481,13 +481,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RUNEPoolResponse'
+                $ref: '#/components/schemas/SWITCHPoolResponse'
           description: OK
       tags:
-      - RUNE Pool
-  /thorchain/rune_provider/{address}:
+      - SWITCH Pool
+  /switchly/rune_provider/{address}:
     get:
-      description: Returns the RUNE Provider information for an address.
+      description: Returns the SWITCH Provider information for an address.
       operationId: runeProvider
       parameters:
       - description: "optional block height, defaults to current tip"
@@ -513,13 +513,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RUNEProviderResponse'
+                $ref: '#/components/schemas/SWITCHProviderResponse'
           description: OK
       tags:
-      - RUNE Pool
-  /thorchain/rune_providers:
+      - SWITCH Pool
+  /switchly/rune_providers:
     get:
-      description: Returns all RUNE Providers.
+      description: Returns all SWITCH Providers.
       operationId: runeProviders
       parameters:
       - description: "optional block height, defaults to current tip"
@@ -537,11 +537,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RUNEProvidersResponse'
+                $ref: '#/components/schemas/SWITCHProvidersResponse'
           description: OK
       tags:
-      - RUNE Pool
-  /thorchain/pool/{asset}/saver/{address}:
+      - SWITCH Pool
+  /switchly/pool/{asset}/saver/{address}:
     get:
       description: Returns the saver position given then savers pool and address.
       operationId: saver
@@ -581,7 +581,7 @@ paths:
           description: OK
       tags:
       - Savers
-  /thorchain/pool/{asset}/savers:
+  /switchly/pool/{asset}/savers:
     get:
       description: Returns all savers for the savers pool.
       operationId: savers
@@ -613,7 +613,7 @@ paths:
           description: OK
       tags:
       - Savers
-  /thorchain/pool/{asset}/borrower/{address}:
+  /switchly/pool/{asset}/borrower/{address}:
     get:
       description: Returns the borrower position given the pool and address.
       operationId: borrower
@@ -653,7 +653,7 @@ paths:
           description: OK
       tags:
       - Borrowers
-  /thorchain/pool/{asset}/borrowers:
+  /switchly/pool/{asset}/borrowers:
     get:
       description: Returns all borrowers for the given pool.
       operationId: borrowers
@@ -685,7 +685,7 @@ paths:
           description: OK
       tags:
       - Borrowers
-  /thorchain/tx/{hash}:
+  /switchly/tx/{hash}:
     get:
       description: Returns the observed transaction for a provided inbound or outbound
         hash.
@@ -718,9 +718,9 @@ paths:
           description: OK
       tags:
       - Transactions
-  /thorchain/tx/{hash}/signers:
+  /switchly/tx/{hash}/signers:
     get:
-      description: Deprecated - migrate to /thorchain/tx/details.
+      description: Deprecated - migrate to /switchly/tx/details.
       operationId: txSignersOld
       parameters:
       - description: "optional block height, defaults to current tip"
@@ -750,7 +750,7 @@ paths:
           description: OK
       tags:
       - Transactions
-  /thorchain/tx/details/{hash}:
+  /switchly/tx/details/{hash}:
     get:
       description: Returns the signers for a provided inbound or outbound hash.
       operationId: txSigners
@@ -782,7 +782,7 @@ paths:
           description: OK
       tags:
       - Transactions
-  /thorchain/tx/stages/{hash}:
+  /switchly/tx/stages/{hash}:
     get:
       description: Returns the processing stages of a provided inbound hash.
       operationId: txStages
@@ -814,7 +814,7 @@ paths:
           description: OK
       tags:
       - Transactions
-  /thorchain/tx/status/{hash}:
+  /switchly/tx/status/{hash}:
     get:
       description: Returns the status of a provided inbound hash.
       operationId: txStatus
@@ -846,7 +846,7 @@ paths:
           description: OK
       tags:
       - Transactions
-  /thorchain/node/{address}:
+  /switchly/node/{address}:
     get:
       description: Returns node information for the provided node address.
       operationId: node
@@ -878,7 +878,7 @@ paths:
           description: OK
       tags:
       - Nodes
-  /thorchain/nodes:
+  /switchly/nodes:
     get:
       description: Returns node information for all registered validators.
       operationId: nodes
@@ -902,7 +902,7 @@ paths:
           description: OK
       tags:
       - Nodes
-  /thorchain/vaults/asgard:
+  /switchly/vaults/asgard:
     get:
       description: Returns current asgard vaults.
       operationId: asgard
@@ -926,7 +926,7 @@ paths:
           description: OK
       tags:
       - Vaults
-  /thorchain/vaults/yggdrasil:
+  /switchly/vaults/yggdrasil:
     get:
       description: Returns current yggdrasil vaults.
       operationId: yggdrasil
@@ -950,7 +950,7 @@ paths:
           description: OK
       tags:
       - Vaults
-  /thorchain/vault/{pubkey}:
+  /switchly/vault/{pubkey}:
     get:
       description: Returns the vault for the provided pubkey.
       operationId: vault
@@ -982,7 +982,7 @@ paths:
           description: OK
       tags:
       - Vaults
-  /thorchain/vaults/pubkeys:
+  /switchly/vaults/pubkeys:
     get:
       description: Returns all pubkeys for current vaults.
       operationId: vaultPubkeys
@@ -1006,7 +1006,7 @@ paths:
           description: OK
       tags:
       - Vaults
-  /thorchain/network:
+  /switchly/network:
     get:
       description: Returns network overview statistics.
       operationId: network
@@ -1030,7 +1030,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/outbound_fees:
+  /switchly/outbound_fees:
     get:
       description: Returns the last block information for all chains.
       operationId: outboundFees
@@ -1054,7 +1054,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/outbound_fee/{asset}:
+  /switchly/outbound_fee/{asset}:
     get:
       description: Returns the outbound fee information for the provided asset.
       operationId: outboundFeeAsset
@@ -1086,7 +1086,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/inbound_addresses:
+  /switchly/inbound_addresses:
     get:
       description: Returns the set of asgard addresses that should be used for inbound
         transactions.
@@ -1167,10 +1167,10 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/version:
+  /switchly/version:
     get:
-      description: "Returns the network's current THORNode version, the network's\
-        \ next THORNode version, and the querier's THORNode version."
+      description: "Returns the network's current SWITCHLYNode version, the network's\
+        \ next SWITCHLYNode version, and the querier's SWITCHLYNode version."
       operationId: version
       parameters:
       - description: "optional block height, defaults to current tip"
@@ -1192,7 +1192,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/upgrade_proposals:
+  /switchly/upgrade_proposals:
     get:
       description: Returns the current upgrade proposals.
       operationId: upgradeProposals
@@ -1216,7 +1216,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/upgrade_proposal/{name}:
+  /switchly/upgrade_proposal/{name}:
     get:
       description: Returns the upgrade proposal for the provided name.
       operationId: upgradeProposal
@@ -1248,7 +1248,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/upgrade_votes/{name}:
+  /switchly/upgrade_votes/{name}:
     get:
       description: Returns the upgrade votes for the provided name.
       operationId: upgradeVotes
@@ -1280,7 +1280,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/constants:
+  /switchly/constants:
     get:
       description: "Returns constant configuration, can be overridden by mimir."
       operationId: constants
@@ -1304,7 +1304,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/ragnarok:
+  /switchly/ragnarok:
     get:
       description: Returns a boolean indicating whether the chain is in ragnarok.
       operationId: ragnarok
@@ -1329,7 +1329,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/ban/{address}:
+  /switchly/ban/{address}:
     get:
       description: Returns the ban status for the provided node address.
       operationId: ban
@@ -1361,7 +1361,7 @@ paths:
           description: OK
       tags:
       - Network
-  /thorchain/swap/streaming/{hash}:
+  /switchly/swap/streaming/{hash}:
     get:
       description: Returns the state of a streaming swap
       operationId: stream_swap
@@ -1393,7 +1393,7 @@ paths:
           description: OK
       tags:
       - StreamingSwap
-  /thorchain/swaps/streaming:
+  /switchly/swaps/streaming:
     get:
       description: Returns the state of all streaming swaps
       operationId: stream_swaps
@@ -1417,7 +1417,7 @@ paths:
           description: OK
       tags:
       - StreamingSwap
-  /thorchain/clout/swap/{address}:
+  /switchly/clout/swap/{address}:
     get:
       description: Returns the clout score of an address
       operationId: swapper_clout
@@ -1449,7 +1449,7 @@ paths:
           description: OK
       tags:
       - Clout
-  /thorchain/trade/unit/{asset}:
+  /switchly/trade/unit/{asset}:
     get:
       description: Returns the total units and depth of a trade asset
       operationId: trade_unit
@@ -1481,7 +1481,7 @@ paths:
           description: OK
       tags:
       - TradeUnit
-  /thorchain/trade/units:
+  /switchly/trade/units:
     get:
       description: Returns the total units and depth for each trade asset
       operationId: trade_units
@@ -1505,7 +1505,7 @@ paths:
           description: OK
       tags:
       - TradeUnits
-  /thorchain/trade/account/{address}:
+  /switchly/trade/account/{address}:
     get:
       description: Returns the units and depth of a trade account
       operationId: trade_account
@@ -1537,7 +1537,7 @@ paths:
           description: OK
       tags:
       - TradeAccount
-  /thorchain/trade/accounts/{asset}:
+  /switchly/trade/accounts/{asset}:
     get:
       description: Returns all trade accounts for an asset
       operationId: trade_accounts
@@ -1569,7 +1569,7 @@ paths:
           description: OK
       tags:
       - TradeAccounts
-  /thorchain/securedasset/{asset}:
+  /switchly/securedasset/{asset}:
     get:
       description: Returns the total size and ratio of a secured asset
       operationId: secured_asset
@@ -1601,7 +1601,7 @@ paths:
           description: OK
       tags:
       - SecuredAsset
-  /thorchain/securedassets:
+  /switchly/securedassets:
     get:
       description: Returns the total size and ratio of all secured asset
       operationId: secured_assets
@@ -1625,7 +1625,7 @@ paths:
           description: OK
       tags:
       - SecuredAssets
-  /thorchain/queue:
+  /switchly/queue:
     get:
       description: Returns queue statistics.
       operationId: queue
@@ -1649,7 +1649,7 @@ paths:
           description: OK
       tags:
       - Queue
-  /thorchain/queue/swap:
+  /switchly/queue/swap:
     get:
       description: Returns the swap queue.
       operationId: queueSwap
@@ -1673,7 +1673,7 @@ paths:
           description: OK
       tags:
       - Queue
-  /thorchain/queue/scheduled:
+  /switchly/queue/scheduled:
     get:
       description: Returns the scheduled queue.
       operationId: queueScheduled
@@ -1697,9 +1697,9 @@ paths:
           description: OK
       tags:
       - Queue
-  /thorchain/queue/outbound:
+  /switchly/queue/outbound:
     get:
-      description: Returns the outbound queue including estimated RUNE values.
+      description: Returns the outbound queue including estimated SWITCH values.
       operationId: queueOutbound
       parameters:
       - description: "optional block height, defaults to current tip"
@@ -1721,7 +1721,7 @@ paths:
           description: OK
       tags:
       - Queue
-  /thorchain/keysign/{height}:
+  /switchly/keysign/{height}:
     get:
       description: Returns keysign information for the provided height - the height
         being the first block a tx out item appears in the signed-but-unobserved outbound
@@ -1746,7 +1746,7 @@ paths:
           description: OK
       tags:
       - TSS
-  /thorchain/keysign/{height}/{pubkey}:
+  /switchly/keysign/{height}/{pubkey}:
     get:
       description: Returns keysign information for the provided height and pubkey
         - the height being the block at which a tx out item is scheduled to be signed
@@ -1779,7 +1779,7 @@ paths:
           description: OK
       tags:
       - TSS
-  /thorchain/keygen/{height}/{pubkey}:
+  /switchly/keygen/{height}/{pubkey}:
     get:
       description: Returns keygen information for the provided height and pubkey -
         the pubkey being of one of the members of a keygen block for that height
@@ -1811,7 +1811,7 @@ paths:
           description: OK
       tags:
       - TSS
-  /thorchain/metrics:
+  /switchly/metrics:
     get:
       description: Returns keygen and keysign metrics for current vaults.
       operationId: metrics
@@ -1835,7 +1835,7 @@ paths:
           description: OK
       tags:
       - TSS
-  /thorchain/metric/keygen/{pubkey}:
+  /switchly/metric/keygen/{pubkey}:
     get:
       description: Returns keygen metrics for the provided vault pubkey.
       operationId: metricsKeygen
@@ -1867,10 +1867,10 @@ paths:
           description: OK
       tags:
       - TSS
-  /thorchain/thorname/{name}:
+  /switchly/switchlyname/{name}:
     get:
-      description: Returns addresses registered to the provided thorname.
-      operationId: thorname
+      description: Returns addresses registered to the provided switchlyname.
+      operationId: switchlyname
       parameters:
       - description: "optional block height, defaults to current tip"
         explode: true
@@ -1882,7 +1882,7 @@ paths:
           minimum: 0
           type: integer
         style: form
-      - description: the thornode to lookup
+      - description: the switchlynode to lookup
         explode: false
         in: path
         name: name
@@ -1899,7 +1899,7 @@ paths:
           description: OK
       tags:
       - Thornames
-  /thorchain/mimir:
+  /switchly/mimir:
     get:
       description: Returns current active mimir configuration.
       operationId: mimir
@@ -1923,7 +1923,7 @@ paths:
           description: OK
       tags:
       - Mimir
-  /thorchain/mimir/key/{key}:
+  /switchly/mimir/key/{key}:
     get:
       description: Returns current active mimir configuration for the provided key.
       operationId: mimirKey
@@ -1956,7 +1956,7 @@ paths:
           description: OK
       tags:
       - Mimir
-  /thorchain/mimir/admin:
+  /switchly/mimir/admin:
     get:
       description: Returns current admin mimir configuration.
       operationId: mimirAdmin
@@ -1980,7 +1980,7 @@ paths:
           description: OK
       tags:
       - Mimir
-  /thorchain/mimir/nodes_all:
+  /switchly/mimir/nodes_all:
     get:
       description: Returns current node mimir votes.
       operationId: mimirNodes
@@ -2004,7 +2004,7 @@ paths:
           description: OK
       tags:
       - Mimir
-  /thorchain/mimir/node/{address}:
+  /switchly/mimir/node/{address}:
     get:
       description: Returns current node mimir configuration for the provided node
         address.
@@ -2037,7 +2037,7 @@ paths:
           description: OK
       tags:
       - Mimir
-  /thorchain/quote/swap:
+  /switchly/quote/swap:
     get:
       description: Provide a quote estimate for the provided swap.
       operationId: quoteswap
@@ -2150,7 +2150,7 @@ paths:
           format: int64
           type: integer
         style: form
-      - description: the affiliate (address or thorname)
+      - description: the affiliate (address or switchlyname)
         explode: true
         in: query
         name: affiliate
@@ -2168,7 +2168,7 @@ paths:
           description: OK
       tags:
       - Quote
-  /thorchain/quote/saver/deposit:
+  /switchly/quote/saver/deposit:
     get:
       description: Provide a quote estimate for the provided saver deposit.
       operationId: quotesaverdeposit
@@ -2211,7 +2211,7 @@ paths:
           description: OK
       tags:
       - Quote
-  /thorchain/quote/saver/withdraw:
+  /switchly/quote/saver/withdraw:
     get:
       description: Provide a quote estimate for the provided saver withdraw.
       operationId: quotesaverwithdraw
@@ -2263,7 +2263,7 @@ paths:
           description: OK
       tags:
       - Quote
-  /thorchain/quote/loan/open:
+  /switchly/quote/loan/open:
     get:
       description: Provide a quote estimate for the provided loan open.
       operationId: quoteloanopen
@@ -2297,7 +2297,7 @@ paths:
           format: int64
           type: integer
         style: form
-      - description: the target asset to receive (loan denominated in TOR regardless)
+      - description: the target asset to receive (loan denominated in SWITCHLY regardless)
         explode: true
         in: query
         name: to_asset
@@ -2334,7 +2334,7 @@ paths:
           format: int64
           type: integer
         style: form
-      - description: the affiliate (address or thorname)
+      - description: the affiliate (address or switchlyname)
         explode: true
         in: query
         name: affiliate
@@ -2352,7 +2352,7 @@ paths:
           description: OK
       tags:
       - Quote
-  /thorchain/quote/loan/close:
+  /switchly/quote/loan/close:
     get:
       description: Provide a quote estimate for the provided loan close.
       operationId: quoteloanclose
@@ -2422,7 +2422,7 @@ paths:
           description: OK
       tags:
       - Quote
-  /thorchain/invariant/{invariant}:
+  /switchly/invariant/{invariant}:
     get:
       description: Returns result of running the given invariant.
       operationId: invariant
@@ -2454,7 +2454,7 @@ paths:
           description: OK
       tags:
       - Invariants
-  /thorchain/invariants:
+  /switchly/invariants:
     get:
       description: Returns a list of available invariants.
       operationId: invariants
@@ -2478,7 +2478,7 @@ paths:
           description: OK
       tags:
       - Invariants
-  /thorchain/block:
+  /switchly/block:
     get:
       description: Returns verbose details of the block.
       operationId: block
@@ -2502,7 +2502,7 @@ paths:
           description: OK
       tags:
       - Block
-  /thorchain/export:
+  /switchly/export:
     get:
       description: Returns genesis export
       operationId: export
@@ -2605,23 +2605,23 @@ components:
     Pool:
       example:
         synth_units: "0"
+        pending_inbound_switch: "464993836"
         savers_fill_bps: "4500"
         loan_cr: "123456"
         savers_depth: "199998"
         savers_units: "199998"
         derived_depth_bps: "123456"
         balance_asset: "3197744873"
+        asset_switch_price: "123456"
         synth_supply: "0"
         savers_capacity_remaining: "1000"
         loan_collateral_remaining: "123456"
         trading_halted: false
-        asset_tor_price: "123456"
         synth_mint_paused: true
-        pending_inbound_rune: "464993836"
         decimals: 6
         LP_units: "14694928607473"
+        balance_switch: "13460619152985"
         loan_collateral: "123456"
-        balance_rune: "13460619152985"
         asset: BTC.BTC
         pool_units: "14694928607473"
         synth_supply_remaining: "123456"
@@ -2645,17 +2645,17 @@ components:
         pending_inbound_asset:
           example: "101713319"
           type: string
-        pending_inbound_rune:
+        pending_inbound_switch:
           example: "464993836"
           type: string
         balance_asset:
           example: "3197744873"
           type: string
-        balance_rune:
+        balance_switch:
           example: "13460619152985"
           type: string
-        asset_tor_price:
-          description: the USD (TOR) price of the asset in 1e8
+        asset_switch_price:
+          description: the USD (SWITCHLY) price of the asset in 1e8
           example: "123456"
           type: string
         pool_units:
@@ -2723,15 +2723,15 @@ components:
       required:
       - LP_units
       - asset
-      - asset_tor_price
+      - asset_switch_price
       - balance_asset
-      - balance_rune
+      - balance_switch
       - derived_depth_bps
       - loan_collateral
       - loan_collateral_remaining
       - loan_cr
       - pending_inbound_asset
-      - pending_inbound_rune
+      - pending_inbound_switch
       - pool_units
       - savers_capacity_remaining
       - savers_depth
@@ -2746,7 +2746,7 @@ components:
     DerivedPool:
       example:
         decimals: 6
-        balance_rune: "13460619152985"
+        balance_switch: "13460619152985"
         asset: BTC.BTC
         derived_depth_bps: "123456"
         status: Available
@@ -2765,7 +2765,7 @@ components:
         balance_asset:
           example: "3197744873"
           type: string
-        balance_rune:
+        balance_switch:
           example: "13460619152985"
           type: string
         derived_depth_bps:
@@ -2776,7 +2776,7 @@ components:
       required:
       - asset
       - balance_asset
-      - balance_rune
+      - balance_switch
       - derived_depth_bps
       - status
       type: object
@@ -2789,15 +2789,15 @@ components:
         pnl: "21999180112172346"
       properties:
         rune_deposited:
-          description: total amount of RUNE deposited into the pools
+          description: total amount of SWITCH deposited into the pools
           example: "857134475040"
           type: string
         rune_withdrawn:
-          description: total amount of RUNE withdrawn from the pools
+          description: total amount of SWITCH withdrawn from the pools
           example: "0"
           type: string
         value:
-          description: total value of protocol's LP position in RUNE value
+          description: total value of protocol's LP position in SWITCH value
           example: "21999180112172346"
           type: string
         pnl:
@@ -2815,19 +2815,19 @@ components:
       - rune_withdrawn
       - value
       type: object
-    RUNEProvider:
+    SWITCHProvider:
       example:
         deposit_amount: "6677"
         withdraw_amount: "5443"
         last_deposit_height: 82745
         last_withdraw_height: 82745
-        rune_address: THOR.RUNE
+        rune_address: SWITCHLY.SWITCH
         units: "1234"
         value: "123456"
         pnl: "123456"
       properties:
         rune_address:
-          example: THOR.RUNE
+          example: SWITCHLY.SWITCH
           type: string
         units:
           example: "1234"
@@ -3003,12 +3003,12 @@ components:
           deployers:
           - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
           - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
-          origin: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+          origin: https://gitlab.com/switchly/rujira/-/tree/main/contracts/rujira-merge
         - code: a70d5005130246ff44470494ed5cb63d7c9ddffebda8e556e56d11c2057b0820
           deployers:
           - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
           - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
-          origin: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+          origin: https://gitlab.com/switchly/rujira/-/tree/main/contracts/rujira-merge
       properties:
         codes:
           items:
@@ -3021,7 +3021,7 @@ components:
         deployers:
         - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
         - thor1e0lmk5juawc46jwjwd0xfz587njej7ay5fh6cd
-        origin: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+        origin: https://gitlab.com/switchly/rujira/-/tree/main/contracts/rujira-merge
       properties:
         code:
           example: a70d5005130246ff44470494ed5cb63d7c9ddffebda8e556e56d11c2057b0820
@@ -3032,10 +3032,10 @@ components:
             type: string
           type: array
         origin:
-          example: https://gitlab.com/thorchain/rujira/-/tree/main/contracts/rujira-merge
+          example: https://gitlab.com/switchly/rujira/-/tree/main/contracts/rujira-merge
           type: string
       type: object
-    TCYStakerSummary:
+    SWCYStakerSummary:
       example:
         amount: "0"
       properties:
@@ -3045,7 +3045,7 @@ components:
       required:
       - amount
       type: object
-    TCYStaker:
+    SWCYStaker:
       example:
         amount: "0"
         address: thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -3059,7 +3059,7 @@ components:
       required:
       - amount
       type: object
-    TCYClaimerSummary:
+    SWCYClaimerSummary:
       example:
         amount: "0"
         asset: BTC.BTC
@@ -3074,7 +3074,7 @@ components:
       - amount
       - asset
       type: object
-    TCYClaimer:
+    SWCYClaimer:
       example:
         amount: "0"
         l1_address: thor1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -3749,13 +3749,13 @@ components:
           type: string
         external_observed_height:
           description: "the block height on the external source chain when the transaction\
-            \ was observed, not provided if chain is THOR"
+            \ was observed, not provided if chain is SWITCHLY"
           example: 7581334
           format: int64
           type: integer
         external_confirmation_delay_height:
           description: "the block height on the external source chain when confirmation\
-            \ counting will be complete, not provided if chain is THOR"
+            \ counting will be complete, not provided if chain is SWITCHLY"
           example: 7581334
           format: int64
           type: integer
@@ -3812,17 +3812,17 @@ components:
           example: "300000"
           type: string
         fee_withheld_rune:
-          description: Total RUNE the network has withheld as fees to later cover
+          description: Total SWITCH the network has withheld as fees to later cover
             gas costs for this asset's outbounds
           example: "30000000000000"
           type: string
         fee_spent_rune:
-          description: Total RUNE the network has spent to reimburse gas costs for
+          description: Total SWITCH the network has spent to reimburse gas costs for
             this asset's outbounds
           example: "20000000000000"
           type: string
         surplus_rune:
-          description: amount of RUNE by which the fee_withheld_rune exceeds the fee_spent_rune
+          description: amount of SWITCH by which the fee_withheld_rune exceeds the fee_spent_rune
           example: "10000000000000"
           type: string
         dynamic_multiplier_basis_points:
@@ -3894,7 +3894,7 @@ components:
           description: the signer (sender) of the transaction
           type: string
         aggregator:
-          description: the contract address if an aggregator is specified for a non-THORChain
+          description: the contract address if an aggregator is specified for a non-SWITCHLYChain
             SwapOut
           type: string
         aggregator_target_address:
@@ -3902,7 +3902,7 @@ components:
           type: string
         aggregator_target_limit:
           description: the minimum amount of SwapOut asset to receive (else cancelling
-            the SwapOut and receiving THORChain's output)
+            the SwapOut and receiving SWITCHLYChain's output)
           type: string
         swap_type:
           description: "market if immediately completed or refunded, limit if held\
@@ -3994,7 +3994,7 @@ components:
           example: "100"
           type: string
         clout_spent:
-          description: clout spent in RUNE for the outbound
+          description: clout spent in SWITCH for the outbound
           example: "1234"
           type: string
       required:
@@ -4244,12 +4244,12 @@ components:
           example: BTC.BTC
           type: string
         preferred_asset_swap_threshold_rune:
-          description: Amount of RUNE currently needed to trigger a preferred asset
+          description: Amount of SWITCH currently needed to trigger a preferred asset
             swap.
           example: "500"
           type: string
         affiliate_collector_rune:
-          description: Amount of RUNE currently accrued by this thorname in affiliate
+          description: Amount of SWITCH currently accrued by this switchlyname in affiliate
             fees waiting to be swapped to preferred asset.
           example: "100"
           type: string
@@ -4483,7 +4483,7 @@ components:
       items:
         $ref: '#/components/schemas/DerivedPool'
       type: array
-    RUNEPoolResponse:
+    SWITCHPoolResponse:
       example:
         reserve:
           current_deposit: "123456"
@@ -4507,19 +4507,19 @@ components:
         pol:
           $ref: '#/components/schemas/POL'
         providers:
-          $ref: '#/components/schemas/RUNEPoolResponse_providers'
+          $ref: '#/components/schemas/SWITCHPoolResponse_providers'
         reserve:
-          $ref: '#/components/schemas/RUNEPoolResponse_reserve'
+          $ref: '#/components/schemas/SWITCHPoolResponse_reserve'
       required:
       - pol
       - providers
       - reserve
       type: object
-    RUNEProviderResponse:
-      $ref: '#/components/schemas/RUNEProvider'
-    RUNEProvidersResponse:
+    SWITCHProviderResponse:
+      $ref: '#/components/schemas/SWITCHProvider'
+    SWITCHProvidersResponse:
       items:
-        $ref: '#/components/schemas/RUNEProvider'
+        $ref: '#/components/schemas/SWITCHProvider'
       type: array
     LiquidityProvidersResponse:
       items:
@@ -4527,18 +4527,18 @@ components:
       type: array
     LiquidityProviderResponse:
       $ref: '#/components/schemas/LiquidityProvider'
-    TCYStakersResponse:
+    SWCYStakersResponse:
       items:
-        $ref: '#/components/schemas/TCYStakerSummary'
+        $ref: '#/components/schemas/SWCYStakerSummary'
       type: array
-    TCYStakerResponse:
-      $ref: '#/components/schemas/TCYStaker'
-    TCYClaimersResponse:
+    SWCYStakerResponse:
+      $ref: '#/components/schemas/SWCYStaker'
+    SWCYClaimersResponse:
       items:
-        $ref: '#/components/schemas/TCYClaimerSummary'
+        $ref: '#/components/schemas/SWCYClaimerSummary'
       type: array
-    TCYClaimerResponse:
-      $ref: '#/components/schemas/TCYClaimer'
+    SWCYClaimerResponse:
+      $ref: '#/components/schemas/SWCYClaimer'
     SaverResponse:
       $ref: '#/components/schemas/Saver'
     SaversResponse:
@@ -4602,17 +4602,17 @@ components:
         observed_tx:
           $ref: '#/components/schemas/ObservedTx'
         consensus_height:
-          description: the thorchain height at which the inbound reached consensus
+          description: the switchly height at which the inbound reached consensus
           example: 7581321
           format: int64
           type: integer
         finalised_height:
-          description: the thorchain height at which the outbound was finalised
+          description: the switchly height at which the outbound was finalised
           example: 7581334
           format: int64
           type: integer
         outbound_height:
-          description: the thorchain height for which the outbound was scheduled
+          description: the switchly height for which the outbound was scheduled
           example: 1234
           format: int64
           type: integer
@@ -4836,12 +4836,12 @@ components:
             $ref: '#/components/schemas/Tx'
           type: array
         consensus_height:
-          description: the thorchain height at which the inbound reached consensus
+          description: the switchly height at which the inbound reached consensus
           example: 7581321
           format: int64
           type: integer
         finalised_height:
-          description: the thorchain height at which the outbound was finalised
+          description: the switchly height at which the outbound was finalised
           example: 7581334
           format: int64
           type: integer
@@ -4852,7 +4852,7 @@ components:
           example: false
           type: boolean
         outbound_height:
-          description: the thorchain height for which the outbound was scheduled
+          description: the switchly height for which the outbound was scheduled
           example: 1234
           format: int64
           type: integer
@@ -5079,12 +5079,12 @@ components:
             $ref: '#/components/schemas/Tx'
           type: array
         consensus_height:
-          description: the thorchain height at which the inbound reached consensus
+          description: the switchly height at which the inbound reached consensus
           example: 7581321
           format: int64
           type: integer
         finalised_height:
-          description: the thorchain height at which the outbound was finalised
+          description: the switchly height at which the outbound was finalised
           example: 7581334
           format: int64
           type: integer
@@ -5095,7 +5095,7 @@ components:
           example: false
           type: boolean
         outbound_height:
-          description: the thorchain height for which the outbound was scheduled
+          description: the switchly height for which the outbound was scheduled
           example: 1234
           format: int64
           type: integer
@@ -5361,47 +5361,47 @@ components:
       type: object
     NetworkResponse:
       example:
-        native_tx_fee_rune: "100000000"
-        bond_reward_rune: "857134475040"
+        native_tx_fee_switch: "100000000"
         effective_security_bond: "0"
-        available_pools_rune: "4785723312627752"
+        vaults_liquidity_switch: "5792105087034476"
         total_bond_units: "0"
-        gas_withheld_rune: "1500000000"
         outbound_fee_multiplier: "15000"
         total_reserve: "21999180112172346"
-        native_outbound_fee_rune: "100000000"
-        tns_fee_per_block_rune: "20"
-        gas_spent_rune: "1000000000"
-        rune_price_in_tor: "10"
+        native_outbound_fee_switch: "100000000"
+        gas_spent_switch: "1000000000"
+        available_pools_switch: "4785723312627752"
+        switchlyname_register_fee_switch: "1000000000"
         tor_price_halted: false
-        tns_register_fee_rune: "1000000000"
-        tor_price_in_rune: "10"
-        vaults_liquidity_rune: "5792105087034476"
+        gas_withheld_switch: "1500000000"
+        bond_reward_switch: "857134475040"
+        switchlyname_fee_per_block_switch: "20"
+        switch_price_in_tor: "10"
+        tor_price_in_switch: "10"
         vaults_migrating: false
       properties:
-        bond_reward_rune:
-          description: total amount of RUNE awarded to node operators
+        bond_reward_switch:
+          description: total amount of SWITCH awarded to node operators
           example: "857134475040"
           type: string
         total_bond_units:
-          description: total bonded RUNE
+          description: total bonded SWITCH
           example: "0"
           type: string
-        available_pools_rune:
-          description: RUNE in Available pools (equal in value to the Assets in those
-            pools)
+        available_pools_switch:
+          description: SWITCH in Available pools (equal in value to the Assets in
+            those pools)
           example: "4785723312627752"
           type: string
-        vaults_liquidity_rune:
-          description: RUNE value of Layer 1 Assets in vaults
+        vaults_liquidity_switch:
+          description: SWITCH value of Layer 1 Assets in vaults
           example: "5792105087034476"
           type: string
         effective_security_bond:
-          description: effective security bond used to determine maximum pooled RUNE
+          description: effective security bond used to determine maximum pooled SWITCH
           example: "0"
           type: string
         total_reserve:
-          description: total reserve RUNE
+          description: total reserve SWITCH
           example: "21999180112172346"
           type: string
         vaults_migrating:
@@ -5409,11 +5409,11 @@ components:
             migrating funds to new ActiveVaults
           example: false
           type: boolean
-        gas_spent_rune:
+        gas_spent_switch:
           description: Sum of the gas the network has spent to send outbounds
           example: "1000000000"
           type: string
-        gas_withheld_rune:
+        gas_withheld_switch:
           description: Sum of the gas withheld from users to cover outbound gas
           example: "1500000000"
           type: string
@@ -5421,32 +5421,32 @@ components:
           description: "Current outbound fee multiplier, in basis points"
           example: "15000"
           type: string
-        native_outbound_fee_rune:
-          description: "the outbound transaction fee in rune, converted from the NativeOutboundFeeUSD\
+        native_outbound_fee_switch:
+          description: "the outbound transaction fee in switch, converted from the\
+            \ NativeOutboundFeeUSD mimir (after USD fees are enabled)"
+          example: "100000000"
+          type: string
+        native_tx_fee_switch:
+          description: "the native transaction fee in switch, converted from the NativeTransactionFeeUSD\
             \ mimir (after USD fees are enabled)"
           example: "100000000"
           type: string
-        native_tx_fee_rune:
-          description: "the native transaction fee in rune, converted from the NativeTransactionFeeUSD\
-            \ mimir (after USD fees are enabled)"
-          example: "100000000"
-          type: string
-        tns_register_fee_rune:
-          description: "the thorname register fee in rune, converted from the TNSRegisterFeeUSD\
-            \ mimir (after USD fees are enabled)"
+        switchlyname_register_fee_switch:
+          description: "the switchlyname register fee in switch, converted from the\
+            \ TNSRegisterFeeUSD mimir (after USD fees are enabled)"
           example: "1000000000"
           type: string
-        tns_fee_per_block_rune:
-          description: "the thorname fee per block in rune, converted from the TNSFeePerBlockUSD\
-            \ mimir (after USD fees are enabled)"
+        switchlyname_fee_per_block_switch:
+          description: "the switchlyname fee per block in switch, converted from the\
+            \ TNSFeePerBlockUSD mimir (after USD fees are enabled)"
           example: "20"
           type: string
-        rune_price_in_tor:
-          description: the rune price in tor
+        switch_price_in_tor:
+          description: the switch price in tor
           example: "10"
           type: string
-        tor_price_in_rune:
-          description: the tor price in rune
+        tor_price_in_switch:
+          description: the tor price in switch
           example: "10"
           type: string
         tor_price_halted:
@@ -5455,21 +5455,21 @@ components:
           example: false
           type: boolean
       required:
-      - available_pools_rune
-      - bond_reward_rune
+      - available_pools_switch
+      - bond_reward_switch
       - effective_security_bond
-      - gas_spent_rune
-      - gas_withheld_rune
-      - native_outbound_fee_rune
-      - native_tx_fee_rune
-      - rune_price_in_tor
-      - tns_fee_per_block_rune
-      - tns_register_fee_rune
+      - gas_spent_switch
+      - gas_withheld_switch
+      - native_outbound_fee_switch
+      - native_tx_fee_switch
+      - switch_price_in_tor
+      - switchlyname_fee_per_block_switch
+      - switchlyname_register_fee_switch
       - tor_price_halted
-      - tor_price_in_rune
+      - tor_price_in_switch
       - total_bond_units
       - total_reserve
-      - vaults_liquidity_rune
+      - vaults_liquidity_switch
       - vaults_migrating
       type: object
     OutboundFeesResponse:
@@ -5593,10 +5593,10 @@ components:
           format: int64
           type: integer
         scheduled_outbound_value:
-          description: scheduled outbound value in RUNE
+          description: scheduled outbound value in SWITCH
           type: string
         scheduled_outbound_clout:
-          description: scheduled outbound clout in RUNE
+          description: scheduled outbound clout in SWITCH
           type: string
       required:
       - internal
@@ -5817,11 +5817,11 @@ components:
           description: thor address of trade account owner
           type: string
         last_add_height:
-          description: last thorchain height trade assets were added to trade account
+          description: last switchly height trade assets were added to trade account
           format: int64
           type: integer
         last_withdraw_height:
-          description: last thorchain height trade assets were withdrawn from trade
+          description: last switchly height trade assets were withdrawn from trade
             account
           format: int64
           type: integer
@@ -5863,7 +5863,7 @@ components:
       additionalProperties:
         type: string
       example:
-        NODEOPERATORFEE: 2000
+        NODEOPERASWITCHLYFEE: 2000
         NUMBEROFNEWNODESPERCHURN: 2
       type: object
     InvariantResponse:
@@ -6042,7 +6042,7 @@ components:
           format: int64
           type: integer
         outbound_delay_blocks:
-          description: the number of thorchain blocks the outbound will be delayed
+          description: the number of switchly blocks the outbound will be delayed
           format: int64
           type: integer
         outbound_delay_seconds:
@@ -6137,7 +6137,7 @@ components:
           format: int64
           type: integer
         outbound_delay_blocks:
-          description: the number of thorchain blocks the outbound will be delayed
+          description: the number of switchly blocks the outbound will be delayed
           format: int64
           type: integer
         outbound_delay_seconds:
@@ -6270,7 +6270,7 @@ components:
           format: int64
           type: integer
         outbound_delay_blocks:
-          description: the number of thorchain blocks the outbound will be delayed
+          description: the number of switchly blocks the outbound will be delayed
           format: int64
           type: integer
         outbound_delay_seconds:
@@ -6388,7 +6388,7 @@ components:
           format: int64
           type: integer
         outbound_delay_blocks:
-          description: the number of thorchain blocks the outbound will be delayed
+          description: the number of switchly blocks the outbound will be delayed
           format: int64
           type: integer
         outbound_delay_seconds:
@@ -6515,7 +6515,7 @@ components:
           format: int64
           type: integer
         outbound_delay_blocks:
-          description: the number of thorchain blocks the outbound will be delayed
+          description: the number of switchly blocks the outbound will be delayed
           format: int64
           type: integer
         outbound_delay_seconds:
@@ -6582,7 +6582,7 @@ components:
           example: "1000000"
           type: string
         expected_debt_issued:
-          description: the expected amount of TOR debt increase on the loan
+          description: the expected amount of SWITCHLY debt increase on the loan
           example: "1000000"
           type: string
         streaming_swap_blocks:
@@ -6669,7 +6669,7 @@ components:
           format: int64
           type: integer
         outbound_delay_blocks:
-          description: the number of thorchain blocks the outbound will be delayed
+          description: the number of switchly blocks the outbound will be delayed
           format: int64
           type: integer
         outbound_delay_seconds:
@@ -6738,7 +6738,7 @@ components:
           example: "1000000"
           type: string
         expected_debt_repaid:
-          description: the expected amount of TOR debt decrease on the loan
+          description: the expected amount of SWITCHLY debt decrease on the loan
           example: "1000000"
           type: string
         streaming_swap_blocks:
@@ -6997,7 +6997,7 @@ components:
       - rollup
       - rollup_count
       type: object
-    RUNEPoolResponse_providers:
+    SWITCHPoolResponse_providers:
       example:
         pending_units: "123456"
         current_deposit: "123456"
@@ -7007,28 +7007,28 @@ components:
         pnl: "123456"
       properties:
         units:
-          description: the units of RUNEPool owned by providers (including pending)
+          description: the units of SWITCHPool owned by providers (including pending)
           example: "123456"
           type: string
         pending_units:
-          description: the units of RUNEPool owned by providers that remain pending
+          description: the units of SWITCHPool owned by providers that remain pending
           example: "123456"
           type: string
         pending_rune:
-          description: the amount of RUNE pending
+          description: the amount of SWITCH pending
           example: "123456"
           type: string
         value:
-          description: the value of the provider share of the RUNEPool (includes pending
-            RUNE)
+          description: the value of the provider share of the SWITCHPool (includes pending
+            SWITCH)
           example: "123456"
           type: string
         pnl:
-          description: the profit and loss of the provider share of the RUNEPool
+          description: the profit and loss of the provider share of the SWITCHPool
           example: "123456"
           type: string
         current_deposit:
-          description: the current RUNE deposited by providers
+          description: the current SWITCH deposited by providers
           example: "123456"
           type: string
       required:
@@ -7041,7 +7041,7 @@ components:
       - units
       - value
       type: object
-    RUNEPoolResponse_reserve:
+    SWITCHPoolResponse_reserve:
       example:
         current_deposit: "123456"
         units: "123456"
@@ -7049,19 +7049,19 @@ components:
         pnl: "123456"
       properties:
         units:
-          description: the units of RUNEPool owned by the reserve
+          description: the units of SWITCHPool owned by the reserve
           example: "123456"
           type: string
         value:
-          description: the value of the reserve share of the RUNEPool
+          description: the value of the reserve share of the SWITCHPool
           example: "123456"
           type: string
         pnl:
-          description: the profit and loss of the reserve share of the RUNEPool
+          description: the profit and loss of the reserve share of the SWITCHPool
           example: "123456"
           type: string
         current_deposit:
-          description: the current RUNE deposited by the reserve
+          description: the current SWITCH deposited by the reserve
           example: "123456"
           type: string
       required:
@@ -7114,7 +7114,7 @@ components:
         counting_start_height: 1234
       properties:
         counting_start_height:
-          description: the THORChain block height when confirmation counting began
+          description: the SWITCHLYChain block height when confirmation counting began
           example: 1234
           format: int64
           type: integer
@@ -7156,7 +7156,7 @@ components:
       properties:
         completed:
           description: returns true if the inbound transaction has been finalised
-            (THORChain agreeing it exists)
+            (SWITCHLYChain agreeing it exists)
           example: false
           type: boolean
       required:
@@ -7225,7 +7225,7 @@ components:
         remaining_delay_seconds: 30
       properties:
         remaining_delay_blocks:
-          description: the number of remaining THORChain blocks the outbound will
+          description: the number of remaining SWITCHLYChain blocks the outbound will
             be delayed
           example: 5
           format: int64
@@ -7251,12 +7251,12 @@ components:
         blocks_since_scheduled: 1234
       properties:
         scheduled_outbound_height:
-          description: THORChain height for which the external outbound is scheduled
+          description: SWITCHLYChain height for which the external outbound is scheduled
           example: 1234
           format: int64
           type: integer
         blocks_since_scheduled:
-          description: THORChain blocks since the scheduled outbound height
+          description: SWITCHLYChain blocks since the scheduled outbound height
           example: 1234
           format: int64
           type: integer

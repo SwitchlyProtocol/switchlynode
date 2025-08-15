@@ -223,7 +223,7 @@ func (tKeyGen *TssKeyGen) processKeyGen(errChan chan struct{},
 			}
 			pubKey, _, err := conversion.GetTssPubKey(msg.ECDSAPub)
 			if err != nil {
-				return nil, fmt.Errorf("fail to get thorchain pubkey: %w", err)
+				return nil, fmt.Errorf("fail to get switchly pubkey: %w", err)
 			}
 			keyGenLocalStateItem.LocalData = msg
 			keyGenLocalStateItem.PubKey = pubKey

@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -14,9 +14,9 @@ asserts:
 # quote and swap rune to btc
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC.BTC
   amount: 1000000000
   destination: {{ addr_btc_fox }}
@@ -50,7 +50,7 @@ asserts:
   - .balances[]|select(.denom == "rune")|.amount|tonumber == 2498998000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"
@@ -79,7 +79,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -87,15 +87,15 @@ asserts:
 # quote and swap btc to rune
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC.BTC
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 5000000
   destination: {{ addr_thor_fox }}
 asserts:
   - .expected_amount_out|tonumber == 4619255409
-  - .memo == "=:THOR.RUNE:{{ addr_thor_fox }}"
+  - .memo == "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   - .inbound_address == "{{ addr_btc_dog }}"
   - .recommended_min_amount_in == "56000"
   - .fees.liquidity == "233342032"
@@ -121,7 +121,7 @@ txs:
       gas:
         - amount: "10500"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
     block_height: 3
     finalise_height: 3
     observed_pub_key: {{ pubkey_dog }}
@@ -139,9 +139,9 @@ asserts:
 # quote and swap rune to btc synth
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC/BTC
   amount: 1000000000
 asserts:
@@ -174,9 +174,9 @@ asserts:
 # quote and swap rune to btc synth with tolerance
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC/BTC
   amount: 100000000
   tolerance_bps: 200
@@ -186,9 +186,9 @@ asserts:
   - .message|contains("outbound amount does not meet requirements")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC/BTC
   amount: 100000000
   tolerance_bps: 300
@@ -222,9 +222,9 @@ asserts:
 # quote and swap rune to btc with tolerance
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC.BTC
   amount: 1000000000
   tolerance_bps: 1000
@@ -238,9 +238,9 @@ asserts:
 # quote and swap rune to btc with tolerance & no affiliate
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC.BTC
   amount: 1000000000
   tolerance_bps: 1000
@@ -260,9 +260,9 @@ asserts:
 # quote and swap rune to btc with tolerance & affiliate. affiliate is taken out of the outbound amt before outbound fee is deducted
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC.BTC
   amount: 1000000000
   tolerance_bps: 1000
@@ -291,7 +291,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"
@@ -320,7 +320,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -334,7 +334,7 @@ asserts:
 # quote and swap eth to btc with tolerance and affiliate
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC.BTC
   to_asset: ETH.ETH
@@ -347,7 +347,7 @@ asserts:
   - .message|test("memo too long")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC/BTC
   to_asset: ETH/ETH
@@ -359,7 +359,7 @@ asserts:
   - .error|not
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
   to_asset: BTC.BTC
@@ -403,7 +403,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 4 }}"
@@ -432,12 +432,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 ########################################################################################
-# quote and swap eth to rune with tolerance and thorname affiliate
+# quote and swap eth to rune with tolerance and switchlyname affiliate
 ########################################################################################
 type: tx-send
 from_address: {{ addr_thor_fox }}
@@ -451,17 +451,17 @@ signer: {{ addr_thor_pig }}
 coins:
   - amount: "1000000001"
     asset: "rune"
-memo: "~:xx:THOR:{{ addr_thor_pig }}"
+memo: "~:xx:SWITCHLY:{{ addr_thor_pig }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/xx
+endpoint: http://localhost:1317/switchly/switchlyname/xx
 asserts:
   - .aliases[0].address == "{{ addr_thor_pig }}"
   - .owner == "{{ addr_thor_pig }}"
-  # Also confirm full THORName response format.
+  # Also confirm full SWITCHName response format.
   - |
     . == {
       "name": "xx",
@@ -472,7 +472,7 @@ asserts:
       "affiliate_collector_rune": "0",
       "aliases": [
         {
-          "chain": "THOR",
+          "chain": "SWITCHLY",
           "address": "tthor1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u"
         }
       ]
@@ -481,17 +481,17 @@ asserts:
   # the _rune fields are displayed as "0" rather than omitted when zero.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 10000000
   tolerance_bps: 1000
   affiliate: xx
   affiliate_bps: 500
   destination: {{ addr_thor_fox }}
 asserts:
-  - .memo == "=:THOR.RUNE:{{ addr_thor_fox }}:${LIMIT=882369207}:xx:500"
+  - .memo == "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}:${LIMIT=882369207}:xx:500"
   - .expected_amount_out|tonumber == 911216698
   - .recommended_min_amount_in == "5120000"
   - .fees.affiliate == "48064037"
@@ -516,7 +516,7 @@ txs:
       gas:
         - amount: "100000"
           asset: "ETH.ETH"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}:${LIMIT}:xx:500"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}:${LIMIT}:xx:500"
     block_height: 7
     finalise_height: 7
     observed_pub_key: {{ pubkey_dog }}
@@ -554,15 +554,15 @@ asserts:
 # quote btc/btc to rune when from_address doesn't have enough btc/btc - quote should still be returned
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC/BTC
   from_address: {{ addr_thor_fox }}
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 10000000
   destination: {{ addr_thor_fox }}
 asserts:
-  - .memo == "=:THOR.RUNE:{{ addr_thor_fox }}"
+  - .memo == "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   - .inbound_address == null
   - .recommended_min_amount_in == "4110"
   - .fees.liquidity == "433202609"
@@ -572,14 +572,14 @@ asserts:
   - .fees.total_bps == 468
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC/BTC
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 10000000
   destination: {{ addr_thor_fox }}
 asserts:
-  - .memo == "=:THOR.RUNE:{{ addr_thor_fox }}"
+  - .memo == "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   - .inbound_address == null
   - .recommended_min_amount_in == "4110"
   - .fees.liquidity == "433202609"
@@ -600,7 +600,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
   to_asset: BTC.BTC
@@ -621,7 +621,7 @@ asserts:
   - .expected_amount_out == "9665569"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
   to_asset: BTC.BTC
@@ -637,7 +637,7 @@ asserts:
 # quote and swap a streaming swap with specified quantity and tolerance
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
   to_asset: BTC.BTC
@@ -667,7 +667,7 @@ count: 1
 # quote and swap a streaming swap with too large quantity
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
   to_asset: BTC.BTC
@@ -692,7 +692,7 @@ asserts:
 # quote and massive swap should have accurate slippage less than 100%
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
   to_asset: BTC.BTC
@@ -710,10 +710,10 @@ asserts:
 # from ETH - affiliate swap too low, should return 0 for affiliate fee
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 1000000
   affiliate: tthor13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr
   affiliate_bps: 10
@@ -723,12 +723,12 @@ asserts:
   - .fees.affiliate == "95565"
 ---
 ########################################################################################
-# from RUNE - affiliate swap too low, should return 0 for affiliate fee
+# from SWITCH - affiliate swap too low, should return 0 for affiliate fee
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: ETH.ETH
   amount: 1000000000
   affiliate: xx
@@ -742,9 +742,9 @@ asserts:
 # multiple affiliates - no valid affiliate fee, should return 0
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: ETH.ETH
   amount: 1000000000
   affiliate: xx,yy,zz
@@ -755,14 +755,14 @@ asserts:
   - .fees.affiliate == "61156"
 ---
 ########################################################################################
-# multiple affiliates - 3 valid thornames
+# multiple affiliates - 3 valid switchlynames
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_dog }}
 coins:
   - amount: "1000000001"
     asset: "rune"
-memo: "~:yy:THOR:{{ addr_thor_dog }}"
+memo: "~:yy:SWITCHLY:{{ addr_thor_dog }}"
 ---
 type: create-blocks
 count: 1
@@ -772,15 +772,15 @@ signer: {{ addr_thor_dog }}
 coins:
   - amount: "1000000001"
     asset: "rune"
-memo: "~:zz:THOR:{{ addr_thor_dog }}"
+memo: "~:zz:SWITCHLY:{{ addr_thor_dog }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: ETH.ETH
   amount: 1000000000
   affiliate: xx,yy,zz
@@ -791,9 +791,9 @@ asserts:
   - .fees.affiliate == "193658"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: ETH.ETH
   amount: 1000000000
   affiliate: xx
@@ -806,25 +806,25 @@ asserts:
 # Trade Asset swap quote with affiliate
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC~BTC
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 1000000
   affiliate: xx
   affiliate_bps: 10
   destination: {{ addr_thor_fox }}
 asserts:
-  - .memo == "=:THOR.RUNE:tthor13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr::xx:10"
+  - .memo == "=:SWITCHLY.SWITCH:tthor13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr::xx:10"
 ---
 ########################################################################################
 # Inbound below dust threshold should error
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC.BTC
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 9000
   destination: {{ addr_thor_fox }}
 status: 400
@@ -835,10 +835,10 @@ asserts:
 # liquidity_tolerance_bps too high
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC.BTC
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 1000000
   destination: {{ addr_thor_fox }}
   liquidity_tolerance_bps: 10001
@@ -850,10 +850,10 @@ asserts:
 # both liquidity_tolerance_bps and tolerance_bps
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: BTC.BTC
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 1000000
   destination: {{ addr_thor_fox }}
   liquidity_tolerance_bps: 100
@@ -866,29 +866,29 @@ asserts:
 # valid liquidity_tolerance_bps should update the limit in the memo
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 10000000
   affiliate: xx
   affiliate_bps: 500
   destination: {{ addr_thor_fox }}
 asserts:
-  - .memo == "=:THOR.RUNE:{{ addr_thor_fox }}::xx:500"
+  - .memo == "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}::xx:500"
   - .expected_amount_out|tonumber == 893682999
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
-  to_asset: THOR.RUNE
+  to_asset: SWITCHLY.SWITCH
   amount: 10000000
   affiliate: xx
   affiliate_bps: 500
   destination: {{ addr_thor_fox }}
   liquidity_tolerance_bps: 100
 asserts:
-  - .memo == "=:THOR.RUNE:{{ addr_thor_fox }}:884746169:xx:500"
+  - .memo == "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}:884746169:xx:500"
   - .expected_amount_out|tonumber == 893682999
 

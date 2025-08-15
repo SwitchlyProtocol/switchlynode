@@ -10,10 +10,10 @@ Users pay two kinds of fees when entering or exiting Savings Vaults:
 The following are required to determine approximate deposit / withdrawal fees:
 
 ```json
-outboundFee = curl -SL https://thornode.ninerealms.com/thorchain/inbound_addresses | jq '.[] | select(.chain == "BTC") | .outbound_fee'
+outboundFee = curl -SL https://switchlynode.ninerealms.com/switchly/inbound_addresses | jq '.[] | select(.chain == "BTC") | .outbound_fee'
 => 30000
 
-poolDepth = curl -SL https://thornode.ninerealms.com/thorchain/pools | jq '.[] | select(.asset == "BTC.BTC") | .balance_asset'
+poolDepth = curl -SL https://switchlynode.ninerealms.com/switchly/pools | jq '.[] | select(.asset == "BTC.BTC") | .balance_asset'
 => 68352710830 => 683.5 BTC
 ```
 
@@ -25,7 +25,7 @@ The Quote endpoints will return fee estimates.
 
 _Example:_ user is depositing 1.0 BTC into the network, which has 1000 BTC in the pool, with 30k sats `outboundFee.`
 
-The user will pay \~1/3rd of the THORChain's outbound fee to send assets to Savings Vault, using their typical wallet fee settings (note, this is an estimate only).
+The user will pay \~1/3rd of the SWITCHLYChain's outbound fee to send assets to Savings Vault, using their typical wallet fee settings (note, this is an estimate only).
 
 ```go
 totalFee = networkFee + liquidityFee
@@ -62,17 +62,17 @@ Remember, the **liquidityFee** is entirely dependent on the size of the transact
 When **depositing**, there are three phases to the transaction.
 
 1. **Layer1 Inbound Confirmation -** assuming the inbound Tx will be confirmed in the next block, it is the source blockchain block time.
-2. **Observation Counting** - time for 67% THORChain Nodes to observe and agree on the inbound Tx.
-3. **Confirmation Counting** - for non-instant finality blockchains, the amount of time THORChain will wait before processing to protect against double spends and re-org attacks.
+2. **Observation Counting** - time for 67% SWITCHLYChain Nodes to observe and agree on the inbound Tx.
+3. **Confirmation Counting** - for non-instant finality blockchains, the amount of time SWITCHLYChain will wait before processing to protect against double spends and re-org attacks.
 
 When **withdrawing** using the dust threshold, there are three phases to the transaction
 
 1. **Layer1 Inbound Confirmation -** assuming the inbound Tx will be confirmed in the next block, it is the source blockchain block time.
-2. **Observation Counting** - time for 67% THORChain Nodes to observe and agree on the inbound Tx.
+2. **Observation Counting** - time for 67% SWITCHLYChain Nodes to observe and agree on the inbound Tx.
 3. **Outbound Delay** - dependent on size and network traffic. Large outbounds will be delayed.
 4. **Layer1 Outbound Confirmation** - Outbound blockchain block time.
 
-Wait times can be between a few seconds up to an hour. The assets being swapped, the size of the swap and the current network traffic within THORChain will determine the wait time
+Wait times can be between a few seconds up to an hour. The assets being swapped, the size of the swap and the current network traffic within SWITCHLYChain will determine the wait time
 
 ```admonish info
 The Quote endpoint will calculate wait times.

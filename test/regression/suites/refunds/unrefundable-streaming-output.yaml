@@ -10,12 +10,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC
 asserts:
   - .balance_asset == "${ASSET_DEPTH=100000000}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .|[.[].coins[]|select(.asset == "BTC.BTC").amount|tonumber] | add == ${ASSET_DEPTH}
   # No oversolvency at the start.
@@ -24,8 +24,8 @@ type: check
 endpoint: http://localhost:1317/bank/balances/{{ addr_thor_cat }}
 asserts:
   - .result | length == 1
-  - .result[] | select(.denom == "rune").amount == "${CAT_RUNE=2500000000000}"
-  - ${CAT_RUNE} / 5 == ${CAT_FIFTH_RUNE=500000000000}
+  - .result[] | select(.denom == "rune").amount == "${CAT_SWITCH=2500000000000}"
+  - ${CAT_SWITCH} / 5 == ${CAT_FIFTH_SWITCH=500000000000}
 ---
 ########################################################################################
 # Begin two-sub-swap streaming swap to BTC.
@@ -33,7 +33,7 @@ asserts:
 type: tx-deposit
 signer: {{ addr_thor_cat }}
 coins:
-  - amount: "${CAT_FIFTH_RUNE}"
+  - amount: "${CAT_FIFTH_SWITCH}"
     asset: "rune"
 memo: "=:BTC.BTC:{{ addr_btc_cat }}:0/${INTERVAL=1}/${QUANTITY=3}"
 ---
@@ -41,7 +41,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - length == 1
   - .[0].tx_id == "{{ native_txid -1 }}"
@@ -50,7 +50,7 @@ asserts:
   - .[0].count < ${QUANTITY} # Streaming swap in progress.
   - .[0].target_asset == "BTC.BTC"
   - .[0].out | tonumber > 0
-  # Non-zero BTC completed swap output, already unrefunable to the THOR cat address.
+  # Non-zero BTC completed swap output, already unrefunable to the SWITCHLY cat address.
 ---
 ########################################################################################
 # 'Fee spike':
@@ -67,20 +67,20 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fee/BTC.BTC
+endpoint: http://localhost:1317/switchly/outbound_fee/BTC.BTC
 asserts:
   - length == 1
   - .[0].outbound_fee > ${ASSET_DEPTH}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - length == 1
   - .[0].tx_id == "{{ native_txid -2 }}"
   - .[0].count == ${QUANTITY} - 1 # Streaming swap about to complete.
   - .[0].target_asset == "BTC.BTC"
   - .[0].out | tonumber > 0
-  # Non-zero BTC completed swap output, unrefunable to the THOR cat address.
+  # Non-zero BTC completed swap output, unrefunable to the SWITCHLY cat address.
 ---
 type: create-blocks
 count: 1
@@ -89,44 +89,44 @@ count: 1
 # Checking of event emission upon the completed streaming swap.
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - length == 0
   # Streaming swap has completed.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fee/THOR.RUNE
+endpoint: http://localhost:1317/switchly/outbound_fee/SWITCHLY.SWITCH
 asserts:
   - length == 1
-  - .[0].outbound_fee == "${RUNE_NETWORK_FEE=2000000}"
+  - .[0].outbound_fee == "${SWITCH_NETWORK_FEE=2000000}"
 ---
 type: check
 endpoint: http://localhost:1317/bank/balances/{{ addr_thor_cat }}
 asserts:
   - .result | length == 1
   - .result[0].denom == "rune"
-  - .result[0].amount | tonumber == ${CAT_RUNE} - ${CAT_FIFTH_RUNE} - ${RUNE_NETWORK_FEE}
-  # Cat balance has decreased as intended (no RUNE or other refund).
+  - .result[0].amount | tonumber == ${CAT_SWITCH} - ${CAT_FIFTH_SWITCH} - ${SWITCH_NETWORK_FEE}
+  # Cat balance has decreased as intended (no SWITCH or other refund).
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .|[.[].coins[]|select(.asset == "BTC.BTC").amount|tonumber] | add == ${ASSET_DEPTH}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC
 asserts:
   - .balance_asset | tonumber < ${ASSET_DEPTH}
   # Pool Asset depth has decreased from the streaming swap output.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 0
   # No outbound in the queue.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "swap")] | length == 1
   - .|[..|select(.type? == "swap")][0] | .streaming_swap_count == .streaming_swap_quantity

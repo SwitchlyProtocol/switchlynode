@@ -10,7 +10,7 @@ genesis:
           coins:
             - amount: "7500310000000"
               denom: rune
-    thorchain:
+    switchly:
       node_accounts:
         - active_block_height: "0"
           bond: "5000000000000"
@@ -35,7 +35,7 @@ genesis:
           status: Active # Node to be set to Standby by EndBlock (getChangedNodes), triggering low bond removal
           validator_cons_pub_key: {{ cons_pubkey_cat }}
           version: {{ version }}
-        - bond: "110000000" # 1.1 RUNE bond Standby to not be removed
+        - bond: "110000000" # 1.1 SWITCH bond Standby to not be removed
           ip_address: 1.1.1.1
           node_address: {{ addr_thor_fox }}
           bond_address: {{ addr_thor_fox }}
@@ -45,7 +45,7 @@ genesis:
           status: Standby
           validator_cons_pub_key: {{ cons_pubkey_fox }}
           version: {{ version }}
-        - bond: "100000000" # 1 RUNE bond Standby to be removed, 0 bond providers (only operator)
+        - bond: "100000000" # 1 SWITCH bond Standby to be removed, 0 bond providers (only operator)
           ip_address: 1.1.1.1
           node_address: {{ addr_thor_fish }}
           bond_address: {{ addr_thor_fish }}
@@ -55,7 +55,7 @@ genesis:
           status: Standby
           validator_cons_pub_key: {{ cons_pubkey_fish }}
           version: {{ version }}
-        - bond: "100000000" # 1 RUNE bond Standby to be removed, 2 bond providers (including operator)
+        - bond: "100000000" # 1 SWITCH bond Standby to be removed, 2 bond providers (including operator)
           ip_address: 1.1.1.1
           node_address: {{ addr_thor_pig }}
           bond_address: {{ addr_thor_pig }}
@@ -76,7 +76,7 @@ genesis:
       vaults:
         - block_height: "0"
           chains:
-            - THOR
+            - SWITCHLY
           membership:
             - {{ pubkey_dog }}
           pub_key: tthorpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4
@@ -87,9 +87,9 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
-  - length == 3 # Two 1-RUNE nodes removed, fish and pig.
+  - length == 3 # Two 1-SWITCH nodes removed, fish and pig.
   #
   - .[0].node_address == "{{ addr_thor_fox }}"
   - .[0].status == "Standby"
@@ -111,7 +111,7 @@ asserts:
   - .result[0].amount == "${GOAT_BOND}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "bond")] | length == 5
   #

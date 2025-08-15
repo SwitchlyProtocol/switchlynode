@@ -13,12 +13,12 @@ type ConstantName int
 
 const (
 	EmissionCurve ConstantName = iota
-	MaxRuneSupply
+	MaxSWITCHSupply
 	BlocksPerYear
 	OutboundTransactionFee
 	NativeTransactionFee
 	PoolCycle
-	MinRunePoolDepth
+	MinSWITCHPoolDepth
 	MaxAvailablePools
 	StagedPoolCost
 	PendingLiquidityAgeLimit
@@ -43,7 +43,7 @@ const (
 	DoubleSignMaxAge
 	PauseBond
 	PauseUnbond
-	MinimumBondInRune
+	MinimumBondInSWITCH
 	FundMigrationInterval
 	MaxOutboundAttempts
 	SlashPenalty
@@ -103,7 +103,7 @@ const (
 	ChurnMigrateRounds
 	AllowWideBlame
 	MaxAffiliateFeeBasisPoints
-	TargetOutboundFeeSurplusRune
+	TargetOutboundFeeSurplusSWITCH
 	MaxOutboundFeeMultiplierBasisPoints
 	MinOutboundFeeMultiplierBasisPoints
 	NativeOutboundFeeUSD
@@ -128,9 +128,9 @@ const (
 	SecuredAssetSlipMinBps
 	EVMDisableContractWhitelist
 	OperationalVotesMin
-	RUNEPoolEnabled
-	RUNEPoolDepositMaturityBlocks
-	RUNEPoolMaxReserveBackstop
+	SWITCHPoolEnabled
+	SWITCHPoolDepositMaturityBlocks
+	SWITCHPoolMaxReserveBackstop
 	SaversEjectInterval
 	SystemIncomeBurnRateBps
 	DevFundSystemIncomeBps
@@ -142,16 +142,16 @@ const (
 	MultipleAffiliatesMaxCount
 	BondSlashBan
 	BankSendEnabled
-	RUNEPoolHaltDeposit
-	RUNEPoolHaltWithdraw
-	MinRuneForTCYStakeDistribution
-	MinTCYForTCYStakeDistribution
-	TCYStakeSystemIncomeBps
-	TCYClaimingSwapHalt
-	TCYStakeDistributionHalt
-	TCYStakingHalt
-	TCYUnstakingHalt
-	TCYClaimingHalt
+	SWITCHPoolHaltDeposit
+	SWITCHPoolHaltWithdraw
+	MinSWITCHForSWCYStakeDistribution
+	MinSWCYForSWCYStakeDistribution
+	SWCYStakeSystemIncomeBps
+	SWCYClaimingSwapHalt
+	SWCYStakeDistributionHalt
+	SWCYStakingHalt
+	SWCYUnstakingHalt
+	SWCYClaimingHalt
 
 	// Stellar-specific constants
 	StellarMinAccountBalance
@@ -164,7 +164,7 @@ const (
 	BurnSynths
 	DefaultPoolStatus
 	ManualSwapsToSynthDisabled
-	MaximumLiquidityRune
+	MaximumLiquiditySWITCH
 	MintSynths
 	NumberOfNewNodesPerChurn
 	SignerConcurrency

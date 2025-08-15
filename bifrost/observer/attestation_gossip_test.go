@@ -23,8 +23,8 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
 )
 
 // TestLogWriter is a custom writer that writes to testing.T.Log
@@ -58,14 +58,14 @@ func getTestLogger(t *testing.T) zerolog.Logger {
 }
 
 // setupTestGossip sets up a test instance of AttestationGossip with mocked dependencies
-func setupTestGossip(t *testing.T) (*AttestationGossip, *MockHost, *MockKeys, *MockGRPCClient, *MockThorchainBridge, *MockEventClient) {
+func setupTestGossip(t *testing.T) (*AttestationGossip, *MockHost, *MockKeys, *MockGRPCClient, *MockSwitchlyBridge, *MockEventClient) {
 	privKey := secp256k1.GenPrivKey()
 	keys := &MockKeys{
 		privKey: privKey,
 	}
 
-	pubkey2 := thorchain.GetRandomPubKey()
-	pubkey3 := thorchain.GetRandomPubKey()
+	pubkey2 := switchly.GetRandomPubKey()
+	pubkey3 := switchly.GetRandomPubKey()
 
 	// derive peer IDs
 	peer1, err := conversion.GetPeerIDFromSecp256PubKey(privKey.PubKey().Bytes())
@@ -100,7 +100,7 @@ func setupTestGossip(t *testing.T) (*AttestationGossip, *MockHost, *MockKeys, *M
 		},
 	}
 
-	bridge := &MockThorchainBridge{
+	bridge := &MockSwitchlyBridge{
 		getKeysignPartyFunc: func(pubKey common.PubKey) (common.PubKeys, error) {
 			return common.PubKeys{pubKey, pubkey2, pubkey3}, nil
 		},
@@ -396,7 +396,7 @@ func TestHandleObservedTxAttestation(t *testing.T) {
 		return nil // Always succeed in tests
 	}
 
-	t.Run("processes attestation and sends to thornode when quorum reached", func(t *testing.T) {
+	t.Run("processes attestation and sends to switchlynode when quorum reached", func(t *testing.T) {
 		// Create private keys and valid signatures for testing
 		privKey1 := secp256k1.GenPrivKey()
 		privKey2 := secp256k1.GenPrivKey()
@@ -468,11 +468,11 @@ func TestHandleObservedTxAttestation(t *testing.T) {
 		// Wait a bit for processing to complete
 		time.Sleep(200 * time.Millisecond)
 
-		// Verify it was sent to thornode
+		// Verify it was sent to switchlynode
 		grpcMu.Lock()
 		defer grpcMu.Unlock()
 
-		require.Len(t, sentTxs, 2, "Should have sent txs to thornode")
+		require.Len(t, sentTxs, 2, "Should have sent txs to switchlynode")
 		sentAttestations := 0
 		for _, sentTx := range sentTxs {
 			assert.Equal(t, tx, sentTx.ObsTx, "Sent tx should match original")
@@ -514,7 +514,7 @@ func TestHandleNetworkFeeAttestation(t *testing.T) {
 		return nil // Always succeed in tests
 	}
 
-	t.Run("processes attestation and sends to thornode when quorum reached", func(t *testing.T) {
+	t.Run("processes attestation and sends to switchlynode when quorum reached", func(t *testing.T) {
 		// Create private keys for testing
 		privKey1 := secp256k1.GenPrivKey()
 		privKey2 := secp256k1.GenPrivKey()
@@ -575,11 +575,11 @@ func TestHandleNetworkFeeAttestation(t *testing.T) {
 		// Wait for processing to complete
 		time.Sleep(200 * time.Millisecond)
 
-		// Verify it was sent to thornode
+		// Verify it was sent to switchlynode
 		grpcMu.Lock()
 		defer grpcMu.Unlock()
 
-		require.Len(t, sentFees, 2, "Should have sent network fees to thornode")
+		require.Len(t, sentFees, 2, "Should have sent network fees to switchlynode")
 		sentAttestations := 0
 		for _, sentFee := range sentFees {
 			assert.Equal(t, networkFee.Chain, sentFee.NetworkFee.Chain)
@@ -762,13 +762,13 @@ func TestSendLateAttestations(t *testing.T) {
 		state.mu.Lock()
 		if state.ShouldSendLate(ag.config.MinTimeBetweenAttestations) {
 			// Send late attestations
-			ag.sendObservedTxAttestationsToThornode(context.Background(), *obsTx, state, k.Inbound, false, false)
+			ag.sendObservedTxAttestationsToSwitchlynode(context.Background(), *obsTx, state, k.Inbound, false, false)
 		}
 		state.mu.Unlock()
 	}
 	ag.mu.Unlock()
 
-	// Verify the unsent attestation was sent to thornode
+	// Verify the unsent attestation was sent to switchlynode
 	assert.NotNil(t, sentTx)
 	assert.Equal(t, obsTx.Tx.ID, sentTx.ObsTx.Tx.ID)
 	assert.Len(t, sentTx.Attestations, 1) // Only the unsent one

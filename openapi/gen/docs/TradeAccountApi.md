@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**TradeAccount**](TradeAccountApi.md#TradeAccount) | **Get** /thorchain/trade/account/{address} | 
+[**TradeAccount**](TradeAccountApi.md#TradeAccount) | **Get** /switchly/trade/account/{address} | 
 
 
 

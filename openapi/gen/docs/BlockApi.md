@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Block**](BlockApi.md#Block) | **Get** /thorchain/block | 
+[**Block**](BlockApi.md#Block) | **Get** /switchly/block | 
 
 
 

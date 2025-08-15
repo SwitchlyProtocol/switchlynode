@@ -1,4 +1,4 @@
-package thornode
+package switchlynode
 
 import (
 	"encoding/json"
@@ -21,18 +21,18 @@ import (
 // Init
 ////////////////////////////////////////////////////////////////////////////////////////
 
-var thornodeURL string
+var switchlynodeURL string
 
 func init() {
 	config.Init()
-	thornodeURL = config.GetBifrost().Thorchain.ChainHost
-	if !strings.HasPrefix(thornodeURL, "http") {
-		thornodeURL = "http://" + thornodeURL
+	switchlynodeURL = config.GetBifrost().Switchly.ChainHost
+	if !strings.HasPrefix(switchlynodeURL, "http") {
+		switchlynodeURL = "http://" + switchlynodeURL
 	}
 }
 
 func BaseURL() string {
-	return thornodeURL
+	return switchlynodeURL
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ func BaseURL() string {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 func GetBalances(addr common.Address) (common.Coins, error) {
-	url := fmt.Sprintf("%s/cosmos/bank/v1beta1/balances/%s", thornodeURL, addr)
+	url := fmt.Sprintf("%s/cosmos/bank/v1beta1/balances/%s", switchlynodeURL, addr)
 	var balances struct {
 		Balances []struct {
 			Denom  string `json:"denom"`
@@ -72,7 +72,7 @@ func GetBalances(addr common.Address) (common.Coins, error) {
 }
 
 func GetInboundAddress(chain common.Chain) (address common.Address, router *common.Address, err error) {
-	url := fmt.Sprintf("%s/thorchain/inbound_addresses", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/inbound_addresses", switchlynodeURL)
 	var inboundAddresses []openapi.InboundAddress
 	err = Get(url, &inboundAddresses)
 	if err != nil {
@@ -94,7 +94,7 @@ func GetInboundAddress(chain common.Chain) (address common.Address, router *comm
 }
 
 func GetRouterAddress(chain common.Chain) (common.Address, error) {
-	url := fmt.Sprintf("%s/thorchain/inbound_addresses", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/inbound_addresses", switchlynodeURL)
 	var inboundAddresses []openapi.InboundAddress
 	err := Get(url, &inboundAddresses)
 	if err != nil {
@@ -112,49 +112,49 @@ func GetRouterAddress(chain common.Chain) (common.Address, error) {
 }
 
 func GetLiquidityProviders(asset common.Asset) ([]openapi.LiquidityProvider, error) {
-	url := fmt.Sprintf("%s/thorchain/pool/%s/liquidity_providers", thornodeURL, asset.String())
+	url := fmt.Sprintf("%s/switchly/pool/%s/liquidity_providers", switchlynodeURL, asset.String())
 	var liquidityProviders []openapi.LiquidityProvider
 	err := Get(url, &liquidityProviders)
 	return liquidityProviders, err
 }
 
 func GetPools() ([]openapi.Pool, error) {
-	url := fmt.Sprintf("%s/thorchain/pools", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/pools", switchlynodeURL)
 	var pools []openapi.Pool
 	err := Get(url, &pools)
 	return pools, err
 }
 
 func GetVaults() ([]openapi.Vault, error) {
-	url := fmt.Sprintf("%s/thorchain/vaults/asgard", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/vaults/asgard", switchlynodeURL)
 	var vaults []openapi.Vault
 	err := Get(url, &vaults)
 	return vaults, err
 }
 
 func GetNetwork() (openapi.NetworkResponse, error) {
-	url := fmt.Sprintf("%s/thorchain/network", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/network", switchlynodeURL)
 	var network openapi.NetworkResponse
 	err := Get(url, &network)
 	return network, err
 }
 
 func GetNodes() ([]openapi.Node, error) {
-	url := fmt.Sprintf("%s/thorchain/nodes", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/nodes", switchlynodeURL)
 	var nodes []openapi.Node
 	err := Get(url, &nodes)
 	return nodes, err
 }
 
 func GetPool(asset common.Asset) (openapi.Pool, error) {
-	url := fmt.Sprintf("%s/thorchain/pool/%s", thornodeURL, asset.String())
+	url := fmt.Sprintf("%s/switchly/pool/%s", switchlynodeURL, asset.String())
 	var pool openapi.Pool
 	err := Get(url, &pool)
 	return pool, err
 }
 
 func GetSwapQuote(from, to common.Asset, amount sdk.Uint) (openapi.QuoteSwapResponse, error) {
-	baseURL := fmt.Sprintf("%s/thorchain/quote/swap", thornodeURL)
+	baseURL := fmt.Sprintf("%s/switchly/quote/swap", switchlynodeURL)
 	parsedURL, err := url.Parse(baseURL)
 	if err != nil {
 		return openapi.QuoteSwapResponse{}, err
@@ -172,28 +172,28 @@ func GetSwapQuote(from, to common.Asset, amount sdk.Uint) (openapi.QuoteSwapResp
 }
 
 func GetTxStages(txid string) (openapi.TxStagesResponse, error) {
-	url := fmt.Sprintf("%s/thorchain/tx/stages/%s", thornodeURL, txid)
+	url := fmt.Sprintf("%s/switchly/tx/stages/%s", switchlynodeURL, txid)
 	var stages openapi.TxStagesResponse
 	err := Get(url, &stages)
 	return stages, err
 }
 
 func GetTxDetails(txid string) (openapi.TxDetailsResponse, error) {
-	url := fmt.Sprintf("%s/thorchain/tx/details/%s", thornodeURL, txid)
+	url := fmt.Sprintf("%s/switchly/tx/details/%s", switchlynodeURL, txid)
 	var details openapi.TxDetailsResponse
 	err := Get(url, &details)
 	return details, err
 }
 
 func GetMimirs() (map[string]int64, error) {
-	url := fmt.Sprintf("%s/thorchain/mimir", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/mimir", switchlynodeURL)
 	var mimirs map[string]int64
 	err := Get(url, &mimirs)
 	return mimirs, err
 }
 
 func GetBlock(height int64) (openapi.BlockResponse, error) {
-	url := fmt.Sprintf("%s/thorchain/block", thornodeURL)
+	url := fmt.Sprintf("%s/switchly/block", switchlynodeURL)
 	if height > 0 {
 		url = fmt.Sprintf("%s?height=%d", url, height)
 	}

@@ -23,7 +23,7 @@ func (c *CosmosBlockScanner) GetAssetByCosmosDenom(denom string) (CosmosAssetMap
 	return CosmosAssetMapping{}, false
 }
 
-func (c *CosmosBlockScanner) GetAssetByThorchainSymbol(symbol string) (CosmosAssetMapping, bool) {
+func (c *CosmosBlockScanner) GetAssetBySwitchlySymbol(symbol string) (CosmosAssetMapping, bool) {
 	for _, asset := range c.cfg.WhitelistCosmosAssets {
 		if strings.EqualFold(asset.SwitchlySymbol, symbol) {
 			return CosmosAssetMapping{

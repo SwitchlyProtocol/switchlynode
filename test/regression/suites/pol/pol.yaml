@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
 ---
@@ -73,7 +73,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.current_deposit == "${CURRENT_DEPOSIT=42097154496}"
   - .pol.current_deposit|tonumber < ${MAX_NETWORK_DEPOSIT}
@@ -85,7 +85,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.current_deposit == "${CURRENT_DEPOSIT=89347125908}"
   - .pol.current_deposit|tonumber > ${MAX_NETWORK_DEPOSIT}
@@ -100,7 +100,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.current_deposit == "${CURRENT_DEPOSIT}"
   - .pol.rune_deposited == "${CURRENT_DEPOSIT}"
@@ -127,14 +127,14 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "${FOX_SYNTH_BALANCE}"
     asset: "btc/btc"
-memo: "=:RUNE"
+memo: "=:SWITCH"
 ---
 type: tx-deposit
 signer: {{ addr_thor_cat }}
 coins:
   - amount: "${CAT_SYNTH_BALANCE}"
     asset: "btc/btc"
-memo: "=:RUNE"
+memo: "=:SWITCH"
 ---
 type: tx-mimir
 key: POLMaxPoolMovement
@@ -145,7 +145,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.current_deposit == "89339308664"
   - .pol.rune_deposited == "89347125908"
@@ -163,11 +163,11 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.current_deposit == "${CURRENT_DEPOSIT=17466985325}"
-  - .pol.rune_deposited == "${RUNE_DEPOSITED=89347125908}"
-  - .pol.rune_withdrawn == "${RUNE_WITHRDAWN=71880140583}"
+  - .pol.rune_deposited == "${SWITCH_DEPOSITED=89347125908}"
+  - .pol.rune_withdrawn == "${SWITCH_WITHRDAWN=71880140583}"
   - .pol.value == "${VALUE=0}"
   - .pol.pnl == "-${CURRENT_DEPOSIT}"
   - .reserve.units == "${UNITS=0}"
@@ -179,11 +179,11 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/runepool
+endpoint: http://localhost:1317/switchly/runepool
 asserts:
   - .pol.current_deposit == "${CURRENT_DEPOSIT}"
-  - .pol.rune_deposited == "${RUNE_DEPOSITED}"
-  - .pol.rune_withdrawn == "${RUNE_WITHRDAWN}"
+  - .pol.rune_deposited == "${SWITCH_DEPOSITED}"
+  - .pol.rune_withdrawn == "${SWITCH_WITHRDAWN}"
   - .pol.value == "${VALUE}"
   - .pol.pnl == "-${CURRENT_DEPOSIT}"
   - .reserve.units == "${UNITS}"

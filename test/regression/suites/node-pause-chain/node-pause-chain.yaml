@@ -4,7 +4,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/inbound_addresses
+endpoint: http://localhost:1317/switchly/inbound_addresses
 asserts:
 - .[1].halted == false
 ---
@@ -16,7 +16,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/inbound_addresses
+endpoint: http://localhost:1317/switchly/inbound_addresses
 asserts:
 - .[1].halted == true
 ---

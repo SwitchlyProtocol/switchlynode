@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -133,7 +133,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -275,7 +275,7 @@
                 "coins": [
                   {
                     "amount": "100000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -355,7 +355,7 @@
               "type": "message"
             },
             {
-              "THOR_txid": "E05E241BB18B77421DCABA2E85AB202DEF80087BE42114C4FAC0BF2C95D3C3DB",
+              "SWITCHLY_txid": "E05E241BB18B77421DCABA2E85AB202DEF80087BE42114C4FAC0BF2C95D3C3DB",
               "asset_address": "",
               "asset_amount": "0",
               "liquidity_provider_units": "49974746",
@@ -383,7 +383,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -623,7 +623,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -765,7 +765,7 @@
                 "coins": [
                   {
                     "amount": "100000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -832,7 +832,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -1190,7 +1190,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 6,
       "time": "",
       "last_block_id": {
@@ -1332,7 +1332,7 @@
                 "coins": [
                   {
                     "amount": "100000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -1399,7 +1399,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 7,
       "time": "",
       "last_block_id": {
@@ -1757,7 +1757,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 8,
       "time": "",
       "last_block_id": {
@@ -1899,7 +1899,7 @@
                 "coins": [
                   {
                     "amount": "100000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -1966,7 +1966,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 9,
       "time": "",
       "last_block_id": {
@@ -2108,7 +2108,7 @@
                 "coins": [
                   {
                     "amount": "100000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -2188,7 +2188,7 @@
               "type": "message"
             },
             {
-              "THOR_txid": "068BD01F66E2AC3BA21613A4A44165799AD8A7A5C67A8CD9CFE331BAF1F4BF8C",
+              "SWITCHLY_txid": "068BD01F66E2AC3BA21613A4A44165799AD8A7A5C67A8CD9CFE331BAF1F4BF8C",
               "asset_address": "",
               "asset_amount": "0",
               "liquidity_provider_units": "49972884",

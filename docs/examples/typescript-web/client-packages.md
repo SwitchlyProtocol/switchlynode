@@ -2,19 +2,19 @@
 
 ## Full Multichain Wallet Example
 
-A wallet class has been created that instantiates every chain client and leverages the interface which greatly simplifies working with wallets and THORChain. See the below code example.
+A wallet class has been created that instantiates every chain client and leverages the interface which greatly simplifies working with wallets and SWITCHLYChain. See the below code example.
 
-<iframe width="100%" height="600" src="https://replit.com/@thorchain/xchain-wallet?embed=true" ></iframe>
+<iframe width="100%" height="600" src="https://replit.com/@switchly/xchain-wallet?embed=true" ></iframe>
 
 ### Client Packages breakdown
 
-Client packages have been created for each blockchain that connects to THORChain. All clients implement xchain-crypto which acts like a super class and gives each client a common interface.
+Client packages have been created for each blockchain that connects to SWITCHLYChain. All clients implement xchain-crypto which acts like a super class and gives each client a common interface.
 
 Common functions with code examples are:
 
 ### **Config and Set Up of a Wallet**
 
-<iframe width="100%" height="600" src="https://replit.com/@thorchain/TestBed?embed=true" ></iframe>
+<iframe width="100%" height="600" src="https://replit.com/@switchly/TestBed?embed=true" ></iframe>
 
 Some chains require address history to query balances and Txs
 
@@ -27,14 +27,14 @@ All clients implement these functions. While most can use the same code, some ha
 - Get Transactions - returns a simplified array of recent transactions for an address.
 - Get Transaction Data - returns transaction information from the transaction ID/hash.
 
-See below for a Bitcoin example. Also see [Ethereum](https://replit.com/@thorchain/xchain-ethereum#index.ts), [THORChain](https://replit.com/@thorchain/xchain-thorchain), [Cosmos](https://replit.com/@thorchain/xchain-cosmos#index.ts), and [Avalanche](https://replit.com/@thorchain/xchain-avax) examples.
+See below for a Bitcoin example. Also see [Ethereum](https://replit.com/@switchly/xchain-ethereum#index.ts), [SWITCHLYChain](https://replit.com/@switchly/xchain-switchly), [Cosmos](https://replit.com/@switchly/xchain-cosmos#index.ts), and [Avalanche](https://replit.com/@switchly/xchain-avax) examples.
 
-<iframe width="100%" height="600" src="https://replit.com/@thorchain/xchain-bitcoin?embed=true" ></iframe>
+<iframe width="100%" height="600" src="https://replit.com/@switchly/xchain-bitcoin?embed=true" ></iframe>
 Some chains require address history to query balances and Txs
 
 ### Transactions
 
-- Get Fees - get the transaction fee for the chain, separate from THORChain fees
+- Get Fees - get the transaction fee for the chain, separate from SWITCHLYChain fees
 - Transfer - transfer funds from one wallet to another.
 - Purge - When a wallet is "locked" the private key should be purged in each client by setting it back to null.
 

@@ -19,12 +19,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[] | select(.type=="add_liquidity")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
 asserts:
   - .pending_rune | tonumber == 0
   - .pending_asset | tonumber == 0
@@ -43,7 +43,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - length == 1
   - .PAUSELP == 1
@@ -59,13 +59,13 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 99
   - .txs[0].result.log | contains("unable to add liquidity while chain has paused LP actions")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
 asserts:
   - .pending_rune | tonumber == 0
   - .pending_asset | tonumber == 0
@@ -91,7 +91,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - length == 2
   - .PAUSELP == 0
@@ -108,13 +108,13 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 99
   - .txs[0].result.log | contains("unable to add liquidity while chain has paused LP actions")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
 asserts:
   - .pending_rune | tonumber == 0
   - .pending_asset | tonumber == 0
@@ -140,7 +140,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - length == 3
   - .PAUSELP == 0
@@ -158,13 +158,13 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 99
   - .txs[0].result.log | contains("unable to add liquidity, deposits are paused for asset (BTC.BTC)")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_fox }}
 asserts:
   - .pending_rune | tonumber == 0
   - .pending_asset | tonumber == 0
@@ -185,12 +185,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.events[] | select(.type=="add_liquidity")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/liquidity_provider/{{ addr_thor_fox }}
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/liquidity_provider/{{ addr_thor_fox }}
 asserts:
   - .pending_rune | tonumber == 0
   - .pending_asset | tonumber == 0

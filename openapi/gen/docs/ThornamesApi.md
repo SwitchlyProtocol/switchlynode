@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Thorname**](ThornamesApi.md#Thorname) | **Get** /thorchain/thorname/{name} | 
+[**Thorname**](ThornamesApi.md#Thorname) | **Get** /switchly/switchlyname/{name} | 
 
 
 
@@ -29,7 +29,7 @@ import (
 )
 
 func main() {
-    name := "name_example" // string | the thornode to lookup
+    name := "name_example" // string | the switchlynode to lookup
     height := int64(789) // int64 | optional block height, defaults to current tip (optional)
 
     configuration := openapiclient.NewConfiguration()
@@ -50,7 +50,7 @@ func main() {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
 **ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
-**name** | **string** | the thornode to lookup | 
+**name** | **string** | the switchlynode to lookup | 
 
 ### Other Parameters
 

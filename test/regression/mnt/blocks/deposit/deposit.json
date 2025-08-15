@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -50,7 +50,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -109,7 +109,7 @@
                 "coins": [
                   {
                     "amount": "2500000000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -176,7 +176,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -235,7 +235,7 @@
                 "coins": [
                   {
                     "amount": "2499996000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -323,8 +323,8 @@
               "amount": "2499996000000",
               "bond_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "bond_type": "bond_paid",
-              "chain": "THOR",
-              "coin": "2499996000000 THOR.RUNE",
+              "chain": "SWITCHLY",
+              "coin": "2499996000000 SWITCHLY.SWITCH",
               "from": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "id": "177BA05CBC59A35A3B1FEF13B298853BAA205DEE0FD231522364C6266666996B",
               "memo": "bond:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
@@ -351,7 +351,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -389,7 +389,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -465,7 +465,7 @@
         },
         "result": {
           "code": 99,
-          "log": "failed to execute message; message index: 0: (bond) memos are for the (bond) module, for which messages must only contain RUNE or TCY: internal error",
+          "log": "failed to execute message; message index: 0: (bond) memos are for the (bond) module, for which messages must only contain SWITCH or SWCY: internal error",
           "gas_wanted": "-1",
           "gas_used": "70425",
           "events": [

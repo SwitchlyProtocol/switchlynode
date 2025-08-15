@@ -17,9 +17,9 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"google.golang.org/grpc"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
 )
 
 // Mock implementations of external dependencies
@@ -168,7 +168,7 @@ func (m *MockPeerstore) UpdateAddrs(p peer.ID, oldTTL, newTTL time.Duration) {
 }
 
 type MockKeys struct {
-	thorclient.Keys
+	switchlyclient.Keys
 	privKey cryptotypes.PrivKey
 }
 
@@ -212,16 +212,16 @@ func (m *MockGRPCClient) SendQuorumErrataTx(ctx context.Context, quorumErrata *c
 	return m.sendQuorumErrataFunc(ctx, quorumErrata, opts...)
 }
 
-type MockThorchainBridge struct {
-	thorclient.ThorchainBridge
+type MockSwitchlyBridge struct {
+	switchlyclient.SwitchlyBridge
 	getKeysignPartyFunc func(pubKey common.PubKey) (common.PubKeys, error)
 }
 
-func (m *MockThorchainBridge) GetKeysignParty(pubKey common.PubKey) (common.PubKeys, error) {
+func (m *MockSwitchlyBridge) GetKeysignParty(pubKey common.PubKey) (common.PubKeys, error) {
 	return m.getKeysignPartyFunc(pubKey)
 }
 
-func (m *MockThorchainBridge) GetMimir(key string) (int64, error) {
+func (m *MockSwitchlyBridge) GetMimir(key string) (int64, error) {
 	return 0, nil
 }
 

@@ -1,17 +1,17 @@
-# \TCYClaimersApi
+# \SWCYClaimersApi
 
 All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**TcyClaimer**](TCYClaimersApi.md#TcyClaimer) | **Get** /thorchain/tcy_claimer/{address} | 
-[**TcyClaimers**](TCYClaimersApi.md#TcyClaimers) | **Get** /thorchain/tcy_claimers | 
+[**TcyClaimer**](SWCYClaimersApi.md#TcyClaimer) | **Get** /switchly/tcy_claimer/{address} | 
+[**TcyClaimers**](SWCYClaimersApi.md#TcyClaimers) | **Get** /switchly/tcy_claimers | 
 
 
 
 ## TcyClaimer
 
-> TCYClaimer TcyClaimer(ctx, address).Height(height).Execute()
+> SWCYClaimer TcyClaimer(ctx, address).Height(height).Execute()
 
 
 
@@ -35,13 +35,13 @@ func main() {
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TCYClaimersApi.TcyClaimer(context.Background(), address).Height(height).Execute()
+    resp, r, err := apiClient.SWCYClaimersApi.TcyClaimer(context.Background(), address).Height(height).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `TCYClaimersApi.TcyClaimer``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `SWCYClaimersApi.TcyClaimer``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `TcyClaimer`: TCYClaimer
-    fmt.Fprintf(os.Stdout, "Response from `TCYClaimersApi.TcyClaimer`: %v\n", resp)
+    // response from `TcyClaimer`: SWCYClaimer
+    fmt.Fprintf(os.Stdout, "Response from `SWCYClaimersApi.TcyClaimer`: %v\n", resp)
 }
 ```
 
@@ -65,7 +65,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**TCYClaimer**](TCYClaimer.md)
+[**SWCYClaimer**](SWCYClaimer.md)
 
 ### Authorization
 
@@ -83,7 +83,7 @@ No authorization required
 
 ## TcyClaimers
 
-> []TCYClaimerSummary TcyClaimers(ctx).Height(height).Execute()
+> []SWCYClaimerSummary TcyClaimers(ctx).Height(height).Execute()
 
 
 
@@ -106,13 +106,13 @@ func main() {
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TCYClaimersApi.TcyClaimers(context.Background()).Height(height).Execute()
+    resp, r, err := apiClient.SWCYClaimersApi.TcyClaimers(context.Background()).Height(height).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `TCYClaimersApi.TcyClaimers``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `SWCYClaimersApi.TcyClaimers``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `TcyClaimers`: []TCYClaimerSummary
-    fmt.Fprintf(os.Stdout, "Response from `TCYClaimersApi.TcyClaimers`: %v\n", resp)
+    // response from `TcyClaimers`: []SWCYClaimerSummary
+    fmt.Fprintf(os.Stdout, "Response from `SWCYClaimersApi.TcyClaimers`: %v\n", resp)
 }
 ```
 
@@ -131,7 +131,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[]TCYClaimerSummary**](TCYClaimerSummary.md)
+[**[]SWCYClaimerSummary**](SWCYClaimerSummary.md)
 
 ### Authorization
 

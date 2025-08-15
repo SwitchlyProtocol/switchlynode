@@ -13,7 +13,7 @@ interface IRouter {
     ) external;
 }
 
-// THORChain_Router is managed by THORChain Vaults
+// SWITCHLYChain_Router is managed by SWITCHLYChain Vaults
 contract AvaxRouter {
     struct Coin {
         address asset;
@@ -98,7 +98,7 @@ contract AvaxRouter {
         string memory memo,
         uint256 expiration
     ) external payable {
-        require(block.timestamp < expiration, "THORChain_Router: expired");
+        require(block.timestamp < expiration, "SWITCHLYChain_Router: expired");
         deposit(vault, asset, amount, memo);
     }
 

@@ -14,15 +14,15 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fees
+endpoint: http://localhost:1317/switchly/outbound_fees
 asserts:
   - .|length == 3
-  - .[0] == {"asset":"THOR.RUNE","outbound_fee":"2000000"}
+  - .[0] == {"asset":"SWITCHLY.SWITCH","outbound_fee":"2000000"}
   ###
   - .[1].asset == "BTC.BTC"
   - .[1].outbound_fee == "14000"
@@ -42,7 +42,7 @@ asserts:
 # check 1/2 of vault block_height
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - length == 1
   - .[0].block_height == ${VAULT_BLOCK_HEIGHT=1}
@@ -50,7 +50,7 @@ asserts:
 type: check
 endpoint: http://localhost:1317/switchly/lastblock
 asserts:
-  - .[0].thorchain == ${VAULT_BLOCK_HEIGHT}
+  - .[0].switchly == ${VAULT_BLOCK_HEIGHT}
   # The templates set the vault block_height to 0,
   # but that's overwritten in the querier by GetVault to the current block height.
 ---
@@ -81,7 +81,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/${INBOUND_TXID}
+endpoint: http://localhost:1317/switchly/swap/streaming/${INBOUND_TXID}
 asserts:
   - .source_asset == "${INPUT_ASSET}"
   - .deposit == "${INPUT_AMOUNT}"
@@ -99,7 +99,7 @@ asserts:
   - .failed_swap_reasons|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
 ---
@@ -107,12 +107,12 @@ type: create-blocks
 count: 9
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
@@ -143,7 +143,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -153,10 +153,10 @@ asserts:
 type: check
 endpoint: http://localhost:1317/switchly/lastblock
 asserts:
-  - .[0].thorchain == ${HEIGHT=12}
+  - .[0].switchly == ${HEIGHT=12}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - length == 1
   - .[0].block_height == 2
@@ -193,7 +193,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/${INBOUND_TXID}
+endpoint: http://localhost:1317/switchly/swap/streaming/${INBOUND_TXID}
 asserts:
   - .deposit == "${INPUT_AMOUNT}"
   - .count == ${COUNT=1}
@@ -201,7 +201,7 @@ asserts:
   - .in == (( ${INPUT_AMOUNT} * ${COUNT} / ${QUANTITY} )|tostring)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
 ---
@@ -217,7 +217,7 @@ type: create-blocks
 count: 4
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1
 ---
@@ -230,12 +230,12 @@ type: create-blocks
 count: 4
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
@@ -266,7 +266,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -300,12 +300,12 @@ type: create-blocks
 count: 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 2
   - .[0]|.in_hash == "${INBOUND_TXID}"
@@ -357,7 +357,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -388,7 +388,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/${INBOUND_TXID}
+endpoint: http://localhost:1317/switchly/swap/streaming/${INBOUND_TXID}
 asserts:
   - .interval == ${INTERVAL}
   - .deposit == "${INPUT_AMOUNT}"
@@ -401,7 +401,7 @@ type: create-blocks
 count: 8
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
@@ -436,7 +436,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -467,12 +467,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "${INBOUND_TXID}"
@@ -507,17 +507,17 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
 ########################################################################################
-# streaming swap to ETH/ETH from THOR.RUNE (100% conversion)
+# streaming swap to ETH/ETH from SWITCHLY.SWITCH (100% conversion)
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_fox }}
@@ -530,7 +530,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/799A32266A8F0BF5E5EC7F12E0981839DF23C7E138A7C45D6814A7D80CAC7F34
+endpoint: http://localhost:1317/switchly/swap/streaming/799A32266A8F0BF5E5EC7F12E0981839DF23C7E138A7C45D6814A7D80CAC7F34
 asserts:
   - .deposit == "${INPUT_AMOUNT}"
   - .count == ${COUNT=1}
@@ -541,7 +541,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/799A32266A8F0BF5E5EC7F12E0981839DF23C7E138A7C45D6814A7D80CAC7F34
+endpoint: http://localhost:1317/switchly/swap/streaming/799A32266A8F0BF5E5EC7F12E0981839DF23C7E138A7C45D6814A7D80CAC7F34
 asserts:
   - .deposit == "${INPUT_AMOUNT}"
   - .count == ${COUNT=2}
@@ -552,26 +552,26 @@ type: create-blocks
 count: 8
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/799A32266A8F0BF5E5EC7F12E0981839DF23C7E138A7C45D6814A7D80CAC7F34
+endpoint: http://localhost:1317/switchly/swap/streaming/799A32266A8F0BF5E5EC7F12E0981839DF23C7E138A7C45D6814A7D80CAC7F34
 asserts:
   - .deposit == "0" # The streaming swap has completed and so is no longer ongoing.
   - .in == "0"
 ---
 ########################################################################################
-# streaming swap to THOR.RUNE from ETH/ETH (100% conversion)
+# streaming swap to SWITCHLY.SWITCH from ETH/ETH (100% conversion)
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - amount: "${INPUT_AMOUNT=500000000}"
     asset: "eth/eth"
-memo: "=:THOR.RUNE:{{ addr_thor_fox }}:0/1/${QUANTITY=10}"
+memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}:0/1/${QUANTITY=10}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/DB631CBCF71524D9BF1141566D8A11E887B426D0C1FDDB6510EA99041220A36F
+endpoint: http://localhost:1317/switchly/swap/streaming/DB631CBCF71524D9BF1141566D8A11E887B426D0C1FDDB6510EA99041220A36F
 asserts:
   - .deposit == "${INPUT_AMOUNT}"
   - .count == ${COUNT=1}
@@ -582,7 +582,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/DB631CBCF71524D9BF1141566D8A11E887B426D0C1FDDB6510EA99041220A36F
+endpoint: http://localhost:1317/switchly/swap/streaming/DB631CBCF71524D9BF1141566D8A11E887B426D0C1FDDB6510EA99041220A36F
 asserts:
   - .deposit == "${INPUT_AMOUNT}"
   - .count == ${COUNT=2}
@@ -590,12 +590,12 @@ asserts:
   - .in == (( ${INPUT_AMOUNT} * ${COUNT} / ${QUANTITY} )|tostring)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/invariant/streaming_swaps
+endpoint: http://localhost:1317/switchly/invariant/streaming_swaps
 asserts:
   - .broken == false
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/invariant/asgard
+endpoint: http://localhost:1317/switchly/invariant/asgard
 asserts:
   - .broken == false
 ---
@@ -603,26 +603,26 @@ type: create-blocks
 count: 8
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/DB631CBCF71524D9BF1141566D8A11E887B426D0C1FDDB6510EA99041220A36F
+endpoint: http://localhost:1317/switchly/swap/streaming/DB631CBCF71524D9BF1141566D8A11E887B426D0C1FDDB6510EA99041220A36F
 asserts:
   - .deposit == "0" # The streaming swap has completed and so is no longer ongoing.
   - .in == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/invariant/asgard
+endpoint: http://localhost:1317/switchly/invariant/asgard
 asserts:
   - .broken == false
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/invariant/streaming_swaps
+endpoint: http://localhost:1317/switchly/invariant/streaming_swaps
 asserts:
   - .broken == false
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/outbound_fees
+endpoint: http://localhost:1317/switchly/outbound_fees
 asserts:
   - .|length == 3
-  - .[0] == {"asset":"THOR.RUNE","outbound_fee":"2000000"}
+  - .[0] == {"asset":"SWITCHLY.SWITCH","outbound_fee":"2000000"}
   ###
   - .[1].asset == "BTC.BTC"
   - .[1].outbound_fee == "14000"

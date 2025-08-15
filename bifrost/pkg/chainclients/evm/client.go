@@ -29,16 +29,16 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/runners"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/signercache"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	tssp "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/aggregators"
-	mem "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/aggregators"
+	mem "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -53,11 +53,11 @@ type EVMClient struct {
 	kw                      *evm.KeySignWrapper
 	ethClient               *ethclient.Client
 	evmScanner              *EVMScanner
-	bridge                  thorclient.ThorchainBridge
+	bridge                  switchlyclient.SwitchlyBridge
 	blockScanner            *blockscanner.BlockScanner
 	vaultABI                *abi.ABI
 	pubkeyMgr               pubkeymanager.PubKeyValidator
-	poolMgr                 thorclient.PoolManager
+	poolMgr                 switchlyclient.PoolManager
 	tssKeySigner            *tss.KeySign
 	wg                      *sync.WaitGroup
 	stopchan                chan struct{}
@@ -68,20 +68,20 @@ type EVMClient struct {
 
 // NewEVMClient creates a new EVMClient.
 func NewEVMClient(
-	thorKeys *thorclient.Keys,
+	thorKeys *switchlyclient.Keys,
 	cfg config.BifrostChainConfiguration,
 	server *tssp.TssServer,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	pubkeyMgr pubkeymanager.PubKeyValidator,
-	poolMgr thorclient.PoolManager,
+	poolMgr switchlyclient.PoolManager,
 ) (*EVMClient, error) {
 	// check required arguments
 	if thorKeys == nil {
 		return nil, fmt.Errorf("failed to create EVM client, thor keys empty")
 	}
 	if bridge == nil {
-		return nil, errors.New("thorchain bridge is nil")
+		return nil, errors.New("switchly bridge is nil")
 	}
 	if pubkeyMgr == nil {
 		return nil, errors.New("pubkey manager is nil")
@@ -274,7 +274,7 @@ func (c *EVMClient) Start(
 	c.wg.Add(1)
 	go c.unstuck()
 	c.wg.Add(1)
-	go runners.SolvencyCheckRunner(c.GetChain(), c, c.bridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
+	go runners.SolvencyCheckRunner(c.GetChain(), c, c.bridge, c.stopchan, c.wg, constants.SwitchlyBlockTime)
 }
 
 // Stop stops the chain client.
@@ -563,10 +563,10 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 		// if chain gas is zero we are still filling our gas price buffer, use outbound rate
 		gasRate = convertSwitchlyProtocolAmountToWei(big.NewInt(txOutItem.GasRate))
 	} else {
-		// Thornode uses a gas rate 1.5x the reported network fee for the rate and computed
+		// Switchlynode uses a gas rate 1.5x the reported network fee for the rate and computed
 		// max gas to ensure the rate is sufficient when it is signed later. Since we now know
 		// the more recent rate, we will use our current rate with a lower bound on 2/3 the
-		// outbound rate (the original rate we reported to Thornode in the network fee).
+		// outbound rate (the original rate we reported to Switchlynode in the network fee).
 		lowerBound := convertSwitchlyProtocolAmountToWei(big.NewInt(txOutItem.GasRate))
 		lowerBound.Mul(lowerBound, big.NewInt(2))
 		lowerBound.Div(lowerBound, big.NewInt(3))
@@ -625,17 +625,17 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 		if err != nil {
 			c.logger.Err(err).
 				Str("aggregator", txOutItem.Aggregator).
-				Msg("fail to get aggregator gas limit, aborting to let thornode reschdule")
+				Msg("fail to get aggregator gas limit, aborting to let switchlynode reschdule")
 			return nil, nil
 		}
 
-		// if the estimate gas is over the max, abort and let thornode reschedule for now
+		// if the estimate gas is over the max, abort and let switchlynode reschedule for now
 		if estimatedGas > gasLimitForAggregator {
 			c.logger.Warn().
 				Stringer("in_hash", txOutItem.InHash).
 				Uint64("estimated_gas", estimatedGas).
 				Uint64("aggregator_gas_limit", gasLimitForAggregator).
-				Msg("swap out gas limit exceeded, aborting to let thornode reschedule")
+				Msg("swap out gas limit exceeded, aborting to let switchlynode reschedule")
 			return nil, nil
 		}
 
@@ -656,7 +656,7 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 	// determine max gas units based on scheduled max gas (fee) and current rate
 	maxGasUnits := new(big.Int).Div(scheduledMaxFee, gasRate).Uint64()
 
-	// if estimated gas is more than the planned gas, abort and let thornode reschedule
+	// if estimated gas is more than the planned gas, abort and let switchlynode reschedule
 	if estimatedGas > maxGasUnits {
 		c.logger.Warn().
 			Stringer("in_hash", txOutItem.InHash).
@@ -664,7 +664,7 @@ func (c *EVMClient) buildOutboundTx(txOutItem stypes.TxOutItem, memo mem.Memo, n
 			Uint64("estimated_gas_units", estimatedGas).
 			Uint64("max_gas_units", maxGasUnits).
 			Str("scheduled_max_fee", scheduledMaxFee.String()).
-			Msg("max gas exceeded, aborting to let thornode reschedule")
+			Msg("max gas exceeded, aborting to let switchlynode reschedule")
 		return nil, nil
 	}
 
@@ -765,7 +765,7 @@ func (c *EVMClient) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *
 		return nil, nil, nil, err
 	}
 
-	// if transaction is nil, abort to allow thornode reschedule
+	// if transaction is nil, abort to allow switchlynode reschedule
 	if outboundTx == nil {
 		return nil, nil, nil, nil
 	}
@@ -777,7 +777,7 @@ func (c *EVMClient) SignTx(tx stypes.TxOutItem, height int64) ([]byte, []byte, *
 
 	// create the observation to be sent by the signer before broadcast
 	chainHeight, err := c.GetHeight()
-	if err != nil { // fall back to the scanner height, thornode voter does not use height
+	if err != nil { // fall back to the scanner height, switchlynode voter does not use height
 		chainHeight = c.evmScanner.currentBlockHeight
 	}
 
@@ -826,12 +826,12 @@ func (c *EVMClient) sign(tx *etypes.Transaction, poolPubKey common.PubKey, heigh
 			// TSS doesn't know which node to blame
 			return nil, fmt.Errorf("fail to sign tx: %w", err)
 		}
-		// key sign error forward the keysign blame to thorchain
+		// key sign error forward the keysign blame to switchly
 		txID, errPostKeysignFail := c.bridge.PostKeysignFailure(keysignError.Blame, height, txOutItem.Memo, txOutItem.Coins, txOutItem.VaultPubKey)
 		if errPostKeysignFail != nil {
 			return nil, multierror.Append(err, errPostKeysignFail)
 		}
-		c.logger.Info().Str("tx_id", txID.String()).Msg("post keysign failure to thorchain")
+		c.logger.Info().Str("tx_id", txID.String()).Msg("post keysign failure to switchly")
 	}
 	return nil, fmt.Errorf("fail to sign tx: %w", err)
 }
@@ -865,7 +865,7 @@ func (c *EVMClient) BroadcastTx(txOutItem stypes.TxOutItem, hexTx []byte) (strin
 
 	blockHeight, err := c.bridge.GetBlockHeight()
 	if err != nil {
-		c.logger.Err(err).Msg("fail to get current THORChain block height")
+		c.logger.Err(err).Msg("fail to get current SWITCHLYChain block height")
 		// at this point , the tx already broadcast successfully , don't return an error
 		// otherwise will cause the same tx to retry
 	} else if err = c.AddSignedTxItem(txID, blockHeight, txOutItem.VaultPubKey.String(), &txOutItem); err != nil {
@@ -881,7 +881,7 @@ func (c *EVMClient) BroadcastTx(txOutItem stypes.TxOutItem, hexTx []byte) (strin
 func (c *EVMClient) OnObservedTxIn(txIn stypes.TxInItem, blockHeight int64) {
 	m, err := mem.ParseMemo(common.LatestVersion, txIn.Memo)
 	if err != nil {
-		// Debug log only as ParseMemo error is expected for THORName inbounds.
+		// Debug log only as ParseMemo error is expected for SWITCHName inbounds.
 		c.logger.Debug().Err(err).Str("memo", txIn.Memo).Msg("fail to parse memo")
 		return
 	}
@@ -985,7 +985,7 @@ func (c *EVMClient) ReportSolvency(height int64) error {
 	// report that all the vaults are solvent.
 	// If there are any insolvent vaults, report only them.
 	// Not reporting both solvent and insolvent vaults is to avoid noise (spam):
-	// Reporting both could halt-and-unhalt SolvencyHalt in the same THOR block
+	// Reporting both could halt-and-unhalt SolvencyHalt in the same SWITCHLY block
 	// (resetting its height), plus making it harder to know at a glance from solvency reports which vaults were insolvent.
 	solvent := false
 	if !c.IsBlockScannerHealthy() && len(solventMsgs) == len(asgardVaults) {
@@ -1000,11 +1000,11 @@ func (c *EVMClient) ReportSolvency(height int64) error {
 			Bool("solvent", solvent).
 			Msg("reporting solvency")
 
-		// send solvency to thorchain via global queue consumed by the observer
+		// send solvency to switchly via global queue consumed by the observer
 		select {
 		case c.globalSolvencyQueue <- msgs[i]:
-		case <-time.After(constants.ThorchainBlockTime):
-			c.logger.Info().Msg("fail to send solvency info to thorchain, timeout")
+		case <-time.After(constants.SwitchlyBlockTime):
+			c.logger.Info().Msg("fail to send solvency info to switchly, timeout")
 		}
 	}
 	c.lastSolvencyCheckHeight = height

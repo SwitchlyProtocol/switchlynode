@@ -18,12 +18,12 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
 )
 
 const (
@@ -35,7 +35,7 @@ const (
 	// If chain halts for longer than this, validators will need to restart their bifrosts to re-share their attestations.
 	defaultNonQuorumTimeout = 10 * time.Hour
 
-	// minTimeBetweenAttestations is the minimum time between sending batches of attestations for a quorum tx to thornode.
+	// minTimeBetweenAttestations is the minimum time between sending batches of attestations for a quorum tx to switchlynode.
 	defaultMinTimeBetweenAttestations = 30 * time.Second
 
 	// how often to prune old observed txs and check if late attestations should be sent.
@@ -105,7 +105,7 @@ type AttestationGossip struct {
 
 	grpcClient  ebifrost.LocalhostBifrostClient
 	eventClient EventClientInterface
-	bridge      thorclient.ThorchainBridge
+	bridge      switchlyclient.SwitchlyBridge
 
 	privKey cryptotypes.PrivKey // our private key, cached for performance
 	pubKey  []byte              // our public key, cached for performance
@@ -149,13 +149,13 @@ type cachedKeySignParty struct {
 // NewAttestationGossip create a new instance of AttestationGossip
 func NewAttestationGossip(
 	host host.Host,
-	keys *thorclient.Keys,
-	thornodeBifrostGRPCAddress string,
-	bridge thorclient.ThorchainBridge,
+	keys *switchlyclient.Keys,
+	switchlynodeBifrostGRPCAddress string,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	config config.BifrostAttestationGossipConfig,
 ) (*AttestationGossip, error) {
-	cc, err := grpc.NewClient(thornodeBifrostGRPCAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	cc, err := grpc.NewClient(switchlynodeBifrostGRPCAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
@@ -492,7 +492,7 @@ func (s *AttestationGossip) Start(ctx context.Context) {
 					s.logger.Debug().Msg("sending late observed tx attestations")
 
 					obsTx := state.Item
-					s.sendObservedTxAttestationsToThornode(ctx, *obsTx, state, k.Inbound, k.AllowFutureObservation, false)
+					s.sendObservedTxAttestationsToSwitchlynode(ctx, *obsTx, state, k.Inbound, k.AllowFutureObservation, false)
 				}
 				state.mu.Unlock()
 			}
@@ -505,7 +505,7 @@ func (s *AttestationGossip) Start(ctx context.Context) {
 					s.networkFeesPool.PutAttestationState(state)
 				} else if state.ShouldSendLate(s.config.MinTimeBetweenAttestations) {
 					s.logger.Debug().Msg("sending late network fee attestations")
-					s.sendNetworkFeeAttestationsToThornode(ctx, *state.Item, state, false)
+					s.sendNetworkFeeAttestationsToSwitchlynode(ctx, *state.Item, state, false)
 				}
 				state.mu.Unlock()
 			}
@@ -518,7 +518,7 @@ func (s *AttestationGossip) Start(ctx context.Context) {
 					s.solvenciesPool.PutAttestationState(state)
 				} else if state.ShouldSendLate(s.config.MinTimeBetweenAttestations) {
 					s.logger.Debug().Msg("sending late solvency attestations")
-					s.sendSolvencyAttestationsToThornode(ctx, *state.Item, state, false)
+					s.sendSolvencyAttestationsToSwitchlynode(ctx, *state.Item, state, false)
 				}
 				state.mu.Unlock()
 			}
@@ -531,7 +531,7 @@ func (s *AttestationGossip) Start(ctx context.Context) {
 					s.errataTxsPool.PutAttestationState(state)
 				} else if state.ShouldSendLate(s.config.MinTimeBetweenAttestations) {
 					s.logger.Debug().Msg("sending late errata attestations")
-					s.sendErrataAttestationsToThornode(ctx, *state.Item, state, false)
+					s.sendErrataAttestationsToSwitchlynode(ctx, *state.Item, state, false)
 				}
 				state.mu.Unlock()
 			}

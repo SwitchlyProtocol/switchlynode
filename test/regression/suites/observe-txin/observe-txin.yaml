@@ -34,7 +34,7 @@ asserts:
   - .result.value.sequence == "1"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 1 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 1 }}
 asserts:
 - .observed_tx.status == "done"
 ---
@@ -67,7 +67,7 @@ asserts:
   - .result.value.sequence == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 2 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 2 }}
 status: 400
 asserts:
 - .message|test("doesn't exist")

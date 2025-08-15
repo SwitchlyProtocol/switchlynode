@@ -19,13 +19,13 @@ import (
 	. "gopkg.in/check.v1"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 )
 
 func TestPackage(t *testing.T) { TestingT(t) }
@@ -34,9 +34,9 @@ var m *metrics.Metrics
 
 type BlockScannerTestSuite struct {
 	m      *metrics.Metrics
-	bridge thorclient.ThorchainBridge
+	bridge switchlyclient.SwitchlyBridge
 	cfg    config.BifrostClientConfiguration
-	keys   *thorclient.Keys
+	keys   *switchlyclient.Keys
 }
 
 var _ = Suite(&BlockScannerTestSuite{})
@@ -52,7 +52,7 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	})
 	c.Assert(m, NotNil)
 	c.Assert(err, IsNil)
-	thorchain.SetupConfigForTest()
+	switchly.SetupConfigForTest()
 	cfg := config.BifrostClientConfiguration{
 		ChainID:         "switchly",
 		ChainHost:       "localhost",
@@ -68,8 +68,8 @@ func (s *BlockScannerTestSuite) SetUpSuite(c *C) {
 	c.Assert(err, IsNil)
 
 	s.cfg = cfg
-	s.keys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
-	s.bridge, err = thorclient.NewThorchainBridge(s.cfg, s.m, s.keys)
+	s.keys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(s.cfg, s.m, s.keys)
 	c.Assert(err, IsNil)
 }
 
@@ -103,7 +103,7 @@ const (
 func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case strings.HasPrefix(r.RequestURI, thorclient.MimirEndpoint):
+		case strings.HasPrefix(r.RequestURI, switchlyclient.MimirEndpoint):
 			buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
@@ -117,7 +117,7 @@ func (s *BlockScannerTestSuite) TestBlockScanner(c *C) {
 	mss := NewMockScannerStorage()
 	server := httptest.NewServer(h)
 	defer server.Close()
-	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
+	bridge, err := switchlyclient.NewSwitchlyBridge(config.BifrostClientConfiguration{
 		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
@@ -158,7 +158,7 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Logf("================>:%s", r.RequestURI)
 		switch {
-		case strings.HasPrefix(r.RequestURI, thorclient.MimirEndpoint):
+		case strings.HasPrefix(r.RequestURI, switchlyclient.MimirEndpoint):
 			buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
@@ -172,7 +172,7 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 	mss := NewMockScannerStorage()
 	server := httptest.NewTLSServer(h)
 	defer server.Close()
-	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
+	bridge, err := switchlyclient.NewSwitchlyBridge(config.BifrostClientConfiguration{
 		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
@@ -201,7 +201,7 @@ func (s *BlockScannerTestSuite) TestBadBlock(c *C) {
 
 func (s *BlockScannerTestSuite) TestBadConnection(c *C) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.RequestURI, thorclient.MimirEndpoint) {
+		if strings.HasPrefix(r.RequestURI, switchlyclient.MimirEndpoint) {
 			buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
@@ -211,7 +211,7 @@ func (s *BlockScannerTestSuite) TestBadConnection(c *C) {
 	mss := NewMockScannerStorage()
 	server := httptest.NewServer(h)
 	defer server.Close()
-	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
+	bridge, err := switchlyclient.NewSwitchlyBridge(config.BifrostClientConfiguration{
 		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
@@ -249,11 +249,11 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Logf("================>:%s", r.RequestURI)
 		switch {
-		case strings.HasPrefix(r.RequestURI, thorclient.LastBlockEndpoint):
+		case strings.HasPrefix(r.RequestURI, switchlyclient.LastBlockEndpoint):
 			if _, err := w.Write([]byte(lastBlockResult)); err != nil {
 				c.Error(err)
 			}
-		case strings.HasPrefix(r.RequestURI, thorclient.MimirEndpoint):
+		case strings.HasPrefix(r.RequestURI, switchlyclient.MimirEndpoint):
 			parts := strings.Split(r.RequestURI, "/key/")
 			mimirKey := parts[1]
 
@@ -272,7 +272,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	mss := NewMockScannerStorage()
 	server := httptest.NewServer(h)
 	defer server.Close()
-	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
+	bridge, err := switchlyclient.NewSwitchlyBridge(config.BifrostClientConfiguration{
 		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),
@@ -303,7 +303,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	// Setting Halt<chain>Chain should pause
 	mimirMap["HaltETHChain"] = 2
 	// Wait for one block's time so as to replace the cache with an updated query.
-	time.Sleep(constants.ThorchainBlockTime)
+	time.Sleep(constants.SwitchlyBlockTime)
 	isHalted = cbs.isChainPaused()
 	c.Assert(isHalted, Equals, true)
 	mimirMap["HaltETHChain"] = 0
@@ -311,7 +311,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	// Setting SolvencyHalt<chain>Chain should pause
 	mimirMap["SolvencyHaltETHChain"] = 2
 	// Wait for one block's time so as to replace the cache with an updated query.
-	time.Sleep(constants.ThorchainBlockTime)
+	time.Sleep(constants.SwitchlyBlockTime)
 	isHalted = cbs.isChainPaused()
 	c.Assert(isHalted, Equals, true)
 	mimirMap["SolvencyHaltETHChain"] = 0
@@ -319,7 +319,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	// Setting HaltChainGlobal should pause
 	mimirMap["HaltChainGlobal"] = 2
 	// Wait for one block's time so as to replace the cache with an updated query.
-	time.Sleep(constants.ThorchainBlockTime)
+	time.Sleep(constants.SwitchlyBlockTime)
 	isHalted = cbs.isChainPaused()
 	c.Assert(isHalted, Equals, true)
 	mimirMap["HaltChainGlobal"] = 0
@@ -327,7 +327,7 @@ func (s *BlockScannerTestSuite) TestIsChainPaused(c *C) {
 	// Setting NodePauseChainGlobal should pause
 	mimirMap["NodePauseChainGlobal"] = 4 // node pause only halts for an hour, so pause height needs to be larger than thor height
 	// Wait for one block's time so as to replace the cache with an updated query.
-	time.Sleep(constants.ThorchainBlockTime)
+	time.Sleep(constants.SwitchlyBlockTime)
 	isHalted = cbs.isChainPaused()
 	c.Assert(isHalted, Equals, true)
 }
@@ -341,7 +341,7 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c.Logf("Test request URI: %s", r.RequestURI)
 		switch {
-		case strings.HasPrefix(r.RequestURI, thorclient.MimirEndpoint):
+		case strings.HasPrefix(r.RequestURI, switchlyclient.MimirEndpoint):
 			buf, err := os.ReadFile("../../test/fixtures/endpoints/mimir/mimir.json")
 			c.Assert(err, IsNil)
 			_, err = w.Write(buf)
@@ -353,7 +353,7 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 			c.Assert(err, IsNil)
 		case strings.HasPrefix(r.RequestURI, "/switchly/constants"):
 			// Return constants used in rollback calculation - note integers WITHOUT quotes
-			resp := `{"int_64_values": {"ObservationDelayFlexibility": 10, "ThorchainBlockTime": 6000000000}}`
+			resp := `{"int_64_values": {"ObservationDelayFlexibility": 10, "SwitchlyBlockTime": 6000000000}}`
 			_, err := w.Write([]byte(resp))
 			c.Assert(err, IsNil)
 		}
@@ -364,7 +364,7 @@ func (s *BlockScannerTestSuite) TestRollbackScanner(c *C) {
 	server := httptest.NewServer(h)
 	defer server.Close()
 
-	bridge, err := thorclient.NewThorchainBridge(config.BifrostClientConfiguration{
+	bridge, err := switchlyclient.NewSwitchlyBridge(config.BifrostClientConfiguration{
 		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		ChainRPC:        server.Listener.Addr().String(),

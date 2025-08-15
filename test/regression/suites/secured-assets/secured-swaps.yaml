@@ -13,7 +13,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -107,7 +107,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/securedasset/BTC-BTC
+endpoint: http://localhost:1317/switchly/securedasset/BTC-BTC
 asserts:
   - .asset == "BTC-BTC"
   - .supply|tonumber == 10000000
@@ -122,7 +122,7 @@ asserts:
 ---
 # Swap secured asset to secured asset, quote should match actual
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC-BTC"
   to_asset: "ETH-ETH"
@@ -139,7 +139,7 @@ asserts:
 # synth swap should be equivalent, with similar outbound fee
 # (but different since Secured Asset swaps change pool Asset depths)
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC/BTC"
   to_asset: "ETH/ETH"
@@ -176,7 +176,7 @@ asserts:
 ---
 # swap half ETH-ETH to BTC-BTC, quote should match actual
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "ETH-ETH"
   to_asset: "BTC-BTC"
@@ -207,7 +207,7 @@ asserts:
 ---
 # stream swap remaining ETH, quote should match actual
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "ETH-ETH"
   to_asset: "BTC-BTC"
@@ -230,7 +230,7 @@ count: 1
 ---
 # check for streaming swap
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 1 # streaming swap in progress complete
   - .[0].destination == "{{ addr_thor_fox }}"
@@ -253,7 +253,7 @@ asserts:
 # secured assets respects slip min bps
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC-BTC"
   to_asset: "ETH-ETH"
@@ -288,7 +288,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: "BTC-BTC"
   to_asset: "ETH-ETH"
@@ -300,7 +300,7 @@ asserts:
   - .fees.total_bps == 3259
 ---
 ########################################################################################
-# try obtaining THOR.BTC with EnabledDerivedAssets 0
+# try obtaining SWITCHLY.BTC with EnabledDerivedAssets 0
 ########################################################################################
 type: check
 endpoint: http://localhost:1317/bank/balances/{{ addr_thor_fox }}
@@ -354,21 +354,21 @@ key: "DerivedDepthBasisPts"
 value: 10000
 ---
 type: create-blocks
-count: 2 # One block to set the Mimirs by the end, one to spawn the THOR.BTC pool at the beginning.
+count: 2 # One block to set the Mimirs by the end, one to spawn the SWITCHLY.BTC pool at the beginning.
 ---
 # Confirm the Mimir values
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .["DerivedDepthBasisPts" | ascii_upcase] == 10000
   - .["EnableDerivedAssets" | ascii_upcase] == 0
   - .["SecuredAssetSlipMinBps" | ascii_upcase] == 1000
 ---
-# Confirm that the THOR.BTC pool exists.
+# Confirm that the SWITCHLY.BTC pool exists.
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.BTC
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.BTC
 asserts:
-  - .asset == "THOR.BTC"
+  - .asset == "SWITCHLY.BTC"
   - .status == "Available"
   - .balance_asset | tonumber > 0
   - .balance_rune | tonumber > 0
@@ -378,19 +378,19 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000" # 0.01 BTC
     asset: "BTC-BTC"
-memo: "=:THOR-BTC:{{ addr_thor_fox }}"
+memo: "=:SWITCHLY-BTC:{{ addr_thor_fox }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "refund")] | length == 1
   - .|..|select(.type? == "refund").reason | contains("swapping to a secured asset of a native coin is not allowed")
 ---
 ########################################################################################
-# swap to RUNE (for instance if there were an arbitrage opportunity)
+# swap to SWITCH (for instance if there were an arbitrage opportunity)
 ########################################################################################
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_fox }}
@@ -399,14 +399,14 @@ asserts:
   - .balances[0].denom == "btc-btc"
   - .balances[0].amount == "${INITIAL_UNITS=9438710}"
   - .balances[1].denom == "rune"
-  - .balances[1].amount == "${INITIAL_RUNE=2499992000000}"
+  - .balances[1].amount == "${INITIAL_SWITCH=2499992000000}"
 ---
 type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000" # 0.01 BTC
     asset: "BTC-BTC"
-memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
 ---
 type: create-blocks
 count: 1
@@ -418,10 +418,10 @@ asserts:
   - .balances[0].denom == "btc-btc"
   - .balances[0].amount|tonumber == ${INITIAL_UNITS} - 1000000 
   - .balances[1].denom == "rune"
-  - .balances[1].amount|tonumber == ${INITIAL_RUNE} + 879894308
+  - .balances[1].amount|tonumber == ${INITIAL_SWITCH} + 879894308
 ---
 ########################################################################################
-# swap from RUNE
+# swap from SWITCH
 ########################################################################################
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_fox }}
@@ -430,18 +430,18 @@ asserts:
   - .balances[0].denom == "btc-btc"
   - .balances[0].amount == "${INITIAL_UNITS=8438710}"
   - .balances[1].denom == "rune"
-  - .balances[1].amount == "${INITIAL_RUNE=2500871894308}"
+  - .balances[1].amount == "${INITIAL_SWITCH=2500871894308}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/network
+endpoint: http://localhost:1317/switchly/network
 asserts:
-  - .native_tx_fee_rune == "${NATIVE_TX_FEE_RUNE=2000000}"
+  - .native_tx_fee_rune == "${NATIVE_TX_FEE_SWITCH=2000000}"
 ---
 type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000000"
-    asset: "THOR.RUNE"
+    asset: "SWITCHLY.SWITCH"
 memo: "=:BTC-BTC:{{ addr_thor_fox }}"
 ---
 type: create-blocks
@@ -454,10 +454,10 @@ asserts:
   - .result[0].denom == "btc-btc"
   - .result[0].amount|tonumber == ${INITIAL_UNITS} + 913320
   - .result[1].denom == "rune"
-  - .result[1].amount|tonumber == ${INITIAL_RUNE} - 1000000000 - ${NATIVE_TX_FEE_RUNE}
+  - .result[1].amount|tonumber == ${INITIAL_SWITCH} - 1000000000 - ${NATIVE_TX_FEE_SWITCH}
 ---
 ########################################################################################
-# check the result of streaming swap double-spend attempt (swap to RUNE)
+# check the result of streaming swap double-spend attempt (swap to SWITCH)
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_cat }}
@@ -498,19 +498,19 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "${TOTAL_INPUT}"
     asset: "BTC-BTC"
-memo: "=:THOR.RUNE:{{ addr_thor_fish }}:0/${INTERVAL=2}/${QUANTITY=2}"
+memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fish }}:0/${INTERVAL=2}/${QUANTITY=2}"
 # Interval 2 and Quantity 2 so that there will be two sub-swaps with a no-sub-swap block between them.
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "swap")] | length == 1
   - ..|select(.type? == "swap").id == "{{ native_txid -1 }}"
   - ..|select(.type? == "swap").coin == "${INPUT_1=4676015} BTC-BTC"
-  - ..|select(.type? == "swap").emit_asset == "${OUTPUT_1=4236474591} THOR.RUNE"
+  - ..|select(.type? == "swap").emit_asset == "${OUTPUT_1=4236474591} SWITCHLY.SWITCH"
   - ..|select(.type? == "swap").streaming_swap_count == "1"
   - ..|select(.type? == "swap").streaming_swap_quantity == "${QUANTITY}"
   ##
@@ -530,18 +530,18 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "${INPUT_2}"
     asset: "BTC-BTC"
-memo: "=:THOR.RUNE:{{ addr_thor_fish }}"
+memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fish }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "swap")] | length == 1
   - ..|select(.type? == "swap").id == "{{ native_txid -1 }}"
   - ..|select(.type? == "swap").coin == "${INPUT_2} BTC-BTC"
-  - ..|select(.type? == "swap").emit_asset == "${OUTPUT_2=2031374940} THOR.RUNE"
+  - ..|select(.type? == "swap").emit_asset == "${OUTPUT_2=2031374940} SWITCHLY.SWITCH"
   - ..|select(.type? == "swap").streaming_swap_count == "1"
   - ..|select(.type? == "swap").streaming_swap_quantity == "1" # This is the non-streaming swap.
   ##
@@ -552,7 +552,7 @@ asserts:
   # No completed streaming swap yet.
   ##
   - .|[..|select(.type? == "fee")] | length == 1
-  - ..|select(.type? == "fee").coins == "${FEE=2000000} THOR.RUNE"
+  - ..|select(.type? == "fee").coins == "${FEE=2000000} SWITCHLY.SWITCH"
   - ..|select(.type? == "fee").pool_deduct != "${FEE}"
   - ..|select(.type? == "fee").pool_deduct == "0"
   # TODO:  This (native) outbound_fee_in_rune Amount should always be consistent with the value of the Coins.
@@ -560,7 +560,7 @@ asserts:
   ##
   - .|[..|select(.type? == "outbound")] | length == 1
   - ..|select(.type? == "outbound").in_tx_id == "{{ native_txid -1 }}"
-  - ..|select(.type? == "outbound").coin == "${OUTBOUND_1=2029374940} THOR.RUNE"
+  - ..|select(.type? == "outbound").coin == "${OUTBOUND_1=2029374940} SWITCHLY.SWITCH"
   - ${OUTBOUND_1} == ${OUTPUT_2} - ${FEE} # As it should be.
 ---
 type: create-blocks
@@ -573,12 +573,12 @@ asserts:
   - .result[0].denom == "rune" # All BTC-BTC has been used.
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type? == "swap")] | length == 1
   - ..|select(.type? == "swap").id == "{{ native_txid -2 }}"
   - ..|select(.type? == "swap").coin == "${INPUT_3=2338008} BTC-BTC"
-  - ..|select(.type? == "swap").emit_asset == "${OUTPUT_3=1946887514} THOR.RUNE"
+  - ..|select(.type? == "swap").emit_asset == "${OUTPUT_3=1946887514} SWITCHLY.SWITCH"
   - ..|select(.type? == "swap").streaming_swap_count == "${QUANTITY}" # Final sub-swap.
   - ..|select(.type? == "swap").streaming_swap_quantity == "${QUANTITY}"
   ##
@@ -598,14 +598,14 @@ asserts:
   # this is perhaps consistent with that any non-Deposit In is treated as to be refunded from failed sub-swaps.
   # TODO:  Perhaps revisit this in future.
   - ${OUTPUT_1} + ${OUTPUT_3} == ${TOTAL_STREAMING_OUTPUT=6183362105}
-  - ..|select(.type? == "streaming_swap").out == "${TOTAL_STREAMING_OUTPUT} THOR.RUNE" # As it should be.
+  - ..|select(.type? == "streaming_swap").out == "${TOTAL_STREAMING_OUTPUT} SWITCHLY.SWITCH" # As it should be.
   ##
   - .|[..|select(.type? == "fee")] | length == 1
-  - ..|select(.type? == "fee").coins == "${FEE} THOR.RUNE"
+  - ..|select(.type? == "fee").coins == "${FEE} SWITCHLY.SWITCH"
   ##
   - .|[..|select(.type? == "outbound")] | length == 1
   - ..|select(.type? == "outbound").in_tx_id == "{{ native_txid -2 }}"
-  - ..|select(.type? == "outbound").coin == "${OUTBOUND_2=6181362105} THOR.RUNE"
+  - ..|select(.type? == "outbound").coin == "${OUTBOUND_2=6181362105} SWITCHLY.SWITCH"
   - ${OUTBOUND_2} == ${OUTPUT_1} + ${OUTPUT_3} - ${FEE} # As it should be.
 ---
 type: check

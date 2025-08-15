@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -50,7 +50,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -207,7 +207,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -315,7 +315,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -464,7 +464,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -581,7 +581,7 @@
                 "coins": [
                   {
                     "amount": "200000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -668,7 +668,7 @@
             },
             {
               "GAIA_txid": "0000000000000000000000000000000000000000000000000000000000000001",
-              "THOR_txid": "024CFF5EA9E519E17E68D71C1824131621279A3D12DD1750AF6DFADFC44BE9B4",
+              "SWITCHLY_txid": "024CFF5EA9E519E17E68D71C1824131621279A3D12DD1750AF6DFADFC44BE9B4",
               "asset_address": "cosmos13wrmhnh2qe98rjse30pl7u6jxszjjwl4t2v05e",
               "asset_amount": "10000000",
               "liquidity_provider_units": "200000000",
@@ -696,7 +696,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 6,
       "time": "",
       "last_block_id": {
@@ -913,7 +913,7 @@
             },
             {
               "amount": "10000000",
-              "asset": "THOR.KUJI",
+              "asset": "SWITCHLY.KUJI",
               "asset_address": "cosmos13wrmhnh2qe98rjse30pl7u6jxszjjwl4t2v05e",
               "msg_index": "0",
               "rune_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",

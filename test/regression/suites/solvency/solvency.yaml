@@ -40,7 +40,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
 - .["SOLVENCYHALTBTCCHAIN"] == 3
 ---

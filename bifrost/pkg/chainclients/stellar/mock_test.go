@@ -5,160 +5,160 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	thorchaintypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	switchlytypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
-// MockThorchainBridge is a mock implementation for testing
-type MockThorchainBridge struct{}
+// MockSwitchlyBridge is a mock implementation for testing
+type MockSwitchlyBridge struct{}
 
-func (m *MockThorchainBridge) EnsureNodeWhitelisted() error {
+func (m *MockSwitchlyBridge) EnsureNodeWhitelisted() error {
 	return nil
 }
 
-func (m *MockThorchainBridge) EnsureNodeWhitelistedWithTimeout() error {
+func (m *MockSwitchlyBridge) EnsureNodeWhitelistedWithTimeout() error {
 	return nil
 }
 
-func (m *MockThorchainBridge) FetchNodeStatus() (thorchaintypes.NodeStatus, error) {
-	return thorchaintypes.NodeStatus_Unknown, nil
+func (m *MockSwitchlyBridge) FetchNodeStatus() (switchlytypes.NodeStatus, error) {
+	return switchlytypes.NodeStatus_Unknown, nil
 }
 
-func (m *MockThorchainBridge) FetchActiveNodes() ([]common.PubKey, error) {
+func (m *MockSwitchlyBridge) FetchActiveNodes() ([]common.PubKey, error) {
 	return []common.PubKey{}, nil
 }
 
-func (m *MockThorchainBridge) GetAsgards() (thorchaintypes.Vaults, error) {
-	return thorchaintypes.Vaults{}, nil
+func (m *MockSwitchlyBridge) GetAsgards() (switchlytypes.Vaults, error) {
+	return switchlytypes.Vaults{}, nil
 }
 
-func (m *MockThorchainBridge) GetVault(pubkey string) (thorchaintypes.Vault, error) {
-	return thorchaintypes.Vault{}, nil
+func (m *MockSwitchlyBridge) GetVault(pubkey string) (switchlytypes.Vault, error) {
+	return switchlytypes.Vault{}, nil
 }
 
-func (m *MockThorchainBridge) GetConfig() config.BifrostClientConfiguration {
+func (m *MockSwitchlyBridge) GetConfig() config.BifrostClientConfiguration {
 	return config.BifrostClientConfiguration{}
 }
 
-func (m *MockThorchainBridge) GetConstants() (map[string]int64, error) {
+func (m *MockSwitchlyBridge) GetConstants() (map[string]int64, error) {
 	return map[string]int64{}, nil
 }
 
-func (m *MockThorchainBridge) GetContext() client.Context {
+func (m *MockSwitchlyBridge) GetContext() client.Context {
 	return client.Context{}
 }
 
-func (m *MockThorchainBridge) GetContractAddress() ([]thorclient.PubKeyContractAddressPair, error) {
-	return []thorclient.PubKeyContractAddressPair{}, nil
+func (m *MockSwitchlyBridge) GetContractAddress() ([]switchlyclient.PubKeyContractAddressPair, error) {
+	return []switchlyclient.PubKeyContractAddressPair{}, nil
 }
 
-func (m *MockThorchainBridge) GetErrataMsg(txID common.TxID, chain common.Chain) sdk.Msg {
+func (m *MockSwitchlyBridge) GetErrataMsg(txID common.TxID, chain common.Chain) sdk.Msg {
 	return nil
 }
 
-func (m *MockThorchainBridge) GetKeygenStdTx(poolPubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame thorchaintypes.Blame, inputPks common.PubKeys, keygenType thorchaintypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
+func (m *MockSwitchlyBridge) GetKeygenStdTx(poolPubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame switchlytypes.Blame, inputPks common.PubKeys, keygenType switchlytypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
 	return nil, nil
 }
 
-func (m *MockThorchainBridge) GetKeysignParty(vaultPubKey common.PubKey) (common.PubKeys, error) {
+func (m *MockSwitchlyBridge) GetKeysignParty(vaultPubKey common.PubKey) (common.PubKeys, error) {
 	return common.PubKeys{}, nil
 }
 
-func (m *MockThorchainBridge) GetMimir(key string) (int64, error) {
+func (m *MockSwitchlyBridge) GetMimir(key string) (int64, error) {
 	return 0, nil
 }
 
-func (m *MockThorchainBridge) GetMimirWithRef(template, ref string) (int64, error) {
+func (m *MockSwitchlyBridge) GetMimirWithRef(template, ref string) (int64, error) {
 	return 0, nil
 }
 
-func (m *MockThorchainBridge) GetInboundOutbound(txIns common.ObservedTxs) (common.ObservedTxs, common.ObservedTxs, error) {
+func (m *MockSwitchlyBridge) GetInboundOutbound(txIns common.ObservedTxs) (common.ObservedTxs, common.ObservedTxs, error) {
 	return common.ObservedTxs{}, common.ObservedTxs{}, nil
 }
 
-func (m *MockThorchainBridge) GetPools() (thorchaintypes.Pools, error) {
-	return thorchaintypes.Pools{}, nil
+func (m *MockSwitchlyBridge) GetPools() (switchlytypes.Pools, error) {
+	return switchlytypes.Pools{}, nil
 }
 
-func (m *MockThorchainBridge) GetPubKeys() ([]thorclient.PubKeyContractAddressPair, error) {
-	return []thorclient.PubKeyContractAddressPair{}, nil
+func (m *MockSwitchlyBridge) GetPubKeys() ([]switchlyclient.PubKeyContractAddressPair, error) {
+	return []switchlyclient.PubKeyContractAddressPair{}, nil
 }
 
-func (m *MockThorchainBridge) GetAsgardPubKeys() ([]thorclient.PubKeyContractAddressPair, error) {
-	return []thorclient.PubKeyContractAddressPair{}, nil
+func (m *MockSwitchlyBridge) GetAsgardPubKeys() ([]switchlyclient.PubKeyContractAddressPair, error) {
+	return []switchlyclient.PubKeyContractAddressPair{}, nil
 }
 
-func (m *MockThorchainBridge) GetSolvencyMsg(height int64, chain common.Chain, pubKey common.PubKey, coins common.Coins) *thorchaintypes.MsgSolvency {
-	return &thorchaintypes.MsgSolvency{}
+func (m *MockSwitchlyBridge) GetSolvencyMsg(height int64, chain common.Chain, pubKey common.PubKey, coins common.Coins) *switchlytypes.MsgSolvency {
+	return &switchlytypes.MsgSolvency{}
 }
 
-func (m *MockThorchainBridge) GetTHORName(name string) (thorchaintypes.THORName, error) {
-	return thorchaintypes.THORName{}, nil
+func (m *MockSwitchlyBridge) GetSWITCHName(name string) (switchlytypes.SWITCHName, error) {
+	return switchlytypes.SWITCHName{}, nil
 }
 
-func (m *MockThorchainBridge) GetThorchainVersion() (semver.Version, error) {
+func (m *MockSwitchlyBridge) GetSwitchlyVersion() (semver.Version, error) {
 	return semver.Version{}, nil
 }
 
-func (m *MockThorchainBridge) IsCatchingUp() (bool, error) {
+func (m *MockSwitchlyBridge) IsCatchingUp() (bool, error) {
 	return false, nil
 }
 
-func (m *MockThorchainBridge) HasNetworkFee(chain common.Chain) (bool, error) {
+func (m *MockSwitchlyBridge) HasNetworkFee(chain common.Chain) (bool, error) {
 	return false, nil
 }
 
-func (m *MockThorchainBridge) GetNetworkFee(chain common.Chain) (transactionSize, transactionFeeRate uint64, err error) {
+func (m *MockSwitchlyBridge) GetNetworkFee(chain common.Chain) (transactionSize, transactionFeeRate uint64, err error) {
 	return 1, 100, nil
 }
 
-func (m *MockThorchainBridge) PostKeysignFailure(blame thorchaintypes.Blame, height int64, memo string, coins common.Coins, pubkey common.PubKey) (common.TxID, error) {
+func (m *MockSwitchlyBridge) PostKeysignFailure(blame switchlytypes.Blame, height int64, memo string, coins common.Coins, pubkey common.PubKey) (common.TxID, error) {
 	return common.TxID(""), nil
 }
 
-func (m *MockThorchainBridge) PostNetworkFee(height int64, chain common.Chain, transactionSize, transactionRate uint64) (common.TxID, error) {
+func (m *MockSwitchlyBridge) PostNetworkFee(height int64, chain common.Chain, transactionSize, transactionRate uint64) (common.TxID, error) {
 	return common.TxID(""), nil
 }
 
-func (m *MockThorchainBridge) RagnarokInProgress() (bool, error) {
+func (m *MockSwitchlyBridge) RagnarokInProgress() (bool, error) {
 	return false, nil
 }
 
-func (m *MockThorchainBridge) WaitToCatchUp() error {
+func (m *MockSwitchlyBridge) WaitToCatchUp() error {
 	return nil
 }
 
-func (m *MockThorchainBridge) GetBlockHeight() (int64, error) {
+func (m *MockSwitchlyBridge) GetBlockHeight() (int64, error) {
 	return 1, nil
 }
 
-func (m *MockThorchainBridge) GetLastObservedInHeight(chain common.Chain) (int64, error) {
+func (m *MockSwitchlyBridge) GetLastObservedInHeight(chain common.Chain) (int64, error) {
 	return 1, nil
 }
 
-func (m *MockThorchainBridge) GetLastSignedOutHeight(chain common.Chain) (int64, error) {
+func (m *MockSwitchlyBridge) GetLastSignedOutHeight(chain common.Chain) (int64, error) {
 	return 1, nil
 }
 
-func (m *MockThorchainBridge) Broadcast(msgs ...sdk.Msg) (common.TxID, error) {
+func (m *MockSwitchlyBridge) Broadcast(msgs ...sdk.Msg) (common.TxID, error) {
 	return common.TxID(""), nil
 }
 
-func (m *MockThorchainBridge) GetKeysign(blockHeight int64, pk string) (stypes.TxOut, error) {
+func (m *MockSwitchlyBridge) GetKeysign(blockHeight int64, pk string) (stypes.TxOut, error) {
 	return stypes.TxOut{}, nil
 }
 
-func (m *MockThorchainBridge) GetNodeAccount(string) (*thorchaintypes.NodeAccount, error) {
-	return &thorchaintypes.NodeAccount{}, nil
+func (m *MockSwitchlyBridge) GetNodeAccount(string) (*switchlytypes.NodeAccount, error) {
+	return &switchlytypes.NodeAccount{}, nil
 }
 
-func (m *MockThorchainBridge) GetNodeAccounts() ([]*thorchaintypes.NodeAccount, error) {
-	return []*thorchaintypes.NodeAccount{}, nil
+func (m *MockSwitchlyBridge) GetNodeAccounts() ([]*switchlytypes.NodeAccount, error) {
+	return []*switchlytypes.NodeAccount{}, nil
 }
 
-func (m *MockThorchainBridge) GetKeygenBlock(int64, string) (thorchaintypes.KeygenBlock, error) {
-	return thorchaintypes.KeygenBlock{}, nil
+func (m *MockSwitchlyBridge) GetKeygenBlock(int64, string) (switchlytypes.KeygenBlock, error) {
+	return switchlytypes.KeygenBlock{}, nil
 }

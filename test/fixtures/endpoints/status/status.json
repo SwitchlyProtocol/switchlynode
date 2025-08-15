@@ -10,7 +10,7 @@
       },
       "id": "9aac6218c5f51fbe8ed97bfaa3ec89c62c05ef92",
       "listen_addr": "tcp://0.0.0.0:26656",
-      "network": "thorchain",
+      "network": "switchly",
       "version": "0.32.9",
       "channels": "4020212223303800",
       "moniker": "thor1l0xg0w8872qqvnp4q7cpqkhkjqnh43d49e4q5w",

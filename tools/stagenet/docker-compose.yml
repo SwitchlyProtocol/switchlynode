@@ -5,13 +5,13 @@
 # trunk-ignore-all(yamllint/empty-values)
 
 volumes:
-  genesis-thornode:
+  genesis-switchlynode:
   genesis-bifrost:
-  validator-1-thornode:
+  validator-1-switchlynode:
   validator-1-bifrost:
-  validator-2-thornode:
+  validator-2-switchlynode:
   validator-2-bifrost:
-  validator-3-thornode:
+  validator-3-switchlynode:
   validator-3-bifrost:
 
 ########################################################################################
@@ -19,17 +19,17 @@ volumes:
 ########################################################################################
 
 services:
-  _thorchain: &thorchain-defaults
+  _switchly: &switchly-defaults
     profiles:
       - _
     restart: unless-stopped
-    image: registry.gitlab.com/thorchain/thornode:stagenet-2.137.3
-    environment: &thorchain-environment
+    image: registry.gitlab.com/switchly/switchlynode:stagenet-2.137.3
+    environment: &switchly-environment
       NET: stagenet
-      CHAIN_ID: thorchain
-      SIGNER_NAME: thorchain
+      CHAIN_ID: switchly
+      SIGNER_NAME: switchly
       SIGNER_PASSWD: password
-      THOR_SEED_NODES_ENDPOINT: ""
+      SWITCHLY_SEED_NODES_ENDPOINT: ""
 
       # "dog" mnemonic addresses for faucet
       FAUCET: sthor1zf3gsk7edzwl9syyefvfhle37cjtql3585mpmq
@@ -43,10 +43,10 @@ services:
   # Genesis
   ######################################################################################
 
-  # ------------------------------ thornode ------------------------------
+  # ------------------------------ switchlynode ------------------------------
 
-  genesis-thornode: &genesis-thornode
-    <<: *thorchain-defaults
+  genesis-switchlynode: &genesis-switchlynode
+    <<: *switchly-defaults
     profiles:
       - genesis
     ports:
@@ -56,17 +56,17 @@ services:
       - 6060:6060
     volumes:
       - ./mnt:/mnt
-      - genesis-thornode:/root/.thornode
+      - genesis-switchlynode:/root/.switchlynode
     entrypoint: /scripts/genesis.sh
 
-    environment: &genesis-thornode-environment
-      <<: *thorchain-environment
-      SEED: thornode
+    environment: &genesis-switchlynode-environment
+      <<: *switchly-environment
+      SEED: switchlynode
 
   # ------------------------------ bifrost ------------------------------
 
   genesis-bifrost: &genesis-bifrost
-    <<: *thorchain-defaults
+    <<: *switchly-defaults
 
     profiles:
       - genesis
@@ -76,15 +76,15 @@ services:
     entrypoint: /scripts/bifrost.sh
     volumes:
       - genesis-bifrost:/var/data/bifrost
-      - genesis-thornode:/root/.thornode
+      - genesis-switchlynode:/root/.switchlynode
     command: ["bifrost"]
 
     environment: &genesis-bifrost-environment
-      <<: *thorchain-environment
+      <<: *switchly-environment
 
-      CHAIN_API: genesis-thornode:1317
-      CHAIN_RPC: genesis-thornode:27147
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: genesis-thornode:50051
+      CHAIN_API: genesis-switchlynode:1317
+      CHAIN_RPC: genesis-switchlynode:27147
+      BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: genesis-switchlynode:50051
 
       BIFROST_CHAINS_AVAX_DISABLED: "false"
       BIFROST_CHAINS_AVAX_RPC_HOST: https://api.avax.network/ext/bc/C/rpc
@@ -118,18 +118,18 @@ services:
   # Validator-1
   ######################################################################################
 
-  validator-1-thornode: &validator-1-thornode
-    <<: *genesis-thornode
+  validator-1-switchlynode: &validator-1-switchlynode
+    <<: *genesis-switchlynode
     profiles:
       - validator-1
     ports: []
-    environment: &validator-1-thornode-environment
-      <<: *genesis-thornode-environment
-      PEER: genesis-thornode
-      SEEDS: genesis-thornode
+    environment: &validator-1-switchlynode-environment
+      <<: *genesis-switchlynode-environment
+      PEER: genesis-switchlynode
+      SEEDS: genesis-switchlynode
     volumes:
       - ./mnt:/mnt
-      - validator-1-thornode:/root/.thornode
+      - validator-1-switchlynode:/root/.switchlynode
     entrypoint: /scripts/validator.sh
 
   validator-1-bifrost: &validator-1-bifrost
@@ -139,30 +139,30 @@ services:
     environment: &validator-1-bifrost-environment
       <<: *genesis-bifrost-environment
       PEER: genesis-bifrost
-      CHAIN_API: validator-1-thornode:1317
-      CHAIN_RPC: validator-1-thornode:27147
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: validator-1-thornode:50051
+      CHAIN_API: validator-1-switchlynode:1317
+      CHAIN_RPC: validator-1-switchlynode:27147
+      BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: validator-1-switchlynode:50051
     ports:
       - 5040
       - 6040
     volumes:
       - validator-1-bifrost:/var/data/bifrost
-      - validator-1-thornode:/root/.thornode
+      - validator-1-switchlynode:/root/.switchlynode
 
   ######################################################################################
   # Validator-2
   ######################################################################################
 
-  validator-2-thornode:
-    <<: *validator-1-thornode
+  validator-2-switchlynode:
+    <<: *validator-1-switchlynode
     profiles:
       - validator-2
     ports: []
     environment:
-      <<: *validator-1-thornode-environment
+      <<: *validator-1-switchlynode-environment
     volumes:
       - ./mnt:/mnt
-      - validator-2-thornode:/root/.thornode
+      - validator-2-switchlynode:/root/.switchlynode
 
   validator-2-bifrost:
     <<: *validator-1-bifrost
@@ -170,27 +170,27 @@ services:
       - validator-2
     environment:
       <<: *validator-1-bifrost-environment
-      CHAIN_API: validator-2-thornode:1317
-      CHAIN_RPC: validator-2-thornode:27147
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: validator-2-thornode:50051
+      CHAIN_API: validator-2-switchlynode:1317
+      CHAIN_RPC: validator-2-switchlynode:27147
+      BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: validator-2-switchlynode:50051
     volumes:
       - validator-2-bifrost:/var/data/bifrost
-      - validator-2-thornode:/root/.thornode
+      - validator-2-switchlynode:/root/.switchlynode
 
   ######################################################################################
   # Validator-3
   ######################################################################################
 
-  validator-3-thornode:
-    <<: *validator-1-thornode
+  validator-3-switchlynode:
+    <<: *validator-1-switchlynode
     profiles:
       - validator-3
     ports: []
     environment:
-      <<: *validator-1-thornode-environment
+      <<: *validator-1-switchlynode-environment
     volumes:
       - ./mnt:/mnt
-      - validator-3-thornode:/root/.thornode
+      - validator-3-switchlynode:/root/.switchlynode
 
   validator-3-bifrost:
     <<: *validator-1-bifrost
@@ -198,9 +198,9 @@ services:
       - validator-3
     environment:
       <<: *validator-1-bifrost-environment
-      CHAIN_API: validator-3-thornode:1317
-      CHAIN_RPC: validator-3-thornode:27147
-      BIFROST_THORCHAIN_CHAIN_EBIFROST: validator-3-thornode:50051
+      CHAIN_API: validator-3-switchlynode:1317
+      CHAIN_RPC: validator-3-switchlynode:27147
+      BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: validator-3-switchlynode:50051
     volumes:
       - validator-3-bifrost:/var/data/bifrost
-      - validator-3-thornode:/root/.thornode
+      - validator-3-switchlynode:/root/.switchlynode

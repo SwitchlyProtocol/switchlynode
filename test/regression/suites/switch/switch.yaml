@@ -12,7 +12,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - ."ENABLESWITCH-GAIA-KUJI" == 1
 ---
@@ -64,7 +64,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[]|.coins[]|select(.asset == "GAIA.ATOM")|.amount == "10000000"
 ---

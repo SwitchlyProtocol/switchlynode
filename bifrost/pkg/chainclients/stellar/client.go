@@ -26,14 +26,14 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/runners"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/signercache"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	mem "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	mem "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 )
 
 // Client is a structure to sign and broadcast tx to Stellar chain used by signer mostly
@@ -41,7 +41,7 @@ type Client struct {
 	logger              zerolog.Logger
 	cfg                 config.BifrostChainConfiguration
 	tssKeyManager       *tss.KeySign
-	thorchainBridge     thorclient.ThorchainBridge
+	switchlyBridge      switchlyclient.SwitchlyBridge
 	storage             *blockscanner.BlockScannerStorage
 	blockScanner        *blockscanner.BlockScanner
 	signerCacheManager  *signercache.CacheManager
@@ -86,20 +86,20 @@ type RouterConfig struct {
 
 // NewClient creates a new instance of a Stellar chain client
 func NewClient(
-	thorKeys *thorclient.Keys,
+	thorKeys *switchlyclient.Keys,
 	cfg config.BifrostChainConfiguration,
 	server *tssp.TssServer,
-	thorchainBridge thorclient.ThorchainBridge,
+	switchlyBridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 ) (*Client, error) {
 	logger := log.With().Str("module", cfg.ChainID.String()).Logger()
 
-	tssKm, err := tss.NewKeySign(server, thorchainBridge)
+	tssKm, err := tss.NewKeySign(server, switchlyBridge)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create tss signer: %w", err)
 	}
 
-	if thorchainBridge == nil {
+	if switchlyBridge == nil {
 		return nil, errors.New("SwitchlyProtocol bridge is nil")
 	}
 
@@ -186,7 +186,7 @@ func NewClient(
 		cfg.RPCHost,
 		cfg.BlockScanner,
 		storage,
-		thorchainBridge,
+		switchlyBridge,
 		m,
 		nil, // solvency reporter - not used as we use SolvencyCheckRunner
 		horizonClient,
@@ -199,7 +199,7 @@ func NewClient(
 	}
 
 	// Create main block scanner
-	blockScanner, err := blockscanner.NewBlockScanner(cfg.BlockScanner, storage, m, thorchainBridge, stellarScanner)
+	blockScanner, err := blockscanner.NewBlockScanner(cfg.BlockScanner, storage, m, switchlyBridge, stellarScanner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create block scanner: %w", err)
 	}
@@ -212,14 +212,14 @@ func NewClient(
 
 	// Create router event scanner if router is configured
 	var routerEventScanner *RouterEventScanner
-	routerAddress := getRouterAddress(thorchainBridge)
+	routerAddress := getRouterAddress(switchlyBridge)
 	if routerAddress != "" {
 		routerEventScanner = NewRouterEventScanner(
 			cfg.BlockScanner,
 			horizonClient,
 			sorobanRPCClient,
 			routerAddress,
-			thorchainBridge,
+			switchlyBridge,
 		)
 	}
 
@@ -227,7 +227,7 @@ func NewClient(
 		logger:              logger,
 		cfg:                 cfg,
 		tssKeyManager:       tssKm,
-		thorchainBridge:     thorchainBridge,
+		switchlyBridge:      switchlyBridge,
 		storage:             storage,
 		blockScanner:        blockScanner,
 		signerCacheManager:  signerCacheManager,
@@ -243,7 +243,7 @@ func NewClient(
 	}, nil
 }
 
-func getRouterAddress(bridge thorclient.ThorchainBridge) string {
+func getRouterAddress(bridge switchlyclient.SwitchlyBridge) string {
 	// Get router address from bridge configuration
 	contracts, err := bridge.GetContractAddress()
 	if err != nil {
@@ -293,7 +293,7 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	c.stellarScanner.Start()
 
 	c.wg.Add(1)
-	go runners.SolvencyCheckRunner(c.GetChain(), c, c.thorchainBridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
+	go runners.SolvencyCheckRunner(c.GetChain(), c, c.switchlyBridge, c.stopchan, c.wg, constants.SwitchlyBlockTime)
 
 	// Start router monitoring if router is configured
 	if c.routerAddress != "" {
@@ -580,7 +580,7 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 }
 
 // SignTx signs a transaction
-func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
+func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
 	defer func() {
 		if err != nil && !strings.Contains(err.Error(), "fail to broadcast") {
 			c.logger.Err(err).Msg("fail to sign tx")
@@ -728,14 +728,14 @@ func (c *Client) GetConfirmationCount(txIn stypes.TxIn) int64 {
 	return 1
 }
 
-// ReportSolvency reports solvency to THORChain
+// ReportSolvency reports solvency to SWITCHLYChain
 func (c *Client) ReportSolvency(blockHeight int64) error {
 	if !c.ShouldReportSolvency(blockHeight) {
 		return nil
 	}
 
 	// Get all asgard vaults
-	asgardVaults, err := c.thorchainBridge.GetAsgards()
+	asgardVaults, err := c.switchlyBridge.GetAsgards()
 	if err != nil {
 		return fmt.Errorf("fail to get asgards: %w", err)
 	}
@@ -766,7 +766,7 @@ func (c *Client) ReportSolvency(blockHeight int64) error {
 
 	select {
 	case c.globalSolvencyQueue <- solvencyMsg:
-	case <-time.After(constants.ThorchainBlockTime):
+	case <-time.After(constants.SwitchlyBlockTime):
 		c.logger.Info().Msg("fail to send solvency info within timeout")
 	}
 
@@ -783,7 +783,7 @@ func (c *Client) OnObservedTxIn(txIn stypes.TxInItem, blockHeight int64) {
 	// Parse memo to determine if outbound
 	m, err := mem.ParseMemo(common.LatestVersion, txIn.Memo)
 	if err != nil {
-		// Debug log only as ParseMemo error is expected for THORName inbounds.
+		// Debug log only as ParseMemo error is expected for SWITCHName inbounds.
 		c.logger.Debug().Err(err).Msgf("fail to parse memo: %s", txIn.Memo)
 		return
 	}

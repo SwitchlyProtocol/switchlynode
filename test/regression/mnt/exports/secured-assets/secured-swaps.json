@@ -1,6 +1,6 @@
 {
   "app_hash": null,
-  "app_name": "thornode",
+  "app_name": "switchlynode",
   "app_state": {
     "auth": {
       "accounts": [
@@ -74,7 +74,7 @@
             "pub_key": null,
             "sequence": "0"
           },
-          "name": "thorchain",
+          "name": "switchly",
           "permissions": [
             "minter",
             "burner"
@@ -261,12 +261,12 @@
     "genutil": {
       "gen_txs": []
     },
-    "thorchain": {
+    "switchly": {
       "POL": {
         "rune_deposited": "0",
         "rune_withdrawn": "0"
       },
-      "THORNames": [],
+      "SWITCHNames": [],
       "adv_swap_queue_items": [],
       "affiliate_collectors": null,
       "bond_providers": [
@@ -529,7 +529,7 @@
         },
         {
           "LP_units": "0",
-          "asset": "THOR.BTC",
+          "asset": "SWITCHLY.BTC",
           "balance_asset": "1076619",
           "balance_rune": "935874958",
           "pending_inbound_asset": "0",
@@ -540,7 +540,7 @@
         },
         {
           "LP_units": "0",
-          "asset": "THOR.ETH",
+          "asset": "SWITCHLY.ETH",
           "balance_asset": "429999999",
           "balance_rune": "43110836488",
           "pending_inbound_asset": "0",
@@ -593,7 +593,7 @@
         {
           "block_height": "2",
           "chains": [
-            "THOR",
+            "SWITCHLY",
             "BTC",
             "LTC",
             "BCH",
@@ -652,7 +652,7 @@
       ]
     }
   },
-  "chain_id": "thorchain",
+  "chain_id": "switchly",
   "consensus": {
     "params": {
       "abci": {

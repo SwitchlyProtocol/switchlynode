@@ -1955,7 +1955,7 @@
       "address": "0xB64ef51C888972c908CFacf59B47C1AfBC0Ab8aC",
       "chainId": 1,
       "name": "Storj",
-      "symbol": "STORJ",
+      "symbol": "SSWITCHLYJ",
       "decimals": 8,
       "logoURI": "https://tokens.1inch.io/0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac.png"
     },
@@ -3138,8 +3138,8 @@
     {
       "address": "0x77777FeDdddFfC19Ff86DB637967013e6C6A116C",
       "chainId": 1,
-      "name": "TornadoCash",
-      "symbol": "TORN",
+      "name": "SwitchlynadoCash",
+      "symbol": "SWITCHLYN",
       "decimals": 18,
       "logoURI": "https://tokens.1inch.io/0x77777feddddffc19ff86db637967013e6c6a116c.png"
     },
@@ -3442,8 +3442,8 @@
     {
       "address": "0x3155BA85D5F96b2d030a4966AF206230e46849cb",
       "chainId": 1,
-      "name": "THORChainETH.RUNE",
-      "symbol": "RUNE",
+      "name": "SWITCHLYChainETH.SWITCH",
+      "symbol": "SWITCH",
       "decimals": 18,
       "logoURI": "https://tokens.1inch.io/0x3155ba85d5f96b2d030a4966af206230e46849cb.png"
     },
@@ -7946,8 +7946,8 @@
     {
       "address": "0xa5f2211B9b8170F694421f2046281775E8468044",
       "chainId": 1,
-      "name": "THORSwapToken",
-      "symbol": "THOR",
+      "name": "SWITCHLYSwapToken",
+      "symbol": "SWITCHLY",
       "decimals": 18,
       "logoURI": "https://tokens.1inch.io/0xa5f2211b9b8170f694421f2046281775e8468044.png"
     },
@@ -8051,15 +8051,15 @@
       "chainId": 1,
       "address": "0x108a850856db3f85d0269a2693d896b394c80325",
       "symbol": "TGT",
-      "name": "THORWallet Governance Token",
+      "name": "SWITCHLYWallet Governance Token",
       "decimals": 18,
       "logoURI": "https://assets.coingecko.com/coins/images/21843/small/tgt_logo.png"
     },
     {
       "chainId": 1,
       "address": "0x69fa0fee221ad11012bab0fdb45d444d3d2ce71c",
-      "symbol": "XRUNE",
-      "name": "XRUNE Token",
+      "symbol": "XSWITCH",
+      "name": "XSWITCH Token",
       "decimals": 18,
       "logoURI": "https://assets.coingecko.com/coins/images/16835/small/thorstarter.jpg"
     },
@@ -8130,8 +8130,8 @@
     {
       "address": "0x815C23eCA83261b6Ec689b60Cc4a58b54BC24D8D",
       "chainId": 1,
-      "name": "vTHOR",
-      "symbol": "vTHOR",
+      "name": "vSWITCHLY",
+      "symbol": "vSWITCHLY",
       "decimals": 18,
       "logoURI": "https://static.thorswap.net/token-list/images/eth.vthor-0x815c23eca83261b6ec689b60cc4a58b54bc24d8d.png"
     },

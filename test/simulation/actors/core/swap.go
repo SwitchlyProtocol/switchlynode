@@ -13,7 +13,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/evm"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
@@ -73,7 +73,7 @@ func NewSwapActor(from, to common.Asset) *Actor {
 
 func (a *SwapActor) acquireUser(config *OpConfig) OpResult {
 	// swap 0.5% of from pool depth
-	pool, err := thornode.GetPool(a.from)
+	pool, err := switchlynode.GetPool(a.from)
 	if err != nil {
 		return OpResult{
 			Continue: false,
@@ -161,7 +161,7 @@ func (a *SwapActor) acquireUser(config *OpConfig) OpResult {
 }
 
 func (a *SwapActor) getQuote(config *OpConfig) OpResult {
-	quote, err := thornode.GetSwapQuote(a.from, a.to, a.swapAmount)
+	quote, err := switchlynode.GetSwapQuote(a.from, a.to, a.swapAmount)
 	if err != nil {
 		a.Log().Error().Err(err).Str("amount", a.swapAmount.String()).Msg("failed to get swap quote")
 		return OpResult{
@@ -189,7 +189,7 @@ func (a *SwapActor) getQuote(config *OpConfig) OpResult {
 
 func (a *SwapActor) sendSwap(config *OpConfig) OpResult {
 	// get inbound address
-	inboundAddr, _, err := thornode.GetInboundAddress(a.from.Chain)
+	inboundAddr, _, err := switchlynode.GetInboundAddress(a.from.Chain)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get inbound address")
 		return OpResult{
@@ -241,7 +241,7 @@ func (a *SwapActor) sendSwap(config *OpConfig) OpResult {
 
 func (a *SwapActor) sendTokenSwap(config *OpConfig) OpResult {
 	// get router address
-	inboundAddr, routerAddr, err := thornode.GetInboundAddress(a.from.Chain)
+	inboundAddr, routerAddr, err := switchlynode.GetInboundAddress(a.from.Chain)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get inbound address")
 		return OpResult{
@@ -344,7 +344,7 @@ func (a *SwapActor) sendTokenSwap(config *OpConfig) OpResult {
 
 func (a *SwapActor) verifyOutbound(config *OpConfig) OpResult {
 	// get swap stages
-	stages, err := thornode.GetTxStages(a.swapTxID)
+	stages, err := switchlynode.GetTxStages(a.swapTxID)
 	if err != nil {
 		a.Log().Warn().Err(err).Msg("failed to get tx stages")
 		return OpResult{
@@ -360,7 +360,7 @@ func (a *SwapActor) verifyOutbound(config *OpConfig) OpResult {
 	}
 
 	// get tx details
-	details, err := thornode.GetTxDetails(a.swapTxID)
+	details, err := switchlynode.GetTxDetails(a.swapTxID)
 	if err != nil {
 		a.Log().Warn().Err(err).Msg("failed to get tx details")
 		return OpResult{
@@ -393,7 +393,7 @@ func (a *SwapActor) verifyOutbound(config *OpConfig) OpResult {
 		outAmountPlusMaxGas = outAmountPlusMaxGas.Add(cosmos.NewUintFromString(maxGas.Amount))
 	} else {
 		var maxGasAssetValue sdkmath.Uint
-		maxGasAssetValue, err = thornode.ConvertAssetAmount(maxGas, a.to.String())
+		maxGasAssetValue, err = switchlynode.ConvertAssetAmount(maxGas, a.to.String())
 		if err != nil {
 			a.Log().Warn().Err(err).Msg("failed to convert asset")
 			return OpResult{

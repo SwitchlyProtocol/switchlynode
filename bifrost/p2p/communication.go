@@ -63,7 +63,7 @@ type Communication struct {
 	host             host.Host
 	wg               *sync.WaitGroup
 	stopChan         chan struct{} // channel to indicate whether we should stop
-	subscribers      map[messages.THORChainTSSMessageType]*MessageIDSubscriber
+	subscribers      map[messages.SWITCHLYChainTSSMessageType]*MessageIDSubscriber
 	subscriberLocker *sync.Mutex
 	streamCount      int64
 	BroadcastMsgChan chan *messages.BroadcastMsgChan
@@ -125,7 +125,7 @@ func NewCommunication(cfg P2PConfig, stateManager *storage.FileStateMgr) (*Commu
 		listenAddr:       addr,
 		wg:               &sync.WaitGroup{},
 		stopChan:         make(chan struct{}),
-		subscribers:      make(map[messages.THORChainTSSMessageType]*MessageIDSubscriber),
+		subscribers:      make(map[messages.SWITCHLYChainTSSMessageType]*MessageIDSubscriber),
 		subscriberLocker: &sync.Mutex{},
 		streamCount:      0,
 		BroadcastMsgChan: make(chan *messages.BroadcastMsgChan, 1024),
@@ -438,7 +438,7 @@ func (c *Communication) Stop() error {
 	return nil
 }
 
-func (c *Communication) SetSubscribe(topic messages.THORChainTSSMessageType, msgID string, channel chan *Message) {
+func (c *Communication) SetSubscribe(topic messages.SWITCHLYChainTSSMessageType, msgID string, channel chan *Message) {
 	c.subscriberLocker.Lock()
 	defer c.subscriberLocker.Unlock()
 
@@ -450,7 +450,7 @@ func (c *Communication) SetSubscribe(topic messages.THORChainTSSMessageType, msg
 	messageIDSubscribers.Subscribe(msgID, channel)
 }
 
-func (c *Communication) getSubscriber(topic messages.THORChainTSSMessageType, msgID string) chan *Message {
+func (c *Communication) getSubscriber(topic messages.SWITCHLYChainTSSMessageType, msgID string) chan *Message {
 	c.subscriberLocker.Lock()
 	defer c.subscriberLocker.Unlock()
 	messageIDSubscribers, ok := c.subscribers[topic]
@@ -461,7 +461,7 @@ func (c *Communication) getSubscriber(topic messages.THORChainTSSMessageType, ms
 	return messageIDSubscribers.GetSubscriber(msgID)
 }
 
-func (c *Communication) CancelSubscribe(topic messages.THORChainTSSMessageType, msgID string) {
+func (c *Communication) CancelSubscribe(topic messages.SWITCHLYChainTSSMessageType, msgID string) {
 	c.subscriberLocker.Lock()
 	defer c.subscriberLocker.Unlock()
 

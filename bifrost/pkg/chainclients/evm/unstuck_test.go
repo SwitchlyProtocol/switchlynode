@@ -20,20 +20,20 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	ttypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	ttypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 	. "gopkg.in/check.v1"
 )
 
 type UnstuckTestSuite struct {
-	thorKeys *thorclient.Keys
-	bridge   thorclient.ThorchainBridge
+	thorKeys *switchlyclient.Keys
+	bridge   switchlyclient.SwitchlyBridge
 	m        *metrics.Metrics
 	server   *httptest.Server
 }
@@ -47,7 +47,7 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 	c.Assert(os.Setenv("NET", "mocknet"), IsNil)
 
 	cfg := config.BifrostClientConfiguration{
-		ChainID:      "thorchain",
+		ChainID:      "switchly",
 		SignerName:   "bob",
 		SignerPasswd: "password",
 	}
@@ -58,7 +58,7 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.thorKeys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
 
 	// get public key
 	priv, err := s.thorKeys.GetPrivateKey()
@@ -77,9 +77,9 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		switch req.RequestURI {
-		case thorclient.ThorchainConstants:
+		case switchlyclient.SwitchlyConstants:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/constants/constants.json")
-		case thorclient.PubKeysEndpoint:
+		case switchlyclient.PubKeysEndpoint:
 			var content []byte
 			content, err = os.ReadFile("../../../../test/fixtures/endpoints/vaults/pubKeys.json")
 			c.Assert(err, IsNil)
@@ -90,20 +90,20 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 			c.Assert(err, IsNil)
 			_, err = rw.Write(buf)
 			c.Assert(err, IsNil)
-		case thorclient.LastBlockEndpoint:
+		case switchlyclient.LastBlockEndpoint:
 			httpTestHandler(c, rw, "../../../../test/fixtures/eth/last_block_height.json")
-		case thorclient.InboundAddressesEndpoint:
+		case switchlyclient.InboundAddressesEndpoint:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/inbound_addresses/inbound_addresses.json")
-		case thorclient.AsgardVault:
+		case switchlyclient.AsgardVault:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/vaults/asgard.json")
-		case thorclient.NodeAccountEndpoint:
+		case switchlyclient.NodeAccountEndpoint:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/nodeaccount/template.json")
-		case thorclient.ChainVersionEndpoint:
+		case switchlyclient.ChainVersionEndpoint:
 			_, err = rw.Write([]byte(`{"current":"` + types2.GetCurrentVersion().String() + `"}`))
 			c.Assert(err, IsNil)
 		default:
 			// return -1 for all unset mimirs
-			if strings.HasPrefix(req.RequestURI, thorclient.MimirEndpoint+"/key") {
+			if strings.HasPrefix(req.RequestURI, switchlyclient.MimirEndpoint+"/key") {
 				_, err = rw.Write([]byte(`-1`))
 				c.Assert(err, IsNil)
 				return
@@ -277,7 +277,7 @@ func (s *UnstuckTestSuite) SetUpTest(c *C) {
 	s.server = server
 
 	cfg.ChainHost = server.Listener.Addr().String()
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, s.thorKeys)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.m, s.thorKeys)
 	c.Assert(err, IsNil)
 }
 
@@ -289,13 +289,13 @@ func (s *UnstuckTestSuite) TestUnstuckProcess(c *C) {
 	config.Init()
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 	e, err := NewEVMClient(s.thorKeys, config.BifrostChainConfiguration{
 		ChainID:        common.AVAXChain,
 		RPCHost:        "http://" + s.server.Listener.Addr().String(),
 		SolvencyBlocks: 10,
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			HTTPRequestTimeout: time.Second * 10,
 			GasCacheBlocks:     40,
 			Concurrency:        1,

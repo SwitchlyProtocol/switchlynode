@@ -10,7 +10,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	keeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/keeper/v1"
+	keeperv1 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/keeper/v1"
 
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
@@ -39,7 +39,7 @@ func NewInvariants() *Watcher {
 		Interval: 10 * time.Second,
 		Fn: func(config *OpConfig) error {
 			for _, invariant := range invariants {
-				endpoint := fmt.Sprintf("%s/thorchain/invariant/%s", thornodeURL, invariant)
+				endpoint := fmt.Sprintf("%s/switchly/invariant/%s", switchlynodeURL, invariant)
 
 				resp, err := httpClient.Get(endpoint)
 				if err != nil {

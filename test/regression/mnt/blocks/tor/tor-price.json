@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -208,7 +208,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -422,7 +422,7 @@
             "messages": [
               {
                 "@type": "/types.MsgMimir",
-                "key": "TorAnchor-ETH-USDX-0X9999999999999999999999999999999999999999",
+                "key": "SwitchlyAnchor-ETH-USDX-0X9999999999999999999999999999999999999999",
                 "signer": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
                 "value": "1"
               }
@@ -480,7 +480,7 @@
             },
             {
               "address": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
-              "key": "TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999",
+              "key": "SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999",
               "msg_index": "0",
               "type": "set_node_mimir",
               "value": "1"
@@ -500,7 +500,7 @@
               "type": "bond"
             },
             {
-              "key": "TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999",
+              "key": "SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999",
               "msg_index": "0",
               "type": "set_mimir",
               "value": "1"
@@ -641,7 +641,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -665,12 +665,12 @@
     "begin_block_events": [
       {
         "mode": "BeginBlock",
-        "pool": "THOR.TOR",
+        "pool": "SWITCHLY.SWITCHLY",
         "pool_status": "Available",
         "type": "pool"
       },
       {
-        "asset": "THOR.TOR",
+        "asset": "SWITCHLY.SWITCHLY",
         "asset_add": "true",
         "asset_amt": "99999999999",
         "mode": "BeginBlock",
@@ -681,12 +681,12 @@
       },
       {
         "mode": "BeginBlock",
-        "pool": "THOR.BTC",
+        "pool": "SWITCHLY.BTC",
         "pool_status": "Available",
         "type": "pool"
       },
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "99999999",
         "mode": "BeginBlock",
@@ -697,12 +697,12 @@
       },
       {
         "mode": "BeginBlock",
-        "pool": "THOR.ETH",
+        "pool": "SWITCHLY.ETH",
         "pool_status": "Available",
         "type": "pool"
       },
       {
-        "asset": "THOR.ETH",
+        "asset": "SWITCHLY.ETH",
         "asset_add": "true",
         "asset_amt": "999999999",
         "mode": "BeginBlock",
@@ -886,7 +886,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -909,7 +909,7 @@
     "finalize_block_events": [],
     "begin_block_events": [
       {
-        "asset": "THOR.TOR",
+        "asset": "SWITCHLY.SWITCHLY",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -919,7 +919,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "1",
         "mode": "BeginBlock",
@@ -929,7 +929,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.ETH",
+        "asset": "SWITCHLY.ETH",
         "asset_add": "true",
         "asset_amt": "1",
         "mode": "BeginBlock",
@@ -1113,7 +1113,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -1136,7 +1136,7 @@
     "finalize_block_events": [],
     "begin_block_events": [
       {
-        "asset": "THOR.TOR",
+        "asset": "SWITCHLY.SWITCHLY",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1146,7 +1146,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "false",
         "asset_amt": "1",
         "mode": "BeginBlock",
@@ -1156,7 +1156,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.ETH",
+        "asset": "SWITCHLY.ETH",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1340,7 +1340,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 6,
       "time": "",
       "last_block_id": {
@@ -1363,7 +1363,7 @@
     "finalize_block_events": [],
     "begin_block_events": [
       {
-        "asset": "THOR.TOR",
+        "asset": "SWITCHLY.SWITCHLY",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1373,7 +1373,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1383,7 +1383,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.ETH",
+        "asset": "SWITCHLY.ETH",
         "asset_add": "false",
         "asset_amt": "1",
         "mode": "BeginBlock",
@@ -1567,7 +1567,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 7,
       "time": "",
       "last_block_id": {
@@ -1590,7 +1590,7 @@
     "finalize_block_events": [],
     "begin_block_events": [
       {
-        "asset": "THOR.TOR",
+        "asset": "SWITCHLY.SWITCHLY",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1600,7 +1600,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1610,7 +1610,7 @@
         "type": "pool_balance_change"
       },
       {
-        "asset": "THOR.ETH",
+        "asset": "SWITCHLY.ETH",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1913,7 +1913,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 8,
       "time": "",
       "last_block_id": {
@@ -1937,12 +1937,12 @@
     "begin_block_events": [
       {
         "mode": "BeginBlock",
-        "pool": "THOR.TOR",
+        "pool": "SWITCHLY.SWITCHLY",
         "pool_status": "Suspended",
         "type": "pool"
       },
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -1953,7 +1953,7 @@
       },
       {
         "mode": "BeginBlock",
-        "pool": "THOR.ETH",
+        "pool": "SWITCHLY.ETH",
         "pool_status": "Suspended",
         "type": "pool"
       }
@@ -2132,7 +2132,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 9,
       "time": "",
       "last_block_id": {
@@ -2155,7 +2155,7 @@
     "finalize_block_events": [],
     "begin_block_events": [
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -2339,7 +2339,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 10,
       "time": "",
       "last_block_id": {
@@ -2362,7 +2362,7 @@
     "finalize_block_events": [],
     "begin_block_events": [
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "0",
         "mode": "BeginBlock",
@@ -2546,7 +2546,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 11,
       "time": "",
       "last_block_id": {
@@ -2569,7 +2569,7 @@
     "finalize_block_events": [],
     "begin_block_events": [
       {
-        "asset": "THOR.BTC",
+        "asset": "SWITCHLY.BTC",
         "asset_add": "true",
         "asset_amt": "1",
         "mode": "BeginBlock",

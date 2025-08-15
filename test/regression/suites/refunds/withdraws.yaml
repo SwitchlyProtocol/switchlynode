@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
 ---
@@ -37,7 +37,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_providers
 asserts:
   - .|length == 2
 ---
@@ -65,7 +65,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/liquidity_providers
 asserts:
   - .|length == 2
 ---
@@ -93,7 +93,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/savers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/savers
 asserts:
   - .|length == 1
 ---
@@ -121,7 +121,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/savers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/savers
 asserts:
   - .|length == 1
 ---
@@ -152,7 +152,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 5 }}"
@@ -181,7 +181,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -212,7 +212,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 7 }}"
@@ -241,7 +241,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -272,7 +272,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 9 }}"
@@ -301,7 +301,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -332,7 +332,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 11 }}"
@@ -361,7 +361,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -392,7 +392,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 13 }}"
@@ -421,7 +421,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -496,21 +496,21 @@ asserts:
 # final checks - each pool should still have 2 lps and 1 saver
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_providers
 asserts:
   - .|length == 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/liquidity_providers
 asserts:
   - .|length == 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/savers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/savers
 asserts:
   - .|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.ETH/savers
+endpoint: http://localhost:1317/switchly/pool/ETH.ETH/savers
 asserts:
   - .|length == 1

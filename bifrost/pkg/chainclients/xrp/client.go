@@ -25,14 +25,14 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/xrp/keymanager"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/xrp/keymanager/secp256k1"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	memo "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/memo"
+	memo "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
 
 	binarycodec "github.com/Peersyst/xrpl-go/binary-codec"
 	"github.com/Peersyst/xrpl-go/xrpl/hash"
@@ -53,7 +53,7 @@ type Client struct {
 	accts               *XrpMetaDataStore
 	tssKeyManager       *tss.KeySign
 	localKeyManager     *keymanager.KeyManager
-	thorchainBridge     thorclient.ThorchainBridge
+	switchlyBridge      switchlyclient.SwitchlyBridge
 	storage             *blockscanner.BlockScannerStorage
 	blockScanner        *blockscanner.BlockScanner
 	signerCacheManager  *signercache.CacheManager
@@ -67,15 +67,15 @@ type Client struct {
 
 // NewClient creates a new instance of an XRP-based chain client
 func NewClient(
-	thorKeys *thorclient.Keys,
+	thorKeys *switchlyclient.Keys,
 	cfg config.BifrostChainConfiguration,
 	server *tssp.TssServer,
-	thorchainBridge thorclient.ThorchainBridge,
+	switchlyBridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 ) (*Client, error) {
 	logger := log.With().Str("module", cfg.ChainID.String()).Logger()
 
-	tssKm, err := tss.NewKeySign(server, thorchainBridge)
+	tssKm, err := tss.NewKeySign(server, switchlyBridge)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create tss signer: %w", err)
 	}
@@ -85,8 +85,8 @@ func NewClient(
 		return nil, fmt.Errorf("fail to get private key: %w", err)
 	}
 
-	if thorchainBridge == nil {
-		return nil, errors.New("thorchain bridge is nil")
+	if switchlyBridge == nil {
+		return nil, errors.New("switchly bridge is nil")
 	}
 
 	localKm, err := keymanager.NewKeyManager(priv, keymanager.SECP256K1)
@@ -114,7 +114,7 @@ func NewClient(
 		accts:           NewXrpMetaDataStore(),
 		tssKeyManager:   tssKm,
 		localKeyManager: localKm,
-		thorchainBridge: thorchainBridge,
+		switchlyBridge:  switchlyBridge,
 		wg:              &sync.WaitGroup{},
 		stopchan:        make(chan struct{}),
 		rpcClient:       rpcClient,
@@ -134,7 +134,7 @@ func NewClient(
 		c.cfg.RPCHost,
 		c.cfg.BlockScanner,
 		c.storage,
-		c.thorchainBridge,
+		c.switchlyBridge,
 		m,
 		c.ReportSolvency,
 	)
@@ -142,7 +142,7 @@ func NewClient(
 		return nil, fmt.Errorf("failed to create cosmos scanner: %w", err)
 	}
 
-	c.blockScanner, err = blockscanner.NewBlockScanner(c.cfg.BlockScanner, c.storage, m, c.thorchainBridge, c.xrpScanner)
+	c.blockScanner, err = blockscanner.NewBlockScanner(c.cfg.BlockScanner, c.storage, m, c.switchlyBridge, c.xrpScanner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create block scanner: %w", err)
 	}
@@ -163,7 +163,7 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	c.tssKeyManager.Start()
 	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
-	go runners.SolvencyCheckRunner(c.GetChain(), c, c.thorchainBridge, c.stopchan, c.wg, constants.ThorchainBlockTime)
+	go runners.SolvencyCheckRunner(c.GetChain(), c, c.switchlyBridge, c.stopchan, c.wg, constants.SwitchlyBlockTime)
 }
 
 // Stop Xrp chain client
@@ -242,7 +242,7 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 	}
 
 	balance := sdkmath.NewUint(aiResp.AccountData.Balance.Uint64())
-	coins, err := fromXrpToThorchain(txtypes.XRPCurrencyAmount(balance.Uint64()))
+	coins, err := fromXrpToSwitchly(txtypes.XRPCurrencyAmount(balance.Uint64()))
 	if err != nil {
 		return common.Account{}, err
 	}
@@ -269,7 +269,7 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*transactions.Payment, 
 		return nil, err
 	}
 
-	coin, err := fromThorchainToXrp(tx.Coins[0])
+	coin, err := fromSwitchlyToXrp(tx.Coins[0])
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*transactions.Payment, 
 }
 
 // SignTx sign the the given TxArrayItem
-func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
+func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
 	defer func() {
 		if err != nil {
 			var keysignError tss.KeysignError
@@ -302,14 +302,14 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, c
 					return
 				}
 
-				// key sign error forward the keysign blame to thorchain
+				// key sign error forward the keysign blame to switchly
 				var txID common.TxID
-				txID, err = c.thorchainBridge.PostKeysignFailure(keysignError.Blame, thorchainHeight, tx.Memo, tx.Coins, tx.VaultPubKey)
+				txID, err = c.switchlyBridge.PostKeysignFailure(keysignError.Blame, switchlyHeight, tx.Memo, tx.Coins, tx.VaultPubKey)
 				if err != nil {
-					c.logger.Err(err).Msg("fail to post keysign failure to THORChain")
+					c.logger.Err(err).Msg("fail to post keysign failure to SWITCHLYChain")
 					return
 				}
-				c.logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to thorchain")
+				c.logger.Info().Str("tx_id", txID.String()).Msgf("post keysign failure to switchly")
 			}
 			c.logger.Err(err).Msg("failed to sign tx")
 			return
@@ -368,7 +368,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, thorchainHeight int64) (signedTx, c
 		return nil, nil, nil, fmt.Errorf("fail to marshal checkpoint: %w", err)
 	}
 
-	feeCurrency, err := fromThorchainToXrp(common.NewCoin(common.XRPAsset, cosmos.NewUint(uint64(tx.GasRate))))
+	feeCurrency, err := fromSwitchlyToXrp(common.NewCoin(common.XRPAsset, cosmos.NewUint(uint64(tx.GasRate))))
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("fail to get fee: %w", err)
 	}
@@ -590,7 +590,7 @@ func (c *Client) ReportSolvency(blockHeight int64) error {
 	}
 
 	// fetch all asgard vaults
-	asgardVaults, err := c.thorchainBridge.GetAsgards()
+	asgardVaults, err := c.switchlyBridge.GetAsgards()
 	if err != nil {
 		return fmt.Errorf("fail to get asgards,err: %w", err)
 	}
@@ -627,7 +627,7 @@ func (c *Client) ReportSolvency(blockHeight int64) error {
 	// report that all the vaults are solvent.
 	// If there are any insolvent vaults, report only them.
 	// Not reporting both solvent and insolvent vaults is to avoid noise (spam):
-	// Reporting both could halt-and-unhalt SolvencyHalt in the same THOR block
+	// Reporting both could halt-and-unhalt SolvencyHalt in the same SWITCHLY block
 	// (resetting its height), plus making it harder to know at a glance from solvency reports which vaults were insolvent.
 	solvent := false
 	if !c.IsBlockScannerHealthy() && len(solventMsgs) == len(asgardVaults) {
@@ -642,11 +642,11 @@ func (c *Client) ReportSolvency(blockHeight int64) error {
 			Bool("solvent", solvent).
 			Msg("reporting solvency")
 
-		// send solvency to thorchain via global queue consumed by the observer
+		// send solvency to switchly via global queue consumed by the observer
 		select {
 		case c.globalSolvencyQueue <- msgs[i]:
-		case <-time.After(constants.ThorchainBlockTime):
-			c.logger.Info().Msgf("fail to send solvency info to THORChain, timeout")
+		case <-time.After(constants.SwitchlyBlockTime):
+			c.logger.Info().Msgf("fail to send solvency info to SWITCHLYChain, timeout")
 		}
 	}
 	return nil
@@ -664,7 +664,7 @@ func (c *Client) ShouldReportSolvency(height int64) bool {
 func (c *Client) OnObservedTxIn(txIn stypes.TxInItem, blockHeight int64) {
 	m, err := memo.ParseMemo(common.LatestVersion, txIn.Memo)
 	if err != nil {
-		// Debug log only as ParseMemo error is expected for THORName inbounds.
+		// Debug log only as ParseMemo error is expected for SWITCHName inbounds.
 		c.logger.Debug().Err(err).Msgf("fail to parse memo: %s", txIn.Memo)
 		return
 	}

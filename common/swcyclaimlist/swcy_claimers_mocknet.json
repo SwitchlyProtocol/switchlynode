@@ -1,0 +1,22 @@
+[
+  {
+    "asset": "AVAX.AVAX",
+    "address": "0x00112c24ebee9c96d177a3aa2ff55dcb93a53c80",
+    "swcy_claim": 1111111111111111111
+  },
+  {
+    "asset": "BTC.BTC",
+    "address": "bc1qj937cw6xap470hg427p2kxl85u3ac3ps84hye3",
+    "swcy_claim": 42047799234002
+  },
+  {
+    "asset": "DOGE.DOGE",
+    "address": "tswitch1v0982t4mwv64gytjesmfa2mkxsmz24j7lm93su",
+    "swcy_claim": 1111
+  },
+  {
+    "asset": "DOGE.DOGE",
+    "address": "tswitch1v0982t4mwv64gytjesmfa2mkxsmz24j7lm93su",
+    "swcy_claim": 1111
+  }
+]

@@ -6,11 +6,11 @@ Example for Ethereum.
 
 ### Observer And Signer
 
-{{#embed https://gitlab.com/thorchain/thornode/-/blob/develop/bifrost/pkg/chainclients/ethereum/ethereum.go }}
+{{#embed https://gitlab.com/switchly/switchlynode/-/blob/develop/bifrost/pkg/chainclients/ethereum/ethereum.go }}
 
 ### Router
 
-The EVM Bifrost is different to others in that it uses a `router` to handle deposits into and out of THORChain vaults. The Router is just a means for capturing token deposits and emitting `memos`.
+The EVM Bifrost is different to others in that it uses a `router` to handle deposits into and out of SWITCHLYChain vaults. The Router is just a means for capturing token deposits and emitting `memos`.
 
 The Router holds all ERC20s, but forwards ETH to the TSS vault. This allows the TSS Vault to call into the Router and pay gas to move token allowances to vaults.
 
@@ -23,7 +23,7 @@ The Router is necessary because the ERC20 standard has no "push" functionality, 
 ```
 
 ```admonish warning
-The V3 Router uses solidity `.Send()` to transfer ETH assets outbound. When an outbound ETH tx is sent to a contract, it must complete execution with only 2300 Gas. If the recipient runs out of Gas, the network still considers the payment sent. Developers of THORChain UI's should check recipient ETH addresses for the presence of code and warn users who may have complex fallback functions that their payment may not succeed, and they could lose funds. Geth `eth.getCode("0xaddress")` may be useful.
+The V3 Router uses solidity `.Send()` to transfer ETH assets outbound. When an outbound ETH tx is sent to a contract, it must complete execution with only 2300 Gas. If the recipient runs out of Gas, the network still considers the payment sent. Developers of SWITCHLYChain UI's should check recipient ETH addresses for the presence of code and warn users who may have complex fallback functions that their payment may not succeed, and they could lose funds. Geth `eth.getCode("0xaddress")` may be useful.
 ```
 
 ```admonish warning
@@ -36,7 +36,7 @@ The block scanner monitors the Router events, and can create a witness transacti
 
 ### Confirmation Counting
 
-Incomings are "conf-counted" by comparing their value with ETH (using THORChain pool pricing) and then delayed based on the ETH value of the deposits compared with the ETH block reward + fees.&#x20;
+Incomings are "conf-counted" by comparing their value with ETH (using SWITCHLYChain pool pricing) and then delayed based on the ETH value of the deposits compared with the ETH block reward + fees.&#x20;
 
 ### ETH Cancellation Logic
 
@@ -52,4 +52,4 @@ Since it is really disruptive if a tx does not go thru (since it locks up vaults
 
 ### Re-orgs
 
-The ETH chain re-orgs a lot, and TC is able to monitor and post re-org data to THORChain.&#x20;
+The ETH chain re-orgs a lot, and TC is able to monitor and post re-org data to SWITCHLYChain.&#x20;

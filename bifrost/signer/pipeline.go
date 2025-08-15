@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ func newPipeline(concurrency int64) (*pipeline, error) {
 // The signing routines will be spawned in a goroutine, and this function will not
 // block on their completion. The spawned routines will release the corresponding vault
 // status semaphore and vault/chain lock when they are complete.
-func (p *pipeline) SpawnSignings(s pipelineSigner, bridge thorclient.ThorchainBridge) {
+func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.SwitchlyBridge) {
 	allItems := s.storageList()
 
 	// gather all vault/chain combinations with an out item in retry

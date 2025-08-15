@@ -174,7 +174,7 @@ func GetKeybase(switchlyHome string) (KeybaseStore, error) {
 		if err != nil {
 			return KeybaseStore{}, fmt.Errorf("fail to get current user,err:%w", err)
 		}
-		cliDir = filepath.Join(usr.HomeDir, ".thornode")
+		cliDir = filepath.Join(usr.HomeDir, ".switchlynode")
 	}
 
 	// Should we pass in the cdc?

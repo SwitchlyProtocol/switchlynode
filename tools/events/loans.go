@@ -12,15 +12,15 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/notify"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/switchlyscan"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Scan Loans
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func ScanLoans(block *thorscan.BlockResponse) {
+func ScanLoans(block *switchlyscan.BlockResponse) {
 	LoanOpen(block)
 	LoanRepayment(block)
 }
@@ -29,7 +29,7 @@ func ScanLoans(block *thorscan.BlockResponse) {
 // Loan Open
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func LoanOpen(block *thorscan.BlockResponse) {
+func LoanOpen(block *switchlyscan.BlockResponse) {
 	for _, event := range block.EndBlockEvents {
 		if event["type"] != types.LoanOpenEventType {
 			continue
@@ -45,7 +45,7 @@ func LoanOpen(block *thorscan.BlockResponse) {
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to parse collateral asset")
 		}
-		debtInTOR := cosmos.NewUintFromString(event["debt_issued"])
+		debtInSWITCHLY := cosmos.NewUintFromString(event["debt_issued"])
 
 		// collateral
 		collateralCoin := common.NewCoin(collateralAsset, collateralAmount)
@@ -64,14 +64,14 @@ func LoanOpen(block *thorscan.BlockResponse) {
 		crStr := fmt.Sprintf(
 			"%.2fx (%.2fx computed)",
 			float64(collateralizationRatio.Uint64())/10000,
-			float64(collateralUSDValue*1e8)/float64(debtInTOR.Uint64()),
+			float64(collateralUSDValue*1e8)/float64(debtInSWITCHLY.Uint64()),
 		)
 		fields.Set("CR", crStr)
 
 		// debt
 		level := notify.Info
-		debtStr := util.FormatUSD(float64(debtInTOR.Uint64()) / common.One)
-		if debtInTOR.GT(cosmos.NewUint(uint64(collateralUSDValue * common.One))) {
+		debtStr := util.FormatUSD(float64(debtInSWITCHLY.Uint64()) / common.One)
+		if debtInSWITCHLY.GT(cosmos.NewUint(uint64(collateralUSDValue * common.One))) {
 			level = notify.Warning
 			debtStr = fmt.Sprintf(":rotating_light: %s :rotating_light:", debtStr)
 		}
@@ -101,7 +101,7 @@ func LoanOpen(block *thorscan.BlockResponse) {
 // Loan Repayment
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func LoanRepayment(block *thorscan.BlockResponse) {
+func LoanRepayment(block *switchlyscan.BlockResponse) {
 	for _, event := range block.EndBlockEvents {
 		if event["type"] != types.LoanRepaymentEventType {
 			continue
@@ -137,7 +137,7 @@ func LoanRepayment(block *thorscan.BlockResponse) {
 
 		// loan status
 		borrower := openapi.Borrower{}
-		url := fmt.Sprintf("%s/thorchain/pool/%s/borrower/%s", config.Get().Endpoints.Thornode, collateralAsset.String(), event["owner"])
+		url := fmt.Sprintf("%s/switchly/pool/%s/borrower/%s", config.Get().Endpoints.Switchlynode, collateralAsset.String(), event["owner"])
 		err = util.RetryGet(url, &borrower)
 		if err != nil {
 			log.Panic().Str("borrower", event["owner"]).Err(err).Msg("failed to get borrower")

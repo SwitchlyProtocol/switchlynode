@@ -113,7 +113,7 @@ func processRunning(pid int) bool {
 }
 
 func getTimeFactor() time.Duration {
-	tf, err := strconv.ParseInt(os.Getenv("TIME_FACTOR"), 10, 64)
+	tf, err := strconv.ParseInt(os.Getenv("TIME_FACSWITCHLY"), 10, 64)
 	if err != nil {
 		return time.Duration(1)
 	}

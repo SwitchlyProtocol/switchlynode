@@ -1,17 +1,17 @@
-# \TCYStakersApi
+# \SWCYStakersApi
 
 All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**TcyStaker**](TCYStakersApi.md#TcyStaker) | **Get** /thorchain/tcy_staker/{address} | 
-[**TcyStakers**](TCYStakersApi.md#TcyStakers) | **Get** /thorchain/tcy_stakers | 
+[**TcyStaker**](SWCYStakersApi.md#TcyStaker) | **Get** /switchly/tcy_staker/{address} | 
+[**TcyStakers**](SWCYStakersApi.md#TcyStakers) | **Get** /switchly/tcy_stakers | 
 
 
 
 ## TcyStaker
 
-> TCYStaker TcyStaker(ctx, address).Height(height).Execute()
+> SWCYStaker TcyStaker(ctx, address).Height(height).Execute()
 
 
 
@@ -35,13 +35,13 @@ func main() {
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TCYStakersApi.TcyStaker(context.Background(), address).Height(height).Execute()
+    resp, r, err := apiClient.SWCYStakersApi.TcyStaker(context.Background(), address).Height(height).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `TCYStakersApi.TcyStaker``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `SWCYStakersApi.TcyStaker``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `TcyStaker`: TCYStaker
-    fmt.Fprintf(os.Stdout, "Response from `TCYStakersApi.TcyStaker`: %v\n", resp)
+    // response from `TcyStaker`: SWCYStaker
+    fmt.Fprintf(os.Stdout, "Response from `SWCYStakersApi.TcyStaker`: %v\n", resp)
 }
 ```
 
@@ -65,7 +65,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**TCYStaker**](TCYStaker.md)
+[**SWCYStaker**](SWCYStaker.md)
 
 ### Authorization
 
@@ -83,7 +83,7 @@ No authorization required
 
 ## TcyStakers
 
-> []TCYStakerSummary TcyStakers(ctx).Height(height).Execute()
+> []SWCYStakerSummary TcyStakers(ctx).Height(height).Execute()
 
 
 
@@ -106,13 +106,13 @@ func main() {
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.TCYStakersApi.TcyStakers(context.Background()).Height(height).Execute()
+    resp, r, err := apiClient.SWCYStakersApi.TcyStakers(context.Background()).Height(height).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `TCYStakersApi.TcyStakers``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `SWCYStakersApi.TcyStakers``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `TcyStakers`: []TCYStakerSummary
-    fmt.Fprintf(os.Stdout, "Response from `TCYStakersApi.TcyStakers`: %v\n", resp)
+    // response from `TcyStakers`: []SWCYStakerSummary
+    fmt.Fprintf(os.Stdout, "Response from `SWCYStakersApi.TcyStakers`: %v\n", resp)
 }
 ```
 
@@ -131,7 +131,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[]TCYStakerSummary**](TCYStakerSummary.md)
+[**[]SWCYStakerSummary**](SWCYStakerSummary.md)
 
 ### Authorization
 

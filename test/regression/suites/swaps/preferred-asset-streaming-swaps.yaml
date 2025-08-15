@@ -19,7 +19,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .PREFERREDASSETOUTBOUNDFEEMULTIPLIER == 10
 ---
@@ -41,7 +41,7 @@ signer: {{ addr_thor_pig }}
 coins:
   - amount: "5000000000"
     asset: "rune"
-memo: "~:test:THOR:{{ addr_thor_pig }}:{{ addr_thor_pig }}:ETH.USDX-0X9999999999999999999999999999999999999999"
+memo: "~:test:SWITCHLY:{{ addr_thor_pig }}:{{ addr_thor_pig }}:ETH.USDX-0X9999999999999999999999999999999999999999"
 ---
 type: create-blocks
 count: 1
@@ -57,7 +57,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .aliases[0].address == "{{ addr_thor_pig }}"
   - .aliases[1].address == "{{ addr_eth_pig }}"
@@ -75,7 +75,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .affiliate_collector_rune == "722638857"
 ---
@@ -104,12 +104,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 ########################################################################################
-# swap BTC -> RUNE w/ "test" affiliate
+# swap BTC -> SWITCH w/ "test" affiliate
 ########################################################################################
 type: tx-observed-in
 signer: {{ addr_thor_dog }}
@@ -126,7 +126,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}::test:200"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}::test:200"
     block_height: 4
     finalise_height: 4
     observed_pub_key: {{ pubkey_dog }}
@@ -135,7 +135,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .affiliate_collector_rune == "1003658766"
 ---
@@ -172,7 +172,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/{{ observe_txid 3 }}
+endpoint: http://localhost:1317/switchly/swap/streaming/{{ observe_txid 3 }}
 asserts:
   - .deposit == "30000000"
   - .in == "5000000"
@@ -189,7 +189,7 @@ type: create-blocks
 count: 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swap/streaming/{{ observe_txid 3 }}
+endpoint: http://localhost:1317/switchly/swap/streaming/{{ observe_txid 3 }}
 asserts:
   - .deposit == "30000000"
   - .in == "20000000"
@@ -212,12 +212,12 @@ asserts:
   - .result[]|select(.denom == "rune").amount|tonumber == ${FOX_BAL} + 2606530511
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .affiliate_collector_rune == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/swaps/streaming
+endpoint: http://localhost:1317/switchly/swaps/streaming
 asserts:
   - .|length == 0
 ---
@@ -225,7 +225,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "${IN_HASH=24CAF6FDC0345E36A43E152C48E407EDAA6BF07766FBB135EEBCE7A65E919603}"
@@ -255,6 +255,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0

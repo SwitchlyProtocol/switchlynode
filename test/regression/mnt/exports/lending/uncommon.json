@@ -1,6 +1,6 @@
 {
   "app_hash": null,
-  "app_name": "thornode",
+  "app_name": "switchlynode",
   "app_state": {
     "auth": {
       "accounts": [
@@ -75,7 +75,7 @@
             "pub_key": null,
             "sequence": "0"
           },
-          "name": "thorchain",
+          "name": "switchly",
           "permissions": [
             "minter",
             "burner"
@@ -253,12 +253,12 @@
     "genutil": {
       "gen_txs": []
     },
-    "thorchain": {
+    "switchly": {
       "POL": {
         "rune_deposited": "0",
         "rune_withdrawn": "0"
       },
-      "THORNames": [],
+      "SWITCHNames": [],
       "adv_swap_queue_items": [],
       "affiliate_collectors": null,
       "bond_providers": [
@@ -361,15 +361,15 @@
           "value": "10000"
         },
         {
-          "key": "LENDING-THOR-BTC",
+          "key": "LENDING-SWITCHLY-BTC",
           "value": "1"
         },
         {
-          "key": "LENDING-THOR-ETH",
+          "key": "LENDING-SWITCHLY-ETH",
           "value": "1"
         },
         {
-          "key": "TORANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999",
+          "key": "SWITCHLYANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999",
           "value": "1"
         }
       ],
@@ -398,7 +398,7 @@
           "value": "10000"
         },
         {
-          "key": "TORANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999",
+          "key": "SWITCHLYANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999",
           "signer": "tswitch1zf3gsk7edzwl9syyefvfhle37cjtql35h6k85m",
           "value": "1"
         }
@@ -468,7 +468,7 @@
         },
         {
           "LP_units": "0",
-          "asset": "THOR.BTC",
+          "asset": "SWITCHLY.BTC",
           "balance_asset": "88909547",
           "balance_rune": "84753519317",
           "pending_inbound_asset": "0",
@@ -479,7 +479,7 @@
         },
         {
           "LP_units": "0",
-          "asset": "THOR.ETH",
+          "asset": "SWITCHLY.ETH",
           "balance_asset": "892722365",
           "balance_rune": "91684903652",
           "pending_inbound_asset": "0",
@@ -490,7 +490,7 @@
         },
         {
           "LP_units": "0",
-          "asset": "THOR.TOR",
+          "asset": "SWITCHLY.SWITCHLY",
           "balance_asset": "100466109999",
           "balance_rune": "99539936915",
           "pending_inbound_asset": "0",
@@ -576,7 +576,7 @@
         {
           "block_height": "2",
           "chains": [
-            "THOR",
+            "SWITCHLY",
             "BTC",
             "LTC",
             "BCH",
@@ -637,7 +637,7 @@
       ]
     }
   },
-  "chain_id": "thorchain",
+  "chain_id": "switchly",
   "consensus": {
     "params": {
       "abci": {

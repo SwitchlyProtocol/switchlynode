@@ -4,10 +4,10 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Queue**](QueueApi.md#Queue) | **Get** /thorchain/queue | 
-[**QueueOutbound**](QueueApi.md#QueueOutbound) | **Get** /thorchain/queue/outbound | 
-[**QueueScheduled**](QueueApi.md#QueueScheduled) | **Get** /thorchain/queue/scheduled | 
-[**QueueSwap**](QueueApi.md#QueueSwap) | **Get** /thorchain/queue/swap | 
+[**Queue**](QueueApi.md#Queue) | **Get** /switchly/queue | 
+[**QueueOutbound**](QueueApi.md#QueueOutbound) | **Get** /switchly/queue/outbound | 
+[**QueueScheduled**](QueueApi.md#QueueScheduled) | **Get** /switchly/queue/scheduled | 
+[**QueueSwap**](QueueApi.md#QueueSwap) | **Get** /switchly/queue/swap | 
 
 
 

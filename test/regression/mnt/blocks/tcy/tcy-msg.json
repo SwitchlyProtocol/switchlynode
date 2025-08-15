@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -232,7 +232,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -452,7 +452,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -672,7 +672,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -941,7 +941,7 @@
                         }
                       ],
                       "id": "0000000000000000000000000000000000000000000000000000000000000001",
-                      "memo": "TCY:tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
+                      "memo": "SWCY:tswitch1xkz88t875m7ms7wa6220estwwdlc86pqsccrvm",
                       "to_address": "bcrt1qzf3gsk7edzwl9syyefvfhle37cjtql35tlzesk"
                     }
                   }
@@ -1025,7 +1025,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -1294,7 +1294,7 @@
                         }
                       ],
                       "id": "0000000000000000000000000000000000000000000000000000000000000002",
-                      "memo": "TCY:tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
+                      "memo": "SWCY:tswitch12e7ngn5h22su4hecdf0h8aw7hvnly5tchrfd43",
                       "to_address": "0xd58610f89265a2fb637ac40edf59141ff873b266"
                     }
                   }
@@ -1410,7 +1410,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 6,
       "time": "",
       "last_block_id": {
@@ -1679,7 +1679,7 @@
                         }
                       ],
                       "id": "0000000000000000000000000000000000000000000000000000000000000003",
-                      "memo": "TCY:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
+                      "memo": "SWCY:tswitch1f6z8lvkkj4u0f4g0cz6akzhydn6d9yv64t7ss7",
                       "to_address": "0xd58610f89265a2fb637ac40edf59141ff873b266"
                     }
                   }
@@ -1763,7 +1763,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 7,
       "time": "",
       "last_block_id": {
@@ -2032,7 +2032,7 @@
                         }
                       ],
                       "id": "0000000000000000000000000000000000000000000000000000000000000004",
-                      "memo": "TCY:tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
+                      "memo": "SWCY:tswitch1qk8c8sfrmfm0tkncs0zxeutc8v5mx3pjj07k4u",
                       "to_address": "0xd58610f89265a2fb637ac40edf59141ff873b266"
                     }
                   }
@@ -2116,7 +2116,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 8,
       "time": "",
       "last_block_id": {
@@ -2357,11 +2357,11 @@
                 "coins": [
                   {
                     "amount": "100000000",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
-                "memo": "TCY:tswitch1anq4fk6l89w3sfuxehwyprxqjdj3kuzpfwlrav",
+                "memo": "SWCY:tswitch1anq4fk6l89w3sfuxehwyprxqjdj3kuzpfwlrav",
                 "signer": "tswitch1anq4fk6l89w3sfuxehwyprxqjdj3kuzpfwlrav"
               }
             ],
@@ -2486,7 +2486,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 9,
       "time": "",
       "last_block_id": {
@@ -2727,7 +2727,7 @@
                 "coins": [
                   {
                     "amount": "100000000",
-                    "asset": "THOR.TCY",
+                    "asset": "SWITCHLY.SWCY",
                     "decimals": "0"
                   }
                 ],
@@ -2830,7 +2830,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 10,
       "time": "",
       "last_block_id": {
@@ -3071,7 +3071,7 @@
                 "coins": [
                   {
                     "amount": "0",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -3174,7 +3174,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 11,
       "time": "",
       "last_block_id": {
@@ -3415,7 +3415,7 @@
                 "coins": [
                   {
                     "amount": "0",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],

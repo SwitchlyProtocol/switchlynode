@@ -4,29 +4,29 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**BondRewardRune** | **string** | total amount of RUNE awarded to node operators | 
-**TotalBondUnits** | **string** | total bonded RUNE | 
-**AvailablePoolsRune** | **string** | RUNE in Available pools (equal in value to the Assets in those pools) | 
-**VaultsLiquidityRune** | **string** | RUNE value of Layer 1 Assets in vaults | 
-**EffectiveSecurityBond** | **string** | effective security bond used to determine maximum pooled RUNE | 
-**TotalReserve** | **string** | total reserve RUNE | 
+**BondRewardSwitch** | **string** | total amount of SWITCH awarded to node operators | 
+**TotalBondUnits** | **string** | total bonded SWITCH | 
+**AvailablePoolsSwitch** | **string** | SWITCH in Available pools (equal in value to the Assets in those pools) | 
+**VaultsLiquiditySwitch** | **string** | SWITCH value of Layer 1 Assets in vaults | 
+**EffectiveSecurityBond** | **string** | effective security bond used to determine maximum pooled SWITCH | 
+**TotalReserve** | **string** | total reserve SWITCH | 
 **VaultsMigrating** | **bool** | Returns true if there exist RetiringVaults which have not finished migrating funds to new ActiveVaults | 
-**GasSpentRune** | **string** | Sum of the gas the network has spent to send outbounds | 
-**GasWithheldRune** | **string** | Sum of the gas withheld from users to cover outbound gas | 
+**GasSpentSwitch** | **string** | Sum of the gas the network has spent to send outbounds | 
+**GasWithheldSwitch** | **string** | Sum of the gas withheld from users to cover outbound gas | 
 **OutboundFeeMultiplier** | Pointer to **string** | Current outbound fee multiplier, in basis points | [optional] 
-**NativeOutboundFeeRune** | **string** | the outbound transaction fee in rune, converted from the NativeOutboundFeeUSD mimir (after USD fees are enabled) | 
-**NativeTxFeeRune** | **string** | the native transaction fee in rune, converted from the NativeTransactionFeeUSD mimir (after USD fees are enabled) | 
-**TnsRegisterFeeRune** | **string** | the thorname register fee in rune, converted from the TNSRegisterFeeUSD mimir (after USD fees are enabled) | 
-**TnsFeePerBlockRune** | **string** | the thorname fee per block in rune, converted from the TNSFeePerBlockUSD mimir (after USD fees are enabled) | 
-**RunePriceInTor** | **string** | the rune price in tor | 
-**TorPriceInRune** | **string** | the tor price in rune | 
-**TorPriceHalted** | **bool** | indicates if all anchor chains are halted (true), or at least one anchor chain is available (false) | 
+**NativeOutboundFeeSwitch** | **string** | the outbound transaction fee in switch, converted from the NativeOutboundFeeUSD mimir (after USD fees are enabled) | 
+**NativeTxFeeSwitch** | **string** | the native transaction fee in switch, converted from the NativeTransactionFeeUSD mimir (after USD fees are enabled) | 
+**SwitchlynameRegisterFeeSwitch** | **string** | the switchlyname register fee in switch, converted from the TNSRegisterFeeUSD mimir (after USD fees are enabled) | 
+**SwitchlynameFeePerBlockSwitch** | **string** | the switchlyname fee per block in switch, converted from the TNSFeePerBlockUSD mimir (after USD fees are enabled) | 
+**SwitchPriceInSwitchly** | **string** | the switch price in tor | 
+**SwitchlyPriceInSwitch** | **string** | the tor price in switch | 
+**SwitchlyPriceHalted** | **bool** | indicates if all anchor chains are halted (true), or at least one anchor chain is available (false) | 
 
 ## Methods
 
 ### NewNetworkResponse
 
-`func NewNetworkResponse(bondRewardRune string, totalBondUnits string, availablePoolsRune string, vaultsLiquidityRune string, effectiveSecurityBond string, totalReserve string, vaultsMigrating bool, gasSpentRune string, gasWithheldRune string, nativeOutboundFeeRune string, nativeTxFeeRune string, tnsRegisterFeeRune string, tnsFeePerBlockRune string, runePriceInTor string, torPriceInRune string, torPriceHalted bool, ) *NetworkResponse`
+`func NewNetworkResponse(bondRewardSwitch string, totalBondUnits string, availablePoolsSwitch string, vaultsLiquiditySwitch string, effectiveSecurityBond string, totalReserve string, vaultsMigrating bool, gasSpentSwitch string, gasWithheldSwitch string, nativeOutboundFeeSwitch string, nativeTxFeeSwitch string, switchlynameRegisterFeeSwitch string, switchlynameFeePerBlockSwitch string, switchPriceInSwitchly string, torPriceInSwitch string, torPriceHalted bool, ) *NetworkResponse`
 
 NewNetworkResponse instantiates a new NetworkResponse object
 This constructor will assign default values to properties that have it defined,
@@ -41,24 +41,24 @@ NewNetworkResponseWithDefaults instantiates a new NetworkResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetBondRewardRune
+### GetBondRewardSwitch
 
-`func (o *NetworkResponse) GetBondRewardRune() string`
+`func (o *NetworkResponse) GetBondRewardSwitch() string`
 
-GetBondRewardRune returns the BondRewardRune field if non-nil, zero value otherwise.
+GetBondRewardSwitch returns the BondRewardSwitch field if non-nil, zero value otherwise.
 
-### GetBondRewardRuneOk
+### GetBondRewardSwitchOk
 
-`func (o *NetworkResponse) GetBondRewardRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetBondRewardSwitchOk() (*string, bool)`
 
-GetBondRewardRuneOk returns a tuple with the BondRewardRune field if it's non-nil, zero value otherwise
+GetBondRewardSwitchOk returns a tuple with the BondRewardSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetBondRewardRune
+### SetBondRewardSwitch
 
-`func (o *NetworkResponse) SetBondRewardRune(v string)`
+`func (o *NetworkResponse) SetBondRewardSwitch(v string)`
 
-SetBondRewardRune sets BondRewardRune field to given value.
+SetBondRewardSwitch sets BondRewardSwitch field to given value.
 
 
 ### GetTotalBondUnits
@@ -81,44 +81,44 @@ and a boolean to check if the value has been set.
 SetTotalBondUnits sets TotalBondUnits field to given value.
 
 
-### GetAvailablePoolsRune
+### GetAvailablePoolsSwitch
 
-`func (o *NetworkResponse) GetAvailablePoolsRune() string`
+`func (o *NetworkResponse) GetAvailablePoolsSwitch() string`
 
-GetAvailablePoolsRune returns the AvailablePoolsRune field if non-nil, zero value otherwise.
+GetAvailablePoolsSwitch returns the AvailablePoolsSwitch field if non-nil, zero value otherwise.
 
-### GetAvailablePoolsRuneOk
+### GetAvailablePoolsSwitchOk
 
-`func (o *NetworkResponse) GetAvailablePoolsRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetAvailablePoolsSwitchOk() (*string, bool)`
 
-GetAvailablePoolsRuneOk returns a tuple with the AvailablePoolsRune field if it's non-nil, zero value otherwise
+GetAvailablePoolsSwitchOk returns a tuple with the AvailablePoolsSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAvailablePoolsRune
+### SetAvailablePoolsSwitch
 
-`func (o *NetworkResponse) SetAvailablePoolsRune(v string)`
+`func (o *NetworkResponse) SetAvailablePoolsSwitch(v string)`
 
-SetAvailablePoolsRune sets AvailablePoolsRune field to given value.
+SetAvailablePoolsSwitch sets AvailablePoolsSwitch field to given value.
 
 
-### GetVaultsLiquidityRune
+### GetVaultsLiquiditySwitch
 
-`func (o *NetworkResponse) GetVaultsLiquidityRune() string`
+`func (o *NetworkResponse) GetVaultsLiquiditySwitch() string`
 
-GetVaultsLiquidityRune returns the VaultsLiquidityRune field if non-nil, zero value otherwise.
+GetVaultsLiquiditySwitch returns the VaultsLiquiditySwitch field if non-nil, zero value otherwise.
 
-### GetVaultsLiquidityRuneOk
+### GetVaultsLiquiditySwitchOk
 
-`func (o *NetworkResponse) GetVaultsLiquidityRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetVaultsLiquiditySwitchOk() (*string, bool)`
 
-GetVaultsLiquidityRuneOk returns a tuple with the VaultsLiquidityRune field if it's non-nil, zero value otherwise
+GetVaultsLiquiditySwitchOk returns a tuple with the VaultsLiquiditySwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetVaultsLiquidityRune
+### SetVaultsLiquiditySwitch
 
-`func (o *NetworkResponse) SetVaultsLiquidityRune(v string)`
+`func (o *NetworkResponse) SetVaultsLiquiditySwitch(v string)`
 
-SetVaultsLiquidityRune sets VaultsLiquidityRune field to given value.
+SetVaultsLiquiditySwitch sets VaultsLiquiditySwitch field to given value.
 
 
 ### GetEffectiveSecurityBond
@@ -181,44 +181,44 @@ and a boolean to check if the value has been set.
 SetVaultsMigrating sets VaultsMigrating field to given value.
 
 
-### GetGasSpentRune
+### GetGasSpentSwitch
 
-`func (o *NetworkResponse) GetGasSpentRune() string`
+`func (o *NetworkResponse) GetGasSpentSwitch() string`
 
-GetGasSpentRune returns the GasSpentRune field if non-nil, zero value otherwise.
+GetGasSpentSwitch returns the GasSpentSwitch field if non-nil, zero value otherwise.
 
-### GetGasSpentRuneOk
+### GetGasSpentSwitchOk
 
-`func (o *NetworkResponse) GetGasSpentRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetGasSpentSwitchOk() (*string, bool)`
 
-GetGasSpentRuneOk returns a tuple with the GasSpentRune field if it's non-nil, zero value otherwise
+GetGasSpentSwitchOk returns a tuple with the GasSpentSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetGasSpentRune
+### SetGasSpentSwitch
 
-`func (o *NetworkResponse) SetGasSpentRune(v string)`
+`func (o *NetworkResponse) SetGasSpentSwitch(v string)`
 
-SetGasSpentRune sets GasSpentRune field to given value.
+SetGasSpentSwitch sets GasSpentSwitch field to given value.
 
 
-### GetGasWithheldRune
+### GetGasWithheldSwitch
 
-`func (o *NetworkResponse) GetGasWithheldRune() string`
+`func (o *NetworkResponse) GetGasWithheldSwitch() string`
 
-GetGasWithheldRune returns the GasWithheldRune field if non-nil, zero value otherwise.
+GetGasWithheldSwitch returns the GasWithheldSwitch field if non-nil, zero value otherwise.
 
-### GetGasWithheldRuneOk
+### GetGasWithheldSwitchOk
 
-`func (o *NetworkResponse) GetGasWithheldRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetGasWithheldSwitchOk() (*string, bool)`
 
-GetGasWithheldRuneOk returns a tuple with the GasWithheldRune field if it's non-nil, zero value otherwise
+GetGasWithheldSwitchOk returns a tuple with the GasWithheldSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetGasWithheldRune
+### SetGasWithheldSwitch
 
-`func (o *NetworkResponse) SetGasWithheldRune(v string)`
+`func (o *NetworkResponse) SetGasWithheldSwitch(v string)`
 
-SetGasWithheldRune sets GasWithheldRune field to given value.
+SetGasWithheldSwitch sets GasWithheldSwitch field to given value.
 
 
 ### GetOutboundFeeMultiplier
@@ -246,144 +246,144 @@ SetOutboundFeeMultiplier sets OutboundFeeMultiplier field to given value.
 
 HasOutboundFeeMultiplier returns a boolean if a field has been set.
 
-### GetNativeOutboundFeeRune
+### GetNativeOutboundFeeSwitch
 
-`func (o *NetworkResponse) GetNativeOutboundFeeRune() string`
+`func (o *NetworkResponse) GetNativeOutboundFeeSwitch() string`
 
-GetNativeOutboundFeeRune returns the NativeOutboundFeeRune field if non-nil, zero value otherwise.
+GetNativeOutboundFeeSwitch returns the NativeOutboundFeeSwitch field if non-nil, zero value otherwise.
 
-### GetNativeOutboundFeeRuneOk
+### GetNativeOutboundFeeSwitchOk
 
-`func (o *NetworkResponse) GetNativeOutboundFeeRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetNativeOutboundFeeSwitchOk() (*string, bool)`
 
-GetNativeOutboundFeeRuneOk returns a tuple with the NativeOutboundFeeRune field if it's non-nil, zero value otherwise
+GetNativeOutboundFeeSwitchOk returns a tuple with the NativeOutboundFeeSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetNativeOutboundFeeRune
+### SetNativeOutboundFeeSwitch
 
-`func (o *NetworkResponse) SetNativeOutboundFeeRune(v string)`
+`func (o *NetworkResponse) SetNativeOutboundFeeSwitch(v string)`
 
-SetNativeOutboundFeeRune sets NativeOutboundFeeRune field to given value.
+SetNativeOutboundFeeSwitch sets NativeOutboundFeeSwitch field to given value.
 
 
-### GetNativeTxFeeRune
+### GetNativeTxFeeSwitch
 
-`func (o *NetworkResponse) GetNativeTxFeeRune() string`
+`func (o *NetworkResponse) GetNativeTxFeeSwitch() string`
 
-GetNativeTxFeeRune returns the NativeTxFeeRune field if non-nil, zero value otherwise.
+GetNativeTxFeeSwitch returns the NativeTxFeeSwitch field if non-nil, zero value otherwise.
 
-### GetNativeTxFeeRuneOk
+### GetNativeTxFeeSwitchOk
 
-`func (o *NetworkResponse) GetNativeTxFeeRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetNativeTxFeeSwitchOk() (*string, bool)`
 
-GetNativeTxFeeRuneOk returns a tuple with the NativeTxFeeRune field if it's non-nil, zero value otherwise
+GetNativeTxFeeSwitchOk returns a tuple with the NativeTxFeeSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetNativeTxFeeRune
+### SetNativeTxFeeSwitch
 
-`func (o *NetworkResponse) SetNativeTxFeeRune(v string)`
+`func (o *NetworkResponse) SetNativeTxFeeSwitch(v string)`
 
-SetNativeTxFeeRune sets NativeTxFeeRune field to given value.
+SetNativeTxFeeSwitch sets NativeTxFeeSwitch field to given value.
 
 
-### GetTnsRegisterFeeRune
+### GetSwitchlynameRegisterFeeSwitch
 
-`func (o *NetworkResponse) GetTnsRegisterFeeRune() string`
+`func (o *NetworkResponse) GetSwitchlynameRegisterFeeSwitch() string`
 
-GetTnsRegisterFeeRune returns the TnsRegisterFeeRune field if non-nil, zero value otherwise.
+GetSwitchlynameRegisterFeeSwitch returns the SwitchlynameRegisterFeeSwitch field if non-nil, zero value otherwise.
 
-### GetTnsRegisterFeeRuneOk
+### GetSwitchlynameRegisterFeeSwitchOk
 
-`func (o *NetworkResponse) GetTnsRegisterFeeRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetSwitchlynameRegisterFeeSwitchOk() (*string, bool)`
 
-GetTnsRegisterFeeRuneOk returns a tuple with the TnsRegisterFeeRune field if it's non-nil, zero value otherwise
+GetSwitchlynameRegisterFeeSwitchOk returns a tuple with the SwitchlynameRegisterFeeSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetTnsRegisterFeeRune
+### SetSwitchlynameRegisterFeeSwitch
 
-`func (o *NetworkResponse) SetTnsRegisterFeeRune(v string)`
+`func (o *NetworkResponse) SetSwitchlynameRegisterFeeSwitch(v string)`
 
-SetTnsRegisterFeeRune sets TnsRegisterFeeRune field to given value.
+SetSwitchlynameRegisterFeeSwitch sets SwitchlynameRegisterFeeSwitch field to given value.
 
 
-### GetTnsFeePerBlockRune
+### GetSwitchlynameFeePerBlockSwitch
 
-`func (o *NetworkResponse) GetTnsFeePerBlockRune() string`
+`func (o *NetworkResponse) GetSwitchlynameFeePerBlockSwitch() string`
 
-GetTnsFeePerBlockRune returns the TnsFeePerBlockRune field if non-nil, zero value otherwise.
+GetSwitchlynameFeePerBlockSwitch returns the SwitchlynameFeePerBlockSwitch field if non-nil, zero value otherwise.
 
-### GetTnsFeePerBlockRuneOk
+### GetSwitchlynameFeePerBlockSwitchOk
 
-`func (o *NetworkResponse) GetTnsFeePerBlockRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetSwitchlynameFeePerBlockSwitchOk() (*string, bool)`
 
-GetTnsFeePerBlockRuneOk returns a tuple with the TnsFeePerBlockRune field if it's non-nil, zero value otherwise
+GetSwitchlynameFeePerBlockSwitchOk returns a tuple with the SwitchlynameFeePerBlockSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetTnsFeePerBlockRune
+### SetSwitchlynameFeePerBlockSwitch
 
-`func (o *NetworkResponse) SetTnsFeePerBlockRune(v string)`
+`func (o *NetworkResponse) SetSwitchlynameFeePerBlockSwitch(v string)`
 
-SetTnsFeePerBlockRune sets TnsFeePerBlockRune field to given value.
+SetSwitchlynameFeePerBlockSwitch sets SwitchlynameFeePerBlockSwitch field to given value.
 
 
-### GetRunePriceInTor
+### GetSwitchPriceInSwitchly
 
-`func (o *NetworkResponse) GetRunePriceInTor() string`
+`func (o *NetworkResponse) GetSwitchPriceInSwitchly() string`
 
-GetRunePriceInTor returns the RunePriceInTor field if non-nil, zero value otherwise.
+GetSwitchPriceInSwitchly returns the SwitchPriceInSwitchly field if non-nil, zero value otherwise.
 
-### GetRunePriceInTorOk
+### GetSwitchPriceInSwitchlyOk
 
-`func (o *NetworkResponse) GetRunePriceInTorOk() (*string, bool)`
+`func (o *NetworkResponse) GetSwitchPriceInSwitchlyOk() (*string, bool)`
 
-GetRunePriceInTorOk returns a tuple with the RunePriceInTor field if it's non-nil, zero value otherwise
+GetSwitchPriceInSwitchlyOk returns a tuple with the SwitchPriceInSwitchly field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetRunePriceInTor
+### SetSwitchPriceInSwitchly
 
-`func (o *NetworkResponse) SetRunePriceInTor(v string)`
+`func (o *NetworkResponse) SetSwitchPriceInSwitchly(v string)`
 
-SetRunePriceInTor sets RunePriceInTor field to given value.
+SetSwitchPriceInSwitchly sets SwitchPriceInSwitchly field to given value.
 
 
-### GetTorPriceInRune
+### GetSwitchlyPriceInSwitch
 
-`func (o *NetworkResponse) GetTorPriceInRune() string`
+`func (o *NetworkResponse) GetSwitchlyPriceInSwitch() string`
 
-GetTorPriceInRune returns the TorPriceInRune field if non-nil, zero value otherwise.
+GetSwitchlyPriceInSwitch returns the SwitchlyPriceInSwitch field if non-nil, zero value otherwise.
 
-### GetTorPriceInRuneOk
+### GetSwitchlyPriceInSwitchOk
 
-`func (o *NetworkResponse) GetTorPriceInRuneOk() (*string, bool)`
+`func (o *NetworkResponse) GetSwitchlyPriceInSwitchOk() (*string, bool)`
 
-GetTorPriceInRuneOk returns a tuple with the TorPriceInRune field if it's non-nil, zero value otherwise
+GetSwitchlyPriceInSwitchOk returns a tuple with the SwitchlyPriceInSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetTorPriceInRune
+### SetSwitchlyPriceInSwitch
 
-`func (o *NetworkResponse) SetTorPriceInRune(v string)`
+`func (o *NetworkResponse) SetSwitchlyPriceInSwitch(v string)`
 
-SetTorPriceInRune sets TorPriceInRune field to given value.
+SetSwitchlyPriceInSwitch sets SwitchlyPriceInSwitch field to given value.
 
 
-### GetTorPriceHalted
+### GetSwitchlyPriceHalted
 
-`func (o *NetworkResponse) GetTorPriceHalted() bool`
+`func (o *NetworkResponse) GetSwitchlyPriceHalted() bool`
 
-GetTorPriceHalted returns the TorPriceHalted field if non-nil, zero value otherwise.
+GetSwitchlyPriceHalted returns the SwitchlyPriceHalted field if non-nil, zero value otherwise.
 
-### GetTorPriceHaltedOk
+### GetSwitchlyPriceHaltedOk
 
-`func (o *NetworkResponse) GetTorPriceHaltedOk() (*bool, bool)`
+`func (o *NetworkResponse) GetSwitchlyPriceHaltedOk() (*bool, bool)`
 
-GetTorPriceHaltedOk returns a tuple with the TorPriceHalted field if it's non-nil, zero value otherwise
+GetSwitchlyPriceHaltedOk returns a tuple with the SwitchlyPriceHalted field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetTorPriceHalted
+### SetSwitchlyPriceHalted
 
-`func (o *NetworkResponse) SetTorPriceHalted(v bool)`
+`func (o *NetworkResponse) SetSwitchlyPriceHalted(v bool)`
 
-SetTorPriceHalted sets TorPriceHalted field to given value.
+SetSwitchlyPriceHalted sets SwitchlyPriceHalted field to given value.
 
 
 

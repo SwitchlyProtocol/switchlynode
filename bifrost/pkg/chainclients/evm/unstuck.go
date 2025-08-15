@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog"
 
 	evmtypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/evm/types"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
@@ -30,7 +30,7 @@ func (c *EVMClient) unstuck() {
 		select {
 		case <-c.stopchan: // exit when stopchan is closed
 			return
-		case <-time.After(constants.ThorchainBlockTime):
+		case <-time.After(constants.SwitchlyBlockTime):
 			c.unstuckAction()
 		}
 	}
@@ -39,19 +39,19 @@ func (c *EVMClient) unstuck() {
 func (c *EVMClient) unstuckAction() {
 	height, err := c.bridge.GetBlockHeight()
 	if err != nil {
-		c.logger.Err(err).Msg("failed to get THORChain block height")
+		c.logger.Err(err).Msg("failed to get SWITCHLYChain block height")
 		return
 	}
 
 	// We only attempt unstuck on transactions within the reschedule buffer blocks of the
 	// next signing period. This will ensure we do not clear the signer cache and
 	// re-attempt signing right before a reschedule, which may assign to a different vault
-	// (behavior post https://gitlab.com/thorchain/thornode/-/merge_requests/3266 should
+	// (behavior post https://gitlab.com/switchly/switchlynode/-/merge_requests/3266 should
 	// not) or adjust gas values for the tx out. This should result in no more than one
 	// sign and broadcast per signing period for a given outbound.
 	constValues, err := c.bridge.GetConstants()
 	if err != nil {
-		c.logger.Err(err).Msg("failed to get THORChain constants")
+		c.logger.Err(err).Msg("failed to get SWITCHLYChain constants")
 		return
 	}
 	signingPeriod := constValues[constants.SigningTransactionPeriod.String()]
@@ -76,7 +76,7 @@ func (c *EVMClient) unstuckAction() {
 
 		// this should not possible, but just skip it
 		if item.Height > height {
-			clog.Warn().Msg("signed outbound height greater than current thorchain height")
+			clog.Warn().Msg("signed outbound height greater than current switchly height")
 			continue
 		}
 

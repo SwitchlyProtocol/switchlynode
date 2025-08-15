@@ -4,9 +4,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**RuneDeposited** | **string** | total amount of RUNE deposited into the pools | 
-**RuneWithdrawn** | **string** | total amount of RUNE withdrawn from the pools | 
-**Value** | **string** | total value of protocol&#39;s LP position in RUNE value | 
+**SWITCHDeposited** | **string** | total amount of SWITCH deposited into the pools | 
+**SWITCHWithdrawn** | **string** | total amount of SWITCH withdrawn from the pools | 
+**Value** | **string** | total value of protocol&#39;s LP position in SWITCH value | 
 **Pnl** | **string** | profit and loss of protocol owned liquidity | 
 **CurrentDeposit** | **string** | current amount of rune deposited | 
 
@@ -29,44 +29,44 @@ NewPOLWithDefaults instantiates a new POL object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetRuneDeposited
+### GetSWITCHDeposited
 
-`func (o *POL) GetRuneDeposited() string`
+`func (o *POL) GetSWITCHDeposited() string`
 
-GetRuneDeposited returns the RuneDeposited field if non-nil, zero value otherwise.
+GetSWITCHDeposited returns the SWITCHDeposited field if non-nil, zero value otherwise.
 
-### GetRuneDepositedOk
+### GetSWITCHDepositedOk
 
-`func (o *POL) GetRuneDepositedOk() (*string, bool)`
+`func (o *POL) GetSWITCHDepositedOk() (*string, bool)`
 
-GetRuneDepositedOk returns a tuple with the RuneDeposited field if it's non-nil, zero value otherwise
+GetSWITCHDepositedOk returns a tuple with the SWITCHDeposited field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetRuneDeposited
+### SetSWITCHDeposited
 
-`func (o *POL) SetRuneDeposited(v string)`
+`func (o *POL) SetSWITCHDeposited(v string)`
 
-SetRuneDeposited sets RuneDeposited field to given value.
+SetSWITCHDeposited sets SWITCHDeposited field to given value.
 
 
-### GetRuneWithdrawn
+### GetSWITCHWithdrawn
 
-`func (o *POL) GetRuneWithdrawn() string`
+`func (o *POL) GetSWITCHWithdrawn() string`
 
-GetRuneWithdrawn returns the RuneWithdrawn field if non-nil, zero value otherwise.
+GetSWITCHWithdrawn returns the SWITCHWithdrawn field if non-nil, zero value otherwise.
 
-### GetRuneWithdrawnOk
+### GetSWITCHWithdrawnOk
 
-`func (o *POL) GetRuneWithdrawnOk() (*string, bool)`
+`func (o *POL) GetSWITCHWithdrawnOk() (*string, bool)`
 
-GetRuneWithdrawnOk returns a tuple with the RuneWithdrawn field if it's non-nil, zero value otherwise
+GetSWITCHWithdrawnOk returns a tuple with the SWITCHWithdrawn field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetRuneWithdrawn
+### SetSWITCHWithdrawn
 
-`func (o *POL) SetRuneWithdrawn(v string)`
+`func (o *POL) SetSWITCHWithdrawn(v string)`
 
-SetRuneWithdrawn sets RuneWithdrawn field to given value.
+SetSWITCHWithdrawn sets SWITCHWithdrawn field to given value.
 
 
 ### GetValue

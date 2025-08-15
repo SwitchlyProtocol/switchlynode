@@ -10,9 +10,9 @@ Proposed
 
 ## Context
 
-Currently churns are roughly 3 days and migrations take about 7 hours to complete after keygen for the new vaults has succeeded. Nine Realms has been working hard with many wallets to integrate Thorchain as a backend swap provider, and there have been a few cases where wallet bugs resulted in inbounds sent to retired vaults.
+Currently churns are roughly 3 days and migrations take about 7 hours to complete after keygen for the new vaults has succeeded. Nine Realms has been working hard with many wallets to integrate Switchly as a backend swap provider, and there have been a few cases where wallet bugs resulted in inbounds sent to retired vaults.
 
-One recent example of a significant instance was a retired vault (https://blockstream.info/address/bc1q7zgtsnxhu7q4v467aqfj646s2ksps2rumhq0pz) that had almost a full BTC sent to it within a few hours of being retired - and the wallet claimed to the user that the lost funds were Thorchain's responsibility. While we still maintain that this is a wallet error and responsibility, in the ideal scenario we would still handle the inbound. The general perspective is that there is high likelihood over coming years that wallet bugs may lead to retired vault inbounds and lost user funds, and we should make the system as forgiving as possible to protect those relations.
+One recent example of a significant instance was a retired vault (https://blockstream.info/address/bc1q7zgtsnxhu7q4v467aqfj646s2ksps2rumhq0pz) that had almost a full BTC sent to it within a few hours of being retired - and the wallet claimed to the user that the lost funds were Switchly's responsibility. While we still maintain that this is a wallet error and responsibility, in the ideal scenario we would still handle the inbound. The general perspective is that there is high likelihood over coming years that wallet bugs may lead to retired vault inbounds and lost user funds, and we should make the system as forgiving as possible to protect those relations.
 
 The simplest way to ensure late inbounds to old vaults are handled is by increasing the time the vault stays retiring. While this may be a small inconveneince for nodes, providing the largest time window possible is a proactive step to prevent unfortunate experiences for onboarding wallets and end users.
 
@@ -33,7 +33,7 @@ Nine Realms proposes rolling out this change in 2 stages:
 ### Positive
 
 - Inbounds that were stuck or sent to an improperly cached address will have a large time buffer to be observed.
-- Larger churn interval reduces gas spend for migrations, which will slightly reduce outbound fees for users with the advent of https://gitlab.com/thorchain/thornode/-/merge_requests/2835.
+- Larger churn interval reduces gas spend for migrations, which will slightly reduce outbound fees for users with the advent of https://gitlab.com/switchly/switchlynode/-/merge_requests/2835.
 
 ### Negative
 

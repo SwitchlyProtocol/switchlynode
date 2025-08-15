@@ -2,9 +2,9 @@
 name = "switchly-router"
 version = "1.0.0"
 edition = "2021"
-authors = ["THORChain <dev@thorchain.org>"]
-description = "Stellar Router Contract for THORChain Integration"
-repository = "https://github.com/thorchain/thornode"
+authors = ["SWITCHLYChain <dev@switchly.org>"]
+description = "Stellar Router Contract for SWITCHLYChain Integration"
+repository = "https://github.com/switchly/switchlynode"
 license = "MIT"
 
 [lib]

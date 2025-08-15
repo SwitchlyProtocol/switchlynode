@@ -13,10 +13,10 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 	"github.com/tendermint/btcd/btcec"
 )
 
@@ -33,7 +33,7 @@ type tssServer interface {
 type KeySign struct {
 	logger         zerolog.Logger
 	server         tssServer
-	bridge         thorclient.ThorchainBridge
+	bridge         switchlyclient.SwitchlyBridge
 	currentVersion semver.Version
 	lastCheck      time.Time
 	wg             *sync.WaitGroup
@@ -42,7 +42,7 @@ type KeySign struct {
 }
 
 // NewKeySign create a new instance of KeySign
-func NewKeySign(server tssServer, bridge thorclient.ThorchainBridge) (*KeySign, error) {
+func NewKeySign(server tssServer, bridge switchlyclient.SwitchlyBridge) (*KeySign, error) {
 	return &KeySign{
 		server:    server,
 		bridge:    bridge,
@@ -53,7 +53,7 @@ func NewKeySign(server tssServer, bridge thorclient.ThorchainBridge) (*KeySign, 
 	}, nil
 }
 
-// GetPrivKey THORNode don't actually have any private key , but just return something
+// GetPrivKey SWITCHLYNode don't actually have any private key , but just return something
 func (s *KeySign) GetPrivKey() crypto.PrivKey {
 	return nil
 }
@@ -62,17 +62,17 @@ func (s *KeySign) GetAddr() sdkTypes.AccAddress {
 	return nil
 }
 
-// ExportAsMnemonic THORNode don't need this function for TSS, just keep it to fulfill KeyManager interface
+// ExportAsMnemonic SWITCHLYNode don't need this function for TSS, just keep it to fulfill KeyManager interface
 func (s *KeySign) ExportAsMnemonic() (string, error) {
 	return "", nil
 }
 
-// ExportAsPrivateKey THORNode don't need this function for TSS, just keep it to fulfill KeyManager interface
+// ExportAsPrivateKey SWITCHLYNode don't need this function for TSS, just keep it to fulfill KeyManager interface
 func (s *KeySign) ExportAsPrivateKey() (string, error) {
 	return "", nil
 }
 
-// ExportAsKeyStore THORNode don't need this function for TSS, just keep it to fulfill KeyManager interface
+// ExportAsKeyStore SWITCHLYNode don't need this function for TSS, just keep it to fulfill KeyManager interface
 func (s *KeySign) ExportAsKeyStore(password string) (*EncryptedKeyJSON, error) {
 	return nil, nil
 }
@@ -225,12 +225,12 @@ func getSignature(r, s string) ([]byte, error) {
 
 func (s *KeySign) getVersion() semver.Version {
 	requestTime := time.Now()
-	if !s.currentVersion.Equals(semver.Version{}) && requestTime.Sub(s.lastCheck).Seconds() < constants.ThorchainBlockTime.Seconds() {
+	if !s.currentVersion.Equals(semver.Version{}) && requestTime.Sub(s.lastCheck).Seconds() < constants.SwitchlyBlockTime.Seconds() {
 		return s.currentVersion
 	}
-	version, err := s.bridge.GetThorchainVersion()
+	version, err := s.bridge.GetSwitchlyVersion()
 	if err != nil {
-		s.logger.Err(err).Msg("fail to get current thorchain version")
+		s.logger.Err(err).Msg("fail to get current switchly version")
 		return s.currentVersion
 	}
 	s.currentVersion = version
@@ -265,10 +265,10 @@ func (s *KeySign) toLocalTSSSigner(poolPubKey string, tasks []*tssKeySignTask) {
 	currentVersion := s.getVersion()
 	tssMsg.Version = currentVersion.String()
 	s.logger.Debug().Msg("new TSS join party")
-	// get current thorchain block height
+	// get current switchly block height
 	blockHeight, err := s.bridge.GetBlockHeight()
 	if err != nil {
-		s.setTssKeySignTasksFail(tasks, fmt.Errorf("fail to get block height from thorchain: %w", err))
+		s.setTssKeySignTasksFail(tasks, fmt.Errorf("fail to get block height from switchly: %w", err))
 		return
 	}
 	// this is just round the block height to the nearest 20
@@ -323,6 +323,6 @@ func (s *KeySign) toLocalTSSSigner(poolPubKey string, tasks []*tssKeySignTask) {
 		blame.BlameNodes[i].BlameSignature = n.BlameSignature
 	}
 
-	// Blame need to be passed back to thorchain , so as thorchain can use the information to slash relevant node account
+	// Blame need to be passed back to switchly , so as switchly can use the information to slash relevant node account
 	s.setTssKeySignTasksFail(tasks, NewKeysignError(blame))
 }

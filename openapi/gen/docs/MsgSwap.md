@@ -11,9 +11,9 @@ Name | Type | Description | Notes
 **AffiliateAddress** | Pointer to **string** | the affiliate address which will receive any affiliate fee | [optional] 
 **AffiliateBasisPoints** | **string** | the affiliate fee in basis points | 
 **Signer** | Pointer to **string** | the signer (sender) of the transaction | [optional] 
-**Aggregator** | Pointer to **string** | the contract address if an aggregator is specified for a non-THORChain SwapOut | [optional] 
+**Aggregator** | Pointer to **string** | the contract address if an aggregator is specified for a non-SWITCHLYChain SwapOut | [optional] 
 **AggregatorTargetAddress** | Pointer to **string** | the desired output asset of the aggregator SwapOut | [optional] 
-**AggregatorTargetLimit** | Pointer to **string** | the minimum amount of SwapOut asset to receive (else cancelling the SwapOut and receiving THORChain&#39;s output) | [optional] 
+**AggregatorTargetLimit** | Pointer to **string** | the minimum amount of SwapOut asset to receive (else cancelling the SwapOut and receiving SWITCHLYChain&#39;s output) | [optional] 
 **SwapType** | Pointer to **string** | market if immediately completed or refunded, limit if held until fulfillable | [optional] 
 **StreamQuantity** | Pointer to **int64** | number of swaps to execute in a streaming swap | [optional] 
 **StreamInterval** | Pointer to **int64** | the interval (in blocks) to execute the streaming swap | [optional] 

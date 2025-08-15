@@ -48,12 +48,12 @@ func main() {
 	privKey := NewPrivateKey(tssPrivateKey)
 
 	pk := privKey.PubKey()
-	thorchainpk, address, err := getTssPubKey(pk.X, pk.Y)
+	switchlypk, address, err := getTssPubKey(pk.X, pk.Y)
 	if err != nil {
 		fmt.Printf("--->%v", err)
 	}
 	fmt.Printf("---recoverd sk:%v\n", privKey)
-	fmt.Printf("---recoverd pk:%v\n", thorchainpk)
+	fmt.Printf("---recoverd pk:%v\n", switchlypk)
 	fmt.Printf("-------%v\n", address)
 
 	if len(*export) > 0 && len(*password) >= 8 {

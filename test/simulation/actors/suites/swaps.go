@@ -19,7 +19,7 @@ func Swaps() *Actor {
 	// gather all pools we expect to swap through
 	swapPools := []common.Asset{}
 	for _, chain := range common.AllChains {
-		if chain == common.THORChain {
+		if chain == common.SWITCHLYChain {
 			continue
 		}
 		// BSC not compatible with sim tests

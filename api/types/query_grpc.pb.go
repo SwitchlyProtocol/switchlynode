@@ -48,9 +48,9 @@ const (
 	Query_StreamingSwaps_FullMethodName      = "/types.Query/StreamingSwaps"
 	Query_Ban_FullMethodName                 = "/types.Query/Ban"
 	Query_Ragnarok_FullMethodName            = "/types.Query/Ragnarok"
-	Query_RunePool_FullMethodName            = "/types.Query/RunePool"
-	Query_RuneProvider_FullMethodName        = "/types.Query/RuneProvider"
-	Query_RuneProviders_FullMethodName       = "/types.Query/RuneProviders"
+	Query_SwitchPool_FullMethodName          = "/types.Query/SwitchPool"
+	Query_SWITCHProvider_FullMethodName      = "/types.Query/SWITCHProvider"
+	Query_SWITCHProviders_FullMethodName     = "/types.Query/SWITCHProviders"
 	Query_MimirValues_FullMethodName         = "/types.Query/MimirValues"
 	Query_MimirWithKey_FullMethodName        = "/types.Query/MimirWithKey"
 	Query_MimirAdminValues_FullMethodName    = "/types.Query/MimirAdminValues"
@@ -59,7 +59,7 @@ const (
 	Query_MimirNodeValues_FullMethodName     = "/types.Query/MimirNodeValues"
 	Query_InboundAddresses_FullMethodName    = "/types.Query/InboundAddresses"
 	Query_Version_FullMethodName             = "/types.Query/Version"
-	Query_Thorname_FullMethodName            = "/types.Query/Thorname"
+	Query_Switchlyname_FullMethodName        = "/types.Query/Switchlyname"
 	Query_Invariant_FullMethodName           = "/types.Query/Invariant"
 	Query_Invariants_FullMethodName          = "/types.Query/Invariants"
 	Query_Network_FullMethodName             = "/types.Query/Network"
@@ -94,10 +94,10 @@ const (
 	Query_UpgradeProposals_FullMethodName    = "/types.Query/UpgradeProposals"
 	Query_UpgradeProposal_FullMethodName     = "/types.Query/UpgradeProposal"
 	Query_UpgradeVotes_FullMethodName        = "/types.Query/UpgradeVotes"
-	Query_TCYStaker_FullMethodName           = "/types.Query/TCYStaker"
-	Query_TCYStakers_FullMethodName          = "/types.Query/TCYStakers"
-	Query_TCYClaimer_FullMethodName          = "/types.Query/TCYClaimer"
-	Query_TCYClaimers_FullMethodName         = "/types.Query/TCYClaimers"
+	Query_SWCYStaker_FullMethodName          = "/types.Query/SWCYStaker"
+	Query_SWCYStakers_FullMethodName         = "/types.Query/SWCYStakers"
+	Query_SWCYClaimer_FullMethodName         = "/types.Query/SWCYClaimer"
+	Query_SWCYClaimers_FullMethodName        = "/types.Query/SWCYClaimers"
 	Query_Codes_FullMethodName               = "/types.Query/Codes"
 )
 
@@ -143,9 +143,9 @@ type QueryClient interface {
 	StreamingSwaps(ctx context.Context, in *QueryStreamingSwapsRequest, opts ...grpc.CallOption) (*QueryStreamingSwapsResponse, error)
 	Ban(ctx context.Context, in *QueryBanRequest, opts ...grpc.CallOption) (*BanVoter, error)
 	Ragnarok(ctx context.Context, in *QueryRagnarokRequest, opts ...grpc.CallOption) (*QueryRagnarokResponse, error)
-	RunePool(ctx context.Context, in *QueryRunePoolRequest, opts ...grpc.CallOption) (*QueryRunePoolResponse, error)
-	RuneProvider(ctx context.Context, in *QueryRuneProviderRequest, opts ...grpc.CallOption) (*QueryRuneProviderResponse, error)
-	RuneProviders(ctx context.Context, in *QueryRuneProvidersRequest, opts ...grpc.CallOption) (*QueryRuneProvidersResponse, error)
+	SwitchPool(ctx context.Context, in *QuerySwitchPoolRequest, opts ...grpc.CallOption) (*QuerySwitchPoolResponse, error)
+	SWITCHProvider(ctx context.Context, in *QuerySWITCHProviderRequest, opts ...grpc.CallOption) (*QuerySWITCHProviderResponse, error)
+	SWITCHProviders(ctx context.Context, in *QuerySWITCHProvidersRequest, opts ...grpc.CallOption) (*QuerySWITCHProvidersResponse, error)
 	MimirValues(ctx context.Context, in *QueryMimirValuesRequest, opts ...grpc.CallOption) (*QueryMimirValuesResponse, error)
 	MimirWithKey(ctx context.Context, in *QueryMimirWithKeyRequest, opts ...grpc.CallOption) (*QueryMimirWithKeyResponse, error)
 	MimirAdminValues(ctx context.Context, in *QueryMimirAdminValuesRequest, opts ...grpc.CallOption) (*QueryMimirAdminValuesResponse, error)
@@ -154,7 +154,7 @@ type QueryClient interface {
 	MimirNodeValues(ctx context.Context, in *QueryMimirNodeValuesRequest, opts ...grpc.CallOption) (*QueryMimirNodeValuesResponse, error)
 	InboundAddresses(ctx context.Context, in *QueryInboundAddressesRequest, opts ...grpc.CallOption) (*QueryInboundAddressesResponse, error)
 	Version(ctx context.Context, in *QueryVersionRequest, opts ...grpc.CallOption) (*QueryVersionResponse, error)
-	Thorname(ctx context.Context, in *QueryThornameRequest, opts ...grpc.CallOption) (*QueryThornameResponse, error)
+	Switchlyname(ctx context.Context, in *QuerySwitchlynameRequest, opts ...grpc.CallOption) (*QuerySwitchlynameResponse, error)
 	Invariant(ctx context.Context, in *QueryInvariantRequest, opts ...grpc.CallOption) (*QueryInvariantResponse, error)
 	Invariants(ctx context.Context, in *QueryInvariantsRequest, opts ...grpc.CallOption) (*QueryInvariantsResponse, error)
 	Network(ctx context.Context, in *QueryNetworkRequest, opts ...grpc.CallOption) (*QueryNetworkResponse, error)
@@ -189,10 +189,10 @@ type QueryClient interface {
 	UpgradeProposals(ctx context.Context, in *QueryUpgradeProposalsRequest, opts ...grpc.CallOption) (*QueryUpgradeProposalsResponse, error)
 	UpgradeProposal(ctx context.Context, in *QueryUpgradeProposalRequest, opts ...grpc.CallOption) (*QueryUpgradeProposalResponse, error)
 	UpgradeVotes(ctx context.Context, in *QueryUpgradeVotesRequest, opts ...grpc.CallOption) (*QueryUpgradeVotesResponse, error)
-	TCYStaker(ctx context.Context, in *QueryTCYStakerRequest, opts ...grpc.CallOption) (*QueryTCYStakerResponse, error)
-	TCYStakers(ctx context.Context, in *QueryTCYStakersRequest, opts ...grpc.CallOption) (*QueryTCYStakersResponse, error)
-	TCYClaimer(ctx context.Context, in *QueryTCYClaimerRequest, opts ...grpc.CallOption) (*QueryTCYClaimerResponse, error)
-	TCYClaimers(ctx context.Context, in *QueryTCYClaimersRequest, opts ...grpc.CallOption) (*QueryTCYClaimersResponse, error)
+	SWCYStaker(ctx context.Context, in *QuerySWCYStakerRequest, opts ...grpc.CallOption) (*QuerySWCYStakerResponse, error)
+	SWCYStakers(ctx context.Context, in *QuerySWCYStakersRequest, opts ...grpc.CallOption) (*QuerySWCYStakersResponse, error)
+	SWCYClaimer(ctx context.Context, in *QuerySWCYClaimerRequest, opts ...grpc.CallOption) (*QuerySWCYClaimerResponse, error)
+	SWCYClaimers(ctx context.Context, in *QuerySWCYClaimersRequest, opts ...grpc.CallOption) (*QuerySWCYClaimersResponse, error)
 	Codes(ctx context.Context, in *QueryCodesRequest, opts ...grpc.CallOption) (*QueryCodesResponse, error)
 }
 
@@ -465,27 +465,27 @@ func (c *queryClient) Ragnarok(ctx context.Context, in *QueryRagnarokRequest, op
 	return out, nil
 }
 
-func (c *queryClient) RunePool(ctx context.Context, in *QueryRunePoolRequest, opts ...grpc.CallOption) (*QueryRunePoolResponse, error) {
-	out := new(QueryRunePoolResponse)
-	err := c.cc.Invoke(ctx, Query_RunePool_FullMethodName, in, out, opts...)
+func (c *queryClient) SwitchPool(ctx context.Context, in *QuerySwitchPoolRequest, opts ...grpc.CallOption) (*QuerySwitchPoolResponse, error) {
+	out := new(QuerySwitchPoolResponse)
+	err := c.cc.Invoke(ctx, Query_SwitchPool_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) RuneProvider(ctx context.Context, in *QueryRuneProviderRequest, opts ...grpc.CallOption) (*QueryRuneProviderResponse, error) {
-	out := new(QueryRuneProviderResponse)
-	err := c.cc.Invoke(ctx, Query_RuneProvider_FullMethodName, in, out, opts...)
+func (c *queryClient) SWITCHProvider(ctx context.Context, in *QuerySWITCHProviderRequest, opts ...grpc.CallOption) (*QuerySWITCHProviderResponse, error) {
+	out := new(QuerySWITCHProviderResponse)
+	err := c.cc.Invoke(ctx, Query_SWITCHProvider_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) RuneProviders(ctx context.Context, in *QueryRuneProvidersRequest, opts ...grpc.CallOption) (*QueryRuneProvidersResponse, error) {
-	out := new(QueryRuneProvidersResponse)
-	err := c.cc.Invoke(ctx, Query_RuneProviders_FullMethodName, in, out, opts...)
+func (c *queryClient) SWITCHProviders(ctx context.Context, in *QuerySWITCHProvidersRequest, opts ...grpc.CallOption) (*QuerySWITCHProvidersResponse, error) {
+	out := new(QuerySWITCHProvidersResponse)
+	err := c.cc.Invoke(ctx, Query_SWITCHProviders_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -564,9 +564,9 @@ func (c *queryClient) Version(ctx context.Context, in *QueryVersionRequest, opts
 	return out, nil
 }
 
-func (c *queryClient) Thorname(ctx context.Context, in *QueryThornameRequest, opts ...grpc.CallOption) (*QueryThornameResponse, error) {
-	out := new(QueryThornameResponse)
-	err := c.cc.Invoke(ctx, Query_Thorname_FullMethodName, in, out, opts...)
+func (c *queryClient) Switchlyname(ctx context.Context, in *QuerySwitchlynameRequest, opts ...grpc.CallOption) (*QuerySwitchlynameResponse, error) {
+	out := new(QuerySwitchlynameResponse)
+	err := c.cc.Invoke(ctx, Query_Switchlyname_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -879,36 +879,36 @@ func (c *queryClient) UpgradeVotes(ctx context.Context, in *QueryUpgradeVotesReq
 	return out, nil
 }
 
-func (c *queryClient) TCYStaker(ctx context.Context, in *QueryTCYStakerRequest, opts ...grpc.CallOption) (*QueryTCYStakerResponse, error) {
-	out := new(QueryTCYStakerResponse)
-	err := c.cc.Invoke(ctx, Query_TCYStaker_FullMethodName, in, out, opts...)
+func (c *queryClient) SWCYStaker(ctx context.Context, in *QuerySWCYStakerRequest, opts ...grpc.CallOption) (*QuerySWCYStakerResponse, error) {
+	out := new(QuerySWCYStakerResponse)
+	err := c.cc.Invoke(ctx, Query_SWCYStaker_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) TCYStakers(ctx context.Context, in *QueryTCYStakersRequest, opts ...grpc.CallOption) (*QueryTCYStakersResponse, error) {
-	out := new(QueryTCYStakersResponse)
-	err := c.cc.Invoke(ctx, Query_TCYStakers_FullMethodName, in, out, opts...)
+func (c *queryClient) SWCYStakers(ctx context.Context, in *QuerySWCYStakersRequest, opts ...grpc.CallOption) (*QuerySWCYStakersResponse, error) {
+	out := new(QuerySWCYStakersResponse)
+	err := c.cc.Invoke(ctx, Query_SWCYStakers_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) TCYClaimer(ctx context.Context, in *QueryTCYClaimerRequest, opts ...grpc.CallOption) (*QueryTCYClaimerResponse, error) {
-	out := new(QueryTCYClaimerResponse)
-	err := c.cc.Invoke(ctx, Query_TCYClaimer_FullMethodName, in, out, opts...)
+func (c *queryClient) SWCYClaimer(ctx context.Context, in *QuerySWCYClaimerRequest, opts ...grpc.CallOption) (*QuerySWCYClaimerResponse, error) {
+	out := new(QuerySWCYClaimerResponse)
+	err := c.cc.Invoke(ctx, Query_SWCYClaimer_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) TCYClaimers(ctx context.Context, in *QueryTCYClaimersRequest, opts ...grpc.CallOption) (*QueryTCYClaimersResponse, error) {
-	out := new(QueryTCYClaimersResponse)
-	err := c.cc.Invoke(ctx, Query_TCYClaimers_FullMethodName, in, out, opts...)
+func (c *queryClient) SWCYClaimers(ctx context.Context, in *QuerySWCYClaimersRequest, opts ...grpc.CallOption) (*QuerySWCYClaimersResponse, error) {
+	out := new(QuerySWCYClaimersResponse)
+	err := c.cc.Invoke(ctx, Query_SWCYClaimers_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -966,9 +966,9 @@ type QueryServer interface {
 	StreamingSwaps(context.Context, *QueryStreamingSwapsRequest) (*QueryStreamingSwapsResponse, error)
 	Ban(context.Context, *QueryBanRequest) (*BanVoter, error)
 	Ragnarok(context.Context, *QueryRagnarokRequest) (*QueryRagnarokResponse, error)
-	RunePool(context.Context, *QueryRunePoolRequest) (*QueryRunePoolResponse, error)
-	RuneProvider(context.Context, *QueryRuneProviderRequest) (*QueryRuneProviderResponse, error)
-	RuneProviders(context.Context, *QueryRuneProvidersRequest) (*QueryRuneProvidersResponse, error)
+	SwitchPool(context.Context, *QuerySwitchPoolRequest) (*QuerySwitchPoolResponse, error)
+	SWITCHProvider(context.Context, *QuerySWITCHProviderRequest) (*QuerySWITCHProviderResponse, error)
+	SWITCHProviders(context.Context, *QuerySWITCHProvidersRequest) (*QuerySWITCHProvidersResponse, error)
 	MimirValues(context.Context, *QueryMimirValuesRequest) (*QueryMimirValuesResponse, error)
 	MimirWithKey(context.Context, *QueryMimirWithKeyRequest) (*QueryMimirWithKeyResponse, error)
 	MimirAdminValues(context.Context, *QueryMimirAdminValuesRequest) (*QueryMimirAdminValuesResponse, error)
@@ -977,7 +977,7 @@ type QueryServer interface {
 	MimirNodeValues(context.Context, *QueryMimirNodeValuesRequest) (*QueryMimirNodeValuesResponse, error)
 	InboundAddresses(context.Context, *QueryInboundAddressesRequest) (*QueryInboundAddressesResponse, error)
 	Version(context.Context, *QueryVersionRequest) (*QueryVersionResponse, error)
-	Thorname(context.Context, *QueryThornameRequest) (*QueryThornameResponse, error)
+	Switchlyname(context.Context, *QuerySwitchlynameRequest) (*QuerySwitchlynameResponse, error)
 	Invariant(context.Context, *QueryInvariantRequest) (*QueryInvariantResponse, error)
 	Invariants(context.Context, *QueryInvariantsRequest) (*QueryInvariantsResponse, error)
 	Network(context.Context, *QueryNetworkRequest) (*QueryNetworkResponse, error)
@@ -1012,10 +1012,10 @@ type QueryServer interface {
 	UpgradeProposals(context.Context, *QueryUpgradeProposalsRequest) (*QueryUpgradeProposalsResponse, error)
 	UpgradeProposal(context.Context, *QueryUpgradeProposalRequest) (*QueryUpgradeProposalResponse, error)
 	UpgradeVotes(context.Context, *QueryUpgradeVotesRequest) (*QueryUpgradeVotesResponse, error)
-	TCYStaker(context.Context, *QueryTCYStakerRequest) (*QueryTCYStakerResponse, error)
-	TCYStakers(context.Context, *QueryTCYStakersRequest) (*QueryTCYStakersResponse, error)
-	TCYClaimer(context.Context, *QueryTCYClaimerRequest) (*QueryTCYClaimerResponse, error)
-	TCYClaimers(context.Context, *QueryTCYClaimersRequest) (*QueryTCYClaimersResponse, error)
+	SWCYStaker(context.Context, *QuerySWCYStakerRequest) (*QuerySWCYStakerResponse, error)
+	SWCYStakers(context.Context, *QuerySWCYStakersRequest) (*QuerySWCYStakersResponse, error)
+	SWCYClaimer(context.Context, *QuerySWCYClaimerRequest) (*QuerySWCYClaimerResponse, error)
+	SWCYClaimers(context.Context, *QuerySWCYClaimersRequest) (*QuerySWCYClaimersResponse, error)
 	Codes(context.Context, *QueryCodesRequest) (*QueryCodesResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
@@ -1111,14 +1111,14 @@ func (UnimplementedQueryServer) Ban(context.Context, *QueryBanRequest) (*BanVote
 func (UnimplementedQueryServer) Ragnarok(context.Context, *QueryRagnarokRequest) (*QueryRagnarokResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ragnarok not implemented")
 }
-func (UnimplementedQueryServer) RunePool(context.Context, *QueryRunePoolRequest) (*QueryRunePoolResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RunePool not implemented")
+func (UnimplementedQueryServer) SwitchPool(context.Context, *QuerySwitchPoolRequest) (*QuerySwitchPoolResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SwitchPool not implemented")
 }
-func (UnimplementedQueryServer) RuneProvider(context.Context, *QueryRuneProviderRequest) (*QueryRuneProviderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RuneProvider not implemented")
+func (UnimplementedQueryServer) SWITCHProvider(context.Context, *QuerySWITCHProviderRequest) (*QuerySWITCHProviderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SWITCHProvider not implemented")
 }
-func (UnimplementedQueryServer) RuneProviders(context.Context, *QueryRuneProvidersRequest) (*QueryRuneProvidersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RuneProviders not implemented")
+func (UnimplementedQueryServer) SWITCHProviders(context.Context, *QuerySWITCHProvidersRequest) (*QuerySWITCHProvidersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SWITCHProviders not implemented")
 }
 func (UnimplementedQueryServer) MimirValues(context.Context, *QueryMimirValuesRequest) (*QueryMimirValuesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MimirValues not implemented")
@@ -1144,8 +1144,8 @@ func (UnimplementedQueryServer) InboundAddresses(context.Context, *QueryInboundA
 func (UnimplementedQueryServer) Version(context.Context, *QueryVersionRequest) (*QueryVersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
 }
-func (UnimplementedQueryServer) Thorname(context.Context, *QueryThornameRequest) (*QueryThornameResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Thorname not implemented")
+func (UnimplementedQueryServer) Switchlyname(context.Context, *QuerySwitchlynameRequest) (*QuerySwitchlynameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Switchlyname not implemented")
 }
 func (UnimplementedQueryServer) Invariant(context.Context, *QueryInvariantRequest) (*QueryInvariantResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Invariant not implemented")
@@ -1249,17 +1249,17 @@ func (UnimplementedQueryServer) UpgradeProposal(context.Context, *QueryUpgradePr
 func (UnimplementedQueryServer) UpgradeVotes(context.Context, *QueryUpgradeVotesRequest) (*QueryUpgradeVotesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpgradeVotes not implemented")
 }
-func (UnimplementedQueryServer) TCYStaker(context.Context, *QueryTCYStakerRequest) (*QueryTCYStakerResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TCYStaker not implemented")
+func (UnimplementedQueryServer) SWCYStaker(context.Context, *QuerySWCYStakerRequest) (*QuerySWCYStakerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SWCYStaker not implemented")
 }
-func (UnimplementedQueryServer) TCYStakers(context.Context, *QueryTCYStakersRequest) (*QueryTCYStakersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TCYStakers not implemented")
+func (UnimplementedQueryServer) SWCYStakers(context.Context, *QuerySWCYStakersRequest) (*QuerySWCYStakersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SWCYStakers not implemented")
 }
-func (UnimplementedQueryServer) TCYClaimer(context.Context, *QueryTCYClaimerRequest) (*QueryTCYClaimerResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TCYClaimer not implemented")
+func (UnimplementedQueryServer) SWCYClaimer(context.Context, *QuerySWCYClaimerRequest) (*QuerySWCYClaimerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SWCYClaimer not implemented")
 }
-func (UnimplementedQueryServer) TCYClaimers(context.Context, *QueryTCYClaimersRequest) (*QueryTCYClaimersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TCYClaimers not implemented")
+func (UnimplementedQueryServer) SWCYClaimers(context.Context, *QuerySWCYClaimersRequest) (*QuerySWCYClaimersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SWCYClaimers not implemented")
 }
 func (UnimplementedQueryServer) Codes(context.Context, *QueryCodesRequest) (*QueryCodesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Codes not implemented")
@@ -1799,56 +1799,56 @@ func _Query_Ragnarok_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_RunePool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRunePoolRequest)
+func _Query_SwitchPool_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySwitchPoolRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).RunePool(ctx, in)
+		return srv.(QueryServer).SwitchPool(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_RunePool_FullMethodName,
+		FullMethod: Query_SwitchPool_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).RunePool(ctx, req.(*QueryRunePoolRequest))
+		return srv.(QueryServer).SwitchPool(ctx, req.(*QuerySwitchPoolRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_RuneProvider_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRuneProviderRequest)
+func _Query_SWITCHProvider_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySWITCHProviderRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).RuneProvider(ctx, in)
+		return srv.(QueryServer).SWITCHProvider(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_RuneProvider_FullMethodName,
+		FullMethod: Query_SWITCHProvider_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).RuneProvider(ctx, req.(*QueryRuneProviderRequest))
+		return srv.(QueryServer).SWITCHProvider(ctx, req.(*QuerySWITCHProviderRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_RuneProviders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRuneProvidersRequest)
+func _Query_SWITCHProviders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySWITCHProvidersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).RuneProviders(ctx, in)
+		return srv.(QueryServer).SWITCHProviders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_RuneProviders_FullMethodName,
+		FullMethod: Query_SWITCHProviders_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).RuneProviders(ctx, req.(*QueryRuneProvidersRequest))
+		return srv.(QueryServer).SWITCHProviders(ctx, req.(*QuerySWITCHProvidersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1997,20 +1997,20 @@ func _Query_Version_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_Thorname_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryThornameRequest)
+func _Query_Switchlyname_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySwitchlynameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).Thorname(ctx, in)
+		return srv.(QueryServer).Switchlyname(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_Thorname_FullMethodName,
+		FullMethod: Query_Switchlyname_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Thorname(ctx, req.(*QueryThornameRequest))
+		return srv.(QueryServer).Switchlyname(ctx, req.(*QuerySwitchlynameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2627,74 +2627,74 @@ func _Query_UpgradeVotes_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_TCYStaker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTCYStakerRequest)
+func _Query_SWCYStaker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySWCYStakerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).TCYStaker(ctx, in)
+		return srv.(QueryServer).SWCYStaker(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_TCYStaker_FullMethodName,
+		FullMethod: Query_SWCYStaker_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TCYStaker(ctx, req.(*QueryTCYStakerRequest))
+		return srv.(QueryServer).SWCYStaker(ctx, req.(*QuerySWCYStakerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_TCYStakers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTCYStakersRequest)
+func _Query_SWCYStakers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySWCYStakersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).TCYStakers(ctx, in)
+		return srv.(QueryServer).SWCYStakers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_TCYStakers_FullMethodName,
+		FullMethod: Query_SWCYStakers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TCYStakers(ctx, req.(*QueryTCYStakersRequest))
+		return srv.(QueryServer).SWCYStakers(ctx, req.(*QuerySWCYStakersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_TCYClaimer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTCYClaimerRequest)
+func _Query_SWCYClaimer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySWCYClaimerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).TCYClaimer(ctx, in)
+		return srv.(QueryServer).SWCYClaimer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_TCYClaimer_FullMethodName,
+		FullMethod: Query_SWCYClaimer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TCYClaimer(ctx, req.(*QueryTCYClaimerRequest))
+		return srv.(QueryServer).SWCYClaimer(ctx, req.(*QuerySWCYClaimerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_TCYClaimers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTCYClaimersRequest)
+func _Query_SWCYClaimers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySWCYClaimersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).TCYClaimers(ctx, in)
+		return srv.(QueryServer).SWCYClaimers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_TCYClaimers_FullMethodName,
+		FullMethod: Query_SWCYClaimers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).TCYClaimers(ctx, req.(*QueryTCYClaimersRequest))
+		return srv.(QueryServer).SWCYClaimers(ctx, req.(*QuerySWCYClaimersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2841,16 +2841,16 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Ragnarok_Handler,
 		},
 		{
-			MethodName: "RunePool",
-			Handler:    _Query_RunePool_Handler,
+			MethodName: "SwitchPool",
+			Handler:    _Query_SwitchPool_Handler,
 		},
 		{
-			MethodName: "RuneProvider",
-			Handler:    _Query_RuneProvider_Handler,
+			MethodName: "SWITCHProvider",
+			Handler:    _Query_SWITCHProvider_Handler,
 		},
 		{
-			MethodName: "RuneProviders",
-			Handler:    _Query_RuneProviders_Handler,
+			MethodName: "SWITCHProviders",
+			Handler:    _Query_SWITCHProviders_Handler,
 		},
 		{
 			MethodName: "MimirValues",
@@ -2885,8 +2885,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Version_Handler,
 		},
 		{
-			MethodName: "Thorname",
-			Handler:    _Query_Thorname_Handler,
+			MethodName: "Switchlyname",
+			Handler:    _Query_Switchlyname_Handler,
 		},
 		{
 			MethodName: "Invariant",
@@ -3025,20 +3025,20 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_UpgradeVotes_Handler,
 		},
 		{
-			MethodName: "TCYStaker",
-			Handler:    _Query_TCYStaker_Handler,
+			MethodName: "SWCYStaker",
+			Handler:    _Query_SWCYStaker_Handler,
 		},
 		{
-			MethodName: "TCYStakers",
-			Handler:    _Query_TCYStakers_Handler,
+			MethodName: "SWCYStakers",
+			Handler:    _Query_SWCYStakers_Handler,
 		},
 		{
-			MethodName: "TCYClaimer",
-			Handler:    _Query_TCYClaimer_Handler,
+			MethodName: "SWCYClaimer",
+			Handler:    _Query_SWCYClaimer_Handler,
 		},
 		{
-			MethodName: "TCYClaimers",
-			Handler:    _Query_TCYClaimers_Handler,
+			MethodName: "SWCYClaimers",
+			Handler:    _Query_SWCYClaimers_Handler,
 		},
 		{
 			MethodName: "Codes",

@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
 ---
@@ -15,19 +15,19 @@ asserts:
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 0
 ---
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDY-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDY-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 1
 ---
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDZ-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDZ-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 2
 ---
@@ -47,27 +47,27 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .DERIVEDDEPTHBASISPTS == 10000
-  - ."TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
-  - ."TORANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999" == 1
-  - ."TORANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDY-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDZ-0X9999999999999999999999999999999999999999" == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/thor.tor
+endpoint: http://localhost:1317/switchly/dpool/thor.tor
 asserts:
   - .derived_depth_bps|tonumber == 10000
   - .balance_asset|tonumber == 299999999999
   - .balance_rune|tonumber == 300001797948
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.USDX-0X9999999999999999999999999999999999999999
+endpoint: http://localhost:1317/switchly/pool/ETH.USDX-0X9999999999999999999999999999999999999999
 asserts:
   - .asset_tor_price == "99999999"
 ---
@@ -82,6 +82,6 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/ETH.USDX-0X9999999999999999999999999999999999999999
+endpoint: http://localhost:1317/switchly/pool/ETH.USDX-0X9999999999999999999999999999999999999999
 asserts:
   - .asset_tor_price == "99999999"

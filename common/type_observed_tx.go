@@ -29,8 +29,8 @@ func (m *ObservedTx) Valid() error {
 		return err
 	}
 	// Memo should not be empty, but it can't be checked here, because a
-	// message failed validation will be rejected by THORNode.
-	// Thus THORNode can't refund customer accordingly , which will result fund lost
+	// message failed validation will be rejected by SWITCHLYNode.
+	// Thus SWITCHLYNode can't refund customer accordingly , which will result fund lost
 	if m.BlockHeight <= 0 {
 		return errors.New("block height can't be zero")
 	}
@@ -138,7 +138,7 @@ func (m *ObservedTx) Sign(signer cosmos.AccAddress) bool {
 
 // SetDone check the ObservedTx status, update it's status to done if the outbound tx had been processed
 func (m *ObservedTx) SetDone(hash TxID, numOuts int) {
-	// As an Asset->RUNE affiliate fee could also be RUNE,
+	// As an Asset->SWITCH affiliate fee could also be SWITCH,
 	// allow multiple blank TxID OutHashes.
 	// SetDone is still expected to only be called once (per ObservedTx) for each.
 	if !hash.Equals(BlankTxID) {

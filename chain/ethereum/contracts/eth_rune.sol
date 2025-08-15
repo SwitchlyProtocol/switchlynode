@@ -3,11 +3,11 @@ pragma solidity 0.7.6;
 
 /**
 * Ownable, Mintable, Burnable ERC20. 
-* Max Supply of 500m (BNB.RUNE Supply)
-* 10m RUNE minted on construction. Owner can mint more if needed to control supply. 
-* ETH.RUNE is intended only to be a transitionary asset to be upgraded to native THOR.RUNE. 
-* Users should not hold ETH.RUNE indefinitely. 
-* Owner will be renounced when ETH.RUNE can be upgraded. 
+* Max Supply of 500m (BNB.SWITCH Supply)
+* 10m SWITCH minted on construction. Owner can mint more if needed to control supply. 
+* ETH.SWITCH is intended only to be a transitionary asset to be upgraded to native SWITCHLY.SWITCH. 
+* Users should not hold ETH.SWITCH indefinitely. 
+* Owner will be renounced when ETH.SWITCH can be upgraded. 
 */
 
 interface iERC20 {
@@ -84,7 +84,7 @@ contract Ownable is Context {
   }
 }
 
-contract ETH_RUNE is iERC20, Context, Ownable {
+contract ETH_SWITCH is iERC20, Context, Ownable {
   using SafeMath for uint256;
 
   mapping (address => uint256) private _balances;
@@ -97,8 +97,8 @@ contract ETH_RUNE is iERC20, Context, Ownable {
   uint256 public maxSupply;
 
   constructor() {
-    _name = 'THORChain ETH.RUNE';
-    _symbol = 'RUNE';
+    _name = 'SWITCHLYChain ETH.SWITCH';
+    _symbol = 'SWITCH';
     _decimals = 18;
     maxSupply = 500*10**6 * 10**18; //500m
     _totalSupply = 10*10**6 * 10**18; //10m
@@ -151,7 +151,7 @@ contract ETH_RUNE is iERC20, Context, Ownable {
   }
 
   /**
-   * Queries the origin of the tx to enable approval-less transactions, such as for upgrading ETH.RUNE to THOR.RUNE. 
+   * Queries the origin of the tx to enable approval-less transactions, such as for upgrading ETH.SWITCH to SWITCHLY.SWITCH. 
    * Beware phishing contracts that could steal tokens by intercepting tx.origin.
    * The risks of this are the same as infinite-approved contracts which are widespread.  
    * Acknowledge it is non-standard, but the ERC-20 standard is less-than-desired.

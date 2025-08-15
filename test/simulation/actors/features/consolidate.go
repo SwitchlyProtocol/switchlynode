@@ -5,7 +5,7 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/actors/common"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
@@ -72,7 +72,7 @@ func NewConsolidateActor(asset common.Asset, consolidateCount int64) *Actor {
 
 func (a *ConsolidateActor) acquireUser(config *OpConfig) OpResult {
 	// determine the asset amount
-	pool, err := thornode.GetPool(a.asset)
+	pool, err := switchlynode.GetPool(a.asset)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get pool")
 		return OpResult{
@@ -127,7 +127,7 @@ func (a *ConsolidateActor) acquireUser(config *OpConfig) OpResult {
 
 func (a *ConsolidateActor) getHeight(config *OpConfig) OpResult {
 	// get the current block height
-	block, err := thornode.GetBlock(0)
+	block, err := switchlynode.GetBlock(0)
 	if err != nil {
 		a.Log().Error().Err(err).Msg("failed to get block")
 		return OpResult{
@@ -184,9 +184,9 @@ func (a *ConsolidateActor) verifyConsolidate(config *OpConfig) OpResult {
 	for {
 		a.Log().Info().Int64("height", a.scanHeight).Msg("scanning block for consolidate")
 
-		url := fmt.Sprintf("%s/thorchain/block?height=%d", thornode.BaseURL(), a.scanHeight)
+		url := fmt.Sprintf("%s/switchly/block?height=%d", switchlynode.BaseURL(), a.scanHeight)
 		var block FilterBlockResponse
-		err := thornode.Get(url, &block)
+		err := switchlynode.Get(url, &block)
 		if err != nil {
 			return OpResult{
 				Continue: false,

@@ -17,7 +17,7 @@ count: 1
 # Same-Address swap (ETH.ETH to ETH.USDC).
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/clout/swap/{{ addr_eth_fox }}
+endpoint: http://localhost:1317/switchly/clout/swap/{{ addr_eth_fox }}
 asserts:
   - .address == "{{ addr_eth_fox }}"
   - .score == "0"
@@ -48,7 +48,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type?=="swap")] | length == 2
   - .|[..|select(.type?=="scheduled_outbound")] | length == 1
@@ -56,7 +56,7 @@ asserts:
   - .|[..|select(.type?=="swap").liquidity_fee_in_rune|tonumber] | add == ${LIQFEES=432032114}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].clout_spent == "${CLOUT_LIMIT}" # Full clout limit spent.
@@ -64,7 +64,7 @@ asserts:
   - .[0].coin.amount == "${USDC_OUT=4043515000}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/clout/swap/{{ addr_eth_fox }}
+endpoint: http://localhost:1317/switchly/clout/swap/{{ addr_eth_fox }}
 asserts:
   - .address == "{{ addr_eth_fox }}"
   - .score == "${LIQFEES}"
@@ -97,12 +97,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/clout/swap/{{ addr_eth_fox }}
+endpoint: http://localhost:1317/switchly/clout/swap/{{ addr_eth_fox }}
 asserts:
   - .address == "{{ addr_eth_fox }}"
   - .score == "${LIQFEES}"

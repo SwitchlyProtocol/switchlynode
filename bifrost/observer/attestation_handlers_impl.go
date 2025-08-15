@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/switchlyprotocol/switchlynode/v3/common"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 // handleObservedTxAttestation processes attestations for observed transactions
@@ -55,19 +55,19 @@ func (s *AttestationGossip) handleObservedTxAttestation(ctx context.Context, tx 
 
 	hasSuperMajority := types.HasSuperMajority(state.AttestationCount(), total)
 
-	// If we have a supermajority, send to thornode
+	// If we have a supermajority, send to switchlynode
 	if hasSuperMajority {
 		s.logger.Debug().Msgf("has supermajority: %d/%d", state.AttestationCount(), total)
 
-		s.sendObservedTxAttestationsToThornode(ctx, obsTx, state, k.Inbound, k.AllowFutureObservation, true)
+		s.sendObservedTxAttestationsToSwitchlynode(ctx, obsTx, state, k.Inbound, k.AllowFutureObservation, true)
 	} else {
 		s.logger.Debug().Msgf("observed tx attestation received - %s, id: %s, inbound: %t, final: %t, quorum: %d/%d",
 			k.Chain, k.ID, k.Inbound, k.Finalized, state.AttestationCount(), total)
 	}
 }
 
-// sendObservedTxAttestationsToThornode sends attestations to thornode via gRPC
-func (s *AttestationGossip) sendObservedTxAttestationsToThornode(
+// sendObservedTxAttestationsToSwitchlynode sends attestations to switchlynode via gRPC
+func (s *AttestationGossip) sendObservedTxAttestationsToSwitchlynode(
 	ctx context.Context,
 	tx common.ObservedTx,
 	state *AttestationState[*common.ObservedTx],
@@ -78,7 +78,7 @@ func (s *AttestationGossip) sendObservedTxAttestationsToThornode(
 		s.logger.Debug().Msg("no unsent observed tx attestations")
 		return
 	}
-	// Send via gRPC to thornode
+	// Send via gRPC to switchlynode
 	if _, err := s.grpcClient.SendQuorumTx(ctx, &common.QuorumTx{
 		ObsTx:                  tx,
 		Attestations:           unsent,
@@ -89,7 +89,7 @@ func (s *AttestationGossip) sendObservedTxAttestationsToThornode(
 		return
 	}
 
-	s.logger.Info().Msgf("sent quorum tx to thornode - %s, id: %s, inbound: %t, final: %t, attestations: %s",
+	s.logger.Info().Msgf("sent quorum tx to switchlynode - %s, id: %s, inbound: %t, final: %t, attestations: %s",
 		tx.Tx.Chain, tx.Tx.ID, inbound, tx.IsFinal(), state.State())
 
 	// Mark attestations as sent
@@ -126,24 +126,24 @@ func (s *AttestationGossip) handleNetworkFeeAttestation(ctx context.Context, anf
 	activeValCount := s.activeValidatorCount()
 	hasSuperMajority := types.HasSuperMajority(state.AttestationCount(), activeValCount)
 
-	// If we have a supermajority, send to thornode
+	// If we have a supermajority, send to switchlynode
 	if hasSuperMajority {
 		s.logger.Debug().Msgf("has supermajority: %d/%d", state.AttestationCount(), activeValCount)
-		s.sendNetworkFeeAttestationsToThornode(ctx, *state.Item, state, true)
+		s.sendNetworkFeeAttestationsToSwitchlynode(ctx, *state.Item, state, true)
 	} else {
 		s.logger.Debug().Msgf("network fee attestation received - %s, height: %d, quorum: %d/%d",
 			k.Chain, k.Height, state.AttestationCount(), activeValCount)
 	}
 }
 
-// sendNetworkFeeAttestationsToThornode sends network fee attestations to thornode via gRPC
-func (s *AttestationGossip) sendNetworkFeeAttestationsToThornode(ctx context.Context, networkFee common.NetworkFee, state *AttestationState[*common.NetworkFee], isQuorum bool) {
+// sendNetworkFeeAttestationsToSwitchlynode sends network fee attestations to switchlynode via gRPC
+func (s *AttestationGossip) sendNetworkFeeAttestationsToSwitchlynode(ctx context.Context, networkFee common.NetworkFee, state *AttestationState[*common.NetworkFee], isQuorum bool) {
 	unsent := state.UnsentAttestations()
 	if len(unsent) == 0 {
 		s.logger.Debug().Msg("no unsent network fee attestations")
 		return
 	}
-	// Send via gRPC to thornode
+	// Send via gRPC to switchlynode
 	if _, err := s.grpcClient.SendQuorumNetworkFee(ctx, &common.QuorumNetworkFee{
 		NetworkFee:   &networkFee,
 		Attestations: unsent,
@@ -152,7 +152,7 @@ func (s *AttestationGossip) sendNetworkFeeAttestationsToThornode(ctx context.Con
 		return
 	}
 
-	s.logger.Info().Msgf("sent quorum network fee to thornode - %s, height: %d, attestations: %s",
+	s.logger.Info().Msgf("sent quorum network fee to switchlynode - %s, height: %d, attestations: %s",
 		networkFee.Chain, networkFee.Height, state.State())
 
 	// Mark attestations as sent
@@ -193,24 +193,24 @@ func (s *AttestationGossip) handleSolvencyAttestation(ctx context.Context, ats c
 	activeValCount := s.activeValidatorCount()
 	hasSuperMajority := types.HasSuperMajority(state.AttestationCount(), activeValCount)
 
-	// If we have a supermajority, send to thornode
+	// If we have a supermajority, send to switchlynode
 	if hasSuperMajority {
 		s.logger.Debug().Msgf("has supermajority: %d/%d", state.AttestationCount(), activeValCount)
-		s.sendSolvencyAttestationsToThornode(ctx, *state.Item, state, true)
+		s.sendSolvencyAttestationsToSwitchlynode(ctx, *state.Item, state, true)
 	} else {
 		s.logger.Debug().Msgf("solvency attestation received - %s, height: %d, quorum: %d/%d",
 			ats.Solvency.Chain, ats.Solvency.Height, state.AttestationCount(), activeValCount)
 	}
 }
 
-// sendSolvencyAttestationsToThornode sends solvency attestations to thornode via gRPC
-func (s *AttestationGossip) sendSolvencyAttestationsToThornode(ctx context.Context, solvency common.Solvency, state *AttestationState[*common.Solvency], isQuorum bool) {
+// sendSolvencyAttestationsToSwitchlynode sends solvency attestations to switchlynode via gRPC
+func (s *AttestationGossip) sendSolvencyAttestationsToSwitchlynode(ctx context.Context, solvency common.Solvency, state *AttestationState[*common.Solvency], isQuorum bool) {
 	unsent := state.UnsentAttestations()
 	if len(unsent) == 0 {
 		s.logger.Debug().Msg("no unsent solvency attestations")
 		return
 	}
-	// Send via gRPC to thornode
+	// Send via gRPC to switchlynode
 	if _, err := s.grpcClient.SendQuorumSolvency(ctx, &common.QuorumSolvency{
 		Solvency:     &solvency,
 		Attestations: unsent,
@@ -219,7 +219,7 @@ func (s *AttestationGossip) sendSolvencyAttestationsToThornode(ctx context.Conte
 		return
 	}
 
-	s.logger.Info().Msgf("sent quorum solvency to thornode - %s, height: %d, coins: %s, pubkey: %s, attestations: %s",
+	s.logger.Info().Msgf("sent quorum solvency to switchlynode - %s, height: %d, coins: %s, pubkey: %s, attestations: %s",
 		solvency.Chain, solvency.Height, solvency.Coins.String(), solvency.PubKey.String(), state.State())
 
 	// Mark attestations as sent
@@ -256,24 +256,24 @@ func (s *AttestationGossip) handleErrataAttestation(ctx context.Context, aet com
 	activeValCount := s.activeValidatorCount()
 	hasSuperMajority := types.HasSuperMajority(state.AttestationCount(), activeValCount)
 
-	// If we have a supermajority, send to thornode
+	// If we have a supermajority, send to switchlynode
 	if hasSuperMajority {
 		s.logger.Debug().Msgf("has supermajority: %d/%d", state.AttestationCount(), activeValCount)
-		s.sendErrataAttestationsToThornode(ctx, *state.Item, state, true)
+		s.sendErrataAttestationsToSwitchlynode(ctx, *state.Item, state, true)
 	} else {
 		s.logger.Debug().Msgf("errata attestation received - %s, id: %s, quorum: %d/%d",
 			k.Chain, k.Id, state.AttestationCount(), activeValCount)
 	}
 }
 
-// sendErrataAttestationsToThornode sends errata attestations to thornode via gRPC
-func (s *AttestationGossip) sendErrataAttestationsToThornode(ctx context.Context, errata common.ErrataTx, state *AttestationState[*common.ErrataTx], isQuorum bool) {
+// sendErrataAttestationsToSwitchlynode sends errata attestations to switchlynode via gRPC
+func (s *AttestationGossip) sendErrataAttestationsToSwitchlynode(ctx context.Context, errata common.ErrataTx, state *AttestationState[*common.ErrataTx], isQuorum bool) {
 	unsent := state.UnsentAttestations()
 	if len(unsent) == 0 {
 		s.logger.Debug().Msg("no unsent errata attestations")
 		return
 	}
-	// Send via gRPC to thornode
+	// Send via gRPC to switchlynode
 	if _, err := s.grpcClient.SendQuorumErrataTx(ctx, &common.QuorumErrataTx{
 		ErrataTx:     &errata,
 		Attestations: unsent,
@@ -282,7 +282,7 @@ func (s *AttestationGossip) sendErrataAttestationsToThornode(ctx context.Context
 		return
 	}
 
-	s.logger.Info().Msgf("sent quorum errata to thornode - %s - ID: %s - attestations: %s", errata.Chain, errata.Id, state.State())
+	s.logger.Info().Msgf("sent quorum errata to switchlynode - %s - ID: %s - attestations: %s", errata.Chain, errata.Id, state.State())
 
 	// Mark attestations as sent
 	state.MarkAttestationsSent(isQuorum)

@@ -6,9 +6,9 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Asset** | **string** | the asset to display the outbound fee for | 
 **OutboundFee** | **string** | the asset&#39;s outbound fee, in (1e8-format) units of the asset | 
-**FeeWithheldRune** | Pointer to **string** | Total RUNE the network has withheld as fees to later cover gas costs for this asset&#39;s outbounds | [optional] 
-**FeeSpentRune** | Pointer to **string** | Total RUNE the network has spent to reimburse gas costs for this asset&#39;s outbounds | [optional] 
-**SurplusRune** | Pointer to **string** | amount of RUNE by which the fee_withheld_rune exceeds the fee_spent_rune | [optional] 
+**FeeWithheldSWITCH** | Pointer to **string** | Total SWITCH the network has withheld as fees to later cover gas costs for this asset&#39;s outbounds | [optional] 
+**FeeSpentSWITCH** | Pointer to **string** | Total SWITCH the network has spent to reimburse gas costs for this asset&#39;s outbounds | [optional] 
+**SurplusSWITCH** | Pointer to **string** | amount of SWITCH by which the fee_withheld_rune exceeds the fee_spent_rune | [optional] 
 **DynamicMultiplierBasisPoints** | Pointer to **string** | dynamic multiplier basis points, based on the surplus_rune, affecting the size of the outbound_fee | [optional] 
 
 ## Methods
@@ -70,80 +70,80 @@ and a boolean to check if the value has been set.
 SetOutboundFee sets OutboundFee field to given value.
 
 
-### GetFeeWithheldRune
+### GetFeeWithheldSWITCH
 
-`func (o *OutboundFee) GetFeeWithheldRune() string`
+`func (o *OutboundFee) GetFeeWithheldSWITCH() string`
 
-GetFeeWithheldRune returns the FeeWithheldRune field if non-nil, zero value otherwise.
+GetFeeWithheldSWITCH returns the FeeWithheldSWITCH field if non-nil, zero value otherwise.
 
-### GetFeeWithheldRuneOk
+### GetFeeWithheldSWITCHOk
 
-`func (o *OutboundFee) GetFeeWithheldRuneOk() (*string, bool)`
+`func (o *OutboundFee) GetFeeWithheldSWITCHOk() (*string, bool)`
 
-GetFeeWithheldRuneOk returns a tuple with the FeeWithheldRune field if it's non-nil, zero value otherwise
+GetFeeWithheldSWITCHOk returns a tuple with the FeeWithheldSWITCH field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetFeeWithheldRune
+### SetFeeWithheldSWITCH
 
-`func (o *OutboundFee) SetFeeWithheldRune(v string)`
+`func (o *OutboundFee) SetFeeWithheldSWITCH(v string)`
 
-SetFeeWithheldRune sets FeeWithheldRune field to given value.
+SetFeeWithheldSWITCH sets FeeWithheldSWITCH field to given value.
 
-### HasFeeWithheldRune
+### HasFeeWithheldSWITCH
 
-`func (o *OutboundFee) HasFeeWithheldRune() bool`
+`func (o *OutboundFee) HasFeeWithheldSWITCH() bool`
 
-HasFeeWithheldRune returns a boolean if a field has been set.
+HasFeeWithheldSWITCH returns a boolean if a field has been set.
 
-### GetFeeSpentRune
+### GetFeeSpentSWITCH
 
-`func (o *OutboundFee) GetFeeSpentRune() string`
+`func (o *OutboundFee) GetFeeSpentSWITCH() string`
 
-GetFeeSpentRune returns the FeeSpentRune field if non-nil, zero value otherwise.
+GetFeeSpentSWITCH returns the FeeSpentSWITCH field if non-nil, zero value otherwise.
 
-### GetFeeSpentRuneOk
+### GetFeeSpentSWITCHOk
 
-`func (o *OutboundFee) GetFeeSpentRuneOk() (*string, bool)`
+`func (o *OutboundFee) GetFeeSpentSWITCHOk() (*string, bool)`
 
-GetFeeSpentRuneOk returns a tuple with the FeeSpentRune field if it's non-nil, zero value otherwise
+GetFeeSpentSWITCHOk returns a tuple with the FeeSpentSWITCH field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetFeeSpentRune
+### SetFeeSpentSWITCH
 
-`func (o *OutboundFee) SetFeeSpentRune(v string)`
+`func (o *OutboundFee) SetFeeSpentSWITCH(v string)`
 
-SetFeeSpentRune sets FeeSpentRune field to given value.
+SetFeeSpentSWITCH sets FeeSpentSWITCH field to given value.
 
-### HasFeeSpentRune
+### HasFeeSpentSWITCH
 
-`func (o *OutboundFee) HasFeeSpentRune() bool`
+`func (o *OutboundFee) HasFeeSpentSWITCH() bool`
 
-HasFeeSpentRune returns a boolean if a field has been set.
+HasFeeSpentSWITCH returns a boolean if a field has been set.
 
-### GetSurplusRune
+### GetSurplusSWITCH
 
-`func (o *OutboundFee) GetSurplusRune() string`
+`func (o *OutboundFee) GetSurplusSWITCH() string`
 
-GetSurplusRune returns the SurplusRune field if non-nil, zero value otherwise.
+GetSurplusSWITCH returns the SurplusSWITCH field if non-nil, zero value otherwise.
 
-### GetSurplusRuneOk
+### GetSurplusSWITCHOk
 
-`func (o *OutboundFee) GetSurplusRuneOk() (*string, bool)`
+`func (o *OutboundFee) GetSurplusSWITCHOk() (*string, bool)`
 
-GetSurplusRuneOk returns a tuple with the SurplusRune field if it's non-nil, zero value otherwise
+GetSurplusSWITCHOk returns a tuple with the SurplusSWITCH field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetSurplusRune
+### SetSurplusSWITCH
 
-`func (o *OutboundFee) SetSurplusRune(v string)`
+`func (o *OutboundFee) SetSurplusSWITCH(v string)`
 
-SetSurplusRune sets SurplusRune field to given value.
+SetSurplusSWITCH sets SurplusSWITCH field to given value.
 
-### HasSurplusRune
+### HasSurplusSWITCH
 
-`func (o *OutboundFee) HasSurplusRune() bool`
+`func (o *OutboundFee) HasSurplusSWITCH() bool`
 
-HasSurplusRune returns a boolean if a field has been set.
+HasSurplusSWITCH returns a boolean if a field has been set.
 
 ### GetDynamicMultiplierBasisPoints
 

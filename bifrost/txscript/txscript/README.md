@@ -20,20 +20,20 @@ can be found at https://en.bitcoin.it/wiki/Script
 ## Installation and Updating
 
 ```bash
-$ go get -u gitlab.com/thorchain/bifrost/txscript
+$ go get -u gitlab.com/switchly/bifrost/txscript
 ```
 
 ## Examples
 
-- [Standard Pay-to-pubkey-hash Script](https://pkg.go.dev/gitlab.com/thorchain/bifrost/txscript#example-PayToAddrScript)
+- [Standard Pay-to-pubkey-hash Script](https://pkg.go.dev/gitlab.com/switchly/bifrost/txscript#example-PayToAddrScript)
   Demonstrates creating a script which pays to a bitcoin address. It also
   prints the created script hex and uses the DisasmString function to display
   the disassembled script.
 
-- [Extracting Details from Standard Scripts](https://pkg.go.dev/gitlab.com/thorchain/bifrost/txscript#example-ExtractPkScriptAddrs)
+- [Extracting Details from Standard Scripts](https://pkg.go.dev/gitlab.com/switchly/bifrost/txscript#example-ExtractPkScriptAddrs)
   Demonstrates extracting information from a standard public key script.
 
-- [Manually Signing a Transaction Output](https://pkg.go.dev/gitlab.com/thorchain/bifrost/txscript#example-SignTxOutput)
+- [Manually Signing a Transaction Output](https://pkg.go.dev/gitlab.com/switchly/bifrost/txscript#example-SignTxOutput)
   Demonstrates manually creating and signing a redeem transaction.
 
 ## License

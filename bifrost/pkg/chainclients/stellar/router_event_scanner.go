@@ -15,8 +15,8 @@ import (
 	"github.com/stellar/go/protocols/horizon"
 	"github.com/stellar/go/protocols/horizon/operations"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
@@ -29,7 +29,7 @@ type RouterEventScanner struct {
 	sorobanRPCClient *SorobanRPCClient
 	routerAddress    string
 	retryConfig      RetryConfig
-	bridge           thorclient.ThorchainBridge
+	bridge           switchlyclient.SwitchlyBridge
 }
 
 // RetryConfig for handling rate limits
@@ -73,7 +73,7 @@ func NewRouterEventScanner(
 	horizonClient *horizonclient.Client,
 	sorobanRPCClient *SorobanRPCClient,
 	routerAddress string,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 ) *RouterEventScanner {
 	logger := log.Logger.With().Str("module", "router-event-scanner").Str("chain", cfg.ChainID.String()).Logger()
 

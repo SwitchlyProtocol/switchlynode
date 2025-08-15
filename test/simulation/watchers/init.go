@@ -10,12 +10,12 @@ import (
 // Init
 ////////////////////////////////////////////////////////////////////////////////////////
 
-var thornodeURL string
+var switchlynodeURL string
 
 func init() {
 	config.Init()
-	thornodeURL = config.GetBifrost().Thorchain.ChainHost
-	if !strings.HasPrefix(thornodeURL, "http") {
-		thornodeURL = "http://" + thornodeURL
+	switchlynodeURL = config.GetBifrost().Switchly.ChainHost
+	if !strings.HasPrefix(switchlynodeURL, "http") {
+		switchlynodeURL = "http://" + switchlynodeURL
 	}
 }

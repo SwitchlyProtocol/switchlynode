@@ -27,42 +27,42 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/utxo"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
-	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	ttypes "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
-// Signer will pull the tx out from thorchain and then forward it to chain
+// Signer will pull the tx out from switchly and then forward it to chain
 type Signer struct {
-	logger                zerolog.Logger
-	cfg                   config.Bifrost
-	wg                    *sync.WaitGroup
-	thorchainBridge       thorclient.ThorchainBridge
-	stopChan              chan struct{}
-	blockScanner          *blockscanner.BlockScanner
-	thorchainBlockScanner *ThorchainBlockScan
-	chains                map[common.Chain]chainclients.ChainClient
-	storage               SignerStorage
-	m                     *metrics.Metrics
-	errCounter            *prometheus.CounterVec
-	tssKeygen             *tss.KeyGen
-	tssServer             *tssp.TssServer
-	pubkeyMgr             pubkeymanager.PubKeyValidator
-	constantsProvider     *ConstantsProvider
-	localPubKey           common.PubKey
-	tssKeysignMetricMgr   *metrics.TssKeysignMetricMgr
-	observer              *observer.Observer
-	pipeline              *pipeline
+	logger               zerolog.Logger
+	cfg                  config.Bifrost
+	wg                   *sync.WaitGroup
+	switchlyBridge       switchlyclient.SwitchlyBridge
+	stopChan             chan struct{}
+	blockScanner         *blockscanner.BlockScanner
+	switchlyBlockScanner *SwitchlyBlockScan
+	chains               map[common.Chain]chainclients.ChainClient
+	storage              SignerStorage
+	m                    *metrics.Metrics
+	errCounter           *prometheus.CounterVec
+	tssKeygen            *tss.KeyGen
+	tssServer            *tssp.TssServer
+	pubkeyMgr            pubkeymanager.PubKeyValidator
+	constantsProvider    *ConstantsProvider
+	localPubKey          common.PubKey
+	tssKeysignMetricMgr  *metrics.TssKeysignMetricMgr
+	observer             *observer.Observer
+	pipeline             *pipeline
 }
 
 // NewSigner create a new instance of signer
 func NewSigner(cfg config.Bifrost,
-	thorchainBridge thorclient.ThorchainBridge,
-	thorKeys *thorclient.Keys,
+	switchlyBridge switchlyclient.SwitchlyBridge,
+	thorKeys *switchlyclient.Keys,
 	pubkeyMgr pubkeymanager.PubKeyValidator,
 	tssServer *tssp.TssServer,
 	chains map[common.Chain]chainclients.ChainClient,
@@ -70,9 +70,9 @@ func NewSigner(cfg config.Bifrost,
 	tssKeysignMetricMgr *metrics.TssKeysignMetricMgr,
 	obs *observer.Observer,
 ) (*Signer, error) {
-	storage, err := NewSignerStore(cfg.Signer.SignerDbPath, cfg.Signer.LevelDB, thorchainBridge.GetConfig().SignerPasswd)
+	storage, err := NewSignerStore(cfg.Signer.SignerDbPath, cfg.Signer.LevelDB, switchlyBridge.GetConfig().SignerPasswd)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create thorchain scan storage: %w", err)
+		return nil, fmt.Errorf("fail to create switchly scan storage: %w", err)
 	}
 	if tssKeysignMetricMgr == nil {
 		return nil, fmt.Errorf("fail to create signer , tss keysign metric manager is nil")
@@ -84,15 +84,15 @@ func NewSigner(cfg config.Bifrost,
 		if err != nil {
 			return nil, fmt.Errorf("failed to get address from thorKeys signer: %w", err)
 		}
-		na, err = thorchainBridge.GetNodeAccount(signerAddr.String())
+		na, err = switchlyBridge.GetNodeAccount(signerAddr.String())
 		if err != nil {
-			return nil, fmt.Errorf("fail to get node account from thorchain,err:%w", err)
+			return nil, fmt.Errorf("fail to get node account from switchly,err:%w", err)
 		}
 
 		if !na.PubKeySet.Secp256k1.IsEmpty() {
 			break
 		}
-		time.Sleep(constants.ThorchainBlockTime)
+		time.Sleep(constants.SwitchlyBlockTime)
 		log.Info().Msg("Waiting for node account to be registered...")
 	}
 
@@ -101,43 +101,43 @@ func NewSigner(cfg config.Bifrost,
 	}
 	pubkeyMgr.AddNodePubKey(na.PubKeySet.Secp256k1)
 
-	cfg.Signer.BlockScanner.ChainID = common.SWITCHLYChain // hard code to thorchain
+	cfg.Signer.BlockScanner.ChainID = common.SWITCHLYChain // hard code to switchly
 
 	// Create pubkey manager and add our private key
-	thorchainBlockScanner, err := NewThorchainBlockScan(cfg.Signer.BlockScanner, storage, thorchainBridge, m, pubkeyMgr)
+	switchlyBlockScanner, err := NewSwitchlyBlockScan(cfg.Signer.BlockScanner, storage, switchlyBridge, m, pubkeyMgr)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create thorchain block scan: %w", err)
+		return nil, fmt.Errorf("fail to create switchly block scan: %w", err)
 	}
 
-	blockScanner, err := blockscanner.NewBlockScanner(cfg.Signer.BlockScanner, storage, m, thorchainBridge, thorchainBlockScanner)
+	blockScanner, err := blockscanner.NewBlockScanner(cfg.Signer.BlockScanner, storage, m, switchlyBridge, switchlyBlockScanner)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create block scanner: %w", err)
 	}
 
-	kg, err := tss.NewTssKeyGen(thorKeys, tssServer, thorchainBridge)
+	kg, err := tss.NewTssKeyGen(thorKeys, tssServer, switchlyBridge)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create Tss Key gen,err:%w", err)
 	}
-	constantProvider := NewConstantsProvider(thorchainBridge)
+	constantProvider := NewConstantsProvider(switchlyBridge)
 	return &Signer{
-		logger:                log.With().Str("module", "signer").Logger(),
-		cfg:                   cfg,
-		wg:                    &sync.WaitGroup{},
-		stopChan:              make(chan struct{}),
-		blockScanner:          blockScanner,
-		thorchainBlockScanner: thorchainBlockScanner,
-		chains:                chains,
-		m:                     m,
-		storage:               storage,
-		errCounter:            m.GetCounterVec(metrics.SignerError),
-		pubkeyMgr:             pubkeyMgr,
-		thorchainBridge:       thorchainBridge,
-		tssKeygen:             kg,
-		tssServer:             tssServer,
-		constantsProvider:     constantProvider,
-		localPubKey:           na.PubKeySet.Secp256k1,
-		tssKeysignMetricMgr:   tssKeysignMetricMgr,
-		observer:              obs,
+		logger:               log.With().Str("module", "signer").Logger(),
+		cfg:                  cfg,
+		wg:                   &sync.WaitGroup{},
+		stopChan:             make(chan struct{}),
+		blockScanner:         blockScanner,
+		switchlyBlockScanner: switchlyBlockScanner,
+		chains:               chains,
+		m:                    m,
+		storage:              storage,
+		errCounter:           m.GetCounterVec(metrics.SignerError),
+		pubkeyMgr:            pubkeyMgr,
+		switchlyBridge:       switchlyBridge,
+		tssKeygen:            kg,
+		tssServer:            tssServer,
+		constantsProvider:    constantProvider,
+		localPubKey:          na.PubKeySet.Secp256k1,
+		tssKeysignMetricMgr:  tssKeysignMetricMgr,
+		observer:             obs,
 	}, nil
 }
 
@@ -153,10 +153,10 @@ func (s *Signer) getChain(chainID common.Chain) (chainclients.ChainClient, error
 // Start signer process
 func (s *Signer) Start() error {
 	s.wg.Add(1)
-	go s.processTxnOut(s.thorchainBlockScanner.GetTxOutMessages(), 1)
+	go s.processTxnOut(s.switchlyBlockScanner.GetTxOutMessages(), 1)
 
 	s.wg.Add(1)
-	go s.processKeygen(s.thorchainBlockScanner.GetKeygenMessages())
+	go s.processKeygen(s.switchlyBlockScanner.GetKeygenMessages())
 
 	s.wg.Add(1)
 	go s.signTransactions()
@@ -180,11 +180,11 @@ func (s *Signer) signTransactions() {
 		case <-s.stopChan:
 			return
 		default:
-			// When THORChain is catching up , bifrost might get stale data from thornode , thus it shall pause signing
-			catchingUp, err := s.thorchainBridge.IsCatchingUp()
+			// When SWITCHLYChain is catching up , bifrost might get stale data from switchlynode , thus it shall pause signing
+			catchingUp, err := s.switchlyBridge.IsCatchingUp()
 			if err != nil {
-				s.logger.Error().Err(err).Msg("fail to get thorchain sync status")
-				time.Sleep(constants.ThorchainBlockTime)
+				s.logger.Error().Err(err).Msg("fail to get switchly sync status")
+				time.Sleep(constants.SwitchlyBlockTime)
 				break // this will break select
 			}
 			if !catchingUp {
@@ -213,7 +213,7 @@ func runWithContext(ctx context.Context, fn func() ([]byte, *types.TxInItem, err
 }
 
 func (s *Signer) processTransactions() {
-	signerConcurrency, err := s.thorchainBridge.GetMimir(constants.SignerConcurrency.String())
+	signerConcurrency, err := s.switchlyBridge.GetMimir(constants.SignerConcurrency.String())
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get signer concurrency mimir")
 		return
@@ -240,7 +240,7 @@ func (s *Signer) processTransactions() {
 	}
 
 	// process transactions
-	s.pipeline.SpawnSignings(s, s.thorchainBridge)
+	s.pipeline.SpawnSignings(s, s.switchlyBridge)
 }
 
 // processTxnOut processes outbound TxOuts and save them to storage
@@ -256,7 +256,7 @@ func (s *Signer) processTxnOut(ch <-chan types.TxOut, idx int) {
 			if !more {
 				return
 			}
-			s.logger.Info().Msgf("Received a TxOut Array of %v from the Thorchain", txOut)
+			s.logger.Info().Msgf("Received a TxOut Array of %v from the Switchly", txOut)
 			items := make([]TxOutStoreItem, 0, len(txOut.TxArray))
 
 			for i, tx := range txOut.TxArray {
@@ -281,14 +281,14 @@ func (s *Signer) processKeygen(ch <-chan ttypes.KeygenBlock) {
 			if !more {
 				return
 			}
-			s.logger.Info().Interface("keygenBlock", keygenBlock).Msg("received a keygen block from thorchain")
+			s.logger.Info().Interface("keygenBlock", keygenBlock).Msg("received a keygen block from switchly")
 			s.processKeygenBlock(keygenBlock)
 		}
 	}
 }
 
 func (s *Signer) scheduleKeygenRetry(keygenBlock ttypes.KeygenBlock) bool {
-	churnRetryInterval, err := s.thorchainBridge.GetMimir(constants.ChurnRetryInterval.String())
+	churnRetryInterval, err := s.switchlyBridge.GetMimir(constants.ChurnRetryInterval.String())
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get churn retry mimir")
 		return false
@@ -296,7 +296,7 @@ func (s *Signer) scheduleKeygenRetry(keygenBlock ttypes.KeygenBlock) bool {
 	if churnRetryInterval <= 0 {
 		churnRetryInterval = constants.NewConstantValue().GetInt64Value(constants.ChurnRetryInterval)
 	}
-	keygenRetryInterval, err := s.thorchainBridge.GetMimir(constants.KeygenRetryInterval.String())
+	keygenRetryInterval, err := s.switchlyBridge.GetMimir(constants.KeygenRetryInterval.String())
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get keygen retries mimir")
 		return false
@@ -306,7 +306,7 @@ func (s *Signer) scheduleKeygenRetry(keygenBlock ttypes.KeygenBlock) bool {
 	}
 
 	// sanity check the retry interval is at least 1.5x the timeout
-	retryIntervalDuration := time.Duration(keygenRetryInterval) * constants.ThorchainBlockTime
+	retryIntervalDuration := time.Duration(keygenRetryInterval) * constants.SwitchlyBlockTime
 	if retryIntervalDuration <= s.cfg.Signer.KeygenTimeout*3/2 {
 		s.logger.Error().
 			Stringer("retryInterval", retryIntervalDuration).
@@ -315,7 +315,7 @@ func (s *Signer) scheduleKeygenRetry(keygenBlock ttypes.KeygenBlock) bool {
 		return false
 	}
 
-	height, err := s.thorchainBridge.GetBlockHeight()
+	height, err := s.switchlyBridge.GetBlockHeight()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get last chain height")
 		return false
@@ -332,9 +332,9 @@ func (s *Signer) scheduleKeygenRetry(keygenBlock ttypes.KeygenBlock) bool {
 	go func() {
 		// every block, try to start processing again
 		for {
-			time.Sleep(constants.ThorchainBlockTime)
+			time.Sleep(constants.SwitchlyBlockTime)
 			// trunk-ignore(golangci-lint/govet): shadow
-			height, err := s.thorchainBridge.GetBlockHeight()
+			height, err := s.switchlyBridge.GetBlockHeight()
 			if err != nil {
 				s.logger.Error().Err(err).Msg("fail to get last chain height")
 			}
@@ -388,7 +388,7 @@ func (s *Signer) processKeygenBlock(keygenBlock ttypes.KeygenBlock) {
 		// generate a verification signature to ensure we can sign with the new key
 		secp256k1Sig := s.secp256k1VerificationSignature(pubKey.Secp256k1)
 
-		if err = s.sendKeygenToThorchain(keygenBlock.Height, pubKey.Secp256k1, secp256k1Sig, blame, keygenReq.GetMembers(), keygenReq.Type, keygenTime); err != nil {
+		if err = s.sendKeygenToSwitchly(keygenBlock.Height, pubKey.Secp256k1, secp256k1Sig, blame, keygenReq.GetMembers(), keygenReq.Type, keygenTime); err != nil {
 			s.errCounter.WithLabelValues("fail_to_broadcast_keygen", "").Inc()
 			s.logger.Error().Err(err).Msg("fail to broadcast keygen")
 		}
@@ -406,10 +406,10 @@ func (s *Signer) processKeygenBlock(keygenBlock ttypes.KeygenBlock) {
 // secp256k1VerificationSignature will make a best effort to sign the public key with
 // its own private key as a sanity check to ensure parties are able to sign. The
 // signature will be included in the TssPool message if successful, and verified by
-// THORNode before the keygen is accepted.
+// SWITCHLYNode before the keygen is accepted.
 func (s *Signer) secp256k1VerificationSignature(pk common.PubKey) []byte {
 	// create keysign instance
-	ks, err := tss.NewKeySign(s.tssServer, s.thorchainBridge)
+	ks, err := tss.NewKeySign(s.tssServer, s.switchlyBridge)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to create keysign for secp256k1 check signing")
 		return nil
@@ -436,7 +436,7 @@ func (s *Signer) secp256k1VerificationSignature(pk common.PubKey) []byte {
 	ss := new(big.Int).SetBytes(sigBytes[32:])
 	signature := &btcec.Signature{R: r, S: ss}
 
-	// verify the signature (thornode will also verify and reject if invalid)
+	// verify the signature (switchlynode will also verify and reject if invalid)
 	spk, err := pk.Secp256K1()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get secp256k1 pubkey")
@@ -450,7 +450,7 @@ func (s *Signer) secp256k1VerificationSignature(pk common.PubKey) []byte {
 	return sigBytes
 }
 
-func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, secp256k1Signature []byte, blame ttypes.Blame, input common.PubKeys, keygenType ttypes.KeygenType, keygenTime int64) error {
+func (s *Signer) sendKeygenToSwitchly(height int64, poolPk common.PubKey, secp256k1Signature []byte, blame ttypes.Blame, input common.PubKeys, keygenType ttypes.KeygenType, keygenTime int64) error {
 	// collect supported chains in the configuration
 	chains := common.Chains{
 		common.SWITCHLYChain,
@@ -474,22 +474,22 @@ func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, secp2
 		}
 	}
 
-	keygenMsg, err := s.thorchainBridge.GetKeygenStdTx(poolPk, secp256k1Signature, keyshares, blame, input, keygenType, chains, height, keygenTime)
+	keygenMsg, err := s.switchlyBridge.GetKeygenStdTx(poolPk, secp256k1Signature, keyshares, blame, input, keygenType, chains, height, keygenTime)
 	if err != nil {
 		return fmt.Errorf("fail to get keygen id: %w", err)
 	}
 	strHeight := strconv.FormatInt(height, 10)
 
 	bf := backoff.NewExponentialBackOff()
-	bf.MaxElapsedTime = constants.ThorchainBlockTime
+	bf.MaxElapsedTime = constants.SwitchlyBlockTime
 	return backoff.Retry(func() error {
-		txID, err := s.thorchainBridge.Broadcast(keygenMsg)
+		txID, err := s.switchlyBridge.Broadcast(keygenMsg)
 		if err != nil {
-			s.logger.Warn().Err(err).Msg("fail to send keygen tx to thorchain")
-			s.errCounter.WithLabelValues("fail_to_send_to_thorchain", strHeight).Inc()
-			return fmt.Errorf("fail to send the tx to thorchain: %w", err)
+			s.logger.Warn().Err(err).Msg("fail to send keygen tx to switchly")
+			s.errCounter.WithLabelValues("fail_to_send_to_switchly", strHeight).Inc()
+			return fmt.Errorf("fail to send the tx to switchly: %w", err)
 		}
-		s.logger.Info().Stringer("txid", txID).Int64("block", height).Msg("sent keygen tx to thorchain")
+		s.logger.Info().Stringer("txid", txID).Int64("block", height).Msg("sent keygen tx to switchly")
 		return nil
 	}, bf)
 }
@@ -498,7 +498,7 @@ func (s *Signer) sendKeygenToThorchain(height int64, poolPk common.PubKey, secp2
 // SignTx error for the chain client, if we receive checkpoint bytes we also return them
 // with the error so they can be set on the TxOutStoreItem and re-used on a subsequent
 // retry to avoid double spend. The second returned value is an optional observation
-// that should be submitted to THORChain.
+// that should be submitted to SWITCHLYChain.
 func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem, error) {
 	height := item.Height
 	tx := item.TxOutItem
@@ -508,7 +508,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		tx.Checkpoint = item.Checkpoint
 	}
 
-	blockHeight, err := s.thorchainBridge.GetBlockHeight()
+	blockHeight, err := s.switchlyBridge.GetBlockHeight()
 	if err != nil {
 		s.logger.Error().Err(err).Msgf("fail to get block height")
 		return nil, nil, err
@@ -525,7 +525,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 	if item.Round7Retry {
 		mimirKey := "MAXOUTBOUNDATTEMPTS"
 		var maxOutboundAttemptsMimir int64
-		maxOutboundAttemptsMimir, err = s.thorchainBridge.GetMimir(mimirKey)
+		maxOutboundAttemptsMimir, err = s.switchlyBridge.GetMimir(mimirKey)
 		if err != nil {
 			s.logger.Err(err).Msgf("fail to get %s", mimirKey)
 			return nil, nil, err
@@ -542,7 +542,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 
 		// determine if the round 7 retry is for an inactive vault
 		var vault ttypes.Vault
-		vault, err = s.thorchainBridge.GetVault(item.TxOutItem.VaultPubKey.String())
+		vault, err = s.switchlyBridge.GetVault(item.TxOutItem.VaultPubKey.String())
 		if err != nil {
 			log.Err(err).
 				Stringer("vault_pubkey", item.TxOutItem.VaultPubKey).
@@ -567,7 +567,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		return nil, nil, err
 	}
 	mimirKey := "HALTSIGNING"
-	haltSigningGlobalMimir, err := s.thorchainBridge.GetMimir(mimirKey)
+	haltSigningGlobalMimir, err := s.switchlyBridge.GetMimir(mimirKey)
 	if err != nil {
 		s.logger.Err(err).Msgf("fail to get %s", mimirKey)
 		return nil, nil, err
@@ -577,7 +577,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		return nil, nil, nil
 	}
 	mimirKey = fmt.Sprintf("HALTSIGNING%s", tx.Chain)
-	haltSigningMimir, err := s.thorchainBridge.GetMimir(mimirKey)
+	haltSigningMimir, err := s.switchlyBridge.GetMimir(mimirKey)
 	if err != nil {
 		s.logger.Err(err).Msgf("fail to get %s", mimirKey)
 		return nil, nil, err
@@ -592,7 +592,7 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 	}
 
 	if len(tx.ToAddress) == 0 {
-		s.logger.Info().Msg("To address is empty, THORNode don't know where to send the fund , ignore")
+		s.logger.Info().Msg("To address is empty, SWITCHLYNode don't know where to send the fund , ignore")
 		return nil, nil, nil // return nil and discard item
 	}
 
@@ -615,11 +615,11 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		return nil, nil, nil // return nil and discard item
 	}
 
-	// We get the keysign object from thorchain again to ensure it hasn't
+	// We get the keysign object from switchly again to ensure it hasn't
 	// been signed already, and we can skip. This helps us not get stuck on
 	// a task that we'll never sign, because 2/3rds already has and will
 	// never be available to sign again.
-	txOut, err := s.thorchainBridge.GetKeysign(height, tx.VaultPubKey.String())
+	txOut, err := s.switchlyBridge.GetKeysign(height, tx.VaultPubKey.String())
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get keysign items")
 		return nil, nil, err

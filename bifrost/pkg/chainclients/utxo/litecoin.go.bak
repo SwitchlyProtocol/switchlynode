@@ -8,7 +8,7 @@ import (
 	ltcwire "github.com/ltcsuite/ltcd/wire"
 	ltctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/ltcd-txscript"
 
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 

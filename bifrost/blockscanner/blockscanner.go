@@ -13,8 +13,8 @@ import (
 
 	btypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
@@ -51,13 +51,13 @@ type BlockScanner struct {
 	globalTxsQueue        chan types.TxIn
 	globalNetworkFeeQueue chan common.NetworkFee
 	errorCounter          *prometheus.CounterVec
-	thorchainBridge       thorclient.ThorchainBridge
+	switchlyBridge        switchlyclient.SwitchlyBridge
 	chainScanner          BlockScannerFetcher
 	healthy               *atomic.Bool
 }
 
 // NewBlockScanner create a new instance of BlockScanner
-func NewBlockScanner(cfg config.BifrostBlockScannerConfiguration, scannerStorage ScannerStorage, m *metrics.Metrics, thorchainBridge thorclient.ThorchainBridge, chainScanner BlockScannerFetcher) (*BlockScanner, error) {
+func NewBlockScanner(cfg config.BifrostBlockScannerConfiguration, scannerStorage ScannerStorage, m *metrics.Metrics, switchlyBridge switchlyclient.SwitchlyBridge, chainScanner BlockScannerFetcher) (*BlockScanner, error) {
 	var err error
 	if scannerStorage == nil {
 		return nil, errors.New("scannerStorage is nil")
@@ -65,24 +65,24 @@ func NewBlockScanner(cfg config.BifrostBlockScannerConfiguration, scannerStorage
 	if m == nil {
 		return nil, errors.New("metrics instance is nil")
 	}
-	if thorchainBridge == nil {
-		return nil, errors.New("thorchain bridge is nil")
+	if switchlyBridge == nil {
+		return nil, errors.New("switchly bridge is nil")
 	}
 
 	logger := log.Logger.With().Str("module", "blockscanner").Str("chain", cfg.ChainID.String()).Logger()
 	scanner := &BlockScanner{
-		cfg:             cfg,
-		logger:          logger,
-		wg:              &sync.WaitGroup{},
-		stopChan:        make(chan struct{}),
-		scanChan:        make(chan int64),
-		rollbackChan:    make(chan int64),
-		scannerStorage:  scannerStorage,
-		metrics:         m,
-		errorCounter:    m.GetCounterVec(metrics.CommonBlockScannerError),
-		thorchainBridge: thorchainBridge,
-		chainScanner:    chainScanner,
-		healthy:         &atomic.Bool{},
+		cfg:            cfg,
+		logger:         logger,
+		wg:             &sync.WaitGroup{},
+		stopChan:       make(chan struct{}),
+		scanChan:       make(chan int64),
+		rollbackChan:   make(chan int64),
+		scannerStorage: scannerStorage,
+		metrics:        m,
+		errorCounter:   m.GetCounterVec(metrics.CommonBlockScannerError),
+		switchlyBridge: switchlyBridge,
+		chainScanner:   chainScanner,
+		healthy:        &atomic.Bool{},
 	}
 
 	scanner.previousBlock, err = scanner.FetchLastHeight()
@@ -101,7 +101,7 @@ func (b *BlockScanner) PreviousHeight() int64 {
 
 // RollbackToLastObserved rollback the block scanner to last observed height minus flex period
 func (b *BlockScanner) RollbackToLastObserved() error {
-	lastObservedHeight, err := b.thorchainBridge.GetLastObservedInHeight(b.cfg.ChainID)
+	lastObservedHeight, err := b.switchlyBridge.GetLastObservedInHeight(b.cfg.ChainID)
 	if err != nil {
 		return fmt.Errorf("fail to get last observed height: %w", err)
 	}
@@ -110,24 +110,24 @@ func (b *BlockScanner) RollbackToLastObserved() error {
 		return nil
 	}
 
-	maxConfirmations, err := b.thorchainBridge.GetMimirWithRef(constants.MimirTemplateMaxConfirmations, b.cfg.ChainID.String())
+	maxConfirmations, err := b.switchlyBridge.GetMimirWithRef(constants.MimirTemplateMaxConfirmations, b.cfg.ChainID.String())
 	if err != nil || maxConfirmations < 0 {
 		maxConfirmations = 0
 	}
 
-	c, err := b.thorchainBridge.GetConstants()
+	c, err := b.switchlyBridge.GetConstants()
 	if err != nil {
 		return fmt.Errorf("fail to get constants: %w", err)
 	}
 
 	obsDelayFlexConst := constants.ObservationDelayFlexibility.String()
 	observerFlexWindowBlocksThor := c[obsDelayFlexConst]
-	observerFlexWindowBlocksThorMimir, err := b.thorchainBridge.GetMimir(obsDelayFlexConst)
+	observerFlexWindowBlocksThorMimir, err := b.switchlyBridge.GetMimir(obsDelayFlexConst)
 	if err == nil && observerFlexWindowBlocksThorMimir > 0 {
 		observerFlexWindowBlocksThor = observerFlexWindowBlocksThorMimir
 	}
 
-	thorBlockTimeMs := c[constants.ThorchainBlockTime.String()] / int64(time.Millisecond)
+	thorBlockTimeMs := c[constants.SwitchlyBlockTime.String()] / int64(time.Millisecond)
 	observerFlexWindowBlocksChain := observerFlexWindowBlocksThor * thorBlockTimeMs / b.cfg.ChainID.ApproximateBlockMilliseconds()
 	if observerFlexWindowBlocksChain < 1 {
 		observerFlexWindowBlocksChain = 1
@@ -207,7 +207,7 @@ func (b *BlockScanner) scanMempool() {
 				}
 			} else {
 				// backoff between mempool scans (some chain clients always return nothing)
-				time.Sleep(constants.ThorchainBlockTime)
+				time.Sleep(constants.SwitchlyBlockTime)
 			}
 		}
 	}
@@ -219,17 +219,17 @@ func (b *BlockScanner) isChainPaused() bool {
 	var haltHeight, solvencyHaltHeight, nodeHaltHeight, thorHeight int64
 
 	// Check if chain has been halted via mimir
-	haltHeight, err := b.thorchainBridge.GetMimir(fmt.Sprintf("Halt%sChain", b.cfg.ChainID))
+	haltHeight, err := b.switchlyBridge.GetMimir(fmt.Sprintf("Halt%sChain", b.cfg.ChainID))
 	if err != nil {
 		b.logger.Error().Err(err).Msgf("fail to get mimir setting %s", fmt.Sprintf("Halt%sChain", b.cfg.ChainID))
 	}
 	// Check if chain has been halted by auto solvency checks
-	solvencyHaltHeight, err = b.thorchainBridge.GetMimir(fmt.Sprintf("SolvencyHalt%sChain", b.cfg.ChainID))
+	solvencyHaltHeight, err = b.switchlyBridge.GetMimir(fmt.Sprintf("SolvencyHalt%sChain", b.cfg.ChainID))
 	if err != nil {
 		b.logger.Error().Err(err).Msgf("fail to get mimir %s", fmt.Sprintf("SolvencyHalt%sChain", b.cfg.ChainID))
 	}
 	// Check if all chains halted globally
-	globalHaltHeight, err := b.thorchainBridge.GetMimir("HaltChainGlobal")
+	globalHaltHeight, err := b.switchlyBridge.GetMimir("HaltChainGlobal")
 	if err != nil {
 		b.logger.Error().Err(err).Msg("fail to get mimir setting HaltChainGlobal")
 	}
@@ -237,13 +237,13 @@ func (b *BlockScanner) isChainPaused() bool {
 		haltHeight = globalHaltHeight
 	}
 	// Check if a node paused all chains
-	nodeHaltHeight, err = b.thorchainBridge.GetMimir("NodePauseChainGlobal")
+	nodeHaltHeight, err = b.switchlyBridge.GetMimir("NodePauseChainGlobal")
 	if err != nil {
 		b.logger.Error().Err(err).Msg("fail to get mimir setting NodePauseChainGlobal")
 	}
-	thorHeight, err = b.thorchainBridge.GetBlockHeight()
+	thorHeight, err = b.switchlyBridge.GetBlockHeight()
 	if err != nil {
-		b.logger.Error().Err(err).Msg("fail to get THORChain block height")
+		b.logger.Error().Err(err).Msg("fail to get SWITCHLYChain block height")
 	}
 
 	if nodeHaltHeight > 0 && thorHeight < nodeHaltHeight {
@@ -259,7 +259,7 @@ func (b *BlockScanner) scanBlocks() {
 	defer b.logger.Debug().Msg("stop scan blocks")
 	defer b.wg.Done()
 
-	lastMimirCheck := time.Now().Add(-constants.ThorchainBlockTime)
+	lastMimirCheck := time.Now().Add(-constants.SwitchlyBlockTime)
 	isChainPaused := false
 
 	// start up to grab those blocks
@@ -278,7 +278,7 @@ func (b *BlockScanner) scanBlocks() {
 			preBlockHeight := atomic.LoadInt64(&b.previousBlock)
 			currentBlock := preBlockHeight + 1
 			// check if mimir has disabled this chain
-			if time.Since(lastMimirCheck) >= constants.ThorchainBlockTime {
+			if time.Since(lastMimirCheck) >= constants.SwitchlyBlockTime {
 				isChainPaused = b.isChainPaused()
 				lastMimirCheck = time.Now()
 			}
@@ -286,7 +286,7 @@ func (b *BlockScanner) scanBlocks() {
 			// Chain is paused, mark as unhealthy
 			if isChainPaused {
 				b.healthy.Store(false)
-				time.Sleep(constants.ThorchainBlockTime)
+				time.Sleep(constants.SwitchlyBlockTime)
 				continue
 			}
 
@@ -325,7 +325,7 @@ func (b *BlockScanner) scanBlocks() {
 
 				ms := b.cfg.ChainID.ApproximateBlockMilliseconds()
 
-				// determine how often we compare THORNode network fee to Bifrost network fee.
+				// determine how often we compare SWITCHLYNode network fee to Bifrost network fee.
 				// General goal is about once per day.
 				mod := ((24 * 60 * 60 * 1000) + ms - 1) / ms
 				if blockToProcess%mod == 0 {
@@ -386,22 +386,22 @@ func (b *BlockScanner) scanBlocks() {
 }
 
 // updateStaleNetworkFee broadcasts a network fee observation if the local scanner fee
-// does not match the fee published to THORNode. This can be called periodically to
+// does not match the fee published to SWITCHLYNode. This can be called periodically to
 // ensure fee changes find consensus despite raciness on the observation height.
 func (b *BlockScanner) updateStaleNetworkFee(currentBlock int64) {
-	// Only broadcast MsgNetworkFee if the chain isn't THORChain
+	// Only broadcast MsgNetworkFee if the chain isn't SWITCHLYChain
 	// and the scanner is healthy.
 	if b.cfg.ChainID.Equals(common.SWITCHLYChain) || !b.healthy.Load() {
 		return
 	}
 
 	transactionSize, transactionFeeRate := b.chainScanner.GetNetworkFee()
-	thorTransactionSize, thorTransactionFeeRate, err := b.thorchainBridge.GetNetworkFee(b.cfg.ChainID)
+	thorTransactionSize, thorTransactionFeeRate, err := b.switchlyBridge.GetNetworkFee(b.cfg.ChainID)
 	if err != nil {
-		b.logger.Error().Err(err).Msg("fail to get thornode network fee")
+		b.logger.Error().Err(err).Msg("fail to get switchlynode network fee")
 		return
 	}
-	// Do not broadcast a regularly-timed network fee if the THORNode network fee is already consistent with the scanner's.
+	// Do not broadcast a regularly-timed network fee if the SWITCHLYNode network fee is already consistent with the scanner's.
 	if thorTransactionSize == transactionSize && thorTransactionFeeRate == transactionFeeRate {
 		return
 	}
@@ -417,7 +417,7 @@ func (b *BlockScanner) updateStaleNetworkFee(currentBlock int64) {
 		Int64("height", currentBlock).
 		Uint64("size", transactionSize).
 		Uint64("rate", transactionFeeRate).
-		Msg("sent timed network fee to THORChain")
+		Msg("sent timed network fee to SWITCHLYChain")
 }
 
 // FetchLastHeight determines the height to start scanning:
@@ -436,17 +436,17 @@ func (b *BlockScanner) FetchLastHeight() (int64, error) {
 		return b.cfg.StartBlockHeight, nil
 	}
 
-	// wait for thorchain to be caught up first
-	if err := b.thorchainBridge.WaitToCatchUp(); err != nil {
+	// wait for switchly to be caught up first
+	if err := b.switchlyBridge.WaitToCatchUp(); err != nil {
 		return 0, err
 	}
 
-	if b.thorchainBridge != nil {
+	if b.switchlyBridge != nil {
 		var height int64
 		if b.cfg.ChainID.Equals(common.SWITCHLYChain) {
-			height, _ = b.thorchainBridge.GetBlockHeight()
+			height, _ = b.switchlyBridge.GetBlockHeight()
 		} else {
-			height, _ = b.thorchainBridge.GetLastObservedInHeight(b.cfg.ChainID)
+			height, _ = b.switchlyBridge.GetLastObservedInHeight(b.cfg.ChainID)
 		}
 		if height > 0 {
 

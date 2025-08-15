@@ -1,4 +1,4 @@
-# 1 BTC == 1000 RUNE, 10 ETH == 1000 RUNE, 1000 USDX == 1000 RUNE
+# 1 BTC == 1000 SWITCH, 10 ETH == 1000 SWITCH, 1000 USDX == 1000 SWITCH
 type: state
 genesis:
   app_state:
@@ -12,11 +12,11 @@ genesis:
           coins:
             - denom: rune
               amount: "4500000000000" # maintain 500k supply
-    thorchain:
+    switchly:
       mimirs:
-        - key: LENDING-THOR-BTC
+        - key: LENDING-SWITCHLY-BTC
           value: "1"
-        - key: LENDING-THOR-ETH
+        - key: LENDING-SWITCHLY-ETH
           value: "1"
       liquidity_providers:
         - asset: BTC.BTC
@@ -120,7 +120,7 @@ genesis:
       vaults:
         - block_height: "0"
           chains:
-            - THOR
+            - SWITCHLY
             - BTC
             - LTC
             - BCH

@@ -92,14 +92,14 @@ func (c Coin) IsSwitch() bool {
 	return c.Asset.IsSwitch()
 }
 
-// IsRune checks whether the coin's Asset is RUNE (legacy method - use IsSwitch instead).
-func (c Coin) IsRune() bool {
+// IsSWITCH checks whether the coin's Asset is SWITCH (legacy method - use IsSwitch instead).
+func (c Coin) IsSWITCH() bool {
 	return c.Asset.IsSwitch()
 }
 
-// IsTCY checks whether the coin's Asset is TCY.
-func (c Coin) IsTCY() bool {
-	return c.Asset.IsTCY()
+// IsSWCY checks whether the coin's Asset is SWCY.
+func (c Coin) IsSWCY() bool {
+	return c.Asset.IsSWCY()
 }
 
 // Native create a new instance of cosmos.Coin

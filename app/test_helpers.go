@@ -1,6 +1,6 @@
 package app
 
-// Update with thorchain specific setup
+// Update with switchly specific setup
 // These helper functions assume a typical cosmos chain / validator initializations
 
 // import (

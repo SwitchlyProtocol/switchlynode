@@ -7,7 +7,7 @@ var WasmPermissionsRaw = WasmPermissions{
 	Permissions: map[string]WasmPermission{
 		// Test code entry for TestQueryCodes
 		"a8f1a38aa518864169e30ab482ea86558a817982a030b8888ea6dfa0cd700128": {
-			Origin: "https://thorchain.org",
+			Origin: "https://switchly.org",
 			Deployers: map[string]bool{
 				"tswitch1nrp4veflhpjnv87akxcpxln5lmc4z4kkdsdpd5": true,
 				"tswitch1770gl4x5u7aauzlc7su7j3kl6jgduz2wck29yl": true,

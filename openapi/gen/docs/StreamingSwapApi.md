@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**StreamSwap**](StreamingSwapApi.md#StreamSwap) | **Get** /thorchain/swap/streaming/{hash} | 
-[**StreamSwaps**](StreamingSwapApi.md#StreamSwaps) | **Get** /thorchain/swaps/streaming | 
+[**StreamSwap**](StreamingSwapApi.md#StreamSwap) | **Get** /switchly/swap/streaming/{hash} | 
+[**StreamSwaps**](StreamingSwapApi.md#StreamSwaps) | **Get** /switchly/swaps/streaming | 
 
 
 

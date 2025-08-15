@@ -21,11 +21,11 @@ import (
 
 type tssSignableBCH struct {
 	poolPubKey    common.PubKey
-	tssKeyManager tss.ThorchainKeyManager
+	tssKeyManager tss.SwitchlyKeyManager
 	log           zerolog.Logger
 }
 
-func newTssSignableBCH(poolPubKey common.PubKey, tssKeyManager tss.ThorchainKeyManager, log zerolog.Logger) *tssSignableBCH {
+func newTssSignableBCH(poolPubKey common.PubKey, tssKeyManager tss.SwitchlyKeyManager, log zerolog.Logger) *tssSignableBCH {
 	return &tssSignableBCH{
 		poolPubKey:    poolPubKey,
 		tssKeyManager: tssKeyManager,
@@ -77,11 +77,11 @@ func (ts *tssSignableBCH) GetPubKey() *bchec.PublicKey {
 
 type tssSignableBTC struct {
 	poolPubKey    common.PubKey
-	tssKeyManager tss.ThorchainKeyManager
+	tssKeyManager tss.SwitchlyKeyManager
 	log           zerolog.Logger
 }
 
-func newTssSignableBTC(poolPubKey common.PubKey, tssKeyManager tss.ThorchainKeyManager, log zerolog.Logger) *tssSignableBTC {
+func newTssSignableBTC(poolPubKey common.PubKey, tssKeyManager tss.SwitchlyKeyManager, log zerolog.Logger) *tssSignableBTC {
 	return &tssSignableBTC{
 		poolPubKey:    poolPubKey,
 		tssKeyManager: tssKeyManager,
@@ -129,11 +129,11 @@ func (ts *tssSignableBTC) GetPubKey() *btcec.PublicKey {
 
 type tssSignableDOGE struct {
 	poolPubKey    common.PubKey
-	tssKeyManager tss.ThorchainKeyManager
+	tssKeyManager tss.SwitchlyKeyManager
 	log           zerolog.Logger
 }
 
-func newTssSignableDOGE(poolPubKey common.PubKey, tssKeyManager tss.ThorchainKeyManager, log zerolog.Logger) *tssSignableDOGE {
+func newTssSignableDOGE(poolPubKey common.PubKey, tssKeyManager tss.SwitchlyKeyManager, log zerolog.Logger) *tssSignableDOGE {
 	return &tssSignableDOGE{
 		poolPubKey:    poolPubKey,
 		tssKeyManager: tssKeyManager,
@@ -181,11 +181,11 @@ func (ts *tssSignableDOGE) GetPubKey() *dogeec.PublicKey {
 
 type tssSignableLTC struct {
 	poolPubKey    common.PubKey
-	tssKeyManager tss.ThorchainKeyManager
+	tssKeyManager tss.SwitchlyKeyManager
 	log           zerolog.Logger
 }
 
-func newTssSignableLTC(poolPubKey common.PubKey, tssKeyManager tss.ThorchainKeyManager, log zerolog.Logger) *tssSignableLTC {
+func newTssSignableLTC(poolPubKey common.PubKey, tssKeyManager tss.SwitchlyKeyManager, log zerolog.Logger) *tssSignableLTC {
 	return &tssSignableLTC{
 		poolPubKey:    poolPubKey,
 		tssKeyManager: tssKeyManager,

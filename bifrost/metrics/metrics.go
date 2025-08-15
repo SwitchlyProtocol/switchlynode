@@ -24,14 +24,14 @@ const (
 	TotalRetryBlocks        MetricName = `total_retry_blocks`
 	CommonBlockScannerError MetricName = `block_scanner_error`
 
-	ThorchainBlockScannerError MetricName = `thorchain_block_scan_error`
-	BlockDiscoveryDuration     MetricName = `block_discovery_duration`
+	SwitchlyBlockScannerError MetricName = `switchly_block_scan_error`
+	BlockDiscoveryDuration    MetricName = `block_discovery_duration`
 
-	ThorchainClientError    MetricName = `thorchain_client_error`
-	TxToThorchain           MetricName = `tx_to_thorchain`
-	TxToThorchainSigned     MetricName = `tx_to_thorchain_signed`
-	SignToThorchainDuration MetricName = `sign_to_thorchain_duration`
-	SendToThorchainDuration MetricName = `send_to_thorchain_duration`
+	SwitchlyClientError    MetricName = `switchly_client_error`
+	TxToSwitchly           MetricName = `tx_to_switchly`
+	TxToSwitchlySigned     MetricName = `tx_to_switchly_signed`
+	SignToSwitchlyDuration MetricName = `sign_to_switchly_duration`
+	SendToSwitchlyDuration MetricName = `send_to_switchly_duration`
 
 	ObserverError MetricName = `observer_error`
 	SignerError   MetricName = `signer_error`
@@ -72,16 +72,16 @@ var (
 			Name:      "total_retry_blocks_total",
 			Help:      "total blocks retried ",
 		}),
-		TxToThorchain: prometheus.NewCounter(prometheus.CounterOpts{
+		TxToSwitchly: prometheus.NewCounter(prometheus.CounterOpts{
 			Namespace: "observer",
-			Subsystem: "thorchain_client",
-			Name:      "tx_to_thorchain_total",
-			Help:      "number of tx observer post to thorchain successfully",
+			Subsystem: "switchly_client",
+			Name:      "tx_to_switchly_total",
+			Help:      "number of tx observer post to switchly successfully",
 		}),
-		TxToThorchainSigned: prometheus.NewCounter(prometheus.CounterOpts{
+		TxToSwitchlySigned: prometheus.NewCounter(prometheus.CounterOpts{
 			Namespace: "observer",
-			Subsystem: "thorchain_client",
-			Name:      "tx_to_thorchain_signed_total",
+			Subsystem: "switchly_client",
+			Name:      "tx_to_switchly_signed_total",
 			Help:      "number of tx observer signed successfully",
 		}),
 		BatchSends: prometheus.NewCounter(prometheus.CounterOpts{
@@ -107,20 +107,20 @@ var (
 			"error_name", "additional",
 		}),
 
-		ThorchainBlockScannerError: prometheus.NewCounterVec(prometheus.CounterOpts{
+		SwitchlyBlockScannerError: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: "block_scanner",
-			Subsystem: "thorchain_block_scanner",
+			Subsystem: "switchly_block_scanner",
 			Name:      "errors_total",
-			Help:      "errors in thorchain block scanner",
+			Help:      "errors in switchly block scanner",
 		}, []string{
 			"error_name", "additional",
 		}),
 
-		ThorchainClientError: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: "thorchain",
-			Subsystem: "thorchain_client",
+		SwitchlyClientError: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Namespace: "switchly",
+			Subsystem: "switchly_client",
 			Name:      "errors_total",
-			Help:      "errors in thorchain client",
+			Help:      "errors in switchly client",
 		}, []string{
 			"error_name", "additional",
 		}),
@@ -166,17 +166,17 @@ var (
 			Name:      "block_discovery",
 			Help:      "how long it takes to discovery a block height",
 		}),
-		SignToThorchainDuration: prometheus.NewHistogram(prometheus.HistogramOpts{
+		SignToSwitchlyDuration: prometheus.NewHistogram(prometheus.HistogramOpts{
 			Namespace: "observer",
-			Subsystem: "thorchain",
-			Name:      "sign_to_thorchain_duration",
-			Help:      "how long it takes to sign a tx to thorchain",
+			Subsystem: "switchly",
+			Name:      "sign_to_switchly_duration",
+			Help:      "how long it takes to sign a tx to switchly",
 		}),
-		SendToThorchainDuration: prometheus.NewHistogram(prometheus.HistogramOpts{
+		SendToSwitchlyDuration: prometheus.NewHistogram(prometheus.HistogramOpts{
 			Namespace: "observer",
-			Subsystem: "thorchain",
-			Name:      "send_to_thorchain_duration",
-			Help:      "how long it takes to sign and broadcast to thorchain",
+			Subsystem: "switchly",
+			Name:      "send_to_switchly_duration",
+			Help:      "how long it takes to sign and broadcast to switchly",
 		}),
 		BatchSize: prometheus.NewHistogram(prometheus.HistogramOpts{
 			Namespace: "observer",

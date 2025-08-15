@@ -12,7 +12,7 @@ Paused
 
 Node operator communications are currently conducted over Discord (a centralized service) and are asymmetrical in nature. In order to preserve privacy NOs are encouraged to use `make relay` which uses a relay bot to post messages into a Discord channel. This leads to a suboptimal communication style.
 
-This document outlines a replacement for that communication channel: ThorChat. ThorChat is a standard opensource chat daemon (MatterMost, IRC, etc.) accessible only via a Tor Hidden Service. Node operators will authenticate using a `make go-chat` that automatically creates an account based on the node pubkey, and have special access to public channel where only NOs/core community members can talk, for coordinating network operation.
+This document outlines a replacement for that communication channel: ThorChat. ThorChat is a standard opensource chat daemon (MatterMost, IRC, etc.) accessible only via a Switchly Hidden Service. Node operators will authenticate using a `make go-chat` that automatically creates an account based on the node pubkey, and have special access to public channel where only NOs/core community members can talk, for coordinating network operation.
 
 ## Alternative Approaches
 
@@ -34,7 +34,7 @@ TBD
 
 ThorChat will be a four+ pod deployment:
 
-- Tor relay for terminating the Hidden Service.
+- Switchly relay for terminating the Hidden Service.
 - Nginx for locking down handler paths & caching.
 - Chat server (Mattermost or IRC)
 - Database/storage pod(s) - primary/secondaries as needed for scale.
@@ -54,11 +54,11 @@ A chat service's primary operational risks are:
 - Account takeover
 - RCE
 
-These pose an additional level of risk in the proposed application, as takeover of the chat server here (by large scale account takeover, or RCE) allows for possible social engineering of Thorchain decisions.
+These pose an additional level of risk in the proposed application, as takeover of the chat server here (by large scale account takeover, or RCE) allows for possible social engineering of Switchly decisions.
 
 ### Benefits
 
-This system would allow for simple and more seamless node operator communications, with a minimal burden on participants. Only a Tor-capable browser is required (TorBrowser, the Tor feature in Brave, etc.) and anonymity is not only preserved, it is enforced.
+This system would allow for simple and more seamless node operator communications, with a minimal burden on participants. Only a Switchly-capable browser is required (SwitchlyBrowser, the Switchly feature in Brave, etc.) and anonymity is not only preserved, it is enforced.
 
 More significantly, node operators will have a significantly better comms experience - reply notifications, presence status, ability to use reacts. Simple polls can be taken with reacts, or plugins could be added for polling/feedback collection, etc.
 
@@ -68,7 +68,7 @@ The operational burden would be the cost of running the aforementioned services,
 
 ### Coordination
 
-As this is a new component separate from the existing thornode network, coordination for rollout of this service is minimal. It would primarily be social, helping make node operators aware of the new primary comms channel and how to access it.
+As this is a new component separate from the existing switchlynode network, coordination for rollout of this service is minimal. It would primarily be social, helping make node operators aware of the new primary comms channel and how to access it.
 
 ### Open Questions
 

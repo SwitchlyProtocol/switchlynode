@@ -16,8 +16,8 @@ import (
 	btypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/blockscanner/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 
@@ -29,7 +29,7 @@ import (
 	txtypes "github.com/Peersyst/xrpl-go/xrpl/transaction/types"
 )
 
-// SolvencyReporter is to report solvency info to THORNode
+// SolvencyReporter is to report solvency info to SWITCHLYNode
 type SolvencyReporter func(int64) error
 
 const (
@@ -53,7 +53,7 @@ type XrpBlockScanner struct {
 	cfg              config.BifrostBlockScannerConfiguration
 	logger           zerolog.Logger
 	db               blockscanner.ScannerStorage
-	bridge           thorclient.ThorchainBridge
+	bridge           switchlyclient.SwitchlyBridge
 	solvencyReporter SolvencyReporter
 	rpcClient        *rpc.Client
 
@@ -61,7 +61,7 @@ type XrpBlockScanner struct {
 
 	// feeCache contains a rolling window of suggested fees.
 	// Fees are stored at 100x the values on the observed chain due to compensate for the
-	// difference in base chain decimals (thorchain:1e8, xrp:1e6).
+	// difference in base chain decimals (switchly:1e8, xrp:1e6).
 	feeCache []sdkmath.Uint
 	lastFee  sdkmath.Uint
 }
@@ -70,7 +70,7 @@ type XrpBlockScanner struct {
 func NewXrpBlockScanner(rpcHost string,
 	cfg config.BifrostBlockScannerConfiguration,
 	scanStorage blockscanner.ScannerStorage,
-	bridge thorclient.ThorchainBridge,
+	bridge switchlyclient.SwitchlyBridge,
 	m *metrics.Metrics,
 	solvencyReporter SolvencyReporter,
 ) (*XrpBlockScanner, error) {
@@ -171,7 +171,7 @@ func (c *XrpBlockScanner) updateFees(height int64) error {
 		// NOTE: We post the fee to the network instead of the transaction rate, and set the
 		// transaction size 1 to ensure the MaxGas in the generated TxOut contains the
 		// correct fee. We cannot pass the proper size and rate without a deeper change to
-		// Thornode, as the rate on XRP chain is less than 1 and cannot be represented
+		// Switchlynode, as the rate on XRP chain is less than 1 and cannot be represented
 		// by the uint.
 		c.globalNetworkFeeQueue <- common.NetworkFee{
 			Chain:           c.cfg.ChainID,
@@ -184,7 +184,7 @@ func (c *XrpBlockScanner) updateFees(height int64) error {
 		c.logger.Info().
 			Uint64("fee", avgFee.Uint64()).
 			Int64("height", height).
-			Msg("sent network fee to THORChain")
+			Msg("sent network fee to SWITCHLYChain")
 	}
 
 	return nil
@@ -226,9 +226,9 @@ func (c *XrpBlockScanner) processTxs(height int64, rawTxs []transaction.FlatTran
 			continue
 		}
 
-		fee, err := fromXrpToThorchain(payment.Fee)
+		fee, err := fromXrpToSwitchly(payment.Fee)
 		if err != nil {
-			return nil, fmt.Errorf("cannot convert xrp fee to thorchain fee: %w", err)
+			return nil, fmt.Errorf("cannot convert xrp fee to switchly fee: %w", err)
 		}
 		c.updateFeeCache(fee)
 
@@ -254,9 +254,9 @@ func (c *XrpBlockScanner) processTxs(height int64, rawTxs []transaction.FlatTran
 		if amount.Kind() != txtypes.XRP {
 			continue
 		}
-		coin, err := fromXrpToThorchain(amount)
+		coin, err := fromXrpToSwitchly(amount)
 		if err != nil {
-			ctxLog.AnErr("error", err).Msg("skipping tx, cannot convert xrp amount to thorchain amount")
+			ctxLog.AnErr("error", err).Msg("skipping tx, cannot convert xrp amount to switchly amount")
 			continue
 		}
 		coins := common.Coins{coin}
@@ -363,7 +363,7 @@ func (c *XrpBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, error
 	}
 
 	if err = c.solvencyReporter(height); err != nil {
-		c.logger.Err(err).Msg("fail to send solvency to THORChain")
+		c.logger.Err(err).Msg("fail to send solvency to SWITCHLYChain")
 	}
 
 	return txIn, nil

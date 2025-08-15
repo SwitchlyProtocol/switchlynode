@@ -9,10 +9,10 @@ Name | Type | Description | Notes
 **Status** | **string** |  | 
 **Decimals** | Pointer to **int64** |  | [optional] 
 **PendingInboundAsset** | **string** |  | 
-**PendingInboundRune** | **string** |  | 
+**PendingInboundSwitch** | **string** |  | 
 **BalanceAsset** | **string** |  | 
-**BalanceRune** | **string** |  | 
-**AssetTorPrice** | **string** | the USD (TOR) price of the asset in 1e8 | 
+**BalanceSwitch** | **string** |  | 
+**AssetSwitchPrice** | **string** | the USD (SWITCHLY) price of the asset in 1e8 | 
 **PoolUnits** | **string** | the total pool units, this is the sum of LP and synth units | 
 **LPUnits** | **string** | the total pool liquidity provider units | 
 **SynthUnits** | **string** | the total synth units in the pool | 
@@ -33,7 +33,7 @@ Name | Type | Description | Notes
 
 ### NewPool
 
-`func NewPool(asset string, status string, pendingInboundAsset string, pendingInboundRune string, balanceAsset string, balanceRune string, assetTorPrice string, poolUnits string, lPUnits string, synthUnits string, synthSupply string, saversDepth string, saversUnits string, saversFillBps string, saversCapacityRemaining string, synthMintPaused bool, synthSupplyRemaining string, loanCollateral string, loanCollateralRemaining string, loanCr string, derivedDepthBps string, ) *Pool`
+`func NewPool(asset string, status string, pendingInboundAsset string, pendingInboundSwitch string, balanceAsset string, balanceSwitch string, assetSwitchPrice string, poolUnits string, lPUnits string, synthUnits string, synthSupply string, saversDepth string, saversUnits string, saversFillBps string, saversCapacityRemaining string, synthMintPaused bool, synthSupplyRemaining string, loanCollateral string, loanCollateralRemaining string, loanCr string, derivedDepthBps string, ) *Pool`
 
 NewPool instantiates a new Pool object
 This constructor will assign default values to properties that have it defined,
@@ -158,24 +158,24 @@ and a boolean to check if the value has been set.
 SetPendingInboundAsset sets PendingInboundAsset field to given value.
 
 
-### GetPendingInboundRune
+### GetPendingInboundSwitch
 
-`func (o *Pool) GetPendingInboundRune() string`
+`func (o *Pool) GetPendingInboundSwitch() string`
 
-GetPendingInboundRune returns the PendingInboundRune field if non-nil, zero value otherwise.
+GetPendingInboundSwitch returns the PendingInboundSwitch field if non-nil, zero value otherwise.
 
-### GetPendingInboundRuneOk
+### GetPendingInboundSwitchOk
 
-`func (o *Pool) GetPendingInboundRuneOk() (*string, bool)`
+`func (o *Pool) GetPendingInboundSwitchOk() (*string, bool)`
 
-GetPendingInboundRuneOk returns a tuple with the PendingInboundRune field if it's non-nil, zero value otherwise
+GetPendingInboundSwitchOk returns a tuple with the PendingInboundSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetPendingInboundRune
+### SetPendingInboundSwitch
 
-`func (o *Pool) SetPendingInboundRune(v string)`
+`func (o *Pool) SetPendingInboundSwitch(v string)`
 
-SetPendingInboundRune sets PendingInboundRune field to given value.
+SetPendingInboundSwitch sets PendingInboundSwitch field to given value.
 
 
 ### GetBalanceAsset
@@ -198,44 +198,44 @@ and a boolean to check if the value has been set.
 SetBalanceAsset sets BalanceAsset field to given value.
 
 
-### GetBalanceRune
+### GetBalanceSwitch
 
-`func (o *Pool) GetBalanceRune() string`
+`func (o *Pool) GetBalanceSwitch() string`
 
-GetBalanceRune returns the BalanceRune field if non-nil, zero value otherwise.
+GetBalanceSwitch returns the BalanceSwitch field if non-nil, zero value otherwise.
 
-### GetBalanceRuneOk
+### GetBalanceSwitchOk
 
-`func (o *Pool) GetBalanceRuneOk() (*string, bool)`
+`func (o *Pool) GetBalanceSwitchOk() (*string, bool)`
 
-GetBalanceRuneOk returns a tuple with the BalanceRune field if it's non-nil, zero value otherwise
+GetBalanceSwitchOk returns a tuple with the BalanceSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetBalanceRune
+### SetBalanceSwitch
 
-`func (o *Pool) SetBalanceRune(v string)`
+`func (o *Pool) SetBalanceSwitch(v string)`
 
-SetBalanceRune sets BalanceRune field to given value.
+SetBalanceSwitch sets BalanceSwitch field to given value.
 
 
-### GetAssetTorPrice
+### GetAssetSwitchPrice
 
-`func (o *Pool) GetAssetTorPrice() string`
+`func (o *Pool) GetAssetSwitchPrice() string`
 
-GetAssetTorPrice returns the AssetTorPrice field if non-nil, zero value otherwise.
+GetAssetSwitchPrice returns the AssetSwitchPrice field if non-nil, zero value otherwise.
 
-### GetAssetTorPriceOk
+### GetAssetSwitchPriceOk
 
-`func (o *Pool) GetAssetTorPriceOk() (*string, bool)`
+`func (o *Pool) GetAssetSwitchPriceOk() (*string, bool)`
 
-GetAssetTorPriceOk returns a tuple with the AssetTorPrice field if it's non-nil, zero value otherwise
+GetAssetSwitchPriceOk returns a tuple with the AssetSwitchPrice field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAssetTorPrice
+### SetAssetSwitchPrice
 
-`func (o *Pool) SetAssetTorPrice(v string)`
+`func (o *Pool) SetAssetSwitchPrice(v string)`
 
-SetAssetTorPrice sets AssetTorPrice field to given value.
+SetAssetSwitchPrice sets AssetSwitchPrice field to given value.
 
 
 ### GetPoolUnits

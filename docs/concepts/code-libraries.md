@@ -2,7 +2,7 @@
 
 ## XCHAINJS
 
-Started as a wallet library for creating keystores, getting balances and history, as well as signing and broadcasting transactions but has now expanded as a one-stop shop for THORChain functionality.
+Started as a wallet library for creating keystores, getting balances and history, as well as signing and broadcasting transactions but has now expanded as a one-stop shop for SWITCHLYChain functionality.
 
 [https://docs.xchainjs.org/overview/](https://docs.xchainjs.org/overview/)
 
@@ -10,7 +10,7 @@ Started as a wallet library for creating keystores, getting balances and history
 
 ## SwapKit
 
-SwapKit, powered by [THORSwap](https://thorswap.finance/), offers a composable, user-friendly Partner API/SDK on top of THORChain's cross-chain liquidity protocol.
+SwapKit, powered by [SWITCHLYSwap](https://thorswap.finance/), offers a composable, user-friendly Partner API/SDK on top of SWITCHLYChain's cross-chain liquidity protocol.
 
 [https://docs.thorswap.finance/swapkit-docs/](https://docs.thorswap.finance/swapkit-docs/)
 
@@ -28,16 +28,16 @@ XChainJs ported to Dart
 
 [https://github.com/dragonsdex/xchaindart](https://github.com/dragonsdex/xchaindart)
 
-## THORCHAIN-IOS
+## SWITCHLYCHAIN-IOS
 
-iOS library built in swift for connecting to THORChain and getting the right transaction details.
+iOS library built in swift for connecting to SWITCHLYChain and getting the right transaction details.
 
-[https://github.com/thorchain/thorchain-ios](https://github.com/thorchain/thorchain-ios)
+[https://github.com/switchly/switchly-ios](https://github.com/switchly/switchly-ios)
 
 ## Others
 
-Other packages are available, built by the community to help with access to THORChain.
+Other packages are available, built by the community to help with access to SWITCHLYChain.
 
-[https://github.com/thorswap/thorchain.js](https://github.com/thorswap/thorchain.js)
+[https://github.com/thorswap/switchly.js](https://github.com/thorswap/switchly.js)
 
 [https://github.com/thorswap/midgard-sdk-v1](https://github.com/thorswap/midgard-sdk-v1)

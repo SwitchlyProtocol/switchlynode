@@ -53,7 +53,7 @@ Analysts can build on Midgard or Flipside to access cross-chain metrics and anal
 Switchly has several APIs with Swagger documentation.
 
 - Midgard - [https://midgard.ninerealms.com/v2/doc](https://midgard.ninerealms.com/v2/doc)
-- THORNode - [https://thornode.ninerealms.com/thorchain/doc](https://thornode.ninerealms.com/thorchain/doc)
+- SWITCHLYNode - [https://switchlynode.ninerealms.com/switchly/doc](https://switchlynode.ninerealms.com/switchly/doc)
 - Cosmos RPC - [https://docs.cosmos.network/v0.50/learn/advanced/grpc_rest](https://docs.cosmos.network/v0.50/learn/advanced/grpc_rest)
 - CometBFT RPC - [https://docs.cometbft.com/v0.38/rpc/](https://docs.cometbft.com/v0.38/rpc/)
 

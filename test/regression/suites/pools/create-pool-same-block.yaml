@@ -4,7 +4,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 0
 ---
@@ -39,17 +39,17 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 1 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 1 }}
 asserts:
 - .observed_tx.status == "done"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_providers
 asserts:
   - .|length == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
   - .[0].LP_units == "200000000"
@@ -57,7 +57,7 @@ asserts:
   - .[0].pending_inbound_rune == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_providers
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_providers
 asserts:
   - .|length == 1
   - .[0].units == "200000000"

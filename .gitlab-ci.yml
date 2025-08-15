@@ -58,7 +58,7 @@ generate:
   <<: *use_dind
   before_script:
     - apk -U add bash curl findutils git go jq make protoc sed wget python3
-    - echo "$DOCKER_HUB_PASSWD" | docker login -u thornode --password-stdin
+    - echo "$DOCKER_HUB_PASSWD" | docker login -u switchlynode --password-stdin
   script:
     - |
       export PATH="$PATH:/root/go/bin"
@@ -100,7 +100,7 @@ lint:
   script:
     - make lint-ci
 
-build-thornode:
+build-switchlynode:
   rules:
     - if: $CI_MERGE_REQUEST_SOURCE_PROJECT_PATH && $CI_MERGE_REQUEST_SOURCE_PROJECT_PATH != $CI_MERGE_REQUEST_PROJECT_PATH
       when: never
@@ -122,7 +122,7 @@ build-thornode:
           sleep 1s
       done
     - apk -U add make git jq curl protoc
-    - echo "$DOCKER_HUB_PASSWD" | docker login -u thornode --password-stdin
+    - echo "$DOCKER_HUB_PASSWD" | docker login -u switchlynode --password-stdin
     - make docker-gitlab-login
   script:
     - make docker-gitlab-build
@@ -165,7 +165,7 @@ go-tss:
   <<: *use_dind
   before_script:
     - apk -U add make git bash go
-    - echo "$DOCKER_HUB_PASSWD" | docker login -u thornode --password-stdin
+    - echo "$DOCKER_HUB_PASSWD" | docker login -u switchlynode --password-stdin
   script:
     - make test-go-tss
 
@@ -183,7 +183,7 @@ pages:
   script:
     - make docs-generate
 
-build-thorscan:
+build-switchlyscan:
   rules:
     - if: $CI_MERGE_REQUEST_SOURCE_PROJECT_PATH && $CI_MERGE_REQUEST_SOURCE_PROJECT_PATH != $CI_MERGE_REQUEST_PROJECT_PATH
       when: never
@@ -193,8 +193,8 @@ build-thorscan:
   <<: *use_dind
   script:
     - apk -U add make
-    - make thorscan-build
-    - make thorscan-gitlab-push
+    - make switchlyscan-build
+    - make switchlyscan-gitlab-push
 
 build-events:
   rules:
@@ -224,7 +224,7 @@ test-simulation:
     name: integration
   before_script:
     - apk -U add git make protoc bash
-    - echo "$DOCKER_HUB_PASSWD" | docker login -u thornode --password-stdin
+    - echo "$DOCKER_HUB_PASSWD" | docker login -u switchlynode --password-stdin
     - |
       PLUGIN="$HOME/.docker/cli-plugins/docker-compose"
       mkdir -p $(dirname $PLUGIN)
@@ -249,12 +249,12 @@ test-regression:
     name: integration
   variables:
     DOCKER_BUILDKIT: "1"
-    TIME_FACTOR: "2"
+    TIME_FACSWITCHLY: "2"
     PARALLELISM: "4"
     FAIL_FAST: "true"
   before_script:
     - apk -U add make git bash
-    - echo "$DOCKER_HUB_PASSWD" | docker login -u thornode --password-stdin
+    - echo "$DOCKER_HUB_PASSWD" | docker login -u switchlynode --password-stdin
   script:
     - make test-regression
 

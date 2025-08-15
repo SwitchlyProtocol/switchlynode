@@ -5,22 +5,22 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Asset** | **string** |  | 
-**RuneAddress** | Pointer to **string** |  | [optional] 
+**SWITCHAddress** | Pointer to **string** |  | [optional] 
 **AssetAddress** | Pointer to **string** |  | [optional] 
 **LastAddHeight** | Pointer to **int64** |  | [optional] 
 **LastWithdrawHeight** | Pointer to **int64** |  | [optional] 
 **Units** | **string** |  | 
-**PendingRune** | **string** |  | 
+**PendingSWITCH** | **string** |  | 
 **PendingAsset** | **string** |  | 
 **PendingTxId** | Pointer to **string** |  | [optional] 
-**RuneDepositValue** | **string** |  | 
+**SWITCHDepositValue** | **string** |  | 
 **AssetDepositValue** | **string** |  | 
 
 ## Methods
 
 ### NewLiquidityProviderSummary
 
-`func NewLiquidityProviderSummary(asset string, units string, pendingRune string, pendingAsset string, runeDepositValue string, assetDepositValue string, ) *LiquidityProviderSummary`
+`func NewLiquidityProviderSummary(asset string, units string, pendingSWITCH string, pendingAsset string, runeDepositValue string, assetDepositValue string, ) *LiquidityProviderSummary`
 
 NewLiquidityProviderSummary instantiates a new LiquidityProviderSummary object
 This constructor will assign default values to properties that have it defined,
@@ -55,30 +55,30 @@ and a boolean to check if the value has been set.
 SetAsset sets Asset field to given value.
 
 
-### GetRuneAddress
+### GetSWITCHAddress
 
-`func (o *LiquidityProviderSummary) GetRuneAddress() string`
+`func (o *LiquidityProviderSummary) GetSWITCHAddress() string`
 
-GetRuneAddress returns the RuneAddress field if non-nil, zero value otherwise.
+GetSWITCHAddress returns the SWITCHAddress field if non-nil, zero value otherwise.
 
-### GetRuneAddressOk
+### GetSWITCHAddressOk
 
-`func (o *LiquidityProviderSummary) GetRuneAddressOk() (*string, bool)`
+`func (o *LiquidityProviderSummary) GetSWITCHAddressOk() (*string, bool)`
 
-GetRuneAddressOk returns a tuple with the RuneAddress field if it's non-nil, zero value otherwise
+GetSWITCHAddressOk returns a tuple with the SWITCHAddress field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetRuneAddress
+### SetSWITCHAddress
 
-`func (o *LiquidityProviderSummary) SetRuneAddress(v string)`
+`func (o *LiquidityProviderSummary) SetSWITCHAddress(v string)`
 
-SetRuneAddress sets RuneAddress field to given value.
+SetSWITCHAddress sets SWITCHAddress field to given value.
 
-### HasRuneAddress
+### HasSWITCHAddress
 
-`func (o *LiquidityProviderSummary) HasRuneAddress() bool`
+`func (o *LiquidityProviderSummary) HasSWITCHAddress() bool`
 
-HasRuneAddress returns a boolean if a field has been set.
+HasSWITCHAddress returns a boolean if a field has been set.
 
 ### GetAssetAddress
 
@@ -175,24 +175,24 @@ and a boolean to check if the value has been set.
 SetUnits sets Units field to given value.
 
 
-### GetPendingRune
+### GetPendingSWITCH
 
-`func (o *LiquidityProviderSummary) GetPendingRune() string`
+`func (o *LiquidityProviderSummary) GetPendingSWITCH() string`
 
-GetPendingRune returns the PendingRune field if non-nil, zero value otherwise.
+GetPendingSWITCH returns the PendingSWITCH field if non-nil, zero value otherwise.
 
-### GetPendingRuneOk
+### GetPendingSWITCHOk
 
-`func (o *LiquidityProviderSummary) GetPendingRuneOk() (*string, bool)`
+`func (o *LiquidityProviderSummary) GetPendingSWITCHOk() (*string, bool)`
 
-GetPendingRuneOk returns a tuple with the PendingRune field if it's non-nil, zero value otherwise
+GetPendingSWITCHOk returns a tuple with the PendingSWITCH field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetPendingRune
+### SetPendingSWITCH
 
-`func (o *LiquidityProviderSummary) SetPendingRune(v string)`
+`func (o *LiquidityProviderSummary) SetPendingSWITCH(v string)`
 
-SetPendingRune sets PendingRune field to given value.
+SetPendingSWITCH sets PendingSWITCH field to given value.
 
 
 ### GetPendingAsset
@@ -240,24 +240,24 @@ SetPendingTxId sets PendingTxId field to given value.
 
 HasPendingTxId returns a boolean if a field has been set.
 
-### GetRuneDepositValue
+### GetSWITCHDepositValue
 
-`func (o *LiquidityProviderSummary) GetRuneDepositValue() string`
+`func (o *LiquidityProviderSummary) GetSWITCHDepositValue() string`
 
-GetRuneDepositValue returns the RuneDepositValue field if non-nil, zero value otherwise.
+GetSWITCHDepositValue returns the SWITCHDepositValue field if non-nil, zero value otherwise.
 
-### GetRuneDepositValueOk
+### GetSWITCHDepositValueOk
 
-`func (o *LiquidityProviderSummary) GetRuneDepositValueOk() (*string, bool)`
+`func (o *LiquidityProviderSummary) GetSWITCHDepositValueOk() (*string, bool)`
 
-GetRuneDepositValueOk returns a tuple with the RuneDepositValue field if it's non-nil, zero value otherwise
+GetSWITCHDepositValueOk returns a tuple with the SWITCHDepositValue field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetRuneDepositValue
+### SetSWITCHDepositValue
 
-`func (o *LiquidityProviderSummary) SetRuneDepositValue(v string)`
+`func (o *LiquidityProviderSummary) SetSWITCHDepositValue(v string)`
 
-SetRuneDepositValue sets RuneDepositValue field to given value.
+SetSWITCHDepositValue sets SWITCHDepositValue field to given value.
 
 
 ### GetAssetDepositValue

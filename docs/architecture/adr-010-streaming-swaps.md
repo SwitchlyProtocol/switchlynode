@@ -10,14 +10,14 @@ Launching Feature
 
 ## Context
 
-The current model of network swap fees and price execution on THORChain is
+The current model of network swap fees and price execution on SWITCHLYChain is
 directly proportional to the depth of the pool. Larger trades lead to higher
 fees and consequently, less favorable price execution. This has resulted in a
-trend where approximately 99% of swaps on THORChain are under $10k in value,
+trend where approximately 99% of swaps on SWITCHLYChain are under $10k in value,
 as users executing larger trades often find better price execution on other
 exchanges, typically centralized ones (CEXs). If one does market analysis, one
 would see that whales control the majority of the spot market which is largely
-unavailable to THORChain.
+unavailable to SWITCHLYChain.
 
 To capture a larger market share of trading, the network needs to offer more
 competitive price execution, particularly for larger (whale) trades.
@@ -33,7 +33,7 @@ It is worth make a note that while this will reduce swap fees, it will not
 reduce other fees such as gas fees, outbound fees, and affiliate fees.
 
 For a comprehensive description of this feature, please refer to this [GitLab
-issue](https://gitlab.com/thorchain/thornode/-/issues/1514).
+issue](https://gitlab.com/switchly/switchlynode/-/issues/1514).
 
 As of the date of this writing, the feature has been deployed on our stagenet
 for several weeks and undergone extensive testing by our developers. The
@@ -58,11 +58,11 @@ This proposal offers substantial benefits for the network and its users:
    each swap will affect the pool price less, causing the AMM to become
    significantly more capital efficient.
 
-4. **Support for New Trading Strategies:** THORChain will be able to support
+4. **Support for New Trading Strategies:** SWITCHLYChain will be able to support
    new trading strategies, such as time-weighted average price (TWAP) and
    dollar-cost averaging (DCA), further extending its user base and community.
 
-5. **Enhanced Value Proposition:** Other THORChain features can also leverage
+5. **Enhanced Value Proposition:** Other SWITCHLYChain features can also leverage
    streaming swaps to enhance their value propositions. For example, cheaper
    entry and exit for savers, and order books with partial fulfillment and better
    price execution.
@@ -72,7 +72,7 @@ This proposal offers substantial benefits for the network and its users:
 This feature may lead to the network collecting fewer fees per swap, depending
 on the trade size. Although there may be a decrease in system income, it is
 anticipated that the increase in trade volume and number of swappers will
-compensate for this. This proposal represents a shift in THORChain's
+compensate for this. This proposal represents a shift in SWITCHLYChain's
 priorities from profitability to increased adoption and growth (in the short
 to medium term).
 

@@ -2,17 +2,17 @@
 
 ## Overview
 
-The network launched with a set number of constants, which have not changed. Constants can be overridden via Mimir and nodes have the ability to [vote on](../thornodes/overview.md#node-voting) and change Mimir values. \
+The network launched with a set number of constants, which have not changed. Constants can be overridden via Mimir and nodes have the ability to [vote on](../switchlynodes/overview.md#node-voting) and change Mimir values. \
 See [Halt Management](./concepts/network-halts.md) for halt and pause specific settings.
 
 Mimir setting can be created and changed without a corresponding Constant.
 
-Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
+Mimirs have a maximum length of 128 bytes (see MaxMimirLength in SWITCHLYNode code).
 
 ### Values
 
-- Constant Values:[https://midgard.ninerealms.com/v2/thorchain/constants](https://thornode.ninerealms.com/thorchain/constants)
-- Mimir Values: [https://thornode.ninerealms.com/thorchain/mimir](https://thornode.ninerealms.com/thorchain/mimir)
+- Constant Values:[https://midgard.ninerealms.com/v2/switchly/constants](https://switchlynode.ninerealms.com/switchly/constants)
+- Mimir Values: [https://switchlynode.ninerealms.com/switchly/mimir](https://switchlynode.ninerealms.com/switchly/mimir)
 
 ### Key
 
@@ -53,16 +53,16 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 - `SynthSlipMinBps`: Minimum synth asset swap fee in basis points
 - `DerivedSlipMinBps`: Minimum derived asset swap fee in basis points
 
-## TCY Management
+## SWCY Management
 
-- `MinRuneForTCYStakeDistribution`: Minimum RUNE required in the TCY fund to be eligible for distribution (default: 2,100 RUNE (210000000000 in 1e8 notation))
-- `MinTCYForTCYStakeDistribution`: Minimum TCY required in the TCY fund to be eligible for distribution (default: 100,000 TCY)
-- `TCYStakeSystemIncomeBps`: Percentage (in basis points) of system income allocated to the TCY fund (default: 1000 bps = 10%)
-- `TCYClaimingSwapHalt`: Enables/disables RUNE-to-TCY swaps in the claiming module (default: 1, halted)
-- `TCYStakeDistributionHalt`: Enables/disables distribution of RUNE revenue to TCY stakers (default: 1, halted)
-- `TCYStakingHalt`: Enables/disables staking of TCY tokens (default: 1, halted)
-- `TCYUnstakingHalt`: Enables/disables unstaking of TCY tokens (default: 1, halted)
-- `TCYClaimingHalt`: Enables/disables claiming of TCY tokens for THORFi deposits (default: 1, halted)
+- `MinSWITCHForSWCYStakeDistribution`: Minimum SWITCH required in the SWCY fund to be eligible for distribution (default: 2,100 SWITCH (210000000000 in 1e8 notation))
+- `MinSWCYForSWCYStakeDistribution`: Minimum SWCY required in the SWCY fund to be eligible for distribution (default: 100,000 SWCY)
+- `SWCYStakeSystemIncomeBps`: Percentage (in basis points) of system income allocated to the SWCY fund (default: 1000 bps = 10%)
+- `SWCYClaimingSwapHalt`: Enables/disables SWITCH-to-SWCY swaps in the claiming module (default: 1, halted)
+- `SWCYStakeDistributionHalt`: Enables/disables distribution of SWITCH revenue to SWCY stakers (default: 1, halted)
+- `SWCYStakingHalt`: Enables/disables staking of SWCY tokens (default: 1, halted)
+- `SWCYUnstakingHalt`: Enables/disables unstaking of SWCY tokens (default: 1, halted)
+- `SWCYClaimingHalt`: Enables/disables claiming of SWCY tokens for SWITCHLYFi deposits (default: 1, halted)
 
 ## Secured Asset Management
 
@@ -73,7 +73,7 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 ## App Layer Management
 
 - `WasmPermissionless`#: Toggles permissionless deployment of CosmWasm smart contracts (default: 0, restricted).
-- `WasmMinGasPrice`#: Sets the minimum gas price for CosmWasm transactions in the App Layer in RUNE.
+- `WasmMinGasPrice`#: Sets the minimum gas price for CosmWasm transactions in the App Layer in SWITCH.
 - `HaltWasmGlobal`#: Pauses all CosmWasm smart contract executions in the App Layer.
 - `HaltWasmCs-<checksum>`#: Halts a specific CosmWasm contract by its base32-encoded checksum.
 - `HaltWasmContract-<address suffix>`#: Halts a specific CosmWasm contract using the last 6 characters of its address.
@@ -82,17 +82,17 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 
 - `PauseLP`#: Pauses the ability for LPs to add/remove liquidity
 - `PauseLP<chain>`#: Pauses the ability for LPs to add/remove liquidity, per chain
-- `MaximumLiquidityRune`#: Maximum RUNE capped on the pools known as the ‘soft cap’
+- `MaximumLiquiditySWITCH`#: Maximum SWITCH capped on the pools known as the ‘soft cap’
 - `LiquidityLockUpBlocks`: The number of blocks an LP must wait before they can withdraw their liquidity
 - `PendingLiquidityAgeLimit`: The number of blocks the network waits before initiating pending liquidity cleanup. Cleanup of all pools lasts for the same duration.
 - `PauseAsymWithdrawal-<Chain>`#: Forces dual-address liquidity providers to withdraw symmetrically rather than asymmetrically.
 - `PauseLPDeposit-<Asset>`#: pauses the ability to add liquidity into that pool. E.g. `PAUSELPDEPOSIT-BTC-BTC=1` suspends deposits for the BTC pool
 
-## RunePool
+## SWITCHPool
 
-- `RUNEPoolEnabled`: Enable/disable RUNE Pool
-- `RUNEPoolDepositMaturityBlocks`: Minimum number of blocks from last RUNEPool deposit when a withdraw is allowed.
-- `RUNEPoolMaxReserveBackstop`: Max amount of RUNE above the `POLMaxNetworkDeposit` that the reserve can enter RunePool before withdrawals are disabled.
+- `SWITCHPoolEnabled`: Enable/disable SWITCH Pool
+- `SWITCHPoolDepositMaturityBlocks`: Minimum number of blocks from last SWITCHPool deposit when a withdraw is allowed.
+- `SWITCHPoolMaxReserveBackstop`: Max amount of SWITCH above the `POLMaxNetworkDeposit` that the reserve can enter SWITCHPool before withdrawals are disabled.
 
 ## Chain Management
 
@@ -110,11 +110,11 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 
 ### Fee Management
 
-- `NativeTransactionFee`: RUNE fee on all on chain txs
-- `TNSRegisterFee`: Registration fee for new THORName, in RUNE
+- `NativeTransactionFee`: SWITCH fee on all on chain txs
+- `TNSRegisterFee`: Registration fee for new SWITCHName, in SWITCH
 - `TNSFeeOnSale`: fee for TNS sale in basis points
-- `TNSFeePerBlock`: per block cost for TNS, in RUNE
-- `PreferredAssetOutboundFeeMultiplier`\*: The multiplier of the current preferred asset outbound fee, if RUNE balance > multiplier \* outbound_fee, a preferred asset swap is triggered
+- `TNSFeePerBlock`: per block cost for TNS, in SWITCH
+- `PreferredAssetOutboundFeeMultiplier`\*: The multiplier of the current preferred asset outbound fee, if SWITCH balance > multiplier \* outbound_fee, a preferred asset swap is triggered
 - `MinOutboundFeeMultiplierBasisPoints`\*: Minimum multiplier applied to base outbound fee charged to user, in basis points
 - `MaxOutboundFeeMultiplierBasisPoints`: Maximum multiplier applied to base outbound fee charged to user, in basis points
 
@@ -126,8 +126,8 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 
 ## Node Management
 
-- `MinimumBondInRune`\*: Sets a lower bound on bond for a node to be considered to be churned in
-- `ValidatorMaxRewardRatio`\*: the ratio to MinimumBondInRune at which validators stop receiving rewards proportional to their bond
+- `MinimumBondInSWITCH`\*: Sets a lower bound on bond for a node to be considered to be churned in
+- `ValidatorMaxRewardRatio`\*: the ratio to MinimumBondInSWITCH at which validators stop receiving rewards proportional to their bond
 - `MaxBondProviders`\*: Maximum number of bond providers per mode
 - `NodeOperatorFee`\*: Minimum node operator fee
 - `SignerConcurrency`\*: Number of concurrent signers for active and retiring vaults
@@ -143,7 +143,7 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 - `ObservationDelayFlexibility`: Number of blocks of flexibility for a validator to get their slash points taken off for making an observation
 - `JailTimeKeygen`: Blocks a node account is jailed for failing to keygen. DO NOT drop below TSS timeout
 - `JailTimeKeysign`: Blocks a node account is jailed for failing to keysign. DO NOT drop below TSS timeout
-- `BondSlashBan`: RUNE amount to slash bond of banned node
+- `BondSlashBan`: SWITCH amount to slash bond of banned node
 
 ### Churning
 
@@ -164,13 +164,13 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 
 - `EmissionCurve`\*: How quickly rune is emitted from the reserve in block rewards
 - `MaxAvailablePools`: Maximum number of pools allowed on the network. Gas pools (native pools) are excluded from this.
-- `MinRunePoolDepth`\*: Minimum number of RUNE to be considered to become active
+- `MinSWITCHPoolDepth`\*: Minimum number of SWITCH to be considered to become active
 - `PoolCycle`\*: Number of blocks the network will churn the pools (add/remove new available pools)
-- `StagedPoolCost`: Number of RUNE (1e8 notation) that a staged pool is deducted on each pool cycle.
-- `KillSwitchStart`\*: Block height to start to kill BEP2 and ERC20 RUNE
+- `StagedPoolCost`: Number of SWITCH (1e8 notation) that a staged pool is deducted on each pool cycle.
+- `KillSwitchStart`\*: Block height to start to kill BEP2 and ERC20 SWITCH
 - `KillSwitchDuration`: Duration (in blocks) until switching is deprecated
 - `MinimumPoolLiquidityFee`: Minimum liquidity fee an active pool should accumulate to avoid being demoted, set to 0 to disable demote pool based on liquidity fee
-- `MaxRuneSupply`\*: Maximum supply of RUNE
+- `MaxSWITCHSupply`\*: Maximum supply of SWITCH
 - `PendulumUseEffectiveSecurity`: Determines the [Incentive Pendulum](./concepts/incentive-pendulum.md) perception of the `securing`. If set to 1, `Effective Security Bond` is used; otherwise `Total Effective Bond` is applied.
 - `PendulumUseVaultAssets`: Determines the [Incentive Pendulum](./concepts/incentive-pendulum.md) perception of the `securing`. If set to 1, `Total Pooled` is used; otherwise `Vaulted Assets` is applied.
 - `PendulumAssetsBasisPoints`: Scales the Incentive Pendulum perception of the `secured` L1 asset size, where values above 100% overestimate and values below 100% underestimate the amount of `secured` assets.
@@ -183,12 +183,12 @@ Mimirs have a maximum length of 128 bytes (see MaxMimirLength in THORNode code).
 
 ## Miscellaneous
 
-- `DollarsPerRune`: Manual override of number of dollars per one RUNE. Used for metrics data collection and RUNE calculation from MinimumL1OutboundFeeUSD
-- `THORNames`: Enable/Disable THORNames
+- `DollarsPerSWITCH`: Manual override of number of dollars per one SWITCH. Used for metrics data collection and SWITCH calculation from MinimumL1OutboundFeeUSD
+- `SWITCHNames`: Enable/Disable SWITCHNames
 - `TNSRegisterFee`: TNS registration fee of new names
 - `TNSFeePerBlock`: TNS cost per block to retain ownership of a name
 - `ArtificialRagnarokBlockHeight`: Triggers a chain shutdown and ragnarok
-- `NativeTransactionFee`: The RUNE fee for a native transaction (gas cost in 1e8 notation)
+- `NativeTransactionFee`: The SWITCH fee for a native transaction (gas cost in 1e8 notation)
 - `HALTSIGNING<chain>`#: Halt signing in a specific chain
 - `HALTSIGNING#`: Halt signing globally
 - `Ragnarok-<Asset>`#: Ragnaroks a specific pool

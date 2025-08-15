@@ -9,14 +9,14 @@ In most cases funds won't be lost if they are sent when halted, but they may be 
 ```
 
 ```admonish danger
-In the worse case if THORChain suffers a consensus halt the `inbound_addresses` endpoint will freeze with `halted = false` but the network is actually hard-halted. In this case running a fullnode is beneficial, because the last block will become stale after 6 seconds and interfaces can detect this.
+In the worse case if SWITCHLYChain suffers a consensus halt the `inbound_addresses` endpoint will freeze with `halted = false` but the network is actually hard-halted. In this case running a fullnode is beneficial, because the last block will become stale after 6 seconds and interfaces can detect this.
 ```
 
 Interfaces that provide LP management can provide more feedback to the user what specifically is paused.
 
 There are levels of granularity the network has to control itself and chains in the event of issues. Interfaces need to monitor these settings and apply appropriate controls in their interfaces, inform users and prevent unsupported actions.
 
-All activity is controlled within [Mimir](https://thornode.ninerealms.com/thorchain/mimir) and needs to be observed by interfaces and acted upon. Also, see a description of [Constants and Mimir](../mimir.md).
+All activity is controlled within [Mimir](https://switchlynode.ninerealms.com/switchly/mimir) and needs to be observed by interfaces and acted upon. Also, see a description of [Constants and Mimir](../mimir.md).
 
 Halt flags are Boolean. For clarity `0` = false, no issues and `> 0` = true (usually 1), halt in effect.
 
@@ -24,13 +24,13 @@ Halt flags are Boolean. For clarity `0` = false, no issues and `> 0` = true (usu
 
 Each chain has granular control allowing each chain to be halted or resumed on a specific chain as required. Network-level halting is also possible.
 
-1. **Specific Chain Signing Halt** - Allows inbound transactions but stops the signing of outbound transactions. Outbound transactions are [queued](https://thornode.ninerealms.com/thorchain/queue). This is the least impactful halt.
+1. **Specific Chain Signing Halt** - Allows inbound transactions but stops the signing of outbound transactions. Outbound transactions are [queued](https://switchlynode.ninerealms.com/switchly/queue). This is the least impactful halt.
    1. Mimir setting is `HALTSIGNING[Chain]`, e.g., `HALTSIGNINGETH`
 2. **Specific Chain Liquidity Provider Pause -** addition and withdrawal of liquidity are suspended but swaps and other transactions are processed.
    1. Mimir setting is `PAUSELP[Chain]`, e.g., `PAUSELPBCH` for BCH
-3. **Specific Chain Trading Halt** - Transactions on external chains are observed but not processed, only [refunds](memos.md#refunds) are given. THORNode's Bifrost is running, nodes are synced to the tip therefore trading resumption can happen very quickly.
+3. **Specific Chain Trading Halt** - Transactions on external chains are observed but not processed, only [refunds](memos.md#refunds) are given. SWITCHLYNode's Bifrost is running, nodes are synced to the tip therefore trading resumption can happen very quickly.
    1. Mimir setting is `HALT[Chain]TRADING`, e.g., `HALTBCHTRADING` for BCH
-4. **Specific Chain Halt** - Serious halt where transitions on that chain are no longer observed and THORNodes will not be synced to the chain tip, usually their Bifrost offline. Resumption will require a majority of nodes syncing to the tip before trading can commence.
+4. **Specific Chain Halt** - Serious halt where transitions on that chain are no longer observed and SWITCHLYNodes will not be synced to the chain tip, usually their Bifrost offline. Resumption will require a majority of nodes syncing to the tip before trading can commence.
    1. Mimir setting is `HALT[Chain]CHAIN`, e.g., `HALTBCHCHAIN` for BCH.
 5. **Specific Pool Liquidity Provider Pause** - suspends deposits into a specific Liquidity Pool
    1. Mimir setting is `PAUSELPDEPOSIT-<Asset>`, e.g., `PAUSELPDEPOSIT-BTC-BTC` for BTC pool
@@ -43,9 +43,9 @@ Chain specific halts do occur and need to be monitored and reacted to when they 
 
 - **Network Pause LP** `PAUSELP = 1` Addition and withdrawal of liquidity are suspended for all pools but swaps and other transactions are processed.
 - **Network Pause Lending** `PAUSELOANS = 1` Opening and closing of loans is paused for all loans.
-- **Network Trading Halt** `HALTTRADING = 1` Will stop all trading for every connected chain. The THORChain blockchain will continue and native RUNE transactions will be processed.
+- **Network Trading Halt** `HALTTRADING = 1` Will stop all trading for every connected chain. The SWITCHLYChain blockchain will continue and native SWITCH transactions will be processed.
 
-There is no Network level chain halt setting as the THORChain Blockchain continually needs to produce blocks.
+There is no Network level chain halt setting as the SWITCHLYChain Blockchain continually needs to produce blocks.
 
 A chain halt is possible in which case Mimir or Midgard will not return data. This can happen if the chain suffers consensus failure or more than 1/3 of nodes are switched off. If this occurs the Dev Discord Server `#interface-alerts` will issue alerts.
 
@@ -73,15 +73,15 @@ Smart contract halts, introduced in v3.2.0 (February 2025), control CosmWasm con
 3. **Specific Contract Halt** - Disables a single CosmWasm contract instance by its contract address address suffix (last 6 characters). Isolates a specific contract instance.
    1. Mimir setting is `HaltWasmContract-<address suffix>`, e.g., `HaltWasmContract-w58u9f`, disabled the smart contract with a contract address ending in `w58u9f`.
 
-### TCY Management
+### SWCY Management
 
-Claiming and Staking of $TCY can be enabled and disabled using flags.
+Claiming and Staking of $SWCY can be enabled and disabled using flags.
 
-- `TCYClaimingSwapHalt`: Enables/disables RUNE-to-TCY swaps in the claiming module (default: 1, halted).
-- `TCYStakeDistributionHalt`: Enables/disables distribution of RUNE revenue to TCY stakers (default: 1, halted).
-- `TCYStakingHalt`: Enables/disables staking of TCY tokens (default: 1, halted).
-- `TCYUnstakingHalt`: Enables/disables unstaking of TCY tokens (default: 1, halted).
-- `TCYClaimingHalt`: Enables/disables claiming of TCY tokens for THORFi deposits (default: 1, halted).
+- `SWCYClaimingSwapHalt`: Enables/disables SWITCH-to-SWCY swaps in the claiming module (default: 1, halted).
+- `SWCYStakeDistributionHalt`: Enables/disables distribution of SWITCH revenue to SWCY stakers (default: 1, halted).
+- `SWCYStakingHalt`: Enables/disables staking of SWCY tokens (default: 1, halted).
+- `SWCYUnstakingHalt`: Enables/disables unstaking of SWCY tokens (default: 1, halted).
+- `SWCYClaimingHalt`: Enables/disables claiming of SWCY tokens for SWITCHLYFi deposits (default: 1, halted).
 
 ### Trade Accounts
 
@@ -90,7 +90,7 @@ Claiming and Staking of $TCY can be enabled and disabled using flags.
 ## Monitoring Mimir Keys
 
 ```bash
-curl https://thornode.thorchain.org/thorchain/mimir
+curl https://switchlynode.switchly.org/switchly/mimir
 ```
 
 - **Integration**: App Layer interfaces must poll Mimir settings to detect halts and adjust functionality
@@ -113,9 +113,9 @@ curl https://thornode.thorchain.org/thorchain/mimir
 | `HaltWasmGlobal`              | Halt all CosmWasm contracts             | Global        | Disable contract execution                         |
 | `HaltWasmCs-<checksum>`       | Halt contract code by checksum          | Contract Code | Disable all instances of matching contract code    |
 | `HaltWasmContract-<address>`  | Halt specific contract instance         | Contract      | Disable one specific contract                      |
-| `TCYClaimingSwapHalt`         | Halt TCY claiming swap                  | Global        | Prevent RUNE→TCY swaps                             |
-| `TCYStakeDistributionHalt`    | Halt TCY staking rewards                | Global        | Stops TCY revenue distribution                     |
-| `TCYStakingHalt`              | Halt staking of TCY                     | Global        | Disable TCY staking                                |
-| `TCYUnstakingHalt`            | Halt unstaking of TCY                   | Global        | Disable TCY unstaking                              |
-| `TCYClaimingHalt`             | Halt TCY claiming                       | Global        | Prevent TCY claims from THORFi deposits            |
+| `SWCYClaimingSwapHalt`         | Halt SWCY claiming swap                  | Global        | Prevent SWITCH→SWCY swaps                             |
+| `SWCYStakeDistributionHalt`    | Halt SWCY staking rewards                | Global        | Stops SWCY revenue distribution                     |
+| `SWCYStakingHalt`              | Halt staking of SWCY                     | Global        | Disable SWCY staking                                |
+| `SWCYUnstakingHalt`            | Halt unstaking of SWCY                   | Global        | Disable SWCY unstaking                              |
+| `SWCYClaimingHalt`             | Halt SWCY claiming                       | Global        | Prevent SWCY claims from SWITCHLYFi deposits            |
 | `TradeAccountsEnabled`        | Enable/disable Trade Accounts           | Global        | Allow/disallow Trade Account usage                 |

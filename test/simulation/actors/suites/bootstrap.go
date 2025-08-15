@@ -7,7 +7,7 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/actors/core"
 	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/evm"
-	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/thornode"
+	"github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/switchlynode"
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
 )
 
@@ -18,7 +18,7 @@ import (
 func Bootstrap() *Actor {
 	a := NewActor("Bootstrap")
 
-	pools, err := thornode.GetPools()
+	pools, err := switchlynode.GetPools()
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to get pools")
 	}
@@ -26,7 +26,7 @@ func Bootstrap() *Actor {
 	// bootstrap pools for all chains
 	count := 0
 	for _, chain := range common.AllChains {
-		if chain == common.THORChain {
+		if chain == common.SWITCHLYChain {
 			continue
 		}
 		// BSC not compatible with sim tests
@@ -59,7 +59,7 @@ func Bootstrap() *Actor {
 	// verify pools
 	verify := NewActor("Bootstrap-Verify")
 	verify.Ops = append(verify.Ops, func(config *OpConfig) OpResult {
-		pools, err = thornode.GetPools()
+		pools, err = switchlynode.GetPools()
 		if err != nil {
 			return OpResult{Finish: true, Error: err}
 		}

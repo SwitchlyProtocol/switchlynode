@@ -1,16 +1,16 @@
 # EVM Whitelist Procedure
 
 ```admonish info
-Whitelists have been removed. See [here](https://github.com/code-423n4/2024-06-thorchain?tab=readme-ov-file#whitelist-removal) for more information.
+Whitelists have been removed. See [here](https://github.com/code-423n4/2024-06-switchly?tab=readme-ov-file#whitelist-removal) for more information.
 ```
 
 ## Overview
 
-Ecosystem devs can ask for tokens/contracts to be added/removed from any THORNode Whitelists using this procedure.
+Ecosystem devs can ask for tokens/contracts to be added/removed from any SWITCHLYNode Whitelists using this procedure.
 
 ## Background
 
-THORNode maintains whitelists to prevent attacks on the network. There are a significant number of degrees of freedom when dealing with the EVM (event spoofing, re-entrancies, self-destructs), as well as economic attacks (zombie tokens, infinite mints etc). Maintaining a standard and whitelist nueters this attack surface.
+SWITCHLYNode maintains whitelists to prevent attacks on the network. There are a significant number of degrees of freedom when dealing with the EVM (event spoofing, re-entrancies, self-destructs), as well as economic attacks (zombie tokens, infinite mints etc). Maintaining a standard and whitelist nueters this attack surface.
 
 There are 2 EVM Whitelists
 
@@ -42,7 +42,7 @@ Once a review cycle, the publisher will ask for new additions to be submitted fo
 
 ### Aggregator
 
-Examples: https://gitlab.com/thorchain/thornode/-/blob/develop/x/thorchain/aggregators/dex_mainnet.go
+Examples: https://gitlab.com/switchly/switchlynode/-/blob/develop/x/switchly/aggregators/dex_mainnet.go
 
 - Must be verified on Etherscan (or equivalent, eg Snowtrace for AVA)
 - If support `swapIn(params)`, must call `router.depositWithExpiry(params, +15minsUNIXSeconds)`,

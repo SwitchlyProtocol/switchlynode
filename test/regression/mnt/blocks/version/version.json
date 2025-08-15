@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -50,7 +50,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -109,7 +109,7 @@
                 "coins": [
                   {
                     "amount": "4000001",
-                    "asset": "THOR.RUNE",
+                    "asset": "SWITCHLY.SWITCH",
                     "decimals": "0"
                   }
                 ],
@@ -197,8 +197,8 @@
               "amount": "4000001",
               "bond_address": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "bond_type": "bond_paid",
-              "chain": "THOR",
-              "coin": "4000001 THOR.RUNE",
+              "chain": "SWITCHLY",
+              "coin": "4000001 SWITCHLY.SWITCH",
               "from": "tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
               "id": "EBE69D89DC526FBD7EA8748856A18BC25489FCD932CA7AF4343E5F10ADFACCBD",
               "memo": "BOND:tswitch13wrmhnh2qe98rjse30pl7u6jxszjjwl4f6yycr",
@@ -225,7 +225,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -369,7 +369,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -438,7 +438,7 @@
         },
         "result": {
           "code": 6,
-          "log": "failed to execute message; message index: 0: THORChain doesn't use Pre/Build version: unknown request",
+          "log": "failed to execute message; message index: 0: SWITCHLYChain doesn't use Pre/Build version: unknown request",
           "gas_wanted": "-1",
           "gas_used": "62092",
           "events": [
@@ -501,7 +501,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {

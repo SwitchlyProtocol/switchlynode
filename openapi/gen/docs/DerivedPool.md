@@ -8,14 +8,14 @@ Name | Type | Description | Notes
 **Status** | **string** |  | 
 **Decimals** | Pointer to **int64** |  | [optional] 
 **BalanceAsset** | **string** |  | 
-**BalanceRune** | **string** |  | 
+**BalanceSwitch** | **string** |  | 
 **DerivedDepthBps** | **string** | the depth of the derived virtual pool relative to L1 pool (in basis points) | 
 
 ## Methods
 
 ### NewDerivedPool
 
-`func NewDerivedPool(asset string, status string, balanceAsset string, balanceRune string, derivedDepthBps string, ) *DerivedPool`
+`func NewDerivedPool(asset string, status string, balanceAsset string, balanceSwitch string, derivedDepthBps string, ) *DerivedPool`
 
 NewDerivedPool instantiates a new DerivedPool object
 This constructor will assign default values to properties that have it defined,
@@ -115,24 +115,24 @@ and a boolean to check if the value has been set.
 SetBalanceAsset sets BalanceAsset field to given value.
 
 
-### GetBalanceRune
+### GetBalanceSwitch
 
-`func (o *DerivedPool) GetBalanceRune() string`
+`func (o *DerivedPool) GetBalanceSwitch() string`
 
-GetBalanceRune returns the BalanceRune field if non-nil, zero value otherwise.
+GetBalanceSwitch returns the BalanceSwitch field if non-nil, zero value otherwise.
 
-### GetBalanceRuneOk
+### GetBalanceSwitchOk
 
-`func (o *DerivedPool) GetBalanceRuneOk() (*string, bool)`
+`func (o *DerivedPool) GetBalanceSwitchOk() (*string, bool)`
 
-GetBalanceRuneOk returns a tuple with the BalanceRune field if it's non-nil, zero value otherwise
+GetBalanceSwitchOk returns a tuple with the BalanceSwitch field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetBalanceRune
+### SetBalanceSwitch
 
-`func (o *DerivedPool) SetBalanceRune(v string)`
+`func (o *DerivedPool) SetBalanceSwitch(v string)`
 
-SetBalanceRune sets BalanceRune field to given value.
+SetBalanceSwitch sets BalanceSwitch field to given value.
 
 
 ### GetDerivedDepthBps

@@ -35,7 +35,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 1'
   - .txs[]|.result.events[]|select(.type=="refund")|.from == "{{ addr_gaia_fox }}"
@@ -70,7 +70,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 1'
   - .txs[]|.result.events[]|select(.type=="refund")|.from == "{{ addr_gaia_fox }}"

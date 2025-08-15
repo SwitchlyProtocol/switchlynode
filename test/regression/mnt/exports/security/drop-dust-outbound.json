@@ -1,6 +1,6 @@
 {
   "app_hash": null,
-  "app_name": "thornode",
+  "app_name": "switchlynode",
   "app_state": {
     "auth": {
       "accounts": [
@@ -44,7 +44,7 @@
             "pub_key": null,
             "sequence": "0"
           },
-          "name": "thorchain",
+          "name": "switchly",
           "permissions": [
             "minter",
             "burner"
@@ -188,12 +188,12 @@
     "genutil": {
       "gen_txs": []
     },
-    "thorchain": {
+    "switchly": {
       "POL": {
         "rune_deposited": "0",
         "rune_withdrawn": "0"
       },
-      "THORNames": [],
+      "SWITCHNames": [],
       "adv_swap_queue_items": [],
       "affiliate_collectors": null,
       "bond_providers": [
@@ -274,17 +274,17 @@
               "vault_pub_key": "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuyp6sp4"
             },
             {
-              "chain": "THOR",
+              "chain": "SWITCHLY",
               "coin": {
                 "amount": "50009087864",
-                "asset": "THOR.RUNE"
+                "asset": "SWITCHLY.SWITCH"
               },
               "gas_rate": "2000000",
               "in_hash": "8981FAD7CB0C61699317FBB811E6D4D027F9AD0FA6B738E095CB87A81A6798F1",
               "max_gas": [
                 {
                   "amount": "0",
-                  "asset": "THOR.RUNE",
+                  "asset": "SWITCHLY.SWITCH",
                   "decimals": "8"
                 }
               ],
@@ -296,18 +296,18 @@
           "height": "3",
           "out_txs": [
             {
-              "chain": "THOR",
+              "chain": "SWITCHLY",
               "coins": [
                 {
                   "amount": "50009087864",
-                  "asset": "THOR.RUNE"
+                  "asset": "SWITCHLY.SWITCH"
                 }
               ],
               "from_address": "tswitch1g98cy3n9mmjrpn0sxmn63lztelera37nrytwp2",
               "gas": [
                 {
                   "amount": "2000000",
-                  "asset": "THOR.RUNE"
+                  "asset": "SWITCHLY.SWITCH"
                 }
               ],
               "id": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -321,11 +321,11 @@
               "0000000000000000000000000000000000000000000000000000000000000000"
             ],
             "tx": {
-              "chain": "THOR",
+              "chain": "SWITCHLY",
               "coins": [
                 {
                   "amount": "0",
-                  "asset": "THOR.RUNE"
+                  "asset": "SWITCHLY.SWITCH"
                 }
               ],
               "from_address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
@@ -342,11 +342,11 @@
                 "0000000000000000000000000000000000000000000000000000000000000000"
               ],
               "tx": {
-                "chain": "THOR",
+                "chain": "SWITCHLY",
                 "coins": [
                   {
                     "amount": "0",
-                    "asset": "THOR.RUNE"
+                    "asset": "SWITCHLY.SWITCH"
                   }
                 ],
                 "from_address": "tswitch1uuds8pd92qnnq0udw0rpg0szpgcslc9p8lluej",
@@ -428,7 +428,7 @@
         {
           "block_height": "2",
           "chains": [
-            "THOR",
+            "SWITCHLY",
             "BTC",
             "LTC",
             "BCH",
@@ -456,7 +456,7 @@
         {
           "block_height": "2",
           "chains": [
-            "THOR",
+            "SWITCHLY",
             "BTC",
             "LTC",
             "BCH",
@@ -506,7 +506,7 @@
       ]
     }
   },
-  "chain_id": "thorchain",
+  "chain_id": "switchly",
   "consensus": {
     "params": {
       "abci": {

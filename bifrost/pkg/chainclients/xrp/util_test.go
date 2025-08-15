@@ -15,9 +15,9 @@ var _ = Suite(&UtilTestSuite{})
 
 func (s *UtilTestSuite) SetUpSuite(c *C) {}
 
-func (s *UtilTestSuite) TestFromXrpToThorchain(c *C) {
+func (s *UtilTestSuite) TestFromXrpToSwitchly(c *C) {
 	// 5 XRP, 6 decimals
-	thorchainCoin, err := fromXrpToThorchain(txtypes.XRPCurrencyAmount(uint64(5000000)))
+	switchlyCoin, err := fromXrpToSwitchly(txtypes.XRPCurrencyAmount(uint64(5000000)))
 	c.Assert(err, IsNil)
 
 	// 5 XRP, 8 decimals
@@ -26,15 +26,15 @@ func (s *UtilTestSuite) TestFromXrpToThorchain(c *C) {
 		Amount:   sdkmath.NewUint(500000000),
 		Decimals: 6,
 	}
-	c.Check(thorchainCoin.Asset.Equals(expectedCoin.Asset), Equals, true)
-	c.Check(thorchainCoin.Amount.String(), Equals, expectedCoin.Amount.String())
-	c.Check(thorchainCoin.Decimals, Equals, expectedCoin.Decimals)
+	c.Check(switchlyCoin.Asset.Equals(expectedCoin.Asset), Equals, true)
+	c.Check(switchlyCoin.Amount.String(), Equals, expectedCoin.Amount.String())
+	c.Check(switchlyCoin.Decimals, Equals, expectedCoin.Decimals)
 }
 
-func (s *UtilTestSuite) TestFromThorchainToXrp(c *C) {
+func (s *UtilTestSuite) TestFromSwitchlyToXrp(c *C) {
 	// 6 XRP, 8 decimals
-	thorchainCoin := common.NewCoin(common.XRPAsset, sdkmath.NewUint(600000000))
-	xrpCurrency, err := fromThorchainToXrp(thorchainCoin)
+	switchlyCoin := common.NewCoin(common.XRPAsset, sdkmath.NewUint(600000000))
+	xrpCurrency, err := fromSwitchlyToXrp(switchlyCoin)
 	c.Assert(err, IsNil)
 
 	// 6 XRP, 6 decimals

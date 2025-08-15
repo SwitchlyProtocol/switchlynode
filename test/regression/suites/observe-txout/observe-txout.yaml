@@ -34,7 +34,7 @@ asserts:
   - .result.value.sequence == "1"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 1 }}"
@@ -69,7 +69,7 @@ asserts:
   - .result.value.sequence == "2"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 2 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 2 }}
 asserts:
 - .observed_tx.status == "done"
 ---

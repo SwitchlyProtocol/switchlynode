@@ -2,11 +2,11 @@
 ---
 {{ template "btc-pool-state.yaml" }}
 ---
-# Mainnet-like state of THOR.BTC having 'grandfathered' units inherited from the BTC.BTC pool
+# Mainnet-like state of SWITCHLY.BTC having 'grandfathered' units inherited from the BTC.BTC pool
 type: state
 genesis:
   app_state:
-    thorchain:
+    switchly:
       pools:
         - LP_units: "100000000000"
           asset: BTC.BTC
@@ -18,7 +18,7 @@ genesis:
           status: Available
           synth_units: "0"
         - LP_units: "100000000000"
-          asset: THOR.BTC
+          asset: SWITCHLY.BTC
           balance_asset: "100000000"
           balance_rune: "100000000000"
           pending_inbound_asset: "0"
@@ -42,7 +42,7 @@ signer: {{ addr_thor_dog }}
 sequence: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.BTC
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.BTC
 asserts:
   - .status == "Suspended"
 ---
@@ -50,7 +50,7 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.BTC
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.BTC
 asserts:
   - .status == "Available"
 ---
@@ -59,7 +59,7 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "1000000000"
     asset: "rune"
-memo: "=:THOR.BTC:{{ addr_thor_fox }}"
+memo: "=:SWITCHLY.BTC:{{ addr_thor_fox }}"
 ---
 type: create-blocks
 count: 1
@@ -78,7 +78,7 @@ type: tx-deposit
 signer: {{ addr_thor_fox }}
 coins:
   - amount: "50000"
-    asset: "THOR.BTC"
+    asset: "SWITCHLY.BTC"
 memo: "=:BTC/BTC:{{ addr_thor_fox }}"
 ---
 type: create-blocks

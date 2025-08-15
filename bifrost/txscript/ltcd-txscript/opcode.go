@@ -207,7 +207,7 @@ const (
 	OP_SHA256              = 0xa8 // 168
 	OP_HASH160             = 0xa9 // 169
 	OP_HASH256             = 0xaa // 170
-	OP_CODESEPARATOR       = 0xab // 171
+	OP_CODESEPARASWITCHLY  = 0xab // 171
 	OP_CHECKSIG            = 0xac // 172
 	OP_CHECKSIGVERIFY      = 0xad // 173
 	OP_CHECKMULTISIG       = 0xae // 174
@@ -493,7 +493,7 @@ var opcodeArray = [256]opcode{
 	OP_SHA256:              {OP_SHA256, "OP_SHA256", 1, opcodeSha256},
 	OP_HASH160:             {OP_HASH160, "OP_HASH160", 1, opcodeHash160},
 	OP_HASH256:             {OP_HASH256, "OP_HASH256", 1, opcodeHash256},
-	OP_CODESEPARATOR:       {OP_CODESEPARATOR, "OP_CODESEPARATOR", 1, opcodeCodeSeparator},
+	OP_CODESEPARASWITCHLY:  {OP_CODESEPARASWITCHLY, "OP_CODESEPARASWITCHLY", 1, opcodeCodeSeparator},
 	OP_CHECKSIG:            {OP_CHECKSIG, "OP_CHECKSIG", 1, opcodeCheckSig},
 	OP_CHECKSIGVERIFY:      {OP_CHECKSIGVERIFY, "OP_CHECKSIGVERIFY", 1, opcodeCheckSigVerify},
 	OP_CHECKMULTISIG:       {OP_CHECKMULTISIG, "OP_CHECKMULTISIG", 1, opcodeCheckMultiSig},
@@ -2020,7 +2020,7 @@ func opcodeHash256(op *parsedOpcode, vm *Engine) error {
 }
 
 // opcodeCodeSeparator stores the current script offset as the most recently
-// seen OP_CODESEPARATOR which is used during signature checking.
+// seen OP_CODESEPARASWITCHLY which is used during signature checking.
 //
 // This opcode does not change the contents of the data stack.
 func opcodeCodeSeparator(op *parsedOpcode, vm *Engine) error {
@@ -2036,8 +2036,8 @@ func opcodeCodeSeparator(op *parsedOpcode, vm *Engine) error {
 // the same way the transaction signer did.  It involves hashing portions of the
 // transaction based on the hash type byte (which is the final byte of the
 // signature) and the portion of the script starting from the most recent
-// OP_CODESEPARATOR (or the beginning of the script if there are none) to the
-// end of the script (with any other OP_CODESEPARATORs removed).  Once this
+// OP_CODESEPARASWITCHLY (or the beginning of the script if there are none) to the
+// end of the script (with any other OP_CODESEPARASWITCHLYs removed).  Once this
 // "script hash" is calculated, the signature is checked using standard
 // cryptographic methods against the provided public key.
 //
@@ -2085,7 +2085,7 @@ func opcodeCheckSig(op *parsedOpcode, vm *Engine) error {
 		return err
 	}
 
-	// Get script starting from the most recent OP_CODESEPARATOR.
+	// Get script starting from the most recent OP_CODESEPARASWITCHLY.
 	subScript := vm.subScript()
 
 	// Generate the signature hash based on the signature hash type.
@@ -2271,7 +2271,7 @@ func opcodeCheckMultiSig(op *parsedOpcode, vm *Engine) error {
 		return scriptError(ErrSigNullDummy, str)
 	}
 
-	// Get script starting from the most recent OP_CODESEPARATOR.
+	// Get script starting from the most recent OP_CODESEPARASWITCHLY.
 	script := vm.subScript()
 
 	// Remove the signature in pre version 0 segwit scripts since there is

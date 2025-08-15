@@ -1,88 +1,88 @@
-# RUNEPoolResponse
+# SWITCHPoolResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Pol** | [**POL**](POL.md) |  | 
-**Providers** | [**RUNEPoolResponseProviders**](RUNEPoolResponseProviders.md) |  | 
-**Reserve** | [**RUNEPoolResponseReserve**](RUNEPoolResponseReserve.md) |  | 
+**Providers** | [**SWITCHPoolResponseProviders**](SWITCHPoolResponseProviders.md) |  | 
+**Reserve** | [**SWITCHPoolResponseReserve**](SWITCHPoolResponseReserve.md) |  | 
 
 ## Methods
 
-### NewRUNEPoolResponse
+### NewSWITCHPoolResponse
 
-`func NewRUNEPoolResponse(pol POL, providers RUNEPoolResponseProviders, reserve RUNEPoolResponseReserve, ) *RUNEPoolResponse`
+`func NewSWITCHPoolResponse(pol POL, providers SWITCHPoolResponseProviders, reserve SWITCHPoolResponseReserve, ) *SWITCHPoolResponse`
 
-NewRUNEPoolResponse instantiates a new RUNEPoolResponse object
+NewSWITCHPoolResponse instantiates a new SWITCHPoolResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewRUNEPoolResponseWithDefaults
+### NewSWITCHPoolResponseWithDefaults
 
-`func NewRUNEPoolResponseWithDefaults() *RUNEPoolResponse`
+`func NewSWITCHPoolResponseWithDefaults() *SWITCHPoolResponse`
 
-NewRUNEPoolResponseWithDefaults instantiates a new RUNEPoolResponse object
+NewSWITCHPoolResponseWithDefaults instantiates a new SWITCHPoolResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetPol
 
-`func (o *RUNEPoolResponse) GetPol() POL`
+`func (o *SWITCHPoolResponse) GetPol() POL`
 
 GetPol returns the Pol field if non-nil, zero value otherwise.
 
 ### GetPolOk
 
-`func (o *RUNEPoolResponse) GetPolOk() (*POL, bool)`
+`func (o *SWITCHPoolResponse) GetPolOk() (*POL, bool)`
 
 GetPolOk returns a tuple with the Pol field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetPol
 
-`func (o *RUNEPoolResponse) SetPol(v POL)`
+`func (o *SWITCHPoolResponse) SetPol(v POL)`
 
 SetPol sets Pol field to given value.
 
 
 ### GetProviders
 
-`func (o *RUNEPoolResponse) GetProviders() RUNEPoolResponseProviders`
+`func (o *SWITCHPoolResponse) GetProviders() SWITCHPoolResponseProviders`
 
 GetProviders returns the Providers field if non-nil, zero value otherwise.
 
 ### GetProvidersOk
 
-`func (o *RUNEPoolResponse) GetProvidersOk() (*RUNEPoolResponseProviders, bool)`
+`func (o *SWITCHPoolResponse) GetProvidersOk() (*SWITCHPoolResponseProviders, bool)`
 
 GetProvidersOk returns a tuple with the Providers field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetProviders
 
-`func (o *RUNEPoolResponse) SetProviders(v RUNEPoolResponseProviders)`
+`func (o *SWITCHPoolResponse) SetProviders(v SWITCHPoolResponseProviders)`
 
 SetProviders sets Providers field to given value.
 
 
 ### GetReserve
 
-`func (o *RUNEPoolResponse) GetReserve() RUNEPoolResponseReserve`
+`func (o *SWITCHPoolResponse) GetReserve() SWITCHPoolResponseReserve`
 
 GetReserve returns the Reserve field if non-nil, zero value otherwise.
 
 ### GetReserveOk
 
-`func (o *RUNEPoolResponse) GetReserveOk() (*RUNEPoolResponseReserve, bool)`
+`func (o *SWITCHPoolResponse) GetReserveOk() (*SWITCHPoolResponseReserve, bool)`
 
 GetReserveOk returns a tuple with the Reserve field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetReserve
 
-`func (o *RUNEPoolResponse) SetReserve(v RUNEPoolResponseReserve)`
+`func (o *SWITCHPoolResponse) SetReserve(v SWITCHPoolResponseReserve)`
 
 SetReserve sets Reserve field to given value.
 

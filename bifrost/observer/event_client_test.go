@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/observer"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

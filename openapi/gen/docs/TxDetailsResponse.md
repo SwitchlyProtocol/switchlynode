@@ -9,11 +9,11 @@ Name | Type | Description | Notes
 **Txs** | [**[]ObservedTx**](ObservedTx.md) |  | 
 **Actions** | [**[]TxOutItem**](TxOutItem.md) |  | 
 **OutTxs** | [**[]Tx**](Tx.md) |  | 
-**ConsensusHeight** | Pointer to **int64** | the thorchain height at which the inbound reached consensus | [optional] 
-**FinalisedHeight** | Pointer to **int64** | the thorchain height at which the outbound was finalised | [optional] 
+**ConsensusHeight** | Pointer to **int64** | the switchly height at which the inbound reached consensus | [optional] 
+**FinalisedHeight** | Pointer to **int64** | the switchly height at which the outbound was finalised | [optional] 
 **UpdatedVault** | Pointer to **bool** |  | [optional] 
 **Reverted** | Pointer to **bool** |  | [optional] 
-**OutboundHeight** | Pointer to **int64** | the thorchain height for which the outbound was scheduled | [optional] 
+**OutboundHeight** | Pointer to **int64** | the switchly height for which the outbound was scheduled | [optional] 
 
 ## Methods
 

@@ -7,7 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/xrp/keymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 
 	. "github.com/switchlyprotocol/switchlynode/v3/test/simulation/pkg/types"
@@ -26,7 +26,7 @@ import (
 
 type Client struct {
 	chain     common.Chain
-	keys      *thorclient.Keys
+	keys      *switchlyclient.Keys
 	localKm   *keymanager.KeyManager
 	rpcClient *rpc.Client
 }
@@ -34,12 +34,12 @@ type Client struct {
 var _ LiteChainClient = &Client{}
 
 func NewConstructor(host string) LiteChainClientConstructor {
-	return func(chain common.Chain, keys *thorclient.Keys) (LiteChainClient, error) {
+	return func(chain common.Chain, keys *switchlyclient.Keys) (LiteChainClient, error) {
 		return NewClient(chain, host, keys)
 	}
 }
 
-func NewClient(chain common.Chain, host string, keys *thorclient.Keys) (LiteChainClient, error) {
+func NewClient(chain common.Chain, host string, keys *switchlyclient.Keys) (LiteChainClient, error) {
 	// extract the private key
 	privKey, err := keys.GetPrivateKey()
 	if err != nil {

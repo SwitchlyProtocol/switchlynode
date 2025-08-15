@@ -64,38 +64,38 @@ func buildUnsigned(
 	return txBuilder, nil
 }
 
-func (c *CosmosBlockScanner) fromCosmosToThorchain(coin cosmos.Coin) (common.Coin, error) {
+func (c *CosmosBlockScanner) fromCosmosToSwitchly(coin cosmos.Coin) (common.Coin, error) {
 	cosmosAsset, exists := c.GetAssetByCosmosDenom(coin.Denom)
 	if !exists {
 		return common.NoCoin, fmt.Errorf("asset does not exist / not whitelisted by client")
 	}
 
-	thorchainAsset, err := common.NewAsset(fmt.Sprintf("GAIA.%s", cosmosAsset.SwitchlyProtocolSymbol))
+	switchlyAsset, err := common.NewAsset(fmt.Sprintf("GAIA.%s", cosmosAsset.SwitchlyProtocolSymbol))
 	if err != nil {
-		return common.NoCoin, fmt.Errorf("invalid thorchain asset: %w", err)
+		return common.NoCoin, fmt.Errorf("invalid switchly asset: %w", err)
 	}
 
 	decimals := cosmosAsset.CosmosDecimals
 	amount := coin.Amount.BigInt()
 	var exp big.Int
-	// Decimals are more than native THORChain, so divide...
+	// Decimals are more than native SWITCHLYChain, so divide...
 	if decimals > common.SwitchlyDecimals {
 		decimalDiff := int64(decimals - common.SwitchlyDecimals)
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	} else if decimals < common.SwitchlyDecimals {
-		// Decimals are less than native THORChain, so multiply...
+		// Decimals are less than native SWITCHLYChain, so multiply...
 		decimalDiff := int64(common.SwitchlyDecimals - decimals)
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}
 	return common.Coin{
-		Asset:    thorchainAsset,
+		Asset:    switchlyAsset,
 		Amount:   sdkmath.NewUintFromBigInt(amount),
 		Decimals: int64(decimals),
 	}, nil
 }
 
-func (c *CosmosBlockScanner) fromThorchainToCosmos(coin common.Coin) (cosmos.Coin, error) {
-	asset, exists := c.GetAssetByThorchainSymbol(coin.Asset.Symbol.String())
+func (c *CosmosBlockScanner) fromSwitchlyToCosmos(coin common.Coin) (cosmos.Coin, error) {
+	asset, exists := c.GetAssetBySwitchlySymbol(coin.Asset.Symbol.String())
 	if !exists {
 		return cosmos.Coin{}, fmt.Errorf("asset does not exist / not whitelisted by client")
 	}
@@ -104,11 +104,11 @@ func (c *CosmosBlockScanner) fromThorchainToCosmos(coin common.Coin) (cosmos.Coi
 	amount := coin.Amount.BigInt()
 	var exp big.Int
 	if decimals > common.SwitchlyDecimals {
-		// Decimals are more than native THORChain, so multiply...
+		// Decimals are more than native SWITCHLYChain, so multiply...
 		decimalDiff := int64(decimals - common.SwitchlyDecimals)
 		amount.Mul(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	} else if decimals < common.SwitchlyDecimals {
-		// Decimals are less than native THORChain, so divide...
+		// Decimals are less than native SWITCHLYChain, so divide...
 		decimalDiff := int64(common.SwitchlyDecimals - decimals)
 		amount.Quo(amount, exp.Exp(big.NewInt(10), big.NewInt(decimalDiff), nil))
 	}

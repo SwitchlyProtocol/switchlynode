@@ -27,24 +27,24 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/utxo"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 type LitecoinSignerSuite struct {
 	client *Client
 	server *httptest.Server
-	bridge thorclient.ThorchainBridge
+	bridge switchlyclient.SwitchlyBridge
 	cfg    config.BifrostChainConfiguration
 	m      *metrics.Metrics
 	db     *leveldb.DB
-	keys   *thorclient.Keys
+	keys   *switchlyclient.Keys
 }
 
 var _ = Suite(&LitecoinSignerSuite{})
@@ -56,7 +56,7 @@ func (s *LitecoinSignerSuite) SetUpSuite(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(bob, cKeys.English, cmd.SwitchlyHDPath, password, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.keys = thorclient.NewKeysWithKeybase(kb, bob, password)
+	s.keys = switchlyclient.NewKeysWithKeybase(kb, bob, password)
 }
 
 func (s *LitecoinSignerSuite) SetUpTest(c *C) {
@@ -68,7 +68,7 @@ func (s *LitecoinSignerSuite) SetUpTest(c *C) {
 		DisableTLS:  true,
 		HTTPostMode: true,
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight: 1, // avoids querying thorchain for block height
+			StartBlockHeight: 1, // avoids querying switchly for block height
 		},
 	}
 	ns := strconv.Itoa(time.Now().Nanosecond())
@@ -76,7 +76,7 @@ func (s *LitecoinSignerSuite) SetUpTest(c *C) {
 
 	thordir := filepath.Join(os.TempDir(), ns, ".thorcli")
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       "localhost",
 		SignerName:      bob,
 		SignerPasswd:    password,
@@ -87,9 +87,9 @@ func (s *LitecoinSignerSuite) SetUpTest(c *C) {
 		if req.RequestURI == "/switchly/vaults/switchpub1addwnpepq23zu782ghdfmdskqujyfr7sdllvk7jpu8y883ry4lnqsansvuzyjlzs7yj/signers" { // nolint
 			_, err := rw.Write([]byte("[]"))
 			c.Assert(err, IsNil)
-		} else if strings.HasPrefix(req.RequestURI, "/thorchain/vaults") && strings.HasSuffix(req.RequestURI, "/signers") {
+		} else if strings.HasPrefix(req.RequestURI, "/switchly/vaults") && strings.HasSuffix(req.RequestURI, "/signers") {
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/tss/keysign_party.json")
-		} else if req.RequestURI == thorclient.ChainVersionEndpoint {
+		} else if req.RequestURI == switchlyclient.ChainVersionEndpoint {
 			_, err := rw.Write([]byte(`{"current":"` + types2.GetCurrentVersion().String() + `"}`))
 			c.Assert(err, IsNil)
 		} else {
@@ -138,7 +138,7 @@ func (s *LitecoinSignerSuite) SetUpTest(c *C) {
 	var err error
 	s.cfg.RPCHost = s.server.Listener.Addr().String()
 	cfg.ChainHost = s.server.Listener.Addr().String()
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, s.keys)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.m, s.keys)
 	c.Assert(err, IsNil)
 	s.client, err = NewClient(s.keys, s.cfg, nil, s.bridge, s.m)
 	c.Assert(err, IsNil)
@@ -214,7 +214,7 @@ func (s *LitecoinSignerSuite) TestSignTx(c *C) {
 func (s *LitecoinSignerSuite) TestSignTxHappyPathWithPrivateKey(c *C) {
 	addr, err := types2.GetRandomPubKey().GetAddress(common.LTCChain)
 	c.Assert(err, IsNil)
-	inHash := thorchain.GetRandomTxHash()
+	inHash := switchly.GetRandomTxHash()
 	memo := "OUT:" + inHash.String() // Memo must be parsable or ParseMemo will error.
 
 	txOutItem := stypes.TxOutItem{

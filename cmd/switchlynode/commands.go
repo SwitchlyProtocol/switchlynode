@@ -45,8 +45,8 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/app"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	thorlog "github.com/switchlyprotocol/switchlynode/v3/log"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/client/cli"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/ebifrost"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/client/cli"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/ebifrost"
 
 	"github.com/rs/zerolog"
 )

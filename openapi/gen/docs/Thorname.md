@@ -8,8 +8,8 @@ Name | Type | Description | Notes
 **ExpireBlockHeight** | Pointer to **int64** |  | [optional] 
 **Owner** | Pointer to **string** |  | [optional] 
 **PreferredAsset** | **string** |  | 
-**PreferredAssetSwapThresholdRune** | Pointer to **string** | Amount of RUNE currently needed to trigger a preferred asset swap. | [optional] 
-**AffiliateCollectorRune** | Pointer to **string** | Amount of RUNE currently accrued by this thorname in affiliate fees waiting to be swapped to preferred asset. | [optional] 
+**PreferredAssetSwapThresholdSWITCH** | Pointer to **string** | Amount of SWITCH currently needed to trigger a preferred asset swap. | [optional] 
+**AffiliateCollectorSWITCH** | Pointer to **string** | Amount of SWITCH currently accrued by this switchlyname in affiliate fees waiting to be swapped to preferred asset. | [optional] 
 **Aliases** | [**[]ThornameAlias**](ThornameAlias.md) |  | 
 
 ## Methods
@@ -126,55 +126,55 @@ and a boolean to check if the value has been set.
 SetPreferredAsset sets PreferredAsset field to given value.
 
 
-### GetPreferredAssetSwapThresholdRune
+### GetPreferredAssetSwapThresholdSWITCH
 
-`func (o *Thorname) GetPreferredAssetSwapThresholdRune() string`
+`func (o *Thorname) GetPreferredAssetSwapThresholdSWITCH() string`
 
-GetPreferredAssetSwapThresholdRune returns the PreferredAssetSwapThresholdRune field if non-nil, zero value otherwise.
+GetPreferredAssetSwapThresholdSWITCH returns the PreferredAssetSwapThresholdSWITCH field if non-nil, zero value otherwise.
 
-### GetPreferredAssetSwapThresholdRuneOk
+### GetPreferredAssetSwapThresholdSWITCHOk
 
-`func (o *Thorname) GetPreferredAssetSwapThresholdRuneOk() (*string, bool)`
+`func (o *Thorname) GetPreferredAssetSwapThresholdSWITCHOk() (*string, bool)`
 
-GetPreferredAssetSwapThresholdRuneOk returns a tuple with the PreferredAssetSwapThresholdRune field if it's non-nil, zero value otherwise
+GetPreferredAssetSwapThresholdSWITCHOk returns a tuple with the PreferredAssetSwapThresholdSWITCH field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetPreferredAssetSwapThresholdRune
+### SetPreferredAssetSwapThresholdSWITCH
 
-`func (o *Thorname) SetPreferredAssetSwapThresholdRune(v string)`
+`func (o *Thorname) SetPreferredAssetSwapThresholdSWITCH(v string)`
 
-SetPreferredAssetSwapThresholdRune sets PreferredAssetSwapThresholdRune field to given value.
+SetPreferredAssetSwapThresholdSWITCH sets PreferredAssetSwapThresholdSWITCH field to given value.
 
-### HasPreferredAssetSwapThresholdRune
+### HasPreferredAssetSwapThresholdSWITCH
 
-`func (o *Thorname) HasPreferredAssetSwapThresholdRune() bool`
+`func (o *Thorname) HasPreferredAssetSwapThresholdSWITCH() bool`
 
-HasPreferredAssetSwapThresholdRune returns a boolean if a field has been set.
+HasPreferredAssetSwapThresholdSWITCH returns a boolean if a field has been set.
 
-### GetAffiliateCollectorRune
+### GetAffiliateCollectorSWITCH
 
-`func (o *Thorname) GetAffiliateCollectorRune() string`
+`func (o *Thorname) GetAffiliateCollectorSWITCH() string`
 
-GetAffiliateCollectorRune returns the AffiliateCollectorRune field if non-nil, zero value otherwise.
+GetAffiliateCollectorSWITCH returns the AffiliateCollectorSWITCH field if non-nil, zero value otherwise.
 
-### GetAffiliateCollectorRuneOk
+### GetAffiliateCollectorSWITCHOk
 
-`func (o *Thorname) GetAffiliateCollectorRuneOk() (*string, bool)`
+`func (o *Thorname) GetAffiliateCollectorSWITCHOk() (*string, bool)`
 
-GetAffiliateCollectorRuneOk returns a tuple with the AffiliateCollectorRune field if it's non-nil, zero value otherwise
+GetAffiliateCollectorSWITCHOk returns a tuple with the AffiliateCollectorSWITCH field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetAffiliateCollectorRune
+### SetAffiliateCollectorSWITCH
 
-`func (o *Thorname) SetAffiliateCollectorRune(v string)`
+`func (o *Thorname) SetAffiliateCollectorSWITCH(v string)`
 
-SetAffiliateCollectorRune sets AffiliateCollectorRune field to given value.
+SetAffiliateCollectorSWITCH sets AffiliateCollectorSWITCH field to given value.
 
-### HasAffiliateCollectorRune
+### HasAffiliateCollectorSWITCH
 
-`func (o *Thorname) HasAffiliateCollectorRune() bool`
+`func (o *Thorname) HasAffiliateCollectorSWITCH() bool`
 
-HasAffiliateCollectorRune returns a boolean if a field has been set.
+HasAffiliateCollectorSWITCH returns a boolean if a field has been set.
 
 ### GetAliases
 

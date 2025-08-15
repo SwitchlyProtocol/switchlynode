@@ -1,18 +1,18 @@
-# \RUNEPoolApi
+# \SWITCHPoolApi
 
 All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**RunePool**](RUNEPoolApi.md#RunePool) | **Get** /thorchain/runepool | 
-[**RuneProvider**](RUNEPoolApi.md#RuneProvider) | **Get** /thorchain/rune_provider/{address} | 
-[**RuneProviders**](RUNEPoolApi.md#RuneProviders) | **Get** /thorchain/rune_providers | 
+[**SWITCHPool**](SWITCHPoolApi.md#SWITCHPool) | **Get** /switchly/runepool | 
+[**SWITCHProvider**](SWITCHPoolApi.md#SWITCHProvider) | **Get** /switchly/rune_provider/{address} | 
+[**SWITCHProviders**](SWITCHPoolApi.md#SWITCHProviders) | **Get** /switchly/rune_providers | 
 
 
 
-## RunePool
+## SWITCHPool
 
-> RUNEPoolResponse RunePool(ctx).Height(height).Execute()
+> SWITCHPoolResponse SWITCHPool(ctx).Height(height).Execute()
 
 
 
@@ -35,13 +35,13 @@ func main() {
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.RUNEPoolApi.RunePool(context.Background()).Height(height).Execute()
+    resp, r, err := apiClient.SWITCHPoolApi.SWITCHPool(context.Background()).Height(height).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `RUNEPoolApi.RunePool``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `SWITCHPoolApi.SWITCHPool``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `RunePool`: RUNEPoolResponse
-    fmt.Fprintf(os.Stdout, "Response from `RUNEPoolApi.RunePool`: %v\n", resp)
+    // response from `SWITCHPool`: SWITCHPoolResponse
+    fmt.Fprintf(os.Stdout, "Response from `SWITCHPoolApi.SWITCHPool`: %v\n", resp)
 }
 ```
 
@@ -51,7 +51,7 @@ func main() {
 
 ### Other Parameters
 
-Other parameters are passed through a pointer to a apiRunePoolRequest struct via the builder pattern
+Other parameters are passed through a pointer to a apiSWITCHPoolRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes
@@ -60,7 +60,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**RUNEPoolResponse**](RUNEPoolResponse.md)
+[**SWITCHPoolResponse**](SWITCHPoolResponse.md)
 
 ### Authorization
 
@@ -76,9 +76,9 @@ No authorization required
 [[Back to README]](../README.md)
 
 
-## RuneProvider
+## SWITCHProvider
 
-> RUNEProvider RuneProvider(ctx, address).Height(height).Execute()
+> SWITCHProvider SWITCHProvider(ctx, address).Height(height).Execute()
 
 
 
@@ -102,13 +102,13 @@ func main() {
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.RUNEPoolApi.RuneProvider(context.Background(), address).Height(height).Execute()
+    resp, r, err := apiClient.SWITCHPoolApi.SWITCHProvider(context.Background(), address).Height(height).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `RUNEPoolApi.RuneProvider``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `SWITCHPoolApi.SWITCHProvider``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `RuneProvider`: RUNEProvider
-    fmt.Fprintf(os.Stdout, "Response from `RUNEPoolApi.RuneProvider`: %v\n", resp)
+    // response from `SWITCHProvider`: SWITCHProvider
+    fmt.Fprintf(os.Stdout, "Response from `SWITCHPoolApi.SWITCHProvider`: %v\n", resp)
 }
 ```
 
@@ -122,7 +122,7 @@ Name | Type | Description  | Notes
 
 ### Other Parameters
 
-Other parameters are passed through a pointer to a apiRuneProviderRequest struct via the builder pattern
+Other parameters are passed through a pointer to a apiSWITCHProviderRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes
@@ -132,7 +132,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**RUNEProvider**](RUNEProvider.md)
+[**SWITCHProvider**](SWITCHProvider.md)
 
 ### Authorization
 
@@ -148,9 +148,9 @@ No authorization required
 [[Back to README]](../README.md)
 
 
-## RuneProviders
+## SWITCHProviders
 
-> []RUNEProvider RuneProviders(ctx).Height(height).Execute()
+> []SWITCHProvider SWITCHProviders(ctx).Height(height).Execute()
 
 
 
@@ -173,13 +173,13 @@ func main() {
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.RUNEPoolApi.RuneProviders(context.Background()).Height(height).Execute()
+    resp, r, err := apiClient.SWITCHPoolApi.SWITCHProviders(context.Background()).Height(height).Execute()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "Error when calling `RUNEPoolApi.RuneProviders``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Error when calling `SWITCHPoolApi.SWITCHProviders``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `RuneProviders`: []RUNEProvider
-    fmt.Fprintf(os.Stdout, "Response from `RUNEPoolApi.RuneProviders`: %v\n", resp)
+    // response from `SWITCHProviders`: []SWITCHProvider
+    fmt.Fprintf(os.Stdout, "Response from `SWITCHPoolApi.SWITCHProviders`: %v\n", resp)
 }
 ```
 
@@ -189,7 +189,7 @@ func main() {
 
 ### Other Parameters
 
-Other parameters are passed through a pointer to a apiRuneProvidersRequest struct via the builder pattern
+Other parameters are passed through a pointer to a apiSWITCHProvidersRequest struct via the builder pattern
 
 
 Name | Type | Description  | Notes
@@ -198,7 +198,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**[]RUNEProvider**](RUNEProvider.md)
+[**[]SWITCHProvider**](SWITCHProvider.md)
 
 ### Authorization
 

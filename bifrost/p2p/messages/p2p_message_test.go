@@ -10,12 +10,12 @@ import (
 
 func TestPackage(t *testing.T) { TestingT(t) }
 
-type THORChainTSSMessageTypeSuite struct{}
+type SWITCHLYChainTSSMessageTypeSuite struct{}
 
-var _ = Suite(&THORChainTSSMessageTypeSuite{})
+var _ = Suite(&SWITCHLYChainTSSMessageTypeSuite{})
 
-func (THORChainTSSMessageTypeSuite) TestTHORChainTSSMessageType_String(c *C) {
-	m := map[THORChainTSSMessageType]string{
+func (SWITCHLYChainTSSMessageTypeSuite) TestSWITCHLYChainTSSMessageType_String(c *C) {
+	m := map[SWITCHLYChainTSSMessageType]string{
 		TSSKeyGenMsg:     "TSSKeyGenMsg",
 		TSSKeySignMsg:    "TSSKeySignMsg",
 		TSSKeyGenVerMsg:  "TSSKeyGenVerMsg",
@@ -26,7 +26,7 @@ func (THORChainTSSMessageTypeSuite) TestTHORChainTSSMessageType_String(c *C) {
 	}
 }
 
-func (THORChainTSSMessageTypeSuite) TestWireMessage(c *C) {
+func (SWITCHLYChainTSSMessageTypeSuite) TestWireMessage(c *C) {
 	bi := new(big.Int).SetBytes([]byte("whatever"))
 	wm := WireMessage{
 		Routing: &btss.MessageRouting{

@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -107,7 +107,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -145,7 +145,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {
@@ -183,7 +183,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 4,
       "time": "",
       "last_block_id": {
@@ -221,7 +221,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 5,
       "time": "",
       "last_block_id": {
@@ -284,7 +284,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "4",
@@ -371,7 +371,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "4",
@@ -458,7 +458,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "4",
@@ -521,7 +521,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 6,
       "time": "",
       "last_block_id": {
@@ -559,7 +559,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 7,
       "time": "",
       "last_block_id": {
@@ -622,7 +622,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "6",
@@ -709,7 +709,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "6",
@@ -796,7 +796,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "6",
@@ -859,7 +859,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 8,
       "time": "",
       "last_block_id": {
@@ -897,7 +897,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 9,
       "time": "",
       "last_block_id": {
@@ -960,7 +960,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "8",
@@ -1017,7 +1017,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 10,
       "time": "",
       "last_block_id": {
@@ -1055,7 +1055,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 11,
       "time": "",
       "last_block_id": {
@@ -1147,7 +1147,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "10",
@@ -1234,7 +1234,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "10",
@@ -1321,7 +1321,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR",
+                  "SWITCHLY",
                   "BTC"
                 ],
                 "height": "10",

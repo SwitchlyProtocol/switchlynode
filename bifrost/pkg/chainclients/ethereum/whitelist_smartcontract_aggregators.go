@@ -2,7 +2,7 @@ package ethereum
 
 import (
 	"github.com/switchlyprotocol/switchlynode/v3/common"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/aggregators"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/aggregators"
 )
 
 func LatestAggregatorContracts() []common.Address {

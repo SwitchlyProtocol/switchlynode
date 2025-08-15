@@ -17,12 +17,12 @@ asserts:
   - .result.value.sequence == "1"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .REGRESSIONTEST == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir/key/REGRESSIONTEST
+endpoint: http://localhost:1317/switchly/mimir/key/REGRESSIONTEST
 asserts:
   - . == 1
 ---
@@ -40,7 +40,7 @@ asserts:
   - .result.value.sequence == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .FOXTEST|length == 0
 ---
@@ -56,7 +56,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[0].result.code == 6
   - .txs[0].result.log | contains("invalid mimir key")

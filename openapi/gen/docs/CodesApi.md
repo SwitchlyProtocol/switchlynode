@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Codes**](CodesApi.md#Codes) | **Get** /thorchain/codes | 
+[**Codes**](CodesApi.md#Codes) | **Get** /switchly/codes | 
 
 
 

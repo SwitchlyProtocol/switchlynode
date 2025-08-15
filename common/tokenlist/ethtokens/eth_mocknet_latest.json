@@ -16,16 +16,16 @@
     {
       "chainId": 4,
       "address": "0xd601c6A3a36721320573885A8d8420746dA3d7A0",
-      "symbol": "RUNE",
-      "name": "Test RUNE token",
+      "symbol": "SWITCH",
+      "name": "Test SWITCH token",
       "decimals": 18,
       "tags": []
     },
     {
       "chainId": 4,
       "address": "0x4d704dda8099305ee9803f02343129bf6ba55ff1",
-      "symbol": "RUNE",
-      "name": "Test RUNE token",
+      "symbol": "SWITCH",
+      "name": "Test SWITCH token",
       "decimals": 18,
       "tags": []
     },
@@ -56,8 +56,8 @@
     {
       "chainId": 4,
       "address": "0x8626DB1a4f9f3e1002EEB9a4f3c6d391436Ffc23",
-      "symbol": "XRUNE",
-      "name": "XRUNE Token",
+      "symbol": "XSWITCH",
+      "name": "XSWITCH Token",
       "decimals": 18,
       "tags": []
     },
@@ -88,8 +88,8 @@
     {
       "chainId": 4,
       "address": "0xe247EFF2915Cb56Ec7a4DB3aE7b923326752E92C",
-      "symbol": "THOR",
-      "name": "THORSwap token",
+      "symbol": "SWITCHLY",
+      "name": "SWITCHLYSwap token",
       "decimals": 18,
       "tags": []
     },
@@ -97,7 +97,7 @@
       "chainId": 4,
       "address": "0x73d6e26896981798526b6ead48d0fab76e205974",
       "symbol": "TGT",
-      "name": "THORWallet Governance Token",
+      "name": "SWITCHLYWallet Governance Token",
       "decimals": 18,
       "tags": []
     },

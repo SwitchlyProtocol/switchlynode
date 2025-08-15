@@ -12,7 +12,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 1,
       "time": "",
       "last_block_id": {
@@ -50,7 +50,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 2,
       "time": "",
       "last_block_id": {
@@ -113,7 +113,7 @@
                   "round": ""
                 },
                 "chains": [
-                  "THOR"
+                  "SWITCHLY"
                 ],
                 "height": "0",
                 "id": "d87ba3871b60ec3caf52184943ea7e8797aadeb0880565f7935a7be41d1b7c0a",
@@ -168,7 +168,7 @@
         "block": "11",
         "app": "0"
       },
-      "chain_id": "thorchain",
+      "chain_id": "switchly",
       "height": 3,
       "time": "",
       "last_block_id": {

@@ -2,7 +2,7 @@ package types
 
 import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
 
@@ -37,4 +37,4 @@ type LiteChainClient interface {
 }
 
 // LiteChainClientConstructor is a function that creates a new LiteChainClient.
-type LiteChainClientConstructor func(_ common.Chain, _ *thorclient.Keys) (LiteChainClient, error)
+type LiteChainClientConstructor func(_ common.Chain, _ *switchlyclient.Keys) (LiteChainClient, error)

@@ -7,7 +7,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/storage"
 	. "gopkg.in/check.v1"
 
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 )
 
 type BitcoinTemporalStorageTestSuite struct{}
@@ -50,9 +50,9 @@ func (s *BitcoinTemporalStorageTestSuite) TestTemporalStorage(c *C) {
 	nbm, err := store.GetBlockMeta(1024)
 	c.Assert(err, IsNil)
 	c.Assert(nbm, IsNil)
-	hash := thorchain.GetRandomTxHash()
+	hash := switchly.GetRandomTxHash()
 	for i := 0; i < 1024; i++ {
-		bm = NewBlockMeta(thorchain.GetRandomTxHash().String(), int64(i), thorchain.GetRandomTxHash().String())
+		bm = NewBlockMeta(switchly.GetRandomTxHash().String(), int64(i), switchly.GetRandomTxHash().String())
 		if i == 0 {
 			bm.AddSelfTransaction(hash.String())
 		}

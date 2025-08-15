@@ -22,17 +22,17 @@ count: 1
 # should not leave anything in queues
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/swap
+endpoint: http://localhost:1317/switchly/queue/swap
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/scheduled
+endpoint: http://localhost:1317/switchly/queue/scheduled
 asserts:
   - .|length == 0
 ---
@@ -53,17 +53,17 @@ count: 1
 # all outbound items should have over dust
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/queue/swap
+endpoint: http://localhost:1317/switchly/queue/swap
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/scheduled
+endpoint: http://localhost:1317/switchly/queue/scheduled
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.coin.amount|tonumber == 49982000-6500

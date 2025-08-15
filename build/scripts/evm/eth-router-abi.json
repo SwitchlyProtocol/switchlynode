@@ -181,7 +181,7 @@
           { "internalType": "uint256", "name": "amount", "type": "uint256" }
         ],
         "indexed": false,
-        "internalType": "struct THORChain_Router.Coin[]",
+        "internalType": "struct SWITCHLYChain_Router.Coin[]",
         "name": "coins",
         "type": "tuple[]"
       },
@@ -197,7 +197,7 @@
   },
   {
     "inputs": [],
-    "name": "RUNE",
+    "name": "SWITCH",
     "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
@@ -240,7 +240,7 @@
           { "internalType": "address", "name": "asset", "type": "address" },
           { "internalType": "uint256", "name": "amount", "type": "uint256" }
         ],
-        "internalType": "struct THORChain_Router.Coin[]",
+        "internalType": "struct SWITCHLYChain_Router.Coin[]",
         "name": "coins",
         "type": "tuple[]"
       },

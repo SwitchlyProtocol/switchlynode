@@ -2,17 +2,17 @@
 
 ## Introduction
 
-THORChain allows native L1 Swaps. On-chain [Memos](../concepts/memos.md) are used instruct THORChain how to swap, with the option to add [price limits](quickstart-guide.md#price-limits) and [affiliate fees](quickstart-guide.md#affiliate-fees). THORChain nodes observe the inbound transactions and when the majority have observed the transactions, the transaction is processed by threshold-signature transactions from THORChain vaults.
+SWITCHLYChain allows native L1 Swaps. On-chain [Memos](../concepts/memos.md) are used instruct SWITCHLYChain how to swap, with the option to add [price limits](quickstart-guide.md#price-limits) and [affiliate fees](quickstart-guide.md#affiliate-fees). SWITCHLYChain nodes observe the inbound transactions and when the majority have observed the transactions, the transaction is processed by threshold-signature transactions from SWITCHLYChain vaults.
 
-Let's demonstrate decentralized, non-custodial cross-chain swaps. In this example, we will build a transaction that instructs THORChain to swap native Bitcoin to native Ethereum in one transaction.
+Let's demonstrate decentralized, non-custodial cross-chain swaps. In this example, we will build a transaction that instructs SWITCHLYChain to swap native Bitcoin to native Ethereum in one transaction.
 
 ```admonish info
-The following examples use a free, hosted API provided by [Nine Realms](https://twitter.com/ninerealms_cap). If you want to run your own full node, please see [connecting-to-thorchain.md](../concepts/connecting-to-thorchain.md).
+The following examples use a free, hosted API provided by [Nine Realms](https://twitter.com/ninerealms_cap). If you want to run your own full node, please see [connecting-to-switchly.md](../concepts/connecting-to-switchly.md).
 ```
 
 ### 1. Determine the correct asset name
 
-THORChain uses a specific [asset notation](../concepts/asset-notation.md#layer-1-assets). Available assets are at: [Pools Endpoint.](https://thornode.ninerealms.com/thorchain/pools)
+SWITCHLYChain uses a specific [asset notation](../concepts/asset-notation.md#layer-1-assets). Available assets are at: [Pools Endpoint.](https://switchlynode.ninerealms.com/switchly/pools)
 
 BTC => `BTC.BTC`\
 ETH => `ETH.ETH`
@@ -24,12 +24,12 @@ Only available pools can be used. (`where 'status' == Available)`
 ### 2. Query for a swap quote
 
 ```admonish info
-All amounts are 1e8. Multiply native asset amounts by 100000000 when dealing with amounts in THORChain. 1 BTC = 100,000,000.
+All amounts are 1e8. Multiply native asset amounts by 100000000 when dealing with amounts in SWITCHLYChain. 1 BTC = 100,000,000.
 ```
 
-**Request**: _Swap 1 BTC to ETH and send the ETH to_ `0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430` using [Streaming Swaps](./streaming-swaps.md), swapping every block (`streaming_interval=1`) and allowing THORNode to work out the optimal amount of blocks (`streaming_quantity=0`).
+**Request**: _Swap 1 BTC to ETH and send the ETH to_ `0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430` using [Streaming Swaps](./streaming-swaps.md), swapping every block (`streaming_interval=1`) and allowing SWITCHLYNode to work out the optimal amount of blocks (`streaming_quantity=0`).
 
-[https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&streaming_quantity=0](https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&streaming_quantity=0)
+[https://switchlynode.ninerealms.com/switchly/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&streaming_quantity=0](https://switchlynode.ninerealms.com/switchly/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&streaming_quantity=0)
 
 **Response**:
 
@@ -69,11 +69,11 @@ All amounts are 1e8. Multiply native asset amounts by 100000000 when dealing wit
 
 _If you send 1 BTC to `bc1qlccxv985m20qvd8g5yp6g9lc0wlc70v6zlalz8` with the memo `=:ETH.ETH:0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430`, you can expect to receive `20.35299208` ETH._
 
-_For security reasons, your inbound transaction will be delayed by 600 seconds (1 BTC Block) and 1074 seconds (or 179 native THORChain blocks) for the outbound transaction,_ 2640 seconds all up*. You will pay an outbound gas fee of 0.0054 ETH and will incur 9 basis points (0.09%) of slippage due to streaming swaps, would be 41 bps without StreamingSwaps.*
+_For security reasons, your inbound transaction will be delayed by 600 seconds (1 BTC Block) and 1074 seconds (or 179 native SWITCHLYChain blocks) for the outbound transaction,_ 2640 seconds all up*. You will pay an outbound gas fee of 0.0054 ETH and will incur 9 basis points (0.09%) of slippage due to streaming swaps, would be 41 bps without StreamingSwaps.*
 The swap will be conduced over 7 blocks taking 42 seconds for the streaming swap to complete.
 
 ```admonish info
-Full quote swap endpoint specification can be found here: [https://thornode.ninerealms.com/thorchain/doc/](https://thornode.ninerealms.com/thorchain/doc/).
+Full quote swap endpoint specification can be found here: [https://switchlynode.ninerealms.com/switchly/doc/](https://switchlynode.ninerealms.com/switchly/doc/).
 ```
 
 If you'd prefer to calculate the swap yourself, see the [Fees](fees-and-wait-times.md) section to understand what fees need to be accounted for in the output amount. Also, review the [Transaction Memos](../concepts/memos.md#swap) section to understand how to create the swap memos.
@@ -112,19 +112,19 @@ For best results, request a new quote right before the user submits a transactio
 
 Specify _tolerance_bps_ to give users control over the maximum slip they are willing to experience before canceling the trade. If not specified, users will pay an unbounded amount of slip.
 
-[https://thornode.ninerealms.com/thorchain/quote/swap?amount=100000000\&from_asset=BTC.BTC\&to_asset=ETH.ETH\&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430\&tolerance_bps=100](https://thornode.ninerealms.com/thorchain/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&tolerance_bps=100)
+[https://switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000\&from_asset=BTC.BTC\&to_asset=ETH.ETH\&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430\&tolerance_bps=100](https://switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&tolerance_bps=100)
 
-`https://thornode.ninerealms.com/thorchain/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&tolerance_bps=100`
+`https://switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&tolerance_bps=100`
 
-Notice how a minimum amount (1342846539 / \~13.42 ETH) has been appended to the end of the memo. This tells THORChain to revert the transaction if the transacted amount is more than 100 basis points less than what the _expected_amount_out_ returns.
+Notice how a minimum amount (1342846539 / \~13.42 ETH) has been appended to the end of the memo. This tells SWITCHLYChain to revert the transaction if the transacted amount is more than 100 basis points less than what the _expected_amount_out_ returns.
 
 ### [Affiliate Fees](../concepts/fees.md#affiliate-fee)
 
-Specify `affiliate` and `affiliate_bps` to skim a percentage of the swap as an affiliate fee. When a valid affiliate address and affiliate basis points are present in the memo, the protocol will skim affiliate_bps from the inbound swap amount and swap this to $RUNE with the affiliate address as the destination address. Affiliates may either be a RUNE address or a registered & un-expired THORName with a THORChain alias defined. If the THORName has a preferred asset set it must also have an alias for the preferred asset's chain. If an invalid, improperly configured, or expired THORName, or an invalid RUNE address is provided as an affiliate, the affiliate fee will be skipped.
+Specify `affiliate` and `affiliate_bps` to skim a percentage of the swap as an affiliate fee. When a valid affiliate address and affiliate basis points are present in the memo, the protocol will skim affiliate_bps from the inbound swap amount and swap this to $SWITCH with the affiliate address as the destination address. Affiliates may either be a SWITCH address or a registered & un-expired SWITCHName with a SWITCHLYChain alias defined. If the SWITCHName has a preferred asset set it must also have an alias for the preferred asset's chain. If an invalid, improperly configured, or expired SWITCHName, or an invalid SWITCH address is provided as an affiliate, the affiliate fee will be skipped.
 
 Params:
 
-- **affiliate**: Can be a THORName or valid THORChain address
+- **affiliate**: Can be a SWITCHName or valid SWITCHLYChain address
 - **affiliate_bps**: 0-1000 basis points
 
 Memo format:
@@ -132,7 +132,7 @@ Memo format:
 
 Quote example:
 
-[https://thornode.ninerealms.com/thorchain/quote/swap?amount=100000000\&from_asset=BTC.BTC\&to_asset=ETH.ETH\&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430\&affiliate=dx\&affiliate_bps=10](https://thornode.ninerealms.com/thorchain/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&affiliate=dx&affiliate_bps=10)
+[https://switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000\&from_asset=BTC.BTC\&to_asset=ETH.ETH\&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430\&affiliate=dx\&affiliate_bps=10](https://switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&affiliate=dx&affiliate_bps=10)
 
 ```json
 {
@@ -168,7 +168,7 @@ Quote example:
 }
 ```
 
-Notice how `dx:10` has been appended to the end of the memo. This instructs THORChain to skim 10 basis points from the swap. The user should still expect to receive the _expected_amount_out,_ meaning the affiliate fee has already been subtracted from this number.
+Notice how `dx:10` has been appended to the end of the memo. This instructs SWITCHLYChain to skim 10 basis points from the swap. The user should still expect to receive the _expected_amount_out,_ meaning the affiliate fee has already been subtracted from this number.
 
 For more information on affiliate fees: [fees.md](../concepts/fees.md#affiliate-fee").
 
@@ -192,7 +192,7 @@ Invalid memo examples:
 
 Params:
 
-- **streaming_interval**: # of THORChain blocks between each subswap. Larger # of blocks gives arb bots more time to rebalance pools. For deeper/more active pools a value of `1` is most likely okay. For shallower/less active pools a larger value should be considered.
+- **streaming_interval**: # of SWITCHLYChain blocks between each subswap. Larger # of blocks gives arb bots more time to rebalance pools. For deeper/more active pools a value of `1` is most likely okay. For shallower/less active pools a larger value should be considered.
 - **streaming_quantity**: # of subswaps to execute. If this value is omitted or set to `0` the protocol will calculate the # of subswaps such that each subswap has a slippage of 5 bps.
 
 Memo format:
@@ -200,7 +200,7 @@ Memo format:
 
 Quote example:
 
-[_https://stagenet-thornode.ninerealms.com/thorchain/quote/swap?amount=100000000\&from_asset=BTC.BTC\&to_asset=ETH.ETH\&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430\&streaming_interval=10_](https://stagenet-thornode.ninerealms.com/thorchain/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&streaming_interval=10)
+[_https://stagenet-switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000\&from_asset=BTC.BTC\&to_asset=ETH.ETH\&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430\&streaming_interval=10_](https://stagenet-switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000&from_asset=BTC.BTC&to_asset=ETH.ETH&destination=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430&streaming_interval=10)
 
 ```json
 {
@@ -248,7 +248,7 @@ Memo format:
 `=:BTC.BTC:<destination>/<refund_address>`
 
 Quote example:
-[https://thornode.ninerealms.com/thorchain/quote/swap?amount=100000000&from_asset=ETH.ETH&to_asset=BTC.BTC&destination=bc1qyl7wjm2ldfezgnjk2c78adqlk7dvtm8sd7gn0q&refund_address=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430](https://thornode.ninerealms.com/thorchain/quote/swap?amount=100000000&from_asset=ETH.ETH&to_asset=BTC.BTC&destination=bc1qyl7wjm2ldfezgnjk2c78adqlk7dvtm8sd7gn0q&refund_address=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430)
+[https://switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000&from_asset=ETH.ETH&to_asset=BTC.BTC&destination=bc1qyl7wjm2ldfezgnjk2c78adqlk7dvtm8sd7gn0q&refund_address=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430](https://switchlynode.ninerealms.com/switchly/quote/swap?amount=100000000&from_asset=ETH.ETH&to_asset=BTC.BTC&destination=bc1qyl7wjm2ldfezgnjk2c78adqlk7dvtm8sd7gn0q&refund_address=0x3021c479f7f8c9f1d5c7d8523ba5e22c0bcb5430)
 
 ```json
 {
@@ -264,12 +264,12 @@ The quote swap endpoint simulates all of the logic of an actual swap transaction
 
 #### Price Tolerance Error
 
-Description: This error means the swap cannot be completed given your price tolerance. [Click here to view request URL](https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&streaming_quantity=0&tolerance_bps=1).
+Description: This error means the swap cannot be completed given your price tolerance. [Click here to view request URL](https://switchlynode.ninerealms.com/switchly/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&streaming_quantity=0&tolerance_bps=1).
 
 Request URL:
 
 ```json
-https://thornode.ninerealms.com/thorchain/quote/swap \
+https://switchlynode.ninerealms.com/switchly/quote/swap \
 from_asset=BTC.BTC \
 to_asset=ETH.ETH \
 amount=100000000 \
@@ -284,12 +284,12 @@ Response:
 
 #### Destination Address Error
 
-Description: This error ensures the destination address is for the chain specified by `to_asset`. [Click here to view request URL](https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=bc1qyl7wjm2ldfezgnjk2c78adqlk7dvtm8sd7gn0q&streaming_interval=1).
+Description: This error ensures the destination address is for the chain specified by `to_asset`. [Click here to view request URL](https://switchlynode.ninerealms.com/switchly/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=bc1qyl7wjm2ldfezgnjk2c78adqlk7dvtm8sd7gn0q&streaming_interval=1).
 
 Request URL:
 
 ```json
-https://thornode.ninerealms.com/thorchain/quote/swap \
+https://switchlynode.ninerealms.com/switchly/quote/swap \
 from_asset=BTC.BTC \
 to_asset=ETH.ETH \
 amount=100000000 \
@@ -302,12 +302,12 @@ Response:
 
 #### Affiliate Address Length Error
 
-Description: This error is due to the fact the affiliate address is too long given the source chain's memo length requirements. Try registering a [THORName](../affiliate-guide/thorname-guide.md) to shorten the memo. [Click here to view request URL](https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&tolerance_bps=100&affiliate=thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp&affiliate_bps=10).
+Description: This error is due to the fact the affiliate address is too long given the source chain's memo length requirements. Try registering a [SWITCHName](../affiliate-guide/switchlyname-guide.md) to shorten the memo. [Click here to view request URL](https://switchlynode.ninerealms.com/switchly/quote/swap?from_asset=BTC.BTC&to_asset=ETH.ETH&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&tolerance_bps=100&affiliate=thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp&affiliate_bps=10).
 
 Request URL:
 
 ```json
-https://thornode.ninerealms.com/thorchain/quote/swap \
+https://switchlynode.ninerealms.com/switchly/quote/swap \
 from_asset=BTC.BTC \
 to_asset=ETH.ETH \
 amount=100000000 \
@@ -323,12 +323,12 @@ Response:
 
 #### Asset Not Found Error
 
-This error means the requested asset does not exist. [Click here to view request URL](https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=BTC.BTC&to_asset=<20bf>&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&tolerance_bps=100&affiliate=thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp&affiliate_bps=10).
+This error means the requested asset does not exist. [Click here to view request URL](https://switchlynode.ninerealms.com/switchly/quote/swap?from_asset=BTC.BTC&to_asset=<20bf>&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&tolerance_bps=100&affiliate=thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp&affiliate_bps=10).
 
 Request URL:
 
 ```json
-https://thornode.ninerealms.com/thorchain/quote/swap \
+https://switchlynode.ninerealms.com/switchly/quote/swap \
 from_asset=BTC.BTC \
 to_asset=<20bf> \
 amount=100000000 \
@@ -344,12 +344,12 @@ Response:
 
 #### Bound Checks Error
 
-Bound checks are made on both `affiliate_bps` and `tolerance_bps`. [Click here to view request URL](https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=BTC.BTC&to_asset=<20bf>&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&tolerance_bps=100&affiliate=thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp&affiliate_bps=10).
+Bound checks are made on both `affiliate_bps` and `tolerance_bps`. [Click here to view request URL](https://switchlynode.ninerealms.com/switchly/quote/swap?from_asset=BTC.BTC&to_asset=<20bf>&amount=100000000&destination=0x86d526d6624AbC0178cF7296cD538Ecc080A95F1&streaming_interval=1&tolerance_bps=100&affiliate=thor1rr6rahhd4sy76a7rdxkjaen2q4k4pw2g06w7qp&affiliate_bps=10).
 
 Request URL:
 
 ```json
-https://thornode.ninerealms.com/thorchain/quote/swap \
+https://switchlynode.ninerealms.com/switchly/quote/swap \
 from_asset=BTC.BTC \
 to_asset=ETH.ETH \
 amount=100000000 \
@@ -365,4 +365,4 @@ Response:
 
 ### Support
 
-Developers experiencing issues with these APIs can go to the THORChain Dev Discord for assistance. Interface developers should subscribe to the #interface-alerts channel for information pertinent to the endpoints and functionality discussed here.
+Developers experiencing issues with these APIs can go to the SWITCHLYChain Dev Discord for assistance. Interface developers should subscribe to the #interface-alerts channel for information pertinent to the endpoints and functionality discussed here.

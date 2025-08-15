@@ -8,7 +8,7 @@ import (
 	. "gopkg.in/check.v1"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/shared/utxo"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
@@ -37,7 +37,7 @@ func (s *BitcoinSignerSuite) TestSignTxWithTSS(c *C) {
 		InHash:  "",
 		OutHash: "",
 	}
-	s.client.tssKeySigner = &tss.MockThorchainKeyManager{}
+	s.client.tssKeySigner = &tss.MockSwitchlyKeyManager{}
 	txHash := "66d2d6b5eb564972c59e4797683a1225a02515a41119f0a8919381236b63e948"
 	c.Assert(err, IsNil)
 	// utxo := NewUnspentTransactionOutput(*txHash, 0, 0.00018, 100, txOutItem.VaultPubKey)

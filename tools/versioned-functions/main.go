@@ -181,7 +181,7 @@ func main() {
 
 	// extract current version for VCUR managers from managers.go
 	for _, pkg := range pkgs {
-		file, ok := pkg.Files["x/thorchain/managers.go"]
+		file, ok := pkg.Files["x/switchly/managers.go"]
 		if !ok {
 			continue
 		}

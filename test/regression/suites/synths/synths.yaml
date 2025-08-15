@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 1
 ---
@@ -37,7 +37,7 @@ signer: {{ addr_thor_fox }}
 coins:
   - amount: "${SYNTH_AMOUNT}"
     asset: "btc/btc"
-memo: "=:THOR.RUNE"
+memo: "=:SWITCHLY.SWITCH"
 ---
 type: create-blocks
 count: 1
@@ -101,7 +101,7 @@ asserts:
   - .result[]|select(.denom == "rune").amount == "2499119738411"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"

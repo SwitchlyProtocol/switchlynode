@@ -1,8 +1,8 @@
-# THORNode Regression Testing Framework
+# SWITCHLYNode Regression Testing Framework
 
-Thornode is increasingly complex and the most valuable feature we can provide at this stage is security. We aim to ensure that all changes made to the code base only increase the level of security and confidence in the code for all future features, maintenance, fixes, and optimizations. Unit tests are of high importance, but it is often not possible to cleanly map state changes from user actions into meaningful unit tests. Smoke tests enable us to test the full scope of state changes from user actions, but the mechanics make them slow to run and difficult to author/review - this has resulted in a test suite that does not extensively verify the boundaries of the system, especially with ongoing feature additions.
+Switchlynode is increasingly complex and the most valuable feature we can provide at this stage is security. We aim to ensure that all changes made to the code base only increase the level of security and confidence in the code for all future features, maintenance, fixes, and optimizations. Unit tests are of high importance, but it is often not possible to cleanly map state changes from user actions into meaningful unit tests. Smoke tests enable us to test the full scope of state changes from user actions, but the mechanics make them slow to run and difficult to author/review - this has resulted in a test suite that does not extensively verify the boundaries of the system, especially with ongoing feature additions.
 
-We aim to create a regression testing harness that focuses specifically on Thornode logic (no Bifrost coverage) for state changes triggered by user operations in a human readable format - making these test cases easy to define for the author, and easy to reason about as a reviewer considering additional boundaries.
+We aim to create a regression testing harness that focuses specifically on Switchlynode logic (no Bifrost coverage) for state changes triggered by user operations in a human readable format - making these test cases easy to define for the author, and easy to reason about as a reviewer considering additional boundaries.
 
 ## Design
 
@@ -39,13 +39,13 @@ The simplest of test structures may look something like:
 ---
 # create-block
 ---
-# check: thornode endpoint + jq conditions to assert
+# check: switchlynode endpoint + jq conditions to assert
 ---
 # transaction: observed, deposit, mimir, send
 ---
 # create-block
 ---
-# check: thornode endpoint + jq conditions to assert
+# check: switchlynode endpoint + jq conditions to assert
 ---
 # ...
 ```
@@ -84,7 +84,7 @@ The state definition can be any valid data to deep merge with the default genera
 type: state
 genesis:
   app_state:
-    thorchain:
+    switchly:
       pools:
         - LP_units: "428885140806810"
           asset: "BTC.BTC"
@@ -101,7 +101,7 @@ The check definition contains an endpoint, optional query parameters, and a set 
 
 ```yaml
 type: check
-endpoint: /thorchain/pools
+endpoint: /switchly/pools
 params: {}
 asserts:
   - .|length == 1
@@ -165,7 +165,7 @@ type: create-blocks
 count: 1
 ```
 
-If a specific transaction should cause the process to exit, an optional `exit` parameter will verify `thornode` exits with the provided code.
+If a specific transaction should cause the process to exit, an optional `exit` parameter will verify `switchlynode` exits with the provided code.
 
 ## Tips for Writing Tests
 
@@ -178,10 +178,10 @@ asserts:
   - "false"
 ```
 
-This assertion will always fail and print the endpoint response to the console for inspecting the current state of a given endpoint after the test run up that point. Remember that the Cosmos and Thorchain APIs are available on port `1317` and the Tendermint APIs are available on port `26657`:
+This assertion will always fail and print the endpoint response to the console for inspecting the current state of a given endpoint after the test run up that point. Remember that the Cosmos and Switchly APIs are available on port `1317` and the Tendermint APIs are available on port `26657`:
 
 - https://v1.cosmos.network/rpc/v0.45.1
-- https://thornode.ninerealms.com/thorchain/doc/#/
+- https://switchlynode.ninerealms.com/switchly/doc/#/
 - https://docs.tendermint.com/master/rpc/#/
 
 Pass the `RUN` environment variable the name of your test to avoid running all suites (it will also match a regex):
@@ -190,7 +190,7 @@ Pass the `RUN` environment variable the name of your test to avoid running all s
 RUN=my-test make test-regression
 ```
 
-If stuck set `DEBUG=1` to output the entire log output from the `thornode` process and pause execution at the end of the test to inspect endpoints:
+If stuck set `DEBUG=1` to output the entire log output from the `switchlynode` process and pause execution at the end of the test to inspect endpoints:
 
 ```bash
 DEBUG=1 RUN=my-test make test-regression
@@ -225,14 +225,14 @@ IGNORE_FAILURES=1 make test-regression
 We attempt to seed pools based on the following value ratios to keep reasoning simpler:
 
 ```none
-BTC == 1000 RUNE
-ETH == 100 RUNE
-<all-others> == 1 RUNE
+BTC == 1000 SWITCH
+ETH == 100 SWITCH
+<all-others> == 1 SWITCH
 ```
 
 ### Coverage
 
-We leverage functionality in Golang 1.20 to track code coverage on the `thornode` binary during live execution. Every run of the regression tests will generate a coverage percentage with archived, versioned, and generated code filtered - the value will be output to the console at the end of the test run. Coverage data is cleared after each run and a convenience target exists to open the coverage data from the last test run in the browser.
+We leverage functionality in Golang 1.20 to track code coverage on the `switchlynode` binary during live execution. Every run of the regression tests will generate a coverage percentage with archived, versioned, and generated code filtered - the value will be output to the console at the end of the test run. Coverage data is cleared after each run and a convenience target exists to open the coverage data from the last test run in the browser.
 
 ```bash
 make test-regression-coverage
@@ -240,10 +240,10 @@ make test-regression-coverage
 
 ### Flakiness
 
-The nature of these tests should be more predictable than the existing smoke tests in the repo, but there are still some caveats. Since block creation acquires a lock in process that will prevent query handling, all checks between blocks must complete within the block time - this block time defaults to `1s`. Additionally there is some raciness between the return of the application `EndBlock` and the time at which Tendermint, Cosmos, and Thorchain endpoints will execute against the new blocks data - we have a default sleep after the return of `EndBlock` set to `200ms`.
+The nature of these tests should be more predictable than the existing smoke tests in the repo, but there are still some caveats. Since block creation acquires a lock in process that will prevent query handling, all checks between blocks must complete within the block time - this block time defaults to `1s`. Additionally there is some raciness between the return of the application `EndBlock` and the time at which Tendermint, Cosmos, and Switchly endpoints will execute against the new blocks data - we have a default sleep after the return of `EndBlock` set to `200ms`.
 
-In order to avoid raciness more conveniently while running on resource constrained hardware, all time values above can optionally be increased by an integer factor defined in the `TIME_FACTOR` environment variable. If you find tests are hitting timeouts or returning inconsistent data, simply increase this factor (this will slow down the test run):
+In order to avoid raciness more conveniently while running on resource constrained hardware, all time values above can optionally be increased by an integer factor defined in the `TIME_FACSWITCHLY` environment variable. If you find tests are hitting timeouts or returning inconsistent data, simply increase this factor (this will slow down the test run):
 
 ```bash
-TIME_FACTOR=2 make test-regression
+TIME_FACSWITCHLY=2 make test-regression
 ```

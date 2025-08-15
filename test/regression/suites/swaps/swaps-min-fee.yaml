@@ -4,9 +4,9 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC.BTC
   amount: 30000000
   destination: {{ addr_btc_fox }}
@@ -28,14 +28,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"
   - .[0]|.coin.amount == "15981"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .end_block_events[] | select(.type == "swap") | .swap_slip == "3"
   - .end_block_events[] | select(.type == "swap") | .pool_slip == "3"
@@ -127,7 +127,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -156,14 +156,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .["L1SlipMinBps" | ascii_upcase] == 500
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   to_asset: BTC.BTC
   amount: 30000000
   destination: {{ addr_btc_fox }}
@@ -174,7 +174,7 @@ asserts:
   - (.fees.total|tonumber) == (.fees.liquidity|tonumber)+(.fees.outbound|tonumber)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH.ETH
   to_asset: BTC.BTC
@@ -185,7 +185,7 @@ asserts:
   - (.fees.total|tonumber) == (.fees.liquidity|tonumber)+(.fees.outbound|tonumber)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/quote/swap
+endpoint: http://localhost:1317/switchly/quote/swap
 params:
   from_asset: ETH/ETH
   to_asset: BTC.BTC
@@ -206,14 +206,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ native_txid -1 }}"
   - .[0]|.coin.amount == "14476"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .end_block_events[] | select(.type == "swap") | .swap_slip == "500"
   - .end_block_events[] | select(.type == "swap") | .pool_slip == "3"

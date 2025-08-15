@@ -6,10 +6,10 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
-# /pool/THOR.ETH can't be checked for .status == null
+# /pool/SWITCHLY.ETH can't be checked for .status == null
 # because of ERR cmd/run.go:275 > operation failed error="unexpected status code: 404"
 ---
 ########################################################################################
@@ -17,19 +17,19 @@ asserts:
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDX-0X9999999999999999999999999999999999999999
 value: 1
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
-  - ."TORANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDX-0X9999999999999999999999999999999999999999" == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
   - .[]|select(.asset=="BTC.BTC")|.asset_tor_price == "99999999542"
@@ -48,12 +48,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .DERIVEDDEPTHBASISPTS == 10000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
 ---
@@ -61,7 +61,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 5
   - .[0].derived_depth_bps|tonumber == 10000
@@ -71,17 +71,17 @@ asserts:
   - .[4].derived_depth_bps|tonumber == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpools
+endpoint: http://localhost:1317/switchly/dpools
 asserts:
   - .|length == 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.BTC
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.BTC
 asserts:
   - .status == "Available"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.TOR
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.SWITCHLY
 asserts:
   - .status == "Available"
 ---
@@ -89,7 +89,7 @@ asserts:
 # fail open loan due to min out
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/open
+endpoint: http://localhost:1317/switchly/quote/loan/open
 params:
   from_asset: BTC.BTC
   amount: 500000
@@ -101,13 +101,13 @@ asserts:
   - .message|test("less than price limit")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc
+endpoint: http://localhost:1317/switchly/pool/btc.btc
 asserts:
   - .balance_rune | tonumber == 100000799088
   - .balance_asset | tonumber == 100000000
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/eth.eth
+endpoint: http://localhost:1317/switchly/pool/eth.eth
 asserts:
   - .balance_rune | tonumber == 100000799088
   - .balance_asset | tonumber == 1000000000
@@ -136,12 +136,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 2 }}"
@@ -170,18 +170,18 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc
+endpoint: http://localhost:1317/switchly/pool/btc.btc
 asserts:
   - .balance_rune | tonumber == 99997697622
   - .balance_asset | tonumber == 100003500
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/eth.eth
+endpoint: http://localhost:1317/switchly/pool/eth.eth
 asserts:
   - .balance_rune | tonumber == 100001198644
   - .balance_asset | tonumber == 1000000000
@@ -190,14 +190,14 @@ asserts:
 # open loan btc -> rune
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/open
+endpoint: http://localhost:1317/switchly/quote/loan/open
 params:
   from_asset: BTC.BTC
   amount: 500000
-  to_asset: RUNE
+  to_asset: SWITCH
   destination: {{ addr_thor_fox }}
 asserts:
-  - .memo == "$+:THOR.RUNE:{{ addr_thor_fox }}"
+  - .memo == "$+:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   - .inbound_address == "{{ addr_btc_dog }}"
   - .expected_amount_out|tonumber == 483346750
   - .expected_collateral_deposited|tonumber == 495061
@@ -235,7 +235,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "LOAN+:THOR.RUNE:{{ addr_thor_fox }}"
+      memo: "LOAN+:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -244,7 +244,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "495061"
@@ -254,7 +254,7 @@ asserts:
   - .[0]|.owner == "{{ addr_btc_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/export
+endpoint: http://localhost:1317/switchly/export
 asserts:
   - .loans|length == 1
 ---
@@ -275,7 +275,7 @@ asserts:
   - .balances[]|select(.denom == "rune")|.amount|tonumber == 2500483346750
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[.end_block_events[]|select(.type == "mint_burn")]|length == 5
 ---
@@ -283,7 +283,7 @@ asserts:
 # open loan btc -> eth
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/open
+endpoint: http://localhost:1317/switchly/quote/loan/open
 params:
   from_asset: BTC.BTC
   amount: 500000
@@ -330,7 +330,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "${INITIAL_COLLATERAL_DEPOSITED=989979}"
@@ -340,7 +340,7 @@ asserts:
   - .[0]|.owner == "{{ addr_btc_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 3 }}"
@@ -366,7 +366,7 @@ txs:
     observed_pub_key: {{ pubkey_dog }}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[.end_block_events[]|select(.type == "mint_burn")]|length == 5
 ---
@@ -374,7 +374,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -405,7 +405,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "${INITIAL_COLLATERAL_DEPOSITED}"
@@ -416,7 +416,7 @@ asserts:
   - .[0]|.debt_repaid == "0"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 5 }}"
@@ -445,7 +445,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -453,9 +453,9 @@ asserts:
 # close half of loan with rune, should pay down debt but not return collateral
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/close
+endpoint: http://localhost:1317/switchly/quote/loan/close
 params:
-  from_asset: THOR.RUNE
+  from_asset: SWITCHLY.SWITCH
   repay_bps: 5128
   to_asset: BTC.BTC
   loan_owner: {{ addr_btc_fox }}
@@ -485,7 +485,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "${INITIAL_COLLATERAL_DEPOSITED}"
@@ -495,7 +495,7 @@ asserts:
   - .[0]|.debt_repaid == "495028435"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -503,7 +503,7 @@ asserts:
 # close remaining loan with eth (overpay)
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/close
+endpoint: http://localhost:1317/switchly/quote/loan/close
 params:
   from_asset: ETH.ETH
   repay_bps: 10_100
@@ -550,7 +550,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0]|.collateral_deposited == "${INITIAL_COLLATERAL_DEPOSITED}"
@@ -562,7 +562,7 @@ asserts:
   - ${DEBT_REPAID} > ${DEBT_ISSUED} * 4 # (Greatly over-repaid.)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].in_hash == "{{ observe_txid 6 }}"
@@ -589,7 +589,7 @@ txs:
     observed_pub_key: {{ pubkey_dog }}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[.end_block_events[]|select(.type == "mint_burn")]|length == 5
 ---
@@ -597,7 +597,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -624,7 +624,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "LOAN+:THOR.RUNE:{{ addr_thor_fox }}:1"
+      memo: "LOAN+:SWITCHLY.SWITCH:{{ addr_thor_fox }}:1"
     block_height: 7
     finalise_height: 7
     observed_pub_key: {{ pubkey_dog }}
@@ -639,7 +639,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - length == 1
   - .[0].collateral_deposited == "1484312"
@@ -684,7 +684,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "LOAN+:THOR.RUNE:{{ addr_thor_fox }}:1"
+      memo: "LOAN+:SWITCHLY.SWITCH:{{ addr_thor_fox }}:1"
     block_height: 8
     finalise_height: 8
     observed_pub_key: {{ pubkey_dog }}
@@ -699,7 +699,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 1
   - .[0].collateral_deposited == "1978450"
@@ -733,7 +733,7 @@ asserts:
 # open loan btc -> usdc (with fuzzy)
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/quote/loan/open
+endpoint: http://localhost:1317/switchly/quote/loan/open
 params:
   from_asset: BTC.BTC
   amount: 500000
@@ -778,7 +778,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - length == 1
   - .[0].collateral_deposited == "2472382"
@@ -788,7 +788,7 @@ asserts:
   - .[0].owner == "{{ addr_btc_fox }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - length == 1
   - .[0].in_hash == "{{ observe_txid 9 }}"
@@ -818,7 +818,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
@@ -829,10 +829,10 @@ type: check
 endpoint: http://localhost:1317/switchly/lastblock
 asserts:
   - .|length >= 1
-  - .[0].thorchain == ${HEIGHT=20}
+  - .[0].switchly == ${HEIGHT=20}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/slip/BTC.BTC
+endpoint: http://localhost:1317/switchly/slip/BTC.BTC
 asserts:
   - length == 1
   - .[0].rollup_count == ${HEIGHT}
@@ -854,20 +854,20 @@ type: create-blocks
 count: 1
 ---
 ########################################################################################
-# Create THORName test
+# Create SWITCHName test
 ########################################################################################
 type: tx-deposit
 signer: {{ addr_thor_pig }}
 coins:
   - amount: "5000000000"
     asset: "rune"
-memo: "~:test:THOR:{{ addr_thor_pig }}:{{ addr_thor_pig }}"
+memo: "~:test:SWITCHLY:{{ addr_thor_pig }}:{{ addr_thor_pig }}"
 ---
 type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/thorname/test
+endpoint: http://localhost:1317/switchly/switchlyname/test
 asserts:
   - .aliases[0].address == "{{ addr_thor_pig }}"
   - .owner == "{{ addr_thor_pig }}"
@@ -901,13 +901,13 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0]|.in_hash == "{{ observe_txid 11 }}"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - length == 1
   - .[0].collateral_deposited == "2961214"

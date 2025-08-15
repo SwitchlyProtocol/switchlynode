@@ -4,23 +4,23 @@ The Incentive Pendulum splits rewards between nodes operators and liquidity prov
 
 ```admonish Info
 
-This page documents the updated Incentive Pendulum from v2.137.0 and supersedes [https://docs.thorchain.org/how-it-works/incentive-pendulum](https://docs.thorchain.org/how-it-works/incentive-pendulum).
+This page documents the updated Incentive Pendulum from v2.137.0 and supersedes [https://docs.switchly.org/how-it-works/incentive-pendulum](https://docs.switchly.org/how-it-works/incentive-pendulum).
 ```
 
-The current network Incentive Pendulum can be seen in [RUNETools](https://rune.tools/pendulum).
+The current network Incentive Pendulum can be seen in [SWITCHTools](https://rune.tools/pendulum).
 
 ## Terms and Variables
 
 ### Key terms used to determine the Incentive Pendulum are
 
-- **Bond Hard Cap**: The highest bond value among the bottom 2/3 of [active nodes](https://thorchain.net/nodes), including bond from both node operators and bond providers, to ensure no single node has excessive influence on the **Total Effective Bond**.
+- **Bond Hard Cap**: The highest bond value among the bottom 2/3 of [active nodes](https://switchly.net/nodes), including bond from both node operators and bond providers, to ensure no single node has excessive influence on the **Total Effective Bond**.
 - **Effective Security Bond**: The sum of the total bond of the bottom 2/3rds active nodes (including both node operators and bond providers).
 - **Total Effective Bond**: The sum of all active nodes bond up to the **Bond Hard Cap**. For each node, the effective bond amount which receives rewards and is acknowledged by the Incentive Pendulum added is capped by the Bond Hard Cap. This maintains a balanced and secure network by encouraging addition bond increase only of the 2/3rds of nodes with the lowest bond.
-- **Vault Liquidity**: Sum value of L1 assets within all Asgard Vaults valued in RUNE. Includes Pooled Assets, Trade Assets, Secure Assets, streaming swap Assets, and Oversolvencies.
-- [**Total Pooled**](https://runescan.io/address/thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0): Sum of RUNE liquidity in all available [pools](https://runescan.io/pools) by liquidity providers. Total Pooled is within Vaulted Liquidity.
-- **Total Rewards**: Block rewards as per the [block emission schedule](https://docs.thorchain.org/how-it-works/emission-schedule) plus liquidity fees within one block, after `DevFundSystemIncomeBps` and `SystemIncomeBurnRateBps` have been removed.
+- **Vault Liquidity**: Sum value of L1 assets within all Asgard Vaults valued in SWITCH. Includes Pooled Assets, Trade Assets, Secure Assets, streaming swap Assets, and Oversolvencies.
+- [**Total Pooled**](https://runescan.io/address/thor1g98cy3n9mmjrpn0sxmn63lztelera37n8n67c0): Sum of SWITCH liquidity in all available [pools](https://runescan.io/pools) by liquidity providers. Total Pooled is within Vaulted Liquidity.
+- **Total Rewards**: Block rewards as per the [block emission schedule](https://docs.switchly.org/how-it-works/emission-schedule) plus liquidity fees within one block, after `DevFundSystemIncomeBps` and `SystemIncomeBurnRateBps` have been removed.
 
-Within the Incentive Pendulum, `secured` and `securing` defines the amount of L1 assets to be secured and the amount of RUNE Bond that secures them. Both values can change depending on the below Network Variables [Mimir](../mimir.md#economics).
+Within the Incentive Pendulum, `secured` and `securing` defines the amount of L1 assets to be secured and the amount of SWITCH Bond that secures them. Both values can change depending on the below Network Variables [Mimir](../mimir.md#economics).
 
 ### Key [Network Variables](../mimir.md#economics) that influence the Incentive Pendulum are
 
@@ -48,7 +48,7 @@ $$
 secured =
 \begin{cases}
 vaultLiquidity & if  PendulumUseVaultAssets = 1 \\
-pooledRune & otherwise
+pooledSWITCH & otherwise
 \end{cases}
 $$
 
@@ -88,10 +88,10 @@ $$
 adjustmentNodeShare = \frac{totalEffectiveBond}{effectiveSecurityBond} \times baseNodeShare
 $$
 
-- **Adjust Pool Share** based on the ratio of `pooledRUNE` to `vaultLiquidity` as non-pooled liquidity is not yield-bearing:
+- **Adjust Pool Share** based on the ratio of `pooledSWITCH` to `vaultLiquidity` as non-pooled liquidity is not yield-bearing:
 
 $$
-adjustmentPoolShare = \frac{pooledRUNE}{vaultLiquidity} \times basePoolShare
+adjustmentPoolShare = \frac{pooledSWITCH}{vaultLiquidity} \times basePoolShare
 $$
 
 7. **Readjust rewards depending on the network settings:**
@@ -145,7 +145,7 @@ $$
 - **Yield for Liquidity Providers:**
 
 $$
-poolYield = \frac{finalPoolShare}{2 \times pooledRUNE}
+poolYield = \frac{finalPoolShare}{2 \times pooledSWITCH}
 $$
 
 ## Impact of Pendulum Parameters: Effective Security and Vault Assets Parameters
@@ -156,11 +156,11 @@ In all examples the values are:
 
 | Parameters                | Value           |
 | ------------------------- | --------------- |
-| totalEffectiveBond        | 99,000,000 RUNE |
-| effectiveSecurityBond     | 66,000,000 RUNE |
-| vaultLiquidity            | 33,000,000 RUNE |
-| pooledRUNE                | 22,000,000 RUNE |
-| totalRewards              | 1,000 RUNE      |
+| totalEffectiveBond        | 99,000,000 SWITCH |
+| effectiveSecurityBond     | 66,000,000 SWITCH |
+| vaultLiquidity            | 33,000,000 SWITCH |
+| pooledSWITCH                | 22,000,000 SWITCH |
+| totalRewards              | 1,000 SWITCH      |
 | PendulumAssetsBasisPoints | 100%            |
 
 ### Example 1: Both parameters are False, the default setting
@@ -171,7 +171,7 @@ PendulumUseVaultAssets = 0
 - Node Share = 22.22%
 - Pool Share = 77.78%
 
-In this scenario, both parameters are set to false, meaning that the Incentive Pendulum calculation uses totalEffectiveBond for securing and pooledRUNE (i.e., total pooled) as the secured value. This increases the securing (bond) and reduces the secured (pool) share. Consequently, the network is considered over bonded, with too much bond compared to pooled liquidity. To incentivise more liquidity, a greater share of final rewards is allocated to pools, while nodes receive a lower share.
+In this scenario, both parameters are set to false, meaning that the Incentive Pendulum calculation uses totalEffectiveBond for securing and pooledSWITCH (i.e., total pooled) as the secured value. This increases the securing (bond) and reduces the secured (pool) share. Consequently, the network is considered over bonded, with too much bond compared to pooled liquidity. To incentivise more liquidity, a greater share of final rewards is allocated to pools, while nodes receive a lower share.
 
 ### Example 2: PendulumUseEffectiveSecurity is True, PendulumUseVaultAssets is False
 
@@ -191,7 +191,7 @@ PendulumUseVaultAssets = 1
 Node Share = 42.86%
 Pool Share = 57.14%
 
-In this scenario, with PendulumUseEffectiveSecurity set to false, the totalEffectiveBond becomes the securing, and with PendulumUseVaultAssets set to true, the secured becomes vaultLiquidity instead of pooledRUNE. Compared to the previous example, this increases both the securing (bond) and the secured (vaultLiquidity). As a result, and due to the example numbers used, the income distribution is similar to the previous example slightly in favor of the pools.
+In this scenario, with PendulumUseEffectiveSecurity set to false, the totalEffectiveBond becomes the securing, and with PendulumUseVaultAssets set to true, the secured becomes vaultLiquidity instead of pooledSWITCH. Compared to the previous example, this increases both the securing (bond) and the secured (vaultLiquidity). As a result, and due to the example numbers used, the income distribution is similar to the previous example slightly in favor of the pools.
 
 ### Example 4: Both parameters are True
 
@@ -211,11 +211,11 @@ In all examples the values are:
 
 | Parameters            | Value           |
 | --------------------- | --------------- |
-| totalEffectiveBond    | 99,000,000 RUNE |
-| effectiveSecurityBond | 66,000,000 RUNE |
-| vaultLiquidity        | 33,000,000 RUNE |
-| pooledRUNE            | 22,000,000 RUNE |
-| totalRewards          | 1,000 RUNE      |
+| totalEffectiveBond    | 99,000,000 SWITCH |
+| effectiveSecurityBond | 66,000,000 SWITCH |
+| vaultLiquidity        | 33,000,000 SWITCH |
+| pooledSWITCH            | 22,000,000 SWITCH |
+| totalRewards          | 1,000 SWITCH      |
 
 ### Parameters Set to False
 
@@ -248,7 +248,7 @@ Final Shares are:
 - Node Share = 22.22%
 - Pool Share = 77.78%
 
-RUNE per RUNE Provided Reward:
+SWITCH per SWITCH Provided Reward:
 
 - Node Yield: 2.24467x10^-6
 - Pool Yield: 17.6777x10^-6
@@ -287,13 +287,13 @@ Final Shares are:
 - Node Share = 69.23%
 - Pool Share = 30.77%
 
-RUNE per RUNE Provided Reward:
+SWITCH per SWITCH Provided Reward:
 
 - Node Yield: 6.993x10^-6
 - Pool Yield: 6.993x10^-6
 
 ## Driving Capital Allocation
 
-As a by-product of the Incentive Pendulum's aggressive re-targeting of the yield split between node:LP yield, the system aims to maintain an equilibrium where the value of BONDED RUNE is proportionally aligned with the value of Vaulted RUNE.
+As a by-product of the Incentive Pendulum's aggressive re-targeting of the yield split between node:LP yield, the system aims to maintain an equilibrium where the value of BONDED SWITCH is proportionally aligned with the value of Vaulted SWITCH.
 
-If there is any disruption to this balance, the Incentive Pendulum will reallocate rewards to correct the imbalance by incentivising node operators to bond more RUNE or liquidity providers to pool more assets. With the use of [RUNEPool](../concepts/rune-pool.md) and [Pooled Nodes](https://docs.thorchain.org/thornodes/pooled-thornodes) users can play both sides of the Incentive Pendulum in order to maximise their return and help return the network back into equilibrium.
+If there is any disruption to this balance, the Incentive Pendulum will reallocate rewards to correct the imbalance by incentivising node operators to bond more SWITCH or liquidity providers to pool more assets. With the use of [SWITCHPool](../concepts/rune-pool.md) and [Pooled Nodes](https://docs.switchly.org/switchlynodes/pooled-switchlynodes) users can play both sides of the Incentive Pendulum in order to maximise their return and help return the network back into equilibrium.

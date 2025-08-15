@@ -1,4 +1,4 @@
-# THORNode Docker
+# SWITCHLYNode Docker
 
 ## Fullnode
 
@@ -6,64 +6,64 @@ The default image will start a fullnode:
 
 ```bash
 docker run \
-  -e CHAIN_ID=thorchain-1 \
+  -e CHAIN_ID=switchly-1 \
   -e NET=mainnet \
-  registry.gitlab.com/thorchain/thornode:mainnet
+  registry.gitlab.com/switchly/switchlynode:mainnet
 ```
 
 The above command will result in syncing chain state to ephemeral storage within the container, in order to persist data across restarts simply mount a local volume:
 
 ```bash
-mkdir thornode-data
+mkdir switchlynode-data
 docker run \
-  -v $(pwd)/thornode-data:/root/.thornode \
-  -e CHAIN_ID=thorchain-1 \
+  -v $(pwd)/switchlynode-data:/root/.switchlynode \
+  -e CHAIN_ID=switchly-1 \
   -e NET=mainnet \
-  registry.gitlab.com/thorchain/thornode:mainnet
+  registry.gitlab.com/switchly/switchlynode:mainnet
 ```
 
 The above commands only work when the current release can sync from the present fork height - which is not the case since the move the x/upgrade release pattern. Nine Realms provides snapshots taken from a statesync recovery which can be downloaded without need for a high memory machine to recover the statesync snapshot. Ensure `aria2c` is installed (you can `wget` or `curl` instead, but they are slower), then pull the latest statesync snapshot via:
 
 ```bash
-mkdir -p thornode-data/data
+mkdir -p switchlynode-data/data
 MINIO_IMAGE="minio/minio:RELEASE.2023-10-25T06-33-25Z@sha256:858ee1ca619396ea1b77cc12a36b857a6b57cb4f5d53128b1224365ee1da7305"
 LATEST_SNAPSHOT_KEY=$(
   docker run --rm --entrypoint sh "${MINIO_IMAGE}" -c "
     mc config host add minio https://snapshots.ninerealms.com '' '' >/dev/null;
-    mc ls minio/snapshots/thornode --json | tail -n1 | jq -r '.key'"
+    mc ls minio/snapshots/switchlynode --json | tail -n1 | jq -r '.key'"
 )
 aria2c --split=16 --max-concurrent-downloads=16 --max-connection-per-server=16 \
   --continue --min-split-size=100M --out=$LATEST_SNAPSHOT_KEY \
-  "https://snapshots.ninerealms.com/snapshots/thornode/$LATEST_SNAPSHOT_KEY"
-tar xvf $LATEST_SNAPSHOT_KEY -C thornode-data
+  "https://snapshots.ninerealms.com/snapshots/switchlynode/$LATEST_SNAPSHOT_KEY"
+tar xvf $LATEST_SNAPSHOT_KEY -C switchlynode-data
 docker run \
-  -v $(pwd)/thornode-data:/root/.thornode \
-  -e CHAIN_ID=thorchain-1 \
+  -v $(pwd)/switchlynode-data:/root/.switchlynode \
+  -e CHAIN_ID=switchly-1 \
   -e NET=mainnet \
-  registry.gitlab.com/thorchain/thornode:mainnet
+  registry.gitlab.com/switchly/switchlynode:mainnet
 ```
 
-Since this image tag contains the latest version of THORNode, the node can auto update by simply placing this in a loop to re-pull the image on exit:
+Since this image tag contains the latest version of SWITCHLYNode, the node can auto update by simply placing this in a loop to re-pull the image on exit:
 
 ```bash
 while true; do
-  docker pull registry.gitlab.com/thorchain/thornode:mainnet
+  docker pull registry.gitlab.com/switchly/switchlynode:mainnet
   docker run \
-    -v $(pwd)/thornode-data:/root/.thornode \
+    -v $(pwd)/switchlynode-data:/root/.switchlynode \
     -e NET=mainnet \
-    registry.gitlab.com/thorchain/thornode:mainnet
+    registry.gitlab.com/switchly/switchlynode:mainnet
 do
 ```
 
 The above commands also apply to `stagenet` by simply using the respective image and chain ID (in these cases `-e NET=...` is not required):
 
 ```code
-stagenet => registry.gitlab.com/thorchain/thornode:stagenet
+stagenet => registry.gitlab.com/switchly/switchlynode:stagenet
 ```
 
 ## Validator
 
-Officially supported deployments of THORNode validators require a working understanding of Kubernetes and related infrastructure. See the [Cluster Launcher](https://gitlab.com/thorchain/devops/cluster-launcher) repo for cluster Terraform resources, and the [Node Launcher](https://gitlab.com/thorchain/devops/node-launcher) repo for deployment utilities which internally leveraging Helm.
+Officially supported deployments of SWITCHLYNode validators require a working understanding of Kubernetes and related infrastructure. See the [Cluster Launcher](https://gitlab.com/switchly/devops/cluster-launcher) repo for cluster Terraform resources, and the [Node Launcher](https://gitlab.com/switchly/devops/node-launcher) repo for deployment utilities which internally leveraging Helm.
 
 ## Mocknet
 
@@ -72,9 +72,9 @@ The development environment leverages Docker Compose V2 to create a mock network
 The mocknet configuration is vanilla, leveraging Docker Compose profiles which can be combined at user discretion. The following profiles exist:
 
 ```code
-thornode => thornode only
-bifrost  => bifrost and thornode dependency
-midgard  => midgard and thornode dependency
+switchlynode => switchlynode only
+bifrost  => bifrost and switchlynode dependency
+midgard  => midgard and switchlynode dependency
 mocknet  => all mocknet dependencies
 ```
 
@@ -106,25 +106,25 @@ docker compose ps
 # tail the logs of all services
 docker compose logs -f
 
-# tail the logs of only thornode and bifrost
-docker compose logs -f thornode bifrost
+# tail the logs of only switchlynode and bifrost
+docker compose logs -f switchlynode bifrost
 
-# enter a shell in the thornode container
-docker compose exec thornode sh
+# enter a shell in the switchlynode container
+docker compose exec switchlynode sh
 
-# copy a file from the thornode container
-docker compose cp thornode:/root/.thornode/config/genesis.json .
+# copy a file from the switchlynode container
+docker compose cp switchlynode:/root/.switchlynode/config/genesis.json .
 
-# rebuild all buildable services (thornode and bifrost)
+# rebuild all buildable services (switchlynode and bifrost)
 docker compose build
 
-# export thornode genesis
-docker compose stop thornode
-docker compose run thornode -- thornode export
-docker compose start thornode
+# export switchlynode genesis
+docker compose stop switchlynode
+docker compose run switchlynode -- switchlynode export
+docker compose start switchlynode
 
-# hard fork thornode
-docker compose stop thornode
+# hard fork switchlynode
+docker compose stop switchlynode
 docker compose run /docker/scripts/hard-fork.sh
 
 # stop mocknet services
@@ -160,22 +160,22 @@ switchlynode tx switchly deposit 10000000000 rune ADD:ETH.TKN-0X52C84043CD9C8652
 
 ## EVM Tool
 
-The `evm-tool.py` script is leveraged during mocknet init in the `thornode` container to create the router contract and test token, but may also be run directly for additional convenience targets.
+The `evm-tool.py` script is leveraged during mocknet init in the `switchlynode` container to create the router contract and test token, but may also be run directly for additional convenience targets.
 
 ### Create Gas and Token Pools
 
-Note that the token address used in this command is the same as the address output in the logs during `thornode` init (created by `evm-tool.py --action deploy`). Run the following within the `docker compose exec thornode sh` shell to create the asset side of the pools:
+Note that the token address used in this command is the same as the address output in the logs during `switchlynode` init (created by `evm-tool.py --action deploy`). Run the following within the `docker compose exec switchlynode sh` shell to create the asset side of the pools:
 
 ```bash
 python3 /scripts/evm/evm-tool.py --chain ETH --action deposit
 python3 /scripts/evm/evm-tool.py --chain ETH --token-address 0x52C84043CD9c865236f11d9Fc9F56aa003c1f922 --action deposit-token
 ```
 
-Run the following in the `docker compose run cli` shell to create the RUNE side of the pools:
+Run the following in the `docker compose run cli` shell to create the SWITCH side of the pools:
 
 ```bash
-thornode tx thorchain deposit 10000000000 rune ADD:ETH.ETH:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
-thornode tx thorchain deposit 10000000000 rune ADD:ETH.TKN-0X52C84043CD9C865236F11D9FC9F56AA003C1F922:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
+switchlynode tx switchly deposit 10000000000 rune ADD:ETH.ETH:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
+switchlynode tx switchly deposit 10000000000 rune ADD:ETH.TKN-0X52C84043CD9C865236F11D9FC9F56AA003C1F922:0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc --from cat $TX_FLAGS
 ```
 
 ## Local Mainnet Fork of EVM Chain

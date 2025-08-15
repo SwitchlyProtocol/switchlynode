@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**CountingStartHeight** | Pointer to **int64** | the THORChain block height when confirmation counting began | [optional] 
+**CountingStartHeight** | Pointer to **int64** | the SWITCHLYChain block height when confirmation counting began | [optional] 
 **Chain** | Pointer to **string** | the external source chain for which confirmation counting takes place | [optional] 
 **ExternalObservedHeight** | Pointer to **int64** | the block height on the external source chain when the transaction was observed | [optional] 
 **ExternalConfirmationDelayHeight** | Pointer to **int64** | the block height on the external source chain when confirmation counting will be complete | [optional] 

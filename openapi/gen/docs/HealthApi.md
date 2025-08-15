@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**Ping**](HealthApi.md#Ping) | **Get** /thorchain/ping | 
+[**Ping**](HealthApi.md#Ping) | **Get** /switchly/ping | 
 
 
 

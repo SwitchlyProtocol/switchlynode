@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Completed** | **bool** | returns true if the inbound transaction has been finalised (THORChain agreeing it exists) | 
+**Completed** | **bool** | returns true if the inbound transaction has been finalised (SWITCHLYChain agreeing it exists) | 
 
 ## Methods
 

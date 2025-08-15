@@ -25,7 +25,7 @@ genesis:
           coins:
             - amount: "500000000000"
               denom: rune  
-    thorchain:
+    switchly:
       node_accounts:
         - active_block_height: "0"
           bond: "500000000000" # reduced by factor of 10 from default
@@ -47,30 +47,30 @@ type: create-blocks
 count: 1
 ---
 ########################################################################################
-# Check total bonded RUNE  
+# Check total bonded SWITCH  
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/nodes
+endpoint: http://localhost:1317/switchly/nodes
 asserts:
   - length == 1 # Only one node, so effective security bond equals  total effective bond equals total active bond.
   - .|[.[].total_bond|tonumber] | add == ${BOND=500000000000}
-  # (Similarly, no unpooled Assets, so vaults liquidity RUNE value equals pooled Assets RUNE value.)
+  # (Similarly, no unpooled Assets, so vaults liquidity SWITCH value equals pooled Assets SWITCH value.)
 ---
 ########################################################################################
-# Check total pooled RUNE
+# Check total pooled SWITCH
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 2
-  - .|[.[].balance_rune|tonumber] | add == ${TOTAL_POOLED_RUNE=200000066590}
-  - 100 * ${TOTAL_POOLED_RUNE} / ${BOND} | round == ${SECURED_PROPORTION=40} # (%)
+  - .|[.[].balance_rune|tonumber] | add == ${TOTAL_POOLED_SWITCH=200000066590}
+  - 100 * ${TOTAL_POOLED_SWITCH} / ${BOND} | round == ${SECURED_PROPORTION=40} # (%)
 ---
 ########################################################################################
 # pool and bond reward calculations
 ########################################################################################
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type?=="swap").liquidity_fee_in_rune|tonumber] | length == 0
   # No swap events so no liquidity fees.
@@ -101,7 +101,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "BTC.BTC"
-    memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+    memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   block_height: 1
   finalise_height: 1
   observed_pub_key: {{ pubkey_dog }}
@@ -109,15 +109,15 @@ txs:
 type: create-blocks
 count: 1
 ---
-# Update pooled RUNE after the swap.
+# Update pooled SWITCH after the swap.
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
-  - .|[.[].balance_rune|tonumber] | add == ${TOTAL_POOLED_RUNE=195376441927}
-  - 100 * ${TOTAL_POOLED_RUNE} / ${BOND} | round == ${SECURED_PROPORTION=39} # (%)
+  - .|[.[].balance_rune|tonumber] | add == ${TOTAL_POOLED_SWITCH=195376441927}
+  - 100 * ${TOTAL_POOLED_SWITCH} / ${BOND} | round == ${SECURED_PROPORTION=39} # (%)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type?=="swap").liquidity_fee_in_rune|tonumber] | add == 226757445
   - .|[..|select(.type?=="rewards")] | length == 1
@@ -138,7 +138,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type?=="swap").liquidity_fee_in_rune|tonumber] | length == 0
   # No swap events so no liquidity fees.
@@ -167,7 +167,7 @@ txs:
     gas:
       - amount: "10000"
         asset: "BTC.BTC"
-    memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+    memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
   block_height: 3
   finalise_height: 3
   observed_pub_key: {{ pubkey_dog }}
@@ -175,15 +175,15 @@ txs:
 type: create-blocks
 count: 1
 ---
-# Update pooled RUNE after the swap.
+# Update pooled SWITCH after the swap.
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
-  - .|[.[].balance_rune|tonumber] | add == ${TOTAL_POOLED_RUNE=191200740012}
-  - 100 * ${TOTAL_POOLED_RUNE} / ${BOND} | round == ${SECURED_PROPORTION=38} # (%)
+  - .|[.[].balance_rune|tonumber] | add == ${TOTAL_POOLED_SWITCH=191200740012}
+  - 100 * ${TOTAL_POOLED_SWITCH} / ${BOND} | round == ${SECURED_PROPORTION=38} # (%)
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type?=="swap").liquidity_fee_in_rune|tonumber] | add == 197058785
   - .|[..|select(.type?=="rewards")] | length == 1

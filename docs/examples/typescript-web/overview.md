@@ -1,18 +1,18 @@
 # Overview
 
-XChainJS is an open-source library with a common interface for multiple blockchains, built for simple and fast integration for wallets and Dexs and more. xChainjs is designed to abstract THORChain and specific blockchain complexity and to provide an easy-to-use API for developers.
+XChainJS is an open-source library with a common interface for multiple blockchains, built for simple and fast integration for wallets and Dexs and more. xChainjs is designed to abstract SWITCHLYChain and specific blockchain complexity and to provide an easy-to-use API for developers.
 
 The packages implement the complexity detailed in the other sections of this site.
 
 xChain has several key modules allowing powerful functionality.
 
-## **Thorchain-query**
+## **Switchly-query**
 
-Allows easy information retrieval and estimates from THORChain.
+Allows easy information retrieval and estimates from SWITCHLYChain.
 
 [Query Package](query-package.md)
 
-## **Thorchain-amm**
+## **Switchly-amm**
 
 Conducts actions such as swap, add and remove. It wraps xchain clients and creates a new wallet class for and balance collection.
 
@@ -20,7 +20,7 @@ Conducts actions such as swap, add and remove. It wraps xchain clients and creat
 
 ## **Chain clients**
 
-For every blockchain connected to THORChain with a common interface.
+For every blockchain connected to SWITCHLYChain with a common interface.
 
 Current clients implemented are**:**
 
@@ -32,14 +32,14 @@ Current clients implemented are**:**
 - xchain-ethereum
 - xchain-litecoin
 - xchain-mayachain
-- xchain-thorchain
+- xchain-switchly
 
 [Client Packages](client-packages.md)
 
-**APIs** for getting data from THORChain.
+**APIs** for getting data from SWITCHLYChain.
 
 - Midgard
-- Thornode
+- Switchlynode
 
 [Packages Breakdown](packages-breakdown.md)
 

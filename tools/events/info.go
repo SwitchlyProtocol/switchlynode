@@ -19,22 +19,22 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/config"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/notify"
 	"github.com/switchlyprotocol/switchlynode/v3/tools/events/pkg/util"
-	"github.com/switchlyprotocol/switchlynode/v3/tools/thorscan"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain"
-	"github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	"github.com/switchlyprotocol/switchlynode/v3/tools/switchlyscan"
+	switchly "github.com/switchlyprotocol/switchlynode/v3/x/switchly"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Scan Info
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func ScanInfo(block *thorscan.BlockResponse) {
+func ScanInfo(block *switchlyscan.BlockResponse) {
 	Version(block)
 	Churn(block)
 	SetNodeMimir(block)
 	SetMimir(block)
 	KeygenFailure(block)
-	TORAnchorDrift(block)
+	SWITCHLYAnchorDrift(block)
 	UpgradeProposalAndApproval(block)
 }
 
@@ -42,7 +42,7 @@ func ScanInfo(block *thorscan.BlockResponse) {
 // Version
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func Version(block *thorscan.BlockResponse) {
+func Version(block *switchlyscan.BlockResponse) {
 	for _, event := range block.BeginBlockEvents {
 		if event["type"] == types.VersionEventType {
 			msg := fmt.Sprintf("Network Version Upgraded: `%s`", event["version"])
@@ -55,7 +55,7 @@ func Version(block *thorscan.BlockResponse) {
 // Set Mimir
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func SetMimir(block *thorscan.BlockResponse) {
+func SetMimir(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
 			if event["type"] != types.SetMimirEventType {
@@ -67,7 +67,7 @@ func SetMimir(block *thorscan.BlockResponse) {
 
 			// determine if this is a node mimir
 			for _, msg := range tx.Tx.GetMsgs() {
-				if _, ok := msg.(*thorchain.MsgMimir); ok {
+				if _, ok := msg.(*switchly.MsgMimir); ok {
 					source = "node"
 					break
 				}
@@ -91,7 +91,7 @@ func SetMimir(block *thorscan.BlockResponse) {
 // Set Node Mimir
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func SetNodeMimir(block *thorscan.BlockResponse) {
+func SetNodeMimir(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
 			if event["type"] == types.SetNodeMimirEventType {
@@ -106,7 +106,7 @@ func SetNodeMimir(block *thorscan.BlockResponse) {
 // Keygen Failure
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func KeygenFailure(block *thorscan.BlockResponse) {
+func KeygenFailure(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		// skip failed decode transactions
 		if tx.Tx == nil {
@@ -125,7 +125,7 @@ func KeygenFailure(block *thorscan.BlockResponse) {
 				log.Panic().Err(err).Str("height", heightStr).Msg("failed to parse keygen height")
 			}
 			nodes := []openapi.Node{}
-			err = util.ThornodeCachedRetryGet("thorchain/nodes", height, &nodes)
+			err = util.SwitchlynodeCachedRetryGet("switchly/nodes", height, &nodes)
 			if err != nil {
 				log.Panic().Err(err).Msg("failed to get nodes")
 			}
@@ -154,11 +154,11 @@ func KeygenFailure(block *thorscan.BlockResponse) {
 			}
 
 			// find tsspool message
-			var msgTssPool *thorchain.MsgTssPool
+			var msgTssPool *switchly.MsgTssPool
 			found := false
 			for _, msg := range tx.Tx.GetMsgs() {
-				if _, ok := msg.(*thorchain.MsgTssPool); ok {
-					msgTssPool, _ = msg.(*thorchain.MsgTssPool)
+				if _, ok := msg.(*switchly.MsgTssPool); ok {
+					msgTssPool, _ = msg.(*switchly.MsgTssPool)
 					found = true
 				}
 			}
@@ -226,7 +226,7 @@ type ChurnInfo struct {
 	KeyshareBackups map[string]map[string]bool `json:"keyshare_backups"`
 }
 
-func Churn(block *thorscan.BlockResponse) {
+func Churn(block *switchlyscan.BlockResponse) {
 	// get the current state
 	info := ChurnInfo{}
 	err := util.Load("churn", &info)
@@ -243,7 +243,7 @@ func Churn(block *thorscan.BlockResponse) {
 		}
 
 		for _, msg := range tx.Tx.GetMsgs() {
-			msgTssPool, ok := msg.(*thorchain.MsgTssPool)
+			msgTssPool, ok := msg.(*switchly.MsgTssPool)
 			if !ok {
 				continue
 			}
@@ -282,7 +282,7 @@ func Churn(block *thorscan.BlockResponse) {
 					title := "Keygen Started"
 					notify.Notify(config.Get().Notifications.Info, title, block.Header.Height, nil, notify.Info, nil)
 				}
-			case thorchain.EventTypeActiveVault: // check for active vault (keygens complete)
+			case switchly.EventTypeActiveVault: // check for active vault (keygens complete)
 				if info.State == ChurnStateKeygen {
 					info.State = ChurnStateMigrating
 					err = util.Store("churn", info)
@@ -314,7 +314,7 @@ func Churn(block *thorscan.BlockResponse) {
 
 func vaultsMigrating(height int64) bool {
 	network := openapi.NetworkResponse{}
-	err := util.ThornodeCachedRetryGet("thorchain/network", height, &network)
+	err := util.SwitchlynodeCachedRetryGet("switchly/network", height, &network)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to get network")
 	}
@@ -325,11 +325,11 @@ func notifyChurnStarted(height int64, keyshareBackups map[string]map[string]bool
 	// get nodes at current and previous height
 	oldNodes := []openapi.Node{}
 	newNodes := []openapi.Node{}
-	err := util.ThornodeCachedRetryGet("thorchain/nodes", height-1, &oldNodes)
+	err := util.SwitchlynodeCachedRetryGet("switchly/nodes", height-1, &oldNodes)
 	if err != nil {
 		log.Panic().Err(err).Int64("height", height-1).Msg("failed to get old nodes")
 	}
-	err = util.ThornodeCachedRetryGet("thorchain/nodes", height, &newNodes)
+	err = util.SwitchlynodeCachedRetryGet("switchly/nodes", height, &newNodes)
 	if err != nil {
 		log.Panic().Err(err).Int64("height", height).Msg("failed to get new nodes")
 	}
@@ -421,7 +421,7 @@ func notifyChurnStarted(height int64, keyshareBackups map[string]map[string]bool
 	// compute the keyshare backups counts for new vault members
 	keyshareBackupLines := []string{}
 	vaults := []openapi.Vault{}
-	err = util.ThornodeCachedRetryGet("thorchain/vaults/asgard", height, &vaults)
+	err = util.SwitchlynodeCachedRetryGet("switchly/vaults/asgard", height, &vaults)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to get vaults")
 	}
@@ -467,7 +467,7 @@ func notifyChurnStarted(height int64, keyshareBackups map[string]map[string]bool
 // Helpers
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func formatNodePauseMessage(height int64, tx thorscan.BlockTx, event map[string]string) (string, notify.Level) {
+func formatNodePauseMessage(height int64, tx switchlyscan.BlockTx, event map[string]string) (string, notify.Level) {
 	legacyMsg, ok := tx.Tx.GetMsgs()[0].(sdk.LegacyMsg)
 	if !ok {
 		log.Panic().Msg("failed to cast to legacy message")
@@ -491,7 +491,7 @@ func formatNodePauseMessage(height int64, tx thorscan.BlockTx, event map[string]
 func formatMimirMessage(height int64, source, key, value string) string {
 	// get value at previous height
 	mimirs := make(map[string]int64)
-	err := util.ThornodeCachedRetryGet("thorchain/mimir", height-1, &mimirs)
+	err := util.SwitchlynodeCachedRetryGet("switchly/mimir", height-1, &mimirs)
 	if err != nil {
 		log.Panic().Int64("height", height-1).Err(err).Msg("failed to get mimirs")
 	}
@@ -514,7 +514,7 @@ func formatNodeMimirMessage(height int64, node, key, value string) (string, *uti
 
 	// get all active nodes at current height
 	nodes := []openapi.Node{}
-	err = util.ThornodeCachedRetryGet("thorchain/nodes", height, &nodes)
+	err = util.SwitchlynodeCachedRetryGet("switchly/nodes", height, &nodes)
 	if err != nil {
 		log.Panic().Int64("height", height).Err(err).Msg("failed to get active nodes")
 	}
@@ -527,7 +527,7 @@ func formatNodeMimirMessage(height int64, node, key, value string) (string, *uti
 
 	// get value at previous height
 	mimirs := openapi.MimirNodesResponse{}
-	err = util.ThornodeCachedRetryGet("thorchain/mimir/nodes_all", height-1, &mimirs)
+	err = util.SwitchlynodeCachedRetryGet("switchly/mimir/nodes_all", height-1, &mimirs)
 	if err != nil {
 		log.Panic().Int64("height", height-1).Err(err).Msg("failed to get node mimirs")
 	}
@@ -540,7 +540,7 @@ func formatNodeMimirMessage(height int64, node, key, value string) (string, *uti
 			continue
 		}
 
-		// TODO: fix in thornode - missing value in response is "0"
+		// TODO: fix in switchlynode - missing value in response is "0"
 		value := int64(0)
 		if mimir.Value != nil {
 			value = *mimir.Value
@@ -590,29 +590,29 @@ func formatNodeMimirMessage(height int64, node, key, value string) (string, *uti
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// TOR Anchor Drift
+// SWITCHLY Anchor Drift
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func TORAnchorDrift(block *thorscan.BlockResponse) {
-	if block.Header.Height%config.Get().TORAnchorCheckBlocks != 0 {
+func SWITCHLYAnchorDrift(block *switchlyscan.BlockResponse) {
+	if block.Header.Height%config.Get().SWITCHLYAnchorCheckBlocks != 0 {
 		return
 	}
 
 	// get mimirs
 	mimirs := map[string]int64{}
-	err := util.ThornodeCachedRetryGet("thorchain/mimir", block.Header.Height, &mimirs)
+	err := util.SwitchlynodeCachedRetryGet("switchly/mimir", block.Header.Height, &mimirs)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to get mimirs")
 	}
 
 	// get pools
 	pools := []openapi.Pool{}
-	err = util.ThornodeCachedRetryGet("thorchain/pools", block.Header.Height, &pools)
+	err = util.SwitchlynodeCachedRetryGet("switchly/pools", block.Header.Height, &pools)
 	if err != nil {
 		log.Panic().Err(err).Msg("failed to get pools")
 	}
 
-	// find all TOR pools
+	// find all SWITCHLY pools
 	torPools := []openapi.Pool{}
 	minPrice := cosmos.NewUint(common.One)
 	maxPrice := cosmos.NewUint(common.One)
@@ -622,7 +622,7 @@ func TORAnchorDrift(block *thorscan.BlockResponse) {
 		if err != nil {
 			log.Panic().Err(err).Msg("failed to parse pool asset")
 		}
-		if mimirs[fmt.Sprintf("TORANCHOR-%s", asset.MimirString())] > 0 {
+		if mimirs[fmt.Sprintf("SWITCHLYANCHOR-%s", asset.MimirString())] > 0 {
 			price := cosmos.NewUintFromString(pool.AssetSwitchPrice)
 			if price.LT(minPrice) {
 				minPrice = price
@@ -636,7 +636,7 @@ func TORAnchorDrift(block *thorscan.BlockResponse) {
 
 	// skip if not over the drift threshold
 	driftBPS := maxPrice.Sub(minPrice).MulUint64(constants.MaxBasisPts).Quo(maxPrice)
-	if driftBPS.LT(cosmos.NewUint(config.Get().Thresholds.TORAnchorDriftBasisPoints)) {
+	if driftBPS.LT(cosmos.NewUint(config.Get().Thresholds.SWITCHLYAnchorDriftBasisPoints)) {
 		return
 	}
 
@@ -665,7 +665,7 @@ func TORAnchorDrift(block *thorscan.BlockResponse) {
 		fields.Set(shortAsset, util.FormatUSD(price))
 	}
 
-	title := fmt.Sprintf("TOR Anchor Drift (%.02f%%)", float64(driftBPS.Uint64())/100)
+	title := fmt.Sprintf("SWITCHLY Anchor Drift (%.02f%%)", float64(driftBPS.Uint64())/100)
 	notify.Notify(config.Get().Notifications.Info, title, block.Header.Height, nil, notify.Warning, fields)
 }
 
@@ -673,7 +673,7 @@ func TORAnchorDrift(block *thorscan.BlockResponse) {
 // Upgrade Proposal and Approval
 ////////////////////////////////////////////////////////////////////////////////////////
 
-func UpgradeProposalAndApproval(block *thorscan.BlockResponse) {
+func UpgradeProposalAndApproval(block *switchlyscan.BlockResponse) {
 	for _, tx := range block.Txs {
 		for _, event := range tx.Result.Events {
 
@@ -708,8 +708,8 @@ func UpgradeProposalAndApproval(block *thorscan.BlockResponse) {
 
 				// fetch proposal stats
 				proposal := openapi.UpgradeProposal{}
-				path := fmt.Sprintf("thorchain/upgrade_proposal/%s", event["name"])
-				err := util.ThornodeCachedRetryGet(path, block.Header.Height, &proposal)
+				path := fmt.Sprintf("switchly/upgrade_proposal/%s", event["name"])
+				err := util.SwitchlynodeCachedRetryGet(path, block.Header.Height, &proposal)
 				if err != nil {
 					log.Panic().Err(err).Msg("failed to get upgrade proposal")
 				}

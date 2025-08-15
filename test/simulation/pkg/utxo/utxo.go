@@ -39,7 +39,7 @@ import (
 	ltctxscript "github.com/switchlyprotocol/switchlynode/v3/bifrost/txscript/ltcd-txscript"
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients/utxo/rpc"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 
@@ -57,7 +57,7 @@ type Client struct {
 	chain common.Chain
 	rpc   *rpc.Client
 
-	keys    *thorclient.Keys
+	keys    *switchlyclient.Keys
 	privKey *btcec.PrivateKey
 	pubKey  common.PubKey
 	address common.Address
@@ -66,15 +66,15 @@ type Client struct {
 var _ LiteChainClient = &Client{}
 
 func NewConstructor(host string) LiteChainClientConstructor {
-	return func(chain common.Chain, keys *thorclient.Keys) (LiteChainClient, error) {
+	return func(chain common.Chain, keys *switchlyclient.Keys) (LiteChainClient, error) {
 		return NewClient(chain, host, keys)
 	}
 }
 
-func NewClient(chain common.Chain, host string, keys *thorclient.Keys) (LiteChainClient, error) {
+func NewClient(chain common.Chain, host string, keys *switchlyclient.Keys) (LiteChainClient, error) {
 	// create rpc client
 	retries := 5
-	rpc, err := rpc.NewClient(host, "thorchain", "password", retries, zerolog.Nop())
+	rpc, err := rpc.NewClient(host, "switchly", "password", retries, zerolog.Nop())
 	if err != nil {
 		return nil, fmt.Errorf("fail to create rpc client: %w", err)
 	}

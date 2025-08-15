@@ -1,0 +1,49 @@
+syntax = "proto3";
+package types;
+
+option go_package = "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types";
+
+import "gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+
+message QueryNetworkRequest{
+  string height = 1;
+}
+
+message QueryNetworkResponse{
+  // total amount of SWITCH awarded to node operators
+  string bond_reward_switch = 1 [(gogoproto.jsontag) = "bond_reward_switch"];
+  // total bonded SWITCH
+  string total_bond_units = 2 [(gogoproto.jsontag) = "total_bond_units"];
+  // SWITCH in Available pools (equal in value to the Assets in those pools)
+  string available_pools_switch = 15 [(gogoproto.jsontag) = "available_pools_switch"];
+  // SWITCH value of Layer 1 Assets in vaults
+  string vaults_liquidity_switch = 16 [(gogoproto.jsontag) = "vaults_liquidity_switch"];
+  // effective security bond used to determine maximum pooled SWITCH
+  string effective_security_bond = 3 [(gogoproto.jsontag) = "effective_security_bond"];
+  // total reserve SWITCH
+  string total_reserve = 4 [(gogoproto.jsontag) = "total_reserve"];
+  // Returns true if there exist RetiringVaults which have not finished migrating funds to new ActiveVaults
+  bool   vaults_migrating = 5 [(gogoproto.jsontag) = "vaults_migrating"];
+  // Sum of the gas the network has spent to send outbounds
+  string gas_spent_switch = 6 [(gogoproto.jsontag) = "gas_spent_switch"];
+  // Sum of the gas withheld from users to cover outbound gas
+  string gas_withheld_switch = 7 [(gogoproto.jsontag) = "gas_withheld_switch"];
+  // Current outbound fee multiplier, in basis points
+  string outbound_fee_multiplier = 8;
+  // the outbound transaction fee in switch, converted from the NativeOutboundFeeUSD mimir (after USD fees are enabled)
+  string native_outbound_fee_switch = 9 [(gogoproto.jsontag) = "native_outbound_fee_switch"];
+  // the native transaction fee in switch, converted from the NativeTransactionFeeUSD mimir (after USD fees are enabled)
+  string native_tx_fee_switch = 10 [(gogoproto.jsontag) = "native_tx_fee_switch"];
+  // the switchlyname register fee in switch, converted from the TNSRegisterFeeUSD mimir (after USD fees are enabled)
+  string switchlyname_register_fee_switch = 11 [(gogoproto.jsontag) = "switchlyname_register_fee_switch"];
+  // the switchlyname fee per block in switch, converted from the TNSFeePerBlockUSD mimir (after USD fees are enabled)
+  string switchlyname_fee_per_block_switch = 12 [(gogoproto.jsontag) = "switchlyname_fee_per_block_switch"];
+  // the switch price in switchly
+  string switch_price_in_switchly = 13 [(gogoproto.jsontag) = "switch_price_in_switchly"];
+  // the switchly price in switch
+  string switchly_price_in_switch = 14 [(gogoproto.jsontag) = "switchly_price_in_switch"];
+  // indicator if all anchor chains are halted
+  bool switchly_price_halted = 17 [(gogoproto.jsontag) = "switchly_price_halted"];
+}

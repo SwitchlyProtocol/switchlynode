@@ -18,8 +18,8 @@ interface iSWAPROUTER {
     function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline) external payable;
 }
 
-// THORChain_Aggregator is permissionless
-contract THORChain_Aggregator {
+// SWITCHLYChain_Aggregator is permissionless
+contract SWITCHLYChain_Aggregator {
 
     uint256 private constant _NOT_ENTERED = 1;
     uint256 private constant _ENTERED = 2;

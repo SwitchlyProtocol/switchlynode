@@ -20,22 +20,22 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/metrics"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pubkeymanager"
-	"github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient"
-	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/thorclient/types"
+	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	stypes "github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient/types"
 	"github.com/switchlyprotocol/switchlynode/v3/cmd"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	openapi "github.com/switchlyprotocol/switchlynode/v3/openapi/gen"
-	types2 "github.com/switchlyprotocol/switchlynode/v3/x/thorchain/types"
+	types2 "github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
 )
 
 func TestETHPackage(t *testing.T) { TestingT(t) }
 
 type EthereumSuite struct {
 	thordir  string
-	thorKeys *thorclient.Keys
-	bridge   thorclient.ThorchainBridge
+	thorKeys *switchlyclient.Keys
+	bridge   switchlyclient.SwitchlyBridge
 	m        *metrics.Metrics
 	server   *httptest.Server
 }
@@ -68,10 +68,10 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		switch req.RequestURI {
-		case thorclient.ChainVersionEndpoint:
+		case switchlyclient.ChainVersionEndpoint:
 			_, err := rw.Write([]byte(`{"current":"` + types2.GetCurrentVersion().String() + `"}`))
 			c.Assert(err, IsNil)
-		case thorclient.PubKeysEndpoint:
+		case switchlyclient.PubKeysEndpoint:
 			priKey, _ := s.thorKeys.GetPrivateKey()
 			tm, _ := cryptocodec.ToCmtPubKeyInterface(priKey.PubKey())
 			pk, err := common.NewPubKeyFromCrypto(tm)
@@ -95,15 +95,15 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 			c.Assert(err, IsNil)
 			_, err = rw.Write(buf)
 			c.Assert(err, IsNil)
-		case thorclient.InboundAddressesEndpoint:
+		case switchlyclient.InboundAddressesEndpoint:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/inbound_addresses/inbound_addresses.json")
-		case thorclient.AsgardVault:
+		case switchlyclient.AsgardVault:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/vaults/asgard.json")
-		case thorclient.LastBlockEndpoint:
+		case switchlyclient.LastBlockEndpoint:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/lastblock/root.json")
-		case thorclient.NodeAccountEndpoint:
+		case switchlyclient.NodeAccountEndpoint:
 			httpTestHandler(c, rw, "../../../../test/fixtures/endpoints/nodeaccount/template.json")
-		case "/thorchain/mimir/key/MaxUTXOsToSpend":
+		case "/switchly/mimir/key/MaxUTXOsToSpend":
 			_, err := rw.Write([]byte(`-1`))
 			c.Assert(err, IsNil)
 		default:
@@ -203,7 +203,7 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 	}))
 	s.server = server
 	cfg := config.BifrostClientConfiguration{
-		ChainID:         "thorchain",
+		ChainID:         "switchly",
 		ChainHost:       server.Listener.Addr().String(),
 		SignerName:      "bob",
 		SignerPasswd:    "password",
@@ -216,8 +216,8 @@ func (s *EthereumSuite) SetUpTest(c *C) {
 	kb := cKeys.NewInMemory(cdc)
 	_, _, err := kb.NewMnemonic(cfg.SignerName, cKeys.English, cmd.SwitchlyHDPath, cfg.SignerPasswd, hd.Secp256k1)
 	c.Assert(err, IsNil)
-	s.thorKeys = thorclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
-	s.bridge, err = thorclient.NewThorchainBridge(cfg, s.m, s.thorKeys)
+	s.thorKeys = switchlyclient.NewKeysWithKeybase(kb, cfg.SignerName, cfg.SignerPasswd)
+	s.bridge, err = switchlyclient.NewSwitchlyBridge(cfg, s.m, s.thorKeys)
 	c.Assert(err, IsNil)
 }
 
@@ -232,7 +232,7 @@ func (s *EthereumSuite) TearDownTest(c *C) {
 func (s *EthereumSuite) TestNewClient(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 
 	// bridge is nil
 	e, err := NewClient(s.thorKeys, config.BifrostChainConfiguration{}, nil, nil, s.m, pubkeyMgr, poolMgr)
@@ -257,11 +257,11 @@ func (s *EthereumSuite) TestNewClient(c *C) {
 func (s *EthereumSuite) TestConvertSigningAmount(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 	e, err := NewClient(s.thorKeys, config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			HTTPRequestTimeout: time.Second,
 		},
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
@@ -288,14 +288,14 @@ func TestGetTokenAddressFromAsset(t *testing.T) {
 func (s *EthereumSuite) TestClient(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 	e, err := NewClient(s.thorKeys, config.BifrostChainConfiguration{}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
 	c.Assert(e, IsNil)
 	c.Assert(err, NotNil)
 	e2, err2 := NewClient(s.thorKeys, config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			HTTPRequestTimeout: time.Second,
 		},
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
@@ -379,11 +379,11 @@ func (s *EthereumSuite) TestClient(c *C) {
 func (s *EthereumSuite) TestGetAccount(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 	e, err := NewClient(s.thorKeys, config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			HTTPRequestTimeout: time.Second,
 		},
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
@@ -403,11 +403,11 @@ func (s *EthereumSuite) TestGetAccount(c *C) {
 func (s *EthereumSuite) TestSignETHTx(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 	chainConfig := config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			HTTPRequestTimeout: time.Second,
 			MaxGasLimit:        80000,
 		},
@@ -618,11 +618,11 @@ func (s *EthereumSuite) TestSignETHTx(c *C) {
 func (s *EthereumSuite) TestGetAsgardAddresses(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 	e, err := NewClient(s.thorKeys, config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			HTTPRequestTimeout: time.Second,
 		},
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)
@@ -639,11 +639,11 @@ func (s *EthereumSuite) TestGetAsgardAddresses(c *C) {
 func (s *EthereumSuite) TestGetConfirmationCount(c *C) {
 	pubkeyMgr, err := pubkeymanager.NewPubKeyManager(s.bridge, s.m)
 	c.Assert(err, IsNil)
-	poolMgr := thorclient.NewPoolMgr(s.bridge)
+	poolMgr := switchlyclient.NewPoolMgr(s.bridge)
 	e, err := NewClient(s.thorKeys, config.BifrostChainConfiguration{
 		RPCHost: "http://" + s.server.Listener.Addr().String(),
 		BlockScanner: config.BifrostBlockScannerConfiguration{
-			StartBlockHeight:   1, // avoids querying thorchain for block height
+			StartBlockHeight:   1, // avoids querying switchly for block height
 			HTTPRequestTimeout: time.Second,
 		},
 	}, nil, s.bridge, s.m, pubkeyMgr, poolMgr)

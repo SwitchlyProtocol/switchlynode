@@ -6,7 +6,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 3
 ---
@@ -15,7 +15,7 @@ asserts:
 ########################################################################################
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: TorAnchor-ETH-USDC-0X9999999999999999999999999999999999999999
+key: SwitchlyAnchor-ETH-USDC-0X9999999999999999999999999999999999999999
 value: 1
 sequence: 0
 ---
@@ -29,28 +29,28 @@ type: create-blocks
 count: 2
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/mimir
+endpoint: http://localhost:1317/switchly/mimir
 asserts:
   - .DERIVEDDEPTHBASISPTS == 10000
-  - ."TORANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999" == 1
+  - ."SWITCHLYANCHOR-ETH-USDC-0X9999999999999999999999999999999999999999" == 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pools
+endpoint: http://localhost:1317/switchly/pools
 asserts:
   - .|length == 3
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.BTC
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.BTC
 asserts:
   - .status == "Available"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/dpool/THOR.ETH
+endpoint: http://localhost:1317/switchly/dpool/SWITCHLY.ETH
 asserts:
   - .status == "Available"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/inbound_addresses
+endpoint: http://localhost:1317/switchly/inbound_addresses
 asserts:
   - .[]|select(.chain == "BTC")|.outbound_fee == "14000" # 2x estimated gas (7000 satoshi)
 ---
@@ -82,7 +82,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
   - .[0].coin.asset == "BTC.BTC"
@@ -114,12 +114,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 0
 ---
@@ -129,8 +129,8 @@ asserts:
 # TODO: Clean up template genesis state to have even 500k.
 type: tx-mimir
 signer: {{ addr_thor_dog }}
-key: MaxRuneSupply
-value: 503_100_00000000 # 100 RUNE buffer
+key: MaxSWITCHSupply
+value: 503_100_00000000 # 100 SWITCH buffer
 ---
 type: create-blocks
 count: 1
@@ -144,7 +144,7 @@ txs:
       from_address: {{ addr_btc_fox }}
       to_address: {{ addr_btc_dog }}
       coins:
-        # ~ 33 RUNE before 33% lever, split by 2 pools, 17 RUNE collateral is over
+        # ~ 33 SWITCH before 33% lever, split by 2 pools, 17 SWITCH collateral is over
         - amount: "1700000"
           asset: "BTC.BTC"
           decimals: 8
@@ -160,14 +160,14 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.txs[]|.result.events[]|select(.type=="refund")]|length == 1'
   - .txs[]|.result.events[]|select(.type=="refund")|.from == "{{ addr_btc_fox }}"
   - .txs[]|.result.events[]|select(.type=="refund")|.reason|match("no availability .*, lending unavailable")
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
 ---
@@ -195,12 +195,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/btc.btc/borrowers
+endpoint: http://localhost:1317/switchly/pool/btc.btc/borrowers
 asserts:
   - .|length == 0
 ---
@@ -232,12 +232,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - '[.end_block_events[]|select(.type == "refund")]|length == 1'
   - .end_block_events[]|select(.type == "refund")|.from == "{{ addr_btc_fox }}"

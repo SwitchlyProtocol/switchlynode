@@ -3,11 +3,11 @@ key: BLOCKS_PER_YEAR
 value: "1825"
 ---
 type: env
-key: MIN_TCY_FOR_TCY_STAKE_DISTRIBUTION
+key: MIN_SWCY_FOR_SWCY_STAKE_DISTRIBUTION
 value: "210000000000001"
 ---
 type: env
-key: TCY_STAKE_DISTRIBUTION_HALT
+key: SWCY_STAKE_DISTRIBUTION_HALT
 value: "0"
 ---
 {{ template "default-state.yaml" }}
@@ -20,7 +20,7 @@ genesis:
       balances:
         - address: {{ addr_module_tcy_stake }}
           coins:
-            - amount: "${BAL_TCY_STAKE=21000000000000000}"
+            - amount: "${BAL_SWCY_STAKE=21000000000000000}"
               denom: rune
             - amount: "20370000000000000"
               denom: tcy
@@ -28,9 +28,9 @@ genesis:
         # so it will be send to claiming module
         - address: {{ addr_thor_fox }}
           coins:
-            - amount: "${BAL_FOX_TCY=630000000000000}"
+            - amount: "${BAL_FOX_SWCY=630000000000000}"
               denom: tcy
-            - amount: "${INIT_FOX_RUNE=1}"
+            - amount: "${INIT_FOX_SWITCH=1}"
               denom: rune
     auth:
       accounts:
@@ -80,20 +80,20 @@ genesis:
           pub_key: null
           account_number: "7"
           sequence: "0"
-    thorchain:
+    switchly:
       tcy_stakers:
         - address: {{ addr_thor_goat }}
-          amount: "${BAL_GOAT_TCY=1260000000000000}"
+          amount: "${BAL_GOAT_SWCY=1260000000000000}"
         - address: {{ addr_thor_frog }}
-          amount: "${BAL_FROG_TCY=6300000000000000}"
+          amount: "${BAL_FROG_SWCY=6300000000000000}"
         - address: {{ addr_thor_wolf }}
-          amount: "${BAL_WOLF_TCY=2100000000000000}"
+          amount: "${BAL_WOLF_SWCY=2100000000000000}"
         - address: {{ addr_thor_pig }}
-          amount: "${BAL_PIG_TCY=10500000000000000}"
-        # Less than MinTCYForTCYStakeDistribution so it doesn't receive rune
+          amount: "${BAL_PIG_SWCY=10500000000000000}"
+        # Less than MinSWCYForSWCYStakeDistribution so it doesn't receive rune
         # and it's send to claiming module
         - address: {{ addr_thor_fish }}
-          amount: "${BAL_FISH_TCY=210000000000000}"
+          amount: "${BAL_FISH_SWCY=210000000000000}"
 ---
 type: create-blocks
 count: 4
@@ -102,7 +102,7 @@ type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_tcy_stake }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_TCY_STAKE}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_SWCY_STAKE}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_goat }}
@@ -133,18 +133,18 @@ type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_fox }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_FOX_TCY}
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${INIT_FOX_RUNE}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_FOX_SWCY}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${INIT_FOX_SWITCH}
 ---
 #########################################################################################################
 # Distribute funds:                                                                                     #
-#   - Total TCY: 210,000,000.00000000 TCY (100%) / - Total TCYStake:         210,000,000.00000000  RUNE #
-#   - Goat:       12,600,000.00000000 TCY   (6%) / - Goat:           (210,000,000.00000000 * 0.06) RUNE #
-#   - Frog:       63,000,000.00000000 TCY  (30%) / - Frog:           (210,000,000.00000000 * 0.3)  RUNE #
-#   - Wolf:       21,000,000.00000000 TCY  (10%) / - Wolf:           (210,000,000.00000000 * 0.1)  RUNE #
-#   - Pig:       105,000,000.00000000 TCY  (50%) / - Pig:            (210,000,000.00000000 * 0.5)  RUNE #
-#   - Claiming:    8,400,000.00000000 TCY   (4%) / - Claiming:       (210,000,000.00000000 * 0.04) RUNE #
-#     - Fox -> Not staked (3%) + Fish -> Less than MinTCYForTCYStakeDistribution (1%) = Claiming (4%)   #
+#   - Total SWCY: 210,000,000.00000000 SWCY (100%) / - Total SWCYStake:         210,000,000.00000000  SWITCH #
+#   - Goat:       12,600,000.00000000 SWCY   (6%) / - Goat:           (210,000,000.00000000 * 0.06) SWITCH #
+#   - Frog:       63,000,000.00000000 SWCY  (30%) / - Frog:           (210,000,000.00000000 * 0.3)  SWITCH #
+#   - Wolf:       21,000,000.00000000 SWCY  (10%) / - Wolf:           (210,000,000.00000000 * 0.1)  SWITCH #
+#   - Pig:       105,000,000.00000000 SWCY  (50%) / - Pig:            (210,000,000.00000000 * 0.5)  SWITCH #
+#   - Claiming:    8,400,000.00000000 SWCY   (4%) / - Claiming:       (210,000,000.00000000 * 0.04) SWITCH #
+#     - Fox -> Not staked (3%) + Fish -> Less than MinSWCYForSWCYStakeDistribution (1%) = Claiming (4%)   #
 #########################################################################################################
 type: create-blocks
 count: 1
@@ -159,25 +159,25 @@ type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_goat }}
 asserts:
   - .balances|length == 1
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_GOAT_TCY}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_GOAT_SWCY}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_frog }}
 asserts:
   - .balances|length == 1
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_FROG_TCY}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_FROG_SWCY}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_wolf }}
 asserts:
   - .balances|length == 1
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_WOLF_TCY}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_WOLF_SWCY}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_pig }}
 asserts:
   - .balances|length == 1
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_PIG_TCY}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_PIG_SWCY}
 ---
 # Fish and fox should not receive rune from distribution, instead claiming module should
 type: check
@@ -189,11 +189,11 @@ type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_thor_fox }}
 asserts:
   - .balances|length == 2
-  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_FOX_TCY}
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${INIT_FOX_RUNE}
+  - .balances[]|select(.denom == "tcy")|.amount|tonumber == ${BAL_FOX_SWCY}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${INIT_FOX_SWITCH}
 ---
 type: check
 endpoint: http://localhost:1317/cosmos/bank/v1beta1/balances/{{ addr_module_tcy_claim }}
 asserts:
   - .balances|length == 1
-  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_FOX_TCY}+${BAL_FISH_TCY}
+  - .balances[]|select(.denom == "rune")|.amount|tonumber == ${BAL_FOX_SWCY}+${BAL_FISH_SWCY}

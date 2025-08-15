@@ -160,7 +160,7 @@
   },
   {
     "inputs": [],
-    "name": "RUNE",
+    "name": "SWITCH",
     "outputs": [
       {
         "internalType": "address",

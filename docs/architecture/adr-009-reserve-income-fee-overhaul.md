@@ -13,7 +13,7 @@ The acceptance of ADR 008 ^(1) necessitates an overhaul of Reserve Income and Fe
 
 ADR 008 seeks to reduce L1 Outbound Fees to a minimum (1:1 gas spent) to make ETH and BTC swaps cheaper, thus drive up L1 swap adoption.
 In past this fee (the multiplier charged on top of L1 outbounds), drove ~500k of annual income to the RESERVE (2022 terms). ^(2)
-The L1 Outbound Fee lower bound is priced in USD, but other fees are priced in RUNE.
+The L1 Outbound Fee lower bound is priced in USD, but other fees are priced in SWITCH.
 
 The community wish to overhaul fees to make them easier to understand, fairer, and more appropriate for the purposes of TC.
 
@@ -23,15 +23,15 @@ Three Goals
 2. Revamp fees to source 500k in annual income to make up for ADR 008
    ~~3. Overhaul the role of the RESERVE in fees~~
 
-** THORChain Fees **
+** SWITCHLYChain Fees **
 
 | Fee                    | Description              | Amount                                                                             | Recipient                                |
 | ---------------------- | ------------------------ | ---------------------------------------------------------------------------------- | ---------------------------------------- |
 | Liquidity Fee          | Paid on every swap       | Proportional to slip                                                               | 100% to Network participants intra-block |
 | L1 Outbound Fee        | L1 Outbounds             | Ideally 1:1 gas spent, but a minimum of $1.00 is enforced to pay for TSS resources | Reserve                                  |
-| Native Outbound Fee    | RUNE and synth outbounds | 0.02 RUNE                                                                          | Reserve                                  |
-| Native Transaction Fee | RUNE and synth transfers | 0.02 RUNE                                                                          | Reserve                                  |
-| TNS Fees               | Fees to register TNS     | 10 RUNE + 10 RUNE per year                                                         | Reserve                                  |
+| Native Outbound Fee    | SWITCH and synth outbounds | 0.02 SWITCH                                                                          | Reserve                                  |
+| Native Transaction Fee | SWITCH and synth transfers | 0.02 SWITCH                                                                          | Reserve                                  |
+| TNS Fees               | Fees to register TNS     | 10 SWITCH + 10 SWITCH per year                                                         | Reserve                                  |
 
 ## Proposal
 
@@ -102,5 +102,5 @@ Mimir Requirements
 
 ## References
 
-(1) https://gitlab.com/thorchain/thornode/-/blob/develop/docs/architecture/adr-008-implement-dynamic-outbound-fee-multiplier.md
+(1) https://gitlab.com/switchly/switchlynode/-/blob/develop/docs/architecture/adr-008-implement-dynamic-outbound-fee-multiplier.md
 (2) https://flipsidecrypto.xyz/Multipartite/reserve-cumulative-income-health-rOUjF2

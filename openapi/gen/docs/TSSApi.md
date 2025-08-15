@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**KeygenPubkey**](TSSApi.md#KeygenPubkey) | **Get** /thorchain/keygen/{height}/{pubkey} | 
-[**Keysign**](TSSApi.md#Keysign) | **Get** /thorchain/keysign/{height} | 
-[**KeysignPubkey**](TSSApi.md#KeysignPubkey) | **Get** /thorchain/keysign/{height}/{pubkey} | 
-[**Metrics**](TSSApi.md#Metrics) | **Get** /thorchain/metrics | 
-[**MetricsKeygen**](TSSApi.md#MetricsKeygen) | **Get** /thorchain/metric/keygen/{pubkey} | 
+[**KeygenPubkey**](TSSApi.md#KeygenPubkey) | **Get** /switchly/keygen/{height}/{pubkey} | 
+[**Keysign**](TSSApi.md#Keysign) | **Get** /switchly/keysign/{height} | 
+[**KeysignPubkey**](TSSApi.md#KeysignPubkey) | **Get** /switchly/keysign/{height}/{pubkey} | 
+[**Metrics**](TSSApi.md#Metrics) | **Get** /switchly/metrics | 
+[**MetricsKeygen**](TSSApi.md#MetricsKeygen) | **Get** /switchly/metric/keygen/{pubkey} | 
 
 
 

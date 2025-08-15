@@ -32,12 +32,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[]|.coins[]|select(.asset == "BTC.BTC")|.amount == "105000000"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
 ---
@@ -53,19 +53,19 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 1 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 1 }}
 asserts:
   - .observed_tx.status == "reverted"
 ---
 # vault balance decremented
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[]|.coins[]|select(.asset == "BTC.BTC")|.amount == "100000000"
 ---
 # outbound still exists, conf-counting should protect against this in practice
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 1
 ---
@@ -87,7 +87,7 @@ txs:
       gas:
         - amount: "10000"
           asset: "BTC.BTC"
-      memo: "=:THOR.RUNE:{{ addr_thor_fox }}"
+      memo: "=:SWITCHLY.SWITCH:{{ addr_thor_fox }}"
     block_height: 1
     finalise_height: 1
     observed_pub_key: {{ pubkey_dog }}
@@ -127,12 +127,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 1 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 1 }}
 asserts:
   - .observed_tx.status == "reverted"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[]|.coins[]|select(.asset == "BTC.BTC")|.amount == "100000000"
 ---
@@ -163,12 +163,12 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   - .[]|.coins[]|select(.asset == "ETH.ETH")|.amount == "958818220"
 ---
@@ -184,25 +184,25 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/tx/{{ observe_txid 2 }}
+endpoint: http://localhost:1317/switchly/tx/{{ observe_txid 2 }}
 asserts:
   - .observed_tx.status == "reverted"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/vaults/asgard
+endpoint: http://localhost:1317/switchly/vaults/asgard
 asserts:
   # vault balance should be restored, but we do not know if the gas was spent
   - .[]|.coins[]|select(.asset == "ETH.ETH")|.amount == "999040000"
 ---
 # outbound not recreated
 type: check
-endpoint: http://localhost:1317/thorchain/queue/outbound
+endpoint: http://localhost:1317/switchly/queue/outbound
 asserts:
   - .|length == 0
 ---
 # security event emitted
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .txs[]|.result.events[]|select(.type == "security")|.msg == "outbound errata"
 ---

@@ -10,7 +10,7 @@ Proposed
 
 ## Context
 
-The original ADR for lending [ADR-11-Lending](https://gitlab.com/thorchain/thornode/-/blob/develop/docs/architecture/adr-011-lending.md?ref_type%253Dheads#proactive-dynamic-burn) discussed the requirement for a burn of system income once Circuit Breakers were hit to pay down the liability of the system.
+The original ADR for lending [ADR-11-Lending](https://gitlab.com/switchly/switchlynode/-/blob/develop/docs/architecture/adr-011-lending.md?ref_type%253Dheads#proactive-dynamic-burn) discussed the requirement for a burn of system income once Circuit Breakers were hit to pay down the liability of the system.
 
 This has not yet been implemented. A possible imperative to accelerate this feature is two-fold:
 
@@ -33,7 +33,7 @@ With [EIP-1559](https://ultrasound.money/); the market converges around the Fee-
 
 Burning the fees does not directly benefit LPs-Nodes, since it temporarily reduces their income. However it does theoretically enrich all holders equally. The stronger aspect at play here; is that LP-Nodes are part of a long-term capital-allocating cohort, so a short-term drop in income doesn't measurably affect their positions. Instead, this mechanism should influence short-term allocators and give Nodes an ability to calm markets; similar to Overnight Bank Funding Rates which directly influences the market, but does typically does not affet 5-10year bond participation rates.
 
-Lifetime System Income is 16bn RUNE, so this proposal would have burnt 1.6m RUNE in the last 3 years.
+Lifetime System Income is 16bn SWITCH, so this proposal would have burnt 1.6m SWITCH in the last 3 years.
 
 ## Proposal
 

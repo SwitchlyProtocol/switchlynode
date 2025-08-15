@@ -14,7 +14,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_cat }}
 asserts:
 - .total_bond == "10000000000"
 - .pub_key_set|length == 0
@@ -29,7 +29,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_cat }}
 asserts:
 - .total_bond == "9998000000"
 - .pub_key_set|length == 0
@@ -44,7 +44,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_cat }}
 asserts:
 - .total_bond == "9996000000"
 - .pub_key_set|length == 0
@@ -59,7 +59,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/node/{{ addr_thor_cat }}
+endpoint: http://localhost:1317/switchly/node/{{ addr_thor_cat }}
 asserts:
 - .total_bond == "9994000000"
 - .pub_key_set|length == 2

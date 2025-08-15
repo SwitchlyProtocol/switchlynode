@@ -21,12 +21,12 @@ There are 4 different fees the user should know about.
 
 Fees are taken in the following order when conducting a swap.
 
-1. Inbound Fee (user wallet controlled, not THORChain controlled)
+1. Inbound Fee (user wallet controlled, not SWITCHLYChain controlled)
 1. Swap Fee (denoted in output asset)
 1. Affiliate Fee (if any)
 1. Outbound Fee (taken from the swap output)
 
-To work out the total fees, fees should be converted to a common asset (e.g. RUNE or USD) then added up. Total fees should be less than the input else it is likely to result in a refund.
+To work out the total fees, fees should be converted to a common asset (e.g. SWITCH or USD) then added up. Total fees should be less than the input else it is likely to result in a refund.
 
 ```admonish info
 Because the affiliate fee is deducted after the Swap Fee, using streaming swaps is recommended for better swap efficiency.
@@ -43,7 +43,7 @@ inboundFee = txSize * gasRate
 $$
 
 ```admonish success
-THORChain calculates and posts fee rates at [`https://thornode.ninerealms.com/thorchain/inbound_addresses`](https://thornode.ninerealms.com/thorchain/inbound_addresses)
+SWITCHLYChain calculates and posts fee rates at [`https://switchlynode.ninerealms.com/switchly/inbound_addresses`](https://switchlynode.ninerealms.com/switchly/inbound_addresses)
 
 Gas Rate is calculated by taking the highest gas rate over the last 10 blocks then times 1.5.
 ```
@@ -74,10 +74,10 @@ A minimum swap fee in basis points (bps) applies for different asset types, gove
 
 Within the transactions you build for your users you can include an affiliate for your exchange.
 
-- Affiliate fees are possible for: swaps, saving despoit, lending addition, RUNEPool withdrawal.
+- Affiliate fees are possible for: swaps, saving despoit, lending addition, SWITCHPool withdrawal.
 - The affiliate fee is in basis points (0-10,000) and will be deducted from the inbound or outbound transaction amount.
-- A THORName is required to collect affiliate address. See a guide on creating THORNames [here](../affiliate-guide/thorname-guide.md).
-- Affiliates are paid in $RUNE by default however a [preferred asset](../affiliate-guide/thorname-guide.md#preferred-asset-for-affiliate-fees) can be specified within the THORName.
+- A SWITCHName is required to collect affiliate address. See a guide on creating SWITCHNames [here](../affiliate-guide/switchlyname-guide.md).
+- Affiliates are paid in $SWITCH by default however a [preferred asset](../affiliate-guide/switchlyname-guide.md#preferred-asset-for-affiliate-fees) can be specified within the SWITCHName.
 - Mupiple Affiliates are possible for swaps.
 
 $$
@@ -90,15 +90,15 @@ See the [Affiliate Fee Guide](../affiliate-guide/affiliate-fee-guide.md) for mor
 
 This is the fee the Network pays on behalf of the user to send the outbound transaction. To adequately pay for network resources (TSS, compute, state storage) the fee is marked up from what nodes actually pay on-chain by an "Outbound Fee Multiplier" (OFM).
 
-The OFM moves between a `MaxOutboundFeeMultiplier` and a `MinOutboundFeeMultiplier`(defined as [Network Constants](https://gitlab.com/thorchain/thornode/-/blob/develop/constants/constants_v1.go) or as [Mimir Values](https://thornode.ninerealms.com/thorchain/mimir)), based on the network's current outbound fee "surplus" in relation to a "target surplus". The outbound fee "surplus" is the cumulative difference (in $RUNE) between what the users are charged for outbound fees and what the nodes actually pay. As the network books a "surplus" the OFM slowly decreases from the Max to the Min. Current values for the OFM can be found on the [Network Endpoint](https://thornode.ninerealms.com/thorchain/network).
+The OFM moves between a `MaxOutboundFeeMultiplier` and a `MinOutboundFeeMultiplier`(defined as [Network Constants](https://gitlab.com/switchly/switchlynode/-/blob/develop/constants/constants_v1.go) or as [Mimir Values](https://switchlynode.ninerealms.com/switchly/mimir)), based on the network's current outbound fee "surplus" in relation to a "target surplus". The outbound fee "surplus" is the cumulative difference (in $SWITCH) between what the users are charged for outbound fees and what the nodes actually pay. As the network books a "surplus" the OFM slowly decreases from the Max to the Min. Current values for the OFM can be found on the [Network Endpoint](https://switchlynode.ninerealms.com/switchly/network).
 
 $$
 outboundFee = txSize * gasRate * OFM
 $$
 
-The minimum Outbound Layer1 Fee the network will charge is on `/thorchain/mimir` and is priced in USD (based on THORChain's USD pool prices). This means really cheap chains still pay their fair share. It is currently set to `100000000` = $1.00
+The minimum Outbound Layer1 Fee the network will charge is on `/switchly/mimir` and is priced in USD (based on SWITCHLYChain's USD pool prices). This means really cheap chains still pay their fair share. It is currently set to `100000000` = $1.00
 
-See [Outbound Fee](https://docs.thorchain.org/how-it-works/fees#outbound-fee) for more information.
+See [Outbound Fee](https://docs.switchly.org/how-it-works/fees#outbound-fee) for more information.
 
 ### Refunds and Minimum Swappable Amount
 
@@ -108,7 +108,7 @@ If a transaction fails, it is refunded, thus it will pay the `outboundFee` for t
 2. The Source Chain outbound_fee
 3. $1.00 (the minimum)
 
-The outbound_fee for each chain is returned on the [Inbound Addresses](https://thornode.ninerealms.com/thorchain/inbound_addresses) endpoint, priced in the gas asset.
+The outbound_fee for each chain is returned on the [Inbound Addresses](https://switchlynode.ninerealms.com/switchly/inbound_addresses) endpoint, priced in the gas asset.
 
 It is strongly recommended to use the `recommended_min_amount_in` value that is included on the [Swap Quote](broken-reference) endpoint, which is the calculation described above. This value is priced in the inbound asset of the quote request (in 1e8). This should be the minimum-allowed swap amount for the requested quote.
 
@@ -116,7 +116,7 @@ _Remember, if the swap limit is not met or the swap is otherwise refunded the ou
 
 ### Understanding gas_rate
 
-THORNode keeps track of current gas prices. Access these at the `/inbound_addresses` endpoint of the [THORNode API](./connecting-to-thorchain.md#thornode). The response is an array of objects like this:
+SWITCHLYNode keeps track of current gas prices. Access these at the `/inbound_addresses` endpoint of the [SWITCHLYNode API](./connecting-to-switchly.md#switchlynode). The response is an array of objects like this:
 
 ```json
 {
@@ -140,32 +140,32 @@ The `gas_rate` property can be used to estimate network fees for each chain the 
 
 The `gas_rate_units` explain what the rate is for chain, as a prompt to the developer.
 
-The `outbound_tx_size` is what THORChain internally budgets as a typical transaction size for each chain.
+The `outbound_tx_size` is what SWITCHLYChain internally budgets as a typical transaction size for each chain.
 
-The `outbound_fee` is `gas_rate * outbound_tx_size * OFM` and developers can use this to budget for the fee to be charged to the user. The current Outbound Fee Multiplier (OFM) can be found on the [Network Endpoint](https://thornode.ninerealms.com/thorchain/network).
+The `outbound_fee` is `gas_rate * outbound_tx_size * OFM` and developers can use this to budget for the fee to be charged to the user. The current Outbound Fee Multiplier (OFM) can be found on the [Network Endpoint](https://switchlynode.ninerealms.com/switchly/network).
 
 Keep in mind the `outbound_fee` is priced in the gas asset of each chain. For chains with tokens, be sure to convert the `outbound_fee` to the outbound token to determine how much will be taken from the outbound amount. To do this, use the `getValueOfAsset1InAsset2` formula described in the [`Math`](./math.md#example) section.
 
 ## Fee Calculation by Chain
 
-### **THORChain (Native Rune)**
+### **SWITCHLYChain (Native SWITCH)**
 
-The THORChain blockchain has a set 0.02 RUNE fee. This is set within the THORChain [Constants](https://thornode.ninerealms.com/thorchain/constants) by `NativeTransactionFee`. As THORChain is 1e8, `2000000 TOR = 0.02 RUNE`
+The SWITCHLYChain blockchain has a set 0.02 SWITCH fee. This is set within the SWITCHLYChain [Constants](https://switchlynode.ninerealms.com/switchly/constants) by `NativeTransactionFee`. As SWITCHLYChain is 1e8, `2000000 SWITCHLY = 0.02 SWITCH`
 
 ### UTXO Chains like Bitcoin
 
-For UXTO chains link Bitcoin, `gas_rate`is denoted in Satoshis. The `gas_rate` is calculated by looking at the average previous block fee seen by the THORNodes.
+For UXTO chains link Bitcoin, `gas_rate`is denoted in Satoshis. The `gas_rate` is calculated by looking at the average previous block fee seen by the SWITCHLYNodes.
 
-All THORChain transactions use BECH32 so a standard tx size of 250 bytes can be used. The standard UTXO fee is then `gas_rate`\* 250.
+All SWITCHLYChain transactions use BECH32 so a standard tx size of 250 bytes can be used. The standard UTXO fee is then `gas_rate`\* 250.
 
 ### EVM Chains like Ethereum
 
-For EVM chains like Ethereum, `gas_rate`is denoted in GWEI. The `gas_rate` is calculated by looking at the average previous block fee seen by the THORNodes
+For EVM chains like Ethereum, `gas_rate`is denoted in GWEI. The `gas_rate` is calculated by looking at the average previous block fee seen by the SWITCHLYNodes
 
 An Ether Tx fee is: `gasRate * 10^9 (GWEI) * 21000 (units).`
 
 An ERC20 Tx is larger: `gasRate * 10^9 (GWEI) * 70000 (units)`
 
 ```admonish success
-THORChain calculates and posts gas fee rates at [`https://thornode.ninerealms.com/thorchain/inbound_addresses`](https://thornode.ninerealms.com/thorchain/inbound_addresses)
+SWITCHLYChain calculates and posts gas fee rates at [`https://switchlynode.ninerealms.com/switchly/inbound_addresses`](https://switchlynode.ninerealms.com/switchly/inbound_addresses)
 ```

@@ -30,9 +30,9 @@ genesis:
           coins:
             - amount: "1_000_00000000" # 50% SynthPerPoolDepth
               denom: btc/btc
-            - amount: "1_000_000_98000000" # The 0.98 RUNE is to be used for transaction fees.
+            - amount: "1_000_000_98000000" # The 0.98 SWITCH is to be used for transaction fees.
               denom: rune
-    thorchain:
+    switchly:
       liquidity_providers:
         - asset: BTC.BTC
           asset_deposit_value: "450_00000000"
@@ -67,7 +67,7 @@ genesis:
       vaults:
         - block_height: "0"
           chains:
-            - THOR
+            - SWITCHLY
             - BTC
             - LTC
             - BCH
@@ -99,23 +99,23 @@ value: 6000
 signer: {{ addr_thor_dog }}
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_wolf }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_wolf }}
 asserts:
   - .asset_redeem_value == ("50_00000000" | gsub("_";""))
   - .rune_redeem_value == ("50_000_00000000" | gsub("_";""))
   - .luvi_growth_pct == "0.000000000000000000"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_goat }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_goat }}
 asserts:
   - .asset_redeem_value == ("450_00000000" | gsub("_";""))
   - .rune_redeem_value == ("450_000_00000000" | gsub("_";""))
   - .luvi_growth_pct == "0.000000000000000000" # Same as wolf
 ---
 ########################################################################################
-# THOR.RUNE -> BTC/BTC streaming swaps (100% conversion),
+# SWITCHLY.SWITCH -> BTC/BTC streaming swaps (100% conversion),
 # as well as (s though arbitrage keeping the pool balanced)
-# symmetrical BTC/BTC -> THOR.RUNE streaming swap
+# symmetrical BTC/BTC -> SWITCHLY.SWITCH streaming swap
 # (these could be done by different addresses, wolf only noticing the streaming)
 ########################################################################################
 type: tx-deposit
@@ -131,7 +131,7 @@ signer: {{ addr_thor_wolf }}
 coins:
   - amount: "1_000_00000000"
     asset: "btc/btc"
-memo: "=:THOR.RUNE:{{ addr_thor_wolf }}:0/1/10"
+memo: "=:SWITCHLY.SWITCH:{{ addr_thor_wolf }}:0/1/10"
 sequence: 1
 ---
 # Go to right before the end of the streaming swap.
@@ -139,14 +139,14 @@ type: create-blocks
 count: 9
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_wolf }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_wolf }}
 asserts:
   - .asset_redeem_value == "5281350856"
   - .rune_redeem_value == "4991693504664"
   - .luvi_growth_pct == "0.026896125797961406"
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_goat }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_goat }}
 asserts:
   - .asset_redeem_value == "47532157708"
   - .rune_redeem_value == "44925241541977"
@@ -168,7 +168,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/block
+endpoint: http://localhost:1317/switchly/block
 asserts:
   - .|[..|select(.type?=="withdraw")] | length == 1
   - ..|select(.type?=="withdraw").emit_rune == "9470052478762"
@@ -182,7 +182,7 @@ type: tx-deposit
 signer: {{ addr_thor_wolf }}
 coins:
   - amount: "94_781_86625233"
-    # Same as the withdraw-emitted RUNE,
+    # Same as the withdraw-emitted SWITCH,
     # though wolf could have chosen to deposit less.
     asset: "rune"
 memo: "+:BTC.BTC"
@@ -192,7 +192,7 @@ type: create-blocks
 count: 1
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_wolf }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_wolf }}
 asserts:
   - .units == "4497382771397"
   # Contrast with the initial units of "50_000_00000000" .
@@ -203,7 +203,7 @@ asserts:
   # (not checking luvi_growth_pct which has been reset by the withdraw and deposit).
 ---
 type: check
-endpoint: http://localhost:1317/thorchain/pool/BTC.BTC/liquidity_provider/{{ addr_thor_goat }}
+endpoint: http://localhost:1317/switchly/pool/BTC.BTC/liquidity_provider/{{ addr_thor_goat }}
 asserts:
   - .units == ("450_000_00000000" | gsub("_";"")) # Unchanged.
   - .asset_redeem_value == "47792605887"

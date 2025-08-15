@@ -630,8 +630,8 @@ func calcSignatureHash(script []parsedOpcode, hashType SigHashType, tx *wire.Msg
 		return hash[:]
 	}
 
-	// Remove all instances of OP_CODESEPARATOR from the script.
-	script = removeOpcode(script, OP_CODESEPARATOR)
+	// Remove all instances of OP_CODESEPARASWITCHLY from the script.
+	script = removeOpcode(script, OP_CODESEPARASWITCHLY)
 
 	// Make a shallow copy of the transaction, zeroing out the script for
 	// all inputs that are not currently being processed.

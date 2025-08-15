@@ -7,8 +7,8 @@ Name | Type | Description | Notes
 **Asset** | **string** | trade account asset with \&quot;~\&quot; separator | 
 **Units** | **string** | units of trade asset belonging to this owner | 
 **Owner** | **string** | thor address of trade account owner | 
-**LastAddHeight** | Pointer to **int64** | last thorchain height trade assets were added to trade account | [optional] 
-**LastWithdrawHeight** | Pointer to **int64** | last thorchain height trade assets were withdrawn from trade account | [optional] 
+**LastAddHeight** | Pointer to **int64** | last switchly height trade assets were added to trade account | [optional] 
+**LastWithdrawHeight** | Pointer to **int64** | last switchly height trade assets were withdrawn from trade account | [optional] 
 
 ## Methods
 

@@ -1,0 +1,237 @@
+package switchly
+
+import (
+	"fmt"
+
+	"cosmossdk.io/math"
+	"github.com/switchlyprotocol/switchlynode/v3/common"
+	cosmos "github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
+	"github.com/switchlyprotocol/switchlynode/v3/common/swcysmartcontract"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
+
+	. "gopkg.in/check.v1"
+)
+
+type HandlerSWCYClaim struct{}
+
+var _ = Suite(&HandlerSWCYClaim{})
+
+func (s *HandlerSWCYClaim) TestValidate(c *C) {
+	ctx, k := setupKeeperForTest(c)
+
+	// happy path
+	k.SetMimir(ctx, "SWCYClaimingHalt", 0)
+	addr := GetRandomSwitchAddress()
+	l1Address := GetRandomBTCAddress()
+	accSignerAddr, err := GetRandomSwitchAddress().AccAddress()
+	c.Assert(err, IsNil)
+
+	msg := NewMsgSWCYClaim(addr, l1Address, accSignerAddr)
+	handler := NewSWCYClaimHandler(NewDummyMgrWithKeeper(k))
+	err = handler.validate(ctx, *msg)
+	c.Assert(err, IsNil)
+
+	addr = GetRandomSwitchAddress()
+	l1Address = GetRandomSwitchAddress()
+	accSignerAddr, err = GetRandomSwitchAddress().AccAddress()
+	c.Assert(err, IsNil)
+
+	msg = NewMsgSWCYClaim(addr, l1Address, accSignerAddr)
+	handler = NewSWCYClaimHandler(NewDummyMgrWithKeeper(k))
+	err = handler.validate(ctx, *msg)
+	c.Assert(err, IsNil)
+
+	// invalid msgs
+	addr2 := GetRandomBTCAddress()
+	l1Address2 := GetRandomBTCAddress()
+	accSignerAddr2, err := GetRandomSwitchAddress().AccAddress()
+	c.Assert(err, IsNil)
+
+	msg = NewMsgSWCYClaim(addr2, l1Address2, accSignerAddr2)
+	err = handler.validate(ctx, *msg)
+	c.Assert(err.Error(), Equals, "invalid switch address: unknown request")
+
+	k.SetMimir(ctx, "SWCYClaimingHalt", 1)
+	addr = GetRandomSwitchAddress()
+	l1Address = GetRandomBTCAddress()
+	accSignerAddr, err = GetRandomSwitchAddress().AccAddress()
+	c.Assert(err, IsNil)
+	msg = NewMsgSWCYClaim(addr, l1Address, accSignerAddr)
+	handler = NewSWCYClaimHandler(NewDummyMgrWithKeeper(k))
+	err = handler.validate(ctx, *msg)
+	c.Assert(err.Error(), Equals, "swcy claiming is halted")
+
+	k.SetMimir(ctx, "SWCYClaimingHalt", 0)
+	msg = &MsgSWCYClaim{}
+	err = handler.validate(ctx, *msg)
+	c.Assert(err, NotNil)
+}
+
+func (s *HandlerSWCYClaim) TestHandle(c *C) {
+	ctx, k := setupKeeperForTest(c)
+
+	// setup addresses info
+	addr1Asset := common.BTCAsset
+	l1Address1 := GetRandomBTCAddress()
+	accL1Addr1 := cosmos.AccAddress(l1Address1.String())
+	addr1 := GetRandomSwitchAddress()
+
+	addr2Asset := common.ETHAsset
+	l1Address2 := GetRandomETHAddress()
+	accL1Addr2 := cosmos.AccAddress(l1Address2.String())
+	addr2 := GetRandomSwitchAddress()
+
+	addr3Asset := common.LTCAsset
+	l1Address3 := GetRandomLTCAddress()
+	accL1Addr3 := cosmos.AccAddress(l1Address3.String())
+	addr3 := GetRandomSwitchAddress()
+
+	addr4Asset := common.DOGEAsset
+	l1Address4 := GetRandomLTCAddress()
+	accL1Addr4 := cosmos.AccAddress(l1Address4.String())
+	addr4 := GetRandomSwitchAddress()
+
+	// mint SWCY
+	coin := common.NewCoin(common.SWCY, cosmos.NewUint(210))
+	err := k.MintToModule(ctx, ModuleName, coin)
+	c.Assert(err, IsNil)
+	err = k.SendFromModuleToModule(ctx, ModuleName, SWCYClaimingName, common.NewCoins(coin))
+	c.Assert(err, IsNil)
+	claimingNameBalance := k.GetBalanceOfModule(ctx, SWCYClaimingName, common.SWCY.Native())
+	c.Assert(claimingNameBalance.Equal(math.NewUint(210)), Equals, true)
+
+	// there should only be the SWCY contract staker before sending msg
+	stakers, err := k.ListSWCYStakers(ctx)
+	c.Assert(err, IsNil)
+	c.Assert(len(stakers), Equals, 1)
+	scAddress, err := swcysmartcontract.GetSWCYSmartContractAddress()
+	c.Assert(err, IsNil)
+	c.Assert(stakers[0].Address.String(), Equals, scAddress.String())
+
+	// setup pools and claimers
+	c.Assert(k.SetPool(ctx, types.Pool{Asset: addr1Asset}), IsNil)
+	c.Assert(k.SetPool(ctx, types.Pool{Asset: addr2Asset}), IsNil)
+	c.Assert(k.SetPool(ctx, types.Pool{Asset: addr3Asset}), IsNil)
+	c.Assert(k.SetPool(ctx, types.Pool{Asset: addr4Asset}), IsNil)
+
+	err = k.SetSWCYClaimer(ctx, types.SWCYClaimer{
+		L1Address: l1Address1,
+		Asset:     addr1Asset,
+		Amount:    math.NewUint(30),
+	})
+	c.Assert(err, IsNil)
+	_, err = k.GetSWCYClaimer(ctx, l1Address1, addr1Asset)
+	c.Assert(err, IsNil)
+
+	err = k.SetSWCYClaimer(ctx, types.SWCYClaimer{
+		L1Address: l1Address2,
+		Asset:     addr2Asset,
+		Amount:    math.NewUint(70),
+	})
+	c.Assert(err, IsNil)
+	_, err = k.GetSWCYClaimer(ctx, l1Address2, addr2Asset)
+	c.Assert(err, IsNil)
+
+	_, err = k.GetSWCYClaimer(ctx, l1Address3, addr3Asset)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYClaimer doesn't exist: %s", l1Address3))
+
+	err = k.SetSWCYClaimer(ctx, types.SWCYClaimer{
+		L1Address: l1Address4,
+		Asset:     addr4Asset,
+		Amount:    math.NewUint(10),
+	})
+	c.Assert(err, IsNil)
+	_, err = k.GetSWCYClaimer(ctx, l1Address4, addr4Asset)
+	c.Assert(err, IsNil)
+
+	// Send SWCY msg for address 1
+	msg := NewMsgSWCYClaim(addr1, l1Address1, accL1Addr1)
+	handler := NewSWCYClaimHandler(NewDummyMgrWithKeeper(k))
+	_, err = handler.handle(ctx, *msg)
+	c.Assert(err, IsNil)
+
+	// Only address 1 staker and Claiming module balance should be updated
+	addr1Staker, err := k.GetSWCYStaker(ctx, addr1)
+	c.Assert(err, IsNil)
+	c.Assert(addr1Staker.Amount.Equal(math.NewUint(30)), Equals, true)
+	_, err = k.GetSWCYClaimer(ctx, l1Address1, addr1Asset)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYClaimer doesn't exist: %s", l1Address1))
+
+	_, err = k.GetSWCYStaker(ctx, addr2)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYStaker doesn't exist: %s", addr2))
+	_, err = k.GetSWCYStaker(ctx, addr3)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYStaker doesn't exist: %s", addr3))
+
+	claimingNameBalance = k.GetBalanceOfModule(ctx, SWCYClaimingName, common.SWCY.Native())
+	c.Assert(claimingNameBalance.Equal(math.NewUint(180)), Equals, true)
+
+	// Send SWCY msg for address 2
+	msg = NewMsgSWCYClaim(addr2, l1Address2, accL1Addr2)
+	handler = NewSWCYClaimHandler(NewDummyMgrWithKeeper(k))
+	_, err = handler.handle(ctx, *msg)
+	c.Assert(err, IsNil)
+
+	// Address 1, 2 stakers and Claiming module balance should be updated
+	addr1Staker, err = k.GetSWCYStaker(ctx, addr1)
+	c.Assert(err, IsNil)
+	c.Assert(addr1Staker.Amount.Equal(math.NewUint(30)), Equals, true)
+	addr2Staker, err := k.GetSWCYStaker(ctx, addr2)
+	c.Assert(err, IsNil)
+	c.Assert(addr2Staker.Amount.Equal(math.NewUint(70)), Equals, true)
+	_, err = k.GetSWCYClaimer(ctx, l1Address2, addr2Asset)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYClaimer doesn't exist: %s", l1Address2))
+
+	_, err = k.GetSWCYStaker(ctx, addr3)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYStaker doesn't exist: %s", addr3))
+
+	claimingNameBalance = k.GetBalanceOfModule(ctx, SWCYClaimingName, common.SWCY.Native())
+	c.Assert(claimingNameBalance.Equal(math.NewUint(110)), Equals, true)
+
+	// Send SWCY msg for address 3, which is not registered on SWCYClaimer
+	msg = NewMsgSWCYClaim(addr3, l1Address3, accL1Addr3)
+	handler = NewSWCYClaimHandler(NewDummyMgrWithKeeper(k))
+	_, err = handler.handle(ctx, *msg)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("l1 address: (%s) doesn't have any swcy to claim", l1Address3))
+
+	// Address 3 staker should not receive anything and balance should stay the same
+	addr1Staker, err = k.GetSWCYStaker(ctx, addr1)
+	c.Assert(err, IsNil)
+	c.Assert(addr1Staker.Amount.Equal(math.NewUint(30)), Equals, true)
+	addr2Staker, err = k.GetSWCYStaker(ctx, addr2)
+	c.Assert(err, IsNil)
+	c.Assert(addr2Staker.Amount.Equal(math.NewUint(70)), Equals, true)
+
+	_, err = k.GetSWCYStaker(ctx, addr3)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYStaker doesn't exist: %s", addr3))
+	_, err = k.GetSWCYClaimer(ctx, l1Address3, addr3Asset)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYClaimer doesn't exist: %s", l1Address3))
+
+	claimingNameBalance = k.GetBalanceOfModule(ctx, SWCYClaimingName, common.SWCY.Native())
+	c.Assert(claimingNameBalance.Equal(math.NewUint(110)), Equals, true)
+
+	// Send SWCY msg for address 4
+	msg = NewMsgSWCYClaim(addr4, l1Address4, accL1Addr4)
+	handler = NewSWCYClaimHandler(NewDummyMgrWithKeeper(k))
+	_, err = handler.handle(ctx, *msg)
+	c.Assert(err, IsNil)
+
+	// Address 1, 2, 4 stakers and Claiming module balance should be updated
+	addr1Staker, err = k.GetSWCYStaker(ctx, addr1)
+	c.Assert(err, IsNil)
+	c.Assert(addr1Staker.Amount.Equal(math.NewUint(30)), Equals, true)
+	addr2Staker, err = k.GetSWCYStaker(ctx, addr2)
+	c.Assert(err, IsNil)
+	c.Assert(addr2Staker.Amount.Equal(math.NewUint(70)), Equals, true)
+	addr4Staker, err := k.GetSWCYStaker(ctx, addr4)
+	c.Assert(err, IsNil)
+
+	_, err = k.GetSWCYStaker(ctx, addr3)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYStaker doesn't exist: %s", addr3))
+	c.Assert(addr4Staker.Amount.Equal(math.NewUint(10)), Equals, true)
+
+	_, err = k.GetSWCYClaimer(ctx, l1Address4, addr4Asset)
+	c.Assert(err.Error(), Equals, fmt.Sprintf("SWCYClaimer doesn't exist: %s", l1Address4))
+
+	claimingNameBalance = k.GetBalanceOfModule(ctx, SWCYClaimingName, common.SWCY.Native())
+	c.Assert(claimingNameBalance.Equal(math.NewUint(100)), Equals, true)
+}
