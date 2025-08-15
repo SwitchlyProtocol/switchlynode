@@ -20,7 +20,7 @@ func camelToSnakeUpper(s string) string {
 func init() {
 	int64Overrides = map[ConstantName]int64{
 		// ArtificialRagnarokBlockHeight: 200,
-		DesiredValidatorSet:                 12,
+		DesiredValidatorSet:                 4,
 		ChurnInterval:                       60,
 		ChurnRetryInterval:                  30,
 		MinimumBondInSWITCH:                 100_000_000, // 1 rune
@@ -30,7 +30,7 @@ func init() {
 		MaxSWITCHSupply:                     500_000_000_00000000,
 		JailTimeKeygen:                      10,
 		JailTimeKeysign:                     10,
-		AsgardSize:                          6,
+		AsgardSize:                          4,
 		StreamingSwapMinBPFee:               100, // TODO: remove on hard fork
 		VirtualMultSynthsBasisPoints:        20_000,
 		MinTxOutVolumeThreshold:             2000000_00000000,
