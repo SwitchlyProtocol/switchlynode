@@ -106,7 +106,7 @@ set_ip_address() {
 }
 
 fetch_version() {
-  switchlynode query switchly version --output json | jq -r .version
+  switchlynode version
 }
 
 create_thor_user() {

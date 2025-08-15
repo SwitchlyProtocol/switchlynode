@@ -111,7 +111,7 @@ init_mocknet() {
   # Try version registration with better error handling
   for i in {1..5}; do
     echo "Version registration attempt $i/5..."
-    if printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly set-version --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes 2>&1; then
+    if printf "%s\n%s\n" "$SIGNER_PASSWD" "$SIGNER_PASSWD" | switchlynode tx switchly set-version --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes 2>&1; then
       echo "Version set successfully!"
       break
     else

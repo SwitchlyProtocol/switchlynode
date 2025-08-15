@@ -67,6 +67,7 @@ services:
   # ------------------------------ events ------------------------------
 
   events:
+    restart: unless-stopped
     build:
       context: ../..
       dockerfile: ./tools/events/Dockerfile
@@ -77,8 +78,7 @@ services:
       ENDPOINTS_SWITCHLYNODE: http://switchlynode:1317
       ENDPOINTS_MIDGARD: http://midgard:8080
       NETWORK: mocknet
-      SCAN_START: 1
-      SCAN_STOP: -1
+      SCAN_STOP: 0
       # output everything
       THRESHOLDS_USD_VALUE: 0
       THRESHOLDS_SWITCH_VALUE: 0
