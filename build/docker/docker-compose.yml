@@ -161,9 +161,9 @@ services:
     environment: &bifrost-environment
       <<: *switchly-environment
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
-      CHAIN_API: switchlynode-cat:1317
-      CHAIN_RPC: switchlynode-cat:26657
-      BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-cat:50051
+      CHAIN_API: switchlynode:1317
+      CHAIN_RPC: switchlynode:26657
+      BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode:50051
       BTC_HOST: ${BTC_HOST:-bitcoin:18443}
       DOGE_HOST: ${DOGE_HOST:-dogecoin:18332}
       BCH_HOST: ${BCH_HOST:-bitcoin-cash:28443}
@@ -312,8 +312,8 @@ services:
     environment:
       <<: *switchlynode-environment
       PEER: switchlynode
-      SEED: switchlynode-cat
-      SEEDS: switchlynode,switchlynode-fox,switchlynode-pig
+      SEED: switchlynode
+      SEEDS: switchlynode
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     volumes:
       - "../scripts:/docker/scripts"
@@ -332,8 +332,8 @@ services:
     environment:
       <<: *switchlynode-environment
       PEER: switchlynode
-      SEED: switchlynode-fox
-      SEEDS: switchlynode,switchlynode-cat,switchlynode-pig
+      SEED: switchlynode
+      SEEDS: switchlynode
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     volumes:
       - "../scripts:/docker/scripts"
@@ -352,8 +352,8 @@ services:
     environment:
       <<: *switchlynode-environment
       PEER: switchlynode
-      SEED: switchlynode-pig
-      SEEDS: switchlynode,switchlynode-cat,switchlynode-fox
+      SEED: switchlynode
+      SEEDS: switchlynode
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     volumes:
       - "../scripts:/docker/scripts"
