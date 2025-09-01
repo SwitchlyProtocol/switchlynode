@@ -23,6 +23,7 @@ import (
 	tssp "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 
 	"github.com/stellar/go/clients/horizonclient"
+	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/network"
 	"github.com/stellar/go/strkey"
 	"github.com/stellar/go/txnbuild"
@@ -40,7 +41,6 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 	mem "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
-	"golang.org/x/crypto/ed25519"
 )
 
 // min returns the smaller of two integers
@@ -942,31 +942,8 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		return nil, nil, nil, fmt.Errorf("building tx: %w", err)
 	}
 
-	// Convert transaction to XDR for signing (simple payments bypass Soroban simulation)
-	unsignedXDR, err := builtTx.Base64()
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to encode transaction: %w", err)
-	}
-
-	var env xdr.TransactionEnvelope
-	if err := xdr.SafeUnmarshalBase64(unsignedXDR, &env); err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to decode transaction envelope: %w", err)
-	}
-
-	// Validate transaction envelope structure
-	if env.Type != xdr.EnvelopeTypeEnvelopeTypeTx || env.V1 == nil {
-		return nil, nil, nil, fmt.Errorf("unexpected envelope type: %v", env.Type)
-	}
-	txref := &env.V1.Tx
-
-	// Generate transaction hash for cryptographic signing
-	txHash, err := network.HashTransaction(*txref, c.networkPassphrase)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to get transaction hash: %w", err)
-	}
-
+	// Sign the transaction using Stellar SDK's built-in signing methods
 	// Choose signing method: local key for single-node vaults, TSS for multi-node
-	var signature []byte
 	if !c.localPubKey.IsEmpty() && c.localPubKey.Equals(tx.VaultPubKey) {
 		c.logger.Info().
 			Str("vault_pubkey", tx.VaultPubKey.String()).
@@ -985,16 +962,67 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		hasher.Write(secp256k1PubKey.SerializeCompressed())
 		ed25519Seed := hasher.Sum(nil)
 
-		// Generate ed25519 private key from the derived seed
-		ed25519PrivKey := ed25519.NewKeyFromSeed(ed25519Seed)
-		signature = ed25519.Sign(ed25519PrivKey, txHash[:])
+		// Create Stellar keypair from the ed25519 seed
+		stellarKP, err := keypair.FromRawSeed([32]byte(ed25519Seed))
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("failed to create Stellar keypair: %w", err)
+		}
+
+		// Use Stellar SDK's built-in signing method
+		signedTx, err := builtTx.Sign(c.networkPassphrase, stellarKP)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("failed to sign transaction: %w", err)
+		}
+
+		// Get the signed transaction XDR
+		finalTxeBase64, err := signedTx.Base64()
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to encode signed transaction: %w", err)
+		}
+
 		c.logger.Info().Msg("successfully signed transaction with locally derived ed25519 key")
+
+		// IMPORTANT: Do not mark transaction as signed until broadcast succeeds.
+		// This follows THORNode's approach and prevents pipeline deadlocks when broadcasts fail.
+
+		c.logger.Info().
+			Str("memo", tx.Memo).
+			Int("signed_tx_length", len(finalTxeBase64)).
+			Msg("Stellar transaction signed successfully")
+
+		return []byte(finalTxeBase64), checkpointBytes, nil, nil
+
 	} else {
+		// For TSS signing, we need to use the manual approach since we can't use Stellar SDK directly
 		c.logger.Info().
 			Str("vault_pubkey", tx.VaultPubKey.String()).
 			Msg("using TSS signing for Stellar transaction")
+
+		// Convert transaction to XDR for TSS signing
+		unsignedXDR, err := builtTx.Base64()
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to encode transaction: %w", err)
+		}
+
+		var env xdr.TransactionEnvelope
+		if err := xdr.SafeUnmarshalBase64(unsignedXDR, &env); err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to decode transaction envelope: %w", err)
+		}
+
+		// Validate transaction envelope structure
+		if env.Type != xdr.EnvelopeTypeEnvelopeTypeTx || env.V1 == nil {
+			return nil, nil, nil, fmt.Errorf("unexpected envelope type: %v", env.Type)
+		}
+		txref := &env.V1.Tx
+
+		// Generate transaction hash for TSS signing
+		txHash, err := network.HashTransaction(*txref, c.networkPassphrase)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to get transaction hash: %w", err)
+		}
+
 		var tssRecovery []byte
-		signature, tssRecovery, err = c.tssKeyManager.RemoteSign(txHash[:], tx.VaultPubKey.String())
+		signature, tssRecovery, err := c.tssKeyManager.RemoteSign(txHash[:], tx.VaultPubKey.String())
 		if err != nil {
 			return nil, nil, nil, fmt.Errorf("fail to sign transaction with TSS: %w", err)
 		}
@@ -1005,54 +1033,54 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		}
 		c.logger.Info().Msg("successfully signed transaction with TSS")
 		_ = tssRecovery
-	}
 
-	// Normalize signature to Stellar's required 64-byte format
-	stellarSig := make([]byte, 64)
-	if len(signature) >= 64 {
-		copy(stellarSig, signature[:64])
-	} else {
-		// Pad with zeros if signature is shorter than 64 bytes
-		copy(stellarSig, signature)
-		for i := len(signature); i < 64; i++ {
-			stellarSig[i] = 0
+		// Normalize signature to Stellar's required 64-byte format
+		stellarSig := make([]byte, 64)
+		if len(signature) >= 64 {
+			copy(stellarSig, signature[:64])
+		} else {
+			// Pad with zeros if signature is shorter than 64 bytes
+			copy(stellarSig, signature)
+			for i := len(signature); i < 64; i++ {
+				stellarSig[i] = 0
+			}
 		}
+
+		// Create decorated signature with hint for Stellar transaction
+		addr := c.GetAddress(tx.VaultPubKey)
+		decoded, err := strkey.Decode(strkey.VersionByteAccountID, addr)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to decode address: %w", err)
+		}
+
+		// Extract the last 4 bytes of the account ID as signature hint
+		var hint [4]byte
+		copy(hint[:], decoded[len(decoded)-4:])
+
+		decoratedSig := xdr.DecoratedSignature{
+			Hint:      xdr.SignatureHint(hint),
+			Signature: xdr.Signature(stellarSig),
+		}
+
+		// Attach signature to transaction envelope
+		env.V1.Signatures = append(env.V1.Signatures, decoratedSig)
+
+		// Encode signed transaction envelope as base64 XDR
+		finalTxeBase64, err := xdr.MarshalBase64(env)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to encode signed transaction: %w", err)
+		}
+
+		// IMPORTANT: Do not mark transaction as signed until broadcast succeeds.
+		// This follows THORNode's approach and prevents pipeline deadlocks when broadcasts fail.
+
+		c.logger.Info().
+			Str("memo", tx.Memo).
+			Int("signed_tx_length", len(finalTxeBase64)).
+			Msg("Stellar transaction signed successfully with TSS")
+
+		return []byte(finalTxeBase64), checkpointBytes, nil, nil
 	}
-
-	// Create decorated signature with hint for Stellar transaction
-	addr := c.GetAddress(tx.VaultPubKey)
-	decoded, err := strkey.Decode(strkey.VersionByteAccountID, addr)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to decode address: %w", err)
-	}
-
-	// Extract the last 4 bytes of the account ID as signature hint
-	var hint [4]byte
-	copy(hint[:], decoded[len(decoded)-4:])
-
-	decoratedSig := xdr.DecoratedSignature{
-		Hint:      xdr.SignatureHint(hint),
-		Signature: xdr.Signature(stellarSig),
-	}
-
-	// Attach signature to transaction envelope
-	env.V1.Signatures = append(env.V1.Signatures, decoratedSig)
-
-	// Encode signed transaction envelope as base64 XDR
-	finalTxeBase64, err := xdr.MarshalBase64(env)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to encode signed transaction: %w", err)
-	}
-
-	// IMPORTANT: Do not mark transaction as signed until broadcast succeeds.
-	// This follows THORNode's approach and prevents pipeline deadlocks when broadcasts fail.
-
-	c.logger.Info().
-		Str("memo", tx.Memo).
-		Int("signed_tx_length", len(finalTxeBase64)).
-		Msg("Stellar transaction signed successfully")
-
-	return []byte(finalTxeBase64), checkpointBytes, nil, nil
 }
 
 // BroadcastTx submits a signed transaction to the Stellar network via Horizon API.
