@@ -109,7 +109,7 @@ fetch_version() {
   switchlynode version
 }
 
-create_thor_user() {
+create_switchly_user() {
   SIGNER_NAME="$1"
   SIGNER_PASSWD="$2"
   SIGNER_SEED_PHRASE="$3"

@@ -1,17 +1,23 @@
 package stellar
 
 import (
+	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math/big"
 	"net/http"
+	"os"
+
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	tssp "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
@@ -34,7 +40,16 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 	mem "github.com/switchlyprotocol/switchlynode/v3/x/switchly/memo"
+	"golang.org/x/crypto/ed25519"
 )
+
+// min returns the smaller of two integers
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
 
 // Client is a structure to sign and broadcast tx to Stellar chain used by signer mostly
 type Client struct {
@@ -54,6 +69,12 @@ type Client struct {
 	horizonClient       *horizonclient.Client
 	networkPassphrase   string
 	routerAddress       string
+	localPubKey         common.PubKey
+	localPrivKey        []byte
+	accts               *StellarMetaDataStore
+	// vaultLocks serializes sign/broadcast per vault to avoid sequence races
+	vaultLocks   map[string]*sync.Mutex
+	vaultLocksMu sync.Mutex
 }
 
 // RouterAwareStellarScanner wraps the stellar scanner to include router events
@@ -84,9 +105,11 @@ type RouterConfig struct {
 	VaultPubKey string `json:"vault_pubkey"`
 }
 
+// Handle sequence number checkpoint management
+
 // NewClient creates a new instance of a Stellar chain client
 func NewClient(
-	thorKeys *switchlyclient.Keys,
+	switchKeys *switchlyclient.Keys,
 	cfg config.BifrostChainConfiguration,
 	server *tssp.TssServer,
 	switchlyBridge switchlyclient.SwitchlyBridge,
@@ -101,6 +124,35 @@ func NewClient(
 
 	if switchlyBridge == nil {
 		return nil, errors.New("SwitchlyProtocol bridge is nil")
+	}
+
+	// Extract local private key and public key for single-node fallback
+	var localPubKey common.PubKey
+	var localPrivKey []byte
+	if switchKeys != nil {
+		logger.Info().Msg("switchKeys provided to Stellar client")
+		privKey, err := switchKeys.GetPrivateKey()
+		if err != nil {
+			logger.Warn().Err(err).Msg("failed to get private key from switchKeys")
+		} else {
+			localPrivKey = privKey.Bytes()
+			logger.Info().Int("privkey_len", len(localPrivKey)).Msg("extracted private key")
+			// Convert cosmos private key's public key to common.PubKey (like gaia client)
+			temp, err := codec.ToCmtPubKeyInterface(privKey.PubKey())
+			if err != nil {
+				logger.Warn().Err(err).Msg("failed to convert to comet pubkey")
+			} else {
+				pk, err := common.NewPubKeyFromCrypto(temp)
+				if err != nil {
+					logger.Warn().Err(err).Msg("failed to convert to common.PubKey")
+				} else {
+					localPubKey = pk
+					logger.Info().Str("local_pubkey", localPubKey.String()).Msg("extracted local public key")
+				}
+			}
+		}
+	} else {
+		logger.Warn().Msg("switchKeys is nil - no local keys available for fallback signing")
 	}
 
 	// Initialize network configuration for asset mapping
@@ -223,6 +275,14 @@ func NewClient(
 		)
 	}
 
+	// Detect network passphrase from Horizon root if available (handles local quickstart)
+	if horizonClient != nil {
+		if root, err := horizonClient.Root(); err == nil && root.NetworkPassphrase != "" {
+			networkPassphrase = root.NetworkPassphrase
+			logger.Info().Str("detected_network_passphrase", networkPassphrase).Msg("using Horizon-reported network passphrase")
+		}
+	}
+
 	return &Client{
 		logger:              logger,
 		cfg:                 cfg,
@@ -240,6 +300,10 @@ func NewClient(
 		horizonClient:       horizonClient,
 		networkPassphrase:   networkPassphrase,
 		routerAddress:       routerAddress,
+		localPubKey:         localPubKey,
+		localPrivKey:        localPrivKey,
+		accts:               NewStellarMetaDataStore(),
+		vaultLocks:          make(map[string]*sync.Mutex),
 	}, nil
 }
 
@@ -420,7 +484,20 @@ func (c *Client) GetConfig() config.BifrostChainConfiguration {
 }
 
 func (c *Client) IsBlockScannerHealthy() bool {
-	return c.blockScanner.IsHealthy()
+	if !c.stellarScanner.IsHealthy() {
+		c.logger.Info().Str("caller", "IsBlockScannerHealthy").Msg("stellar scanner unhealthy")
+		return false
+	}
+	if c.sorobanRPCClient != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		if _, err := c.sorobanRPCClient.GetLatestLedger(ctx); err != nil {
+			c.logger.Info().Err(err).Str("caller", "IsBlockScannerHealthy").Msg("soroban RPC unhealthy")
+			return false
+		}
+	}
+	c.logger.Info().Bool("health_status", true).Str("caller", "IsBlockScannerHealthy").Msg("Stellar client healthy")
+	return true
 }
 
 func (c *Client) GetChain() common.Chain {
@@ -532,21 +609,23 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 		}
 	}
 
-	account = common.NewAccount(0, 0, coins, false)
+	// Use on-chain sequence from Horizon account
+	account = common.NewAccount(horizonAccount.Sequence, 0, coins, false)
 	return account, nil
 }
 
-// processOutboundTx processes an outbound transaction
+// processOutboundTx builds a simple Payment operation for outbound transfers.
+// This implementation uses Stellar's native payment operations with memo truncation
+// instead of complex Soroban contract calls, providing better reliability and performance.
 func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, error) {
-	// Check if we have any coins to send
 	if len(tx.Coins) == 0 {
 		return nil, fmt.Errorf("no coins to send")
 	}
 
-	// Support single coin transactions
+	// Extract the asset to transfer (single-asset transfers only)
 	coin := tx.Coins[0]
 
-	// Find the asset mapping for this SwitchlyAsset
+	// Look up Stellar-specific asset configuration from the mapping table
 	assetMapping, found := GetAssetBySwitchlyAsset(coin.Asset)
 	if !found {
 		c.logger.Error().
@@ -556,30 +635,179 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
 	}
 
-	// Convert amount from SwitchlyProtocol units to Stellar units
-	stellarAmount := assetMapping.ConvertFromSwitchlyProtocolAmount(coin.Amount)
+	// Convert amount from SwitchlyNode units to Stellar asset units
+	// SwitchlyNode uses 8 decimals internally, but Stellar assets may use different precision
+	amountRaw := coin.Amount.Uint64()
 
-	// Log transaction details
-	c.logger.Debug().
-		Str("thor_asset", coin.Asset.String()).
-		Str("stellar_asset_code", assetMapping.StellarAssetCode).
-		Str("stellar_asset_type", assetMapping.StellarAssetType).
-		Str("thor_amount", coin.Amount.String()).
-		Str("stellar_amount", stellarAmount).
+	// Format amount as decimal string with asset-specific precision for Stellar SDK
+	decimals := assetMapping.StellarDecimals
+	divisor := float64(1)
+	for i := 0; i < int(decimals); i++ {
+		divisor *= 10
+	}
+	amountStr := fmt.Sprintf("%.*f", int(decimals), float64(amountRaw)/divisor)
+
+	// Create the appropriate Stellar asset type
+	var stellarAsset txnbuild.Asset
+	if assetMapping.StellarAssetType == "native" {
+		// Native Lumens (XLM)
+		stellarAsset = txnbuild.NativeAsset{}
+	} else {
+		// Issued asset (requires Code and Issuer)
+		stellarAsset = txnbuild.CreditAsset{
+			Code:   assetMapping.StellarAssetCode,
+			Issuer: assetMapping.StellarAssetIssuer,
+		}
+	}
+
+	// Derive Stellar address from vault public key for logging
+	vaultAddr, err := tx.VaultPubKey.GetAddress(common.StellarChain)
+	if err != nil {
+		return nil, fmt.Errorf("fail to get Stellar address for vault pub key(%s): %w", tx.VaultPubKey, err)
+	}
+
+	c.logger.Info().
+		Str("vault_address", vaultAddr.String()).
 		Str("to_address", tx.ToAddress.String()).
-		Msg("processing outbound transaction")
+		Str("switch_asset", coin.Asset.String()).
+		Str("stellar_asset", assetMapping.StellarAssetCode).
+		Str("asset_type", assetMapping.StellarAssetType).
+		Str("amount_stellar", amountStr).
+		Str("amount_raw", fmt.Sprintf("%d", amountRaw)).
+		Int("decimals", assetMapping.StellarDecimals).
+		Str("original_memo", tx.Memo).
+		Msg("building simple payment for outbound transfer")
 
-	// Create payment operation with the appropriate asset
+	// Create Stellar payment operation
 	payment := &txnbuild.Payment{
 		Destination: tx.ToAddress.String(),
-		Amount:      stellarAmount,
-		Asset:       assetMapping.ToStellarAsset(),
+		Amount:      amountStr,
+		Asset:       stellarAsset,
 	}
 
 	return payment, nil
 }
 
-// SignTx signs a transaction
+// truncateMemoForStellar truncates transaction memos to fit Stellar's 28-byte limit.
+// Uses midpoint truncation preserving the OUT: prefix and hash endpoints.
+// Format: OUT:<first_part>....<last_part>
+func (c *Client) truncateMemoForStellar(originalMemo string) string {
+	const maxBytes = 28
+
+	// Return memo unchanged if it already fits within the limit
+	if len(originalMemo) <= maxBytes {
+		return originalMemo
+	}
+
+	// Parse memo components (expected format: "OUT:TXHASH")
+	parts := strings.Split(originalMemo, ":")
+	if len(parts) < 2 {
+		// Handle memos without colon separator using midpoint truncation
+		availableLen := maxBytes - 4 // Reserve space for "...."
+		halfLen := availableLen / 2
+		if halfLen <= 0 {
+			return originalMemo[:maxBytes] // Fallback to simple truncation
+		}
+		return originalMemo[:halfLen] + "...." + originalMemo[len(originalMemo)-halfLen:]
+	}
+
+	// Reconstruct with OUT: prefix and process the hash portion
+	prefix := "OUT:"
+	hashPart := strings.Join(parts[1:], ":")
+
+	// Calculate remaining space for hash content after prefix
+	availableForHash := maxBytes - len(prefix)
+
+	if len(hashPart) <= availableForHash {
+		return prefix + hashPart
+	}
+
+	// Apply midpoint truncation to the hash portion
+	dotsLen := 4 // Length of "...."
+	availableHashLen := availableForHash - dotsLen
+	if availableHashLen <= 0 {
+		return prefix + hashPart[:availableForHash] // Fallback to simple truncation
+	}
+
+	halfLen := availableHashLen / 2
+	if halfLen <= 0 {
+		return prefix + hashPart[:availableForHash] // Fallback
+	}
+
+	truncatedHash := hashPart[:halfLen] + "...." + hashPart[len(hashPart)-halfLen:]
+	result := prefix + truncatedHash
+
+	// Adjust if the result still exceeds the limit
+	if len(result) > maxBytes {
+		excess := len(result) - maxBytes
+		if halfLen > excess/2 && excess > 0 {
+			halfLen -= (excess + 1) / 2
+			if halfLen > 0 {
+				truncatedHash = hashPart[:halfLen] + "...." + hashPart[len(hashPart)-halfLen:]
+				result = prefix + truncatedHash
+			}
+		}
+	}
+
+	// Final safety check to guarantee compliance with byte limit
+	if len(result) > maxBytes {
+		result = result[:maxBytes]
+	}
+
+	return result
+}
+
+// SignTx signs a Stellar transaction using simple payments with proper ed25519 key derivation.
+// This implementation follows THORNode's approach: transactions are only marked as signed
+// after successful broadcast to prevent pipeline deadlocks.
+func (c *Client) getNextSequence(vaultPubKey common.PubKey) (int64, error) {
+	// Get current block height for staleness check
+	currentHeight, err := c.stellarScanner.GetHeight()
+	if err != nil {
+		return 0, fmt.Errorf("fail to get current block height: %w", err)
+	}
+
+	// Check if we need to sync from chain
+	if c.accts.IsStale(vaultPubKey, currentHeight) {
+		c.logger.Debug().
+			Str("vault", vaultPubKey.String()).
+			Int64("current_height", currentHeight).
+			Msg("sequence data is stale, syncing from chain")
+
+		// Get fresh sequence from Horizon
+		acc, err := c.GetAccount(vaultPubKey, nil)
+		if err != nil {
+			return 0, fmt.Errorf("fail to get account from chain: %w", err)
+		}
+
+		// Set the base sequence (this will be incremented on each use)
+		c.accts.SetBaseSequence(vaultPubKey, acc.Sequence, currentHeight)
+
+		c.logger.Debug().
+			Str("vault", vaultPubKey.String()).
+			Int64("chain_sequence", acc.Sequence).
+			Msg("synced sequence from chain")
+	}
+
+	// Atomically get next sequence and increment
+	sequence := c.accts.GetNextSequence(vaultPubKey)
+	if sequence == 0 {
+		// Fallback: force a sync from chain and retry once
+		acc, err := c.GetAccount(vaultPubKey, nil)
+		if err != nil {
+			return 0, fmt.Errorf("fail to get account from chain (fallback): %w", err)
+		}
+		c.accts.SetBaseSequence(vaultPubKey, acc.Sequence, currentHeight)
+		sequence = c.accts.GetNextSequence(vaultPubKey)
+		if sequence == 0 {
+			// As a last resort, return the on-chain sequence directly
+			return acc.Sequence, nil
+		}
+	}
+
+	return sequence, nil
+}
+
 func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
 	defer func() {
 		if err != nil && !strings.Contains(err.Error(), "fail to broadcast") {
@@ -588,7 +816,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 	}()
 
 	if c.signerCacheManager.HasSigned(tx.CacheHash()) {
-		c.logger.Info().Interface("tx", tx).Msg("transaction already signed, ignoring...")
+		c.logger.Info().Str("memo", tx.Memo).Msg("transaction already signed, ignoring...")
 		return nil, nil, nil, nil
 	}
 
@@ -600,8 +828,8 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 	// Support single coin transactions
 	coin := tx.Coins[0]
 
-	// Find the asset mapping for this SwitchlyAsset
-	assetMapping, found := GetAssetBySwitchlyAsset(coin.Asset)
+	// Validate the asset is supported
+	_, found := GetAssetBySwitchlyAsset(coin.Asset)
 	if !found {
 		c.logger.Error().
 			Str("asset", coin.Asset.String()).
@@ -610,72 +838,195 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		return nil, nil, nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
 	}
 
-	c.logger.Debug().
-		Str("thor_asset", coin.Asset.String()).
-		Str("stellar_asset_code", assetMapping.StellarAssetCode).
-		Str("stellar_asset_type", assetMapping.StellarAssetType).
-		Str("vault_pubkey", tx.VaultPubKey.String()).
-		Msg("preparing transaction for signing")
+	// Pre-flight balance check: validate vault has sufficient funds before signing
+	// This prevents unnecessary signing and provides clear error feedback
+	vaultAccount, err := c.GetAccount(tx.VaultPubKey, nil)
+	if err != nil {
+		c.logger.Error().Err(err).
+			Str("vault_pubkey", tx.VaultPubKey.String()).
+			Msg("fail to get vault account for balance validation")
+		return nil, nil, nil, fmt.Errorf("fail to get vault account: %w", err)
+	}
 
+	// Check if vault has sufficient balance for the outbound asset
+	vaultCoin := vaultAccount.Coins.GetCoin(coin.Asset)
+	if vaultCoin.Amount.LT(coin.Amount) {
+		c.logger.Error().
+			Str("vault_pubkey", tx.VaultPubKey.String()).
+			Str("required_asset", coin.Asset.String()).
+			Str("required_amount", coin.Amount.String()).
+			Str("vault_balance", vaultCoin.Amount.String()).
+			Msg("insufficient vault balance for outbound transaction")
+		return nil, nil, nil, fmt.Errorf("insufficient vault balance (%s): %s < %s",
+			coin.Asset.String(), vaultCoin.Amount.String(), coin.Amount.String())
+	}
+
+	// Verify vault has sufficient native XLM for transaction fees
+	// Note: Stellar always requires native XLM for fees, regardless of the asset being transferred
+	gasAsset := common.XLMAsset // Native XLM for Stellar gas
+	vaultGasCoin := vaultAccount.Coins.GetCoin(gasAsset)
+	requiredGas := tx.MaxGas.ToCoins().GetCoin(gasAsset)
+
+	if vaultGasCoin.Amount.LT(requiredGas.Amount) {
+		c.logger.Error().
+			Str("vault_pubkey", tx.VaultPubKey.String()).
+			Str("gas_asset", gasAsset.String()).
+			Str("required_gas", requiredGas.Amount.String()).
+			Str("vault_gas_balance", vaultGasCoin.Amount.String()).
+			Msg("insufficient vault gas balance for transaction fees")
+		return nil, nil, nil, fmt.Errorf("insufficient vault gas balance (%s): %s < %s",
+			gasAsset.String(), vaultGasCoin.Amount.String(), requiredGas.Amount.String())
+	}
+
+	// Build the payment operation using our helper function
 	payment, err := c.processOutboundTx(tx)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to process outbound tx: %w", err)
+		return nil, nil, nil, fmt.Errorf("fail to build outbound transaction: %w", err)
 	}
 
-	sourceAddress := c.GetAddress(tx.VaultPubKey)
-
-	// Get account info to get sequence number
-	accountRequest := horizonclient.AccountRequest{AccountID: sourceAddress}
-	sourceAccount, err := c.horizonClient.AccountDetail(accountRequest)
+	// Proactive sequence synchronization from chain state
+	if acc, accErr := c.GetAccount(tx.VaultPubKey, nil); accErr == nil && acc.Sequence > 0 {
+		if currentHeight, _ := c.stellarScanner.GetHeight(); currentHeight > 0 {
+			c.accts.SetBaseSequence(tx.VaultPubKey, acc.Sequence, currentHeight)
+		}
+	}
+	sequence, err := c.getNextSequence(tx.VaultPubKey)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to get source account: %w", err)
+		return nil, nil, nil, fmt.Errorf("fail to get next sequence: %w", err)
 	}
 
-	// Build transaction
-	txParams := txnbuild.TransactionParams{
-		SourceAccount:        &sourceAccount,
+	c.logger.Debug().
+		Int64("assigned_sequence", sequence).
+		Str("vault", tx.VaultPubKey.String()).
+		Msg("atomically assigned sequence number")
+
+	// Create account object with atomically assigned sequence number
+	account := txnbuild.SimpleAccount{
+		AccountID: c.GetAddress(tx.VaultPubKey),
+		Sequence:  sequence,
+	}
+
+	// Create retry checkpoint containing the sequence number for failed transaction recovery
+	checkpointMeta := StellarMetadata{
+		SeqNumber:   sequence,
+		BlockHeight: 0, // BlockHeight not used for checkpoints
+		LastSync:    time.Now(),
+	}
+	checkpointBytes, err := json.Marshal(checkpointMeta)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fail to marshal stellar checkpoint: %w", err)
+	}
+
+	// Apply memo truncation to comply with Stellar's 28-byte limit
+	truncatedMemo := c.truncateMemoForStellar(tx.Memo)
+
+	c.logger.Info().
+		Str("original_memo", tx.Memo).
+		Str("truncated_memo", truncatedMemo).
+		Int("original_len", len(tx.Memo)).
+		Int("truncated_len", len(truncatedMemo)).
+		Msg("using truncated memo for simple payment")
+
+	// Build Stellar transaction with payment operation and truncated memo
+	builtTx, err := txnbuild.NewTransaction(txnbuild.TransactionParams{
+		SourceAccount:        &account,
 		IncrementSequenceNum: true,
 		Operations:           []txnbuild.Operation{payment},
 		BaseFee:              txnbuild.MinBaseFee,
-		Memo:                 txnbuild.MemoText(tx.Memo),
+		Memo:                 txnbuild.MemoText(truncatedMemo),
 		Preconditions: txnbuild.Preconditions{
-			TimeBounds: txnbuild.NewInfiniteTimeout(),
+			TimeBounds: txnbuild.NewTimeout(300),
 		},
-	}
-
-	transaction, err := txnbuild.NewTransaction(txParams)
+	})
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to build transaction: %w", err)
+		return nil, nil, nil, fmt.Errorf("building tx: %w", err)
 	}
 
-	// Get transaction hash for signing
-	txHash, err := transaction.Hash(c.networkPassphrase)
+	// Convert transaction to XDR for signing (simple payments bypass Soroban simulation)
+	unsignedXDR, err := builtTx.Base64()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fail to encode transaction: %w", err)
+	}
+
+	var env xdr.TransactionEnvelope
+	if err := xdr.SafeUnmarshalBase64(unsignedXDR, &env); err != nil {
+		return nil, nil, nil, fmt.Errorf("fail to decode transaction envelope: %w", err)
+	}
+
+	// Validate transaction envelope structure
+	if env.Type != xdr.EnvelopeTypeEnvelopeTypeTx || env.V1 == nil {
+		return nil, nil, nil, fmt.Errorf("unexpected envelope type: %v", env.Type)
+	}
+	txref := &env.V1.Tx
+
+	// Generate transaction hash for cryptographic signing
+	txHash, err := network.HashTransaction(*txref, c.networkPassphrase)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("fail to get transaction hash: %w", err)
 	}
 
-	// Sign with TSS
-	signature, _, err := c.tssKeyManager.RemoteSign(txHash[:], tx.VaultPubKey.String())
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to sign transaction with TSS: %w", err)
+	// Choose signing method: local key for single-node vaults, TSS for multi-node
+	var signature []byte
+	if !c.localPubKey.IsEmpty() && c.localPubKey.Equals(tx.VaultPubKey) {
+		c.logger.Info().
+			Str("vault_pubkey", tx.VaultPubKey.String()).
+			Str("local_pubkey", c.localPubKey.String()).
+			Msg("using local key signing for single-node vault")
+
+		// Derive ed25519 signing key using the same method as address generation
+		// This ensures signature validation succeeds by matching the expected public key
+		secp256k1PubKey, err := c.localPubKey.Secp256K1()
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("failed to get secp256k1 public key: %w", err)
+		}
+
+		// Create ed25519 seed by hashing the secp256k1 public key (matches GetAddress logic)
+		hasher := sha256.New()
+		hasher.Write(secp256k1PubKey.SerializeCompressed())
+		ed25519Seed := hasher.Sum(nil)
+
+		// Generate ed25519 private key from the derived seed
+		ed25519PrivKey := ed25519.NewKeyFromSeed(ed25519Seed)
+		signature = ed25519.Sign(ed25519PrivKey, txHash[:])
+		c.logger.Info().Msg("successfully signed transaction with locally derived ed25519 key")
+	} else {
+		c.logger.Info().
+			Str("vault_pubkey", tx.VaultPubKey.String()).
+			Msg("using TSS signing for Stellar transaction")
+		var tssRecovery []byte
+		signature, tssRecovery, err = c.tssKeyManager.RemoteSign(txHash[:], tx.VaultPubKey.String())
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to sign transaction with TSS: %w", err)
+		}
+		if signature == nil {
+			// This node was not selected for TSS signing
+			c.logger.Info().Msg("TSS did not select this node for signing")
+			return nil, nil, nil, nil
+		}
+		c.logger.Info().Msg("successfully signed transaction with TSS")
+		_ = tssRecovery
 	}
 
-	if signature == nil {
-		// This node was not selected for signing
-		return nil, nil, nil, nil
-	}
-
-	// Convert TSS signature to Stellar signature format
+	// Normalize signature to Stellar's required 64-byte format
 	stellarSig := make([]byte, 64)
-	copy(stellarSig, signature)
+	if len(signature) >= 64 {
+		copy(stellarSig, signature[:64])
+	} else {
+		// Pad with zeros if signature is shorter than 64 bytes
+		copy(stellarSig, signature)
+		for i := len(signature); i < 64; i++ {
+			stellarSig[i] = 0
+		}
+	}
 
-	// Create decorated signature manually
+	// Create decorated signature with hint for Stellar transaction
 	addr := c.GetAddress(tx.VaultPubKey)
 	decoded, err := strkey.Decode(strkey.VersionByteAccountID, addr)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("fail to decode address: %w", err)
 	}
 
+	// Extract the last 4 bytes of the account ID as signature hint
 	var hint [4]byte
 	copy(hint[:], decoded[len(decoded)-4:])
 
@@ -684,37 +1035,89 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		Signature: xdr.Signature(stellarSig),
 	}
 
-	// Add signature to transaction using the correct method
-	signedTransaction, err := transaction.AddSignatureDecorated(decoratedSig)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to add signature to transaction: %w", err)
-	}
+	// Attach signature to transaction envelope
+	env.V1.Signatures = append(env.V1.Signatures, decoratedSig)
 
-	// Get signed transaction XDR
-	txeBase64, err := signedTransaction.Base64()
+	// Encode signed transaction envelope as base64 XDR
+	finalTxeBase64, err := xdr.MarshalBase64(env)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("fail to encode signed transaction: %w", err)
 	}
 
-	// Cache the signed transaction
-	if err := c.signerCacheManager.SetSigned(tx.CacheHash(), txeBase64, tx.VaultPubKey.String()); err != nil {
-		c.logger.Err(err).Msg("fail to mark transaction as signed")
-	}
+	// IMPORTANT: Do not mark transaction as signed until broadcast succeeds.
+	// This follows THORNode's approach and prevents pipeline deadlocks when broadcasts fail.
 
-	return []byte(txeBase64), nil, nil, nil
+	c.logger.Info().
+		Str("memo", tx.Memo).
+		Int("signed_tx_length", len(finalTxeBase64)).
+		Msg("Stellar transaction signed successfully")
+
+	return []byte(finalTxeBase64), checkpointBytes, nil, nil
 }
 
-// BroadcastTx broadcasts a transaction to the Stellar network
+// BroadcastTx submits a signed transaction to the Stellar network via Horizon API.
+// This implementation uses direct Horizon submission for simple payments, providing
+// better performance and reliability compared to Soroban RPC.
 func (c *Client) BroadcastTx(tx stypes.TxOutItem, txBytes []byte) (string, error) {
 	txeBase64 := string(txBytes)
 
-	// Submit transaction
+	// Submit via Horizon API for optimal performance with simple payments
+	c.logger.Info().
+		Str("memo", tx.Memo).
+		Msg("broadcasting simple payment via Horizon API")
+
 	resp, err := c.horizonClient.SubmitTransactionXDR(txeBase64)
 	if err != nil {
-		return "", fmt.Errorf("fail to broadcast transaction: %w", err)
+		return c.handleBroadcastError(tx, fmt.Errorf("horizon submitTransaction failed: %w", err))
 	}
 
-	return resp.Hash, nil
+	hash := resp.Hash
+
+	// Horizon API confirms transaction success immediately upon acceptance
+	c.logger.Info().
+		Str("hash", hash).
+		Str("memo", tx.Memo).
+		Msg("simple payment broadcast successful via Horizon")
+
+	// Update local sequence tracking after successful broadcast
+	c.accts.AdvanceSequence(tx.VaultPubKey)
+
+	// Mark transaction as signed only after confirmed broadcast (THORNode pattern)
+	if err = c.signerCacheManager.SetSigned(tx.CacheHash(), tx.CacheVault(c.GetChain()), hash); err != nil {
+		c.logger.Err(err).Msg("fail to set signer cache")
+	}
+
+	return hash, nil
+}
+
+// handleBroadcastError processes broadcast failures with specialized handling for sequence errors.
+// This function provides clean error logging and automatic sequence refresh for retry scenarios.
+func (c *Client) handleBroadcastError(tx stypes.TxOutItem, err error) (string, error) {
+	// Log broadcast failure with transaction context
+	c.logger.Error().
+		Str("tx_hash", tx.InHash.String()).
+		Str("memo", tx.Memo).
+		Err(err).
+		Msg("failed to broadcast transaction")
+
+	// Handle sequence mismatch errors with automatic chain state refresh
+	if strings.Contains(err.Error(), "tx_bad_seq") {
+		// Refresh local sequence cache from on-chain state
+		acc, accErr := c.GetAccount(tx.VaultPubKey, nil)
+		if accErr == nil && acc.Sequence > 0 {
+			currentHeight, _ := c.stellarScanner.GetHeight()
+			c.accts.SetBaseSequence(tx.VaultPubKey, acc.Sequence, currentHeight)
+			c.logger.Warn().
+				Int64("refreshed_sequence", acc.Sequence).
+				Msg("sequence refreshed from Horizon after tx_bad_seq error")
+		} else {
+			c.logger.Warn().Msg("unable to refresh sequence from Horizon; retaining local value")
+		}
+		return "", fmt.Errorf("sequence number stale (tx_bad_seq): %w", err)
+	}
+
+	// Return all non-sequence errors without modification
+	return "", fmt.Errorf("broadcast failed: %w", err)
 }
 
 // ConfirmationCountReady returns true if the confirmation count is ready
@@ -726,6 +1129,18 @@ func (c *Client) ConfirmationCountReady(txIn stypes.TxIn) bool {
 func (c *Client) GetConfirmationCount(txIn stypes.TxIn) int64 {
 	// Stellar transactions are finalized immediately, so they have 1 confirmation
 	return 1
+}
+
+// GetVaultLock returns a per-vault mutex to serialize sign/broadcast for that vault
+func (c *Client) GetVaultLock(vault string) *sync.Mutex {
+	c.vaultLocksMu.Lock()
+	defer c.vaultLocksMu.Unlock()
+	if m, ok := c.vaultLocks[vault]; ok {
+		return m
+	}
+	m := &sync.Mutex{}
+	c.vaultLocks[vault] = m
+	return m
 }
 
 // ReportSolvency reports solvency to SWITCHLYChain
@@ -974,4 +1389,153 @@ func (c *Client) SendTx(tx stypes.TxOutItem) (string, error) {
 	}
 
 	return c.BroadcastTx(tx, signedTx)
+}
+
+// getScAddressFromString converts a string address to xdr.ScAddress
+// This is a helper method for testing and internal use
+func (c *Client) getScAddressFromString(addr string) (xdr.ScAddress, error) {
+	if addr == "" {
+		return xdr.ScAddress{}, fmt.Errorf("empty address provided to getScAddressFromString")
+	}
+
+	// Use DecodeAny to handle any valid Stellar address format
+	version, decoded, err := strkey.DecodeAny(addr)
+	if err != nil {
+		return xdr.ScAddress{}, fmt.Errorf("failed to decode Stellar address: %w", err)
+	}
+
+	if len(decoded) < 32 {
+		return xdr.ScAddress{}, fmt.Errorf("decoded address too short: %d", len(decoded))
+	}
+
+	// Check the version byte to determine the address type
+	if version == strkey.VersionByteAccountID {
+		// Account address - need to properly initialize the struct
+		// Create the Ed25519 public key first
+		var ed25519PubKey xdr.Uint256
+		copy(ed25519PubKey[:], decoded[:32])
+
+		// Now create the AccountId with the Ed25519 public key
+		accountId := xdr.AccountId{
+			Type:    xdr.PublicKeyTypePublicKeyTypeEd25519,
+			Ed25519: &ed25519PubKey,
+		}
+
+		return xdr.ScAddress{
+			Type:      xdr.ScAddressTypeScAddressTypeAccount,
+			AccountId: &accountId,
+		}, nil
+	} else {
+		// Contract address or other type - treat as contract
+		var contractId xdr.Hash
+		copy(contractId[:], decoded[:32])
+		// Convert Hash to ContractId since ContractId is a typedef of Hash
+		contractIdTyped := xdr.ContractId(contractId)
+		return xdr.ScAddress{
+			Type:       xdr.ScAddressTypeScAddressTypeContract,
+			ContractId: &contractIdTyped,
+		}, nil
+	}
+}
+
+// getScAddressPtrFromString converts a string address to *xdr.ScAddress
+// This is a helper method for testing and internal use
+func (c *Client) getScAddressPtrFromString(addr string) (*xdr.ScAddress, error) {
+	scAddr, err := c.getScAddressFromString(addr)
+	if err != nil {
+		return nil, err
+	}
+	// Create a new ScAddress on the heap to avoid returning pointer to local variable
+	scAddrPtr := new(xdr.ScAddress)
+	*scAddrPtr = scAddr
+	return scAddrPtr, nil
+}
+
+// SorobanSimulationResult represents the result from Soroban RPC simulation
+type SorobanSimulationResult struct {
+	Auth            []string `json:"auth"`
+	MinResourceFee  string   `json:"minResourceFee"`
+	TransactionData string   `json:"transactionData"`
+}
+
+// SorobanSimulationResponse represents the JSON response from Soroban RPC
+type SorobanSimulationResponse struct {
+	Result struct {
+		Results         []SorobanSimulationResult `json:"results"`
+		MinResourceFee  string                    `json:"minResourceFee"`
+		TransactionData string                    `json:"transactionData"`
+	} `json:"result"`
+	Error struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error"`
+}
+
+// simulateSorobanTransaction simulates a transaction with Soroban RPC to get authorization
+func (c *Client) simulateSorobanTransaction(txeBase64 string) (*SorobanSimulationResult, error) {
+	// Use XLM_HOST environment variable for Soroban RPC endpoint
+	xlmHost := os.Getenv("XLM_HOST")
+	if xlmHost == "" {
+		xlmHost = "stellar:8000" // Default fallback
+	}
+	sorobanURL := fmt.Sprintf("http://%s/soroban/rpc", xlmHost)
+
+	// Prepare simulation request
+	simulateReq := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      1,
+		"method":  "simulateTransaction",
+		"params": map[string]interface{}{
+			"transaction": txeBase64,
+		},
+	}
+
+	reqBody, err := json.Marshal(simulateReq)
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to marshal simulation request")
+		return nil, fmt.Errorf("failed to marshal simulation request: %w", err)
+	}
+
+	// Make HTTP request to Soroban RPC
+	resp, err := http.Post(sorobanURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		c.logger.Error().Err(err).Msg("soroban RPC request failed")
+		return nil, fmt.Errorf("failed to call Soroban RPC: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to read simulation response")
+		return nil, fmt.Errorf("failed to read simulation response: %w", err)
+	}
+
+	// Parse response
+	var sorobanResp SorobanSimulationResponse
+	if err := json.Unmarshal(body, &sorobanResp); err != nil {
+		c.logger.Error().
+			Err(err).
+			Msg("failed to parse simulation response")
+		return nil, fmt.Errorf("failed to parse simulation response: %w", err)
+	}
+
+	// Check for JSON-RPC errors first
+	if sorobanResp.Error.Code != 0 {
+		c.logger.Error().
+			Int("error_code", sorobanResp.Error.Code).
+			Str("error_message", sorobanResp.Error.Message).
+			Msg("soroban RPC returned error")
+		return nil, fmt.Errorf("Soroban RPC error %d: %s", sorobanResp.Error.Code, sorobanResp.Error.Message)
+	}
+
+	// Build unified result combining auth with top-level resource fields
+	res := &SorobanSimulationResult{}
+	if len(sorobanResp.Result.Results) > 0 {
+		res.Auth = sorobanResp.Result.Results[0].Auth
+	}
+	res.MinResourceFee = sorobanResp.Result.MinResourceFee
+	res.TransactionData = sorobanResp.Result.TransactionData
+
+	return res, nil
 }

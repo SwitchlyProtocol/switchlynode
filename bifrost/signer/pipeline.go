@@ -69,13 +69,15 @@ type pipeline struct {
 // and retiring vault status semaphores. The inactive vault status semaphore will always
 // be 1 - allowing only 1 concurrent signing routine for inactive vault refunds.
 func newPipeline(concurrency int64) (*pipeline, error) {
-	log.Info().Int64("concurrency", concurrency).Msg("creating new signer pipeline")
+	log.Info().
+		Int64("concurrency", concurrency).
+		Msg("creating new signer pipeline")
 
 	if concurrency < 1 {
 		return nil, fmt.Errorf("concurrency must be greater than 0")
 	}
 
-	return &pipeline{
+	pipeline := &pipeline{
 		concurrency: concurrency,
 		vaultStatusConcurrency: map[types.VaultStatus]semaphore{
 			types.VaultStatus_ActiveVault:   make(semaphore, int(concurrency)),
@@ -83,7 +85,13 @@ func newPipeline(concurrency int64) (*pipeline, error) {
 			types.VaultStatus_InactiveVault: make(semaphore, 1),
 		},
 		vaultChainLock: make(map[vaultChain]chan struct{}),
-	}, nil
+	}
+
+	log.Info().
+		Int64("concurrency", concurrency).
+		Msg("signer pipeline created successfully")
+
+	return pipeline, nil
 }
 
 // SpawnSiginings will fetch all transactions from the provided Signer's storage, and
@@ -95,7 +103,18 @@ func newPipeline(concurrency int64) (*pipeline, error) {
 // block on their completion. The spawned routines will release the corresponding vault
 // status semaphore and vault/chain lock when they are complete.
 func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.SwitchlyBridge) {
+	log.Info().Msg("Pipeline SpawnSignings started")
+
+	// get all items from storage
 	allItems := s.storageList()
+	if len(allItems) == 0 {
+		log.Debug().Msg("no tx out store items to process")
+		return
+	}
+
+	log.Info().
+		Int("total_items", len(allItems)).
+		Msg("Pipeline processing items")
 
 	// gather all vault/chain combinations with an out item in retry
 	retryItems := make(map[vaultChain][]TxOutStoreItem)
@@ -121,8 +140,10 @@ func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.Switchl
 		} else {
 			itemsToSign = append(itemsToSign, items[0])
 			log.Warn().
-				Interface("items", items).
-				Msg("found retry items")
+				Str("vault_pubkey", items[0].TxOutItem.VaultPubKey.String()).
+				Str("chain", string(items[0].TxOutItem.Chain)).
+				Str("memo", items[0].TxOutItem.Memo).
+				Msg("found retry item")
 		}
 	}
 
@@ -130,9 +151,19 @@ func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.Switchl
 	for _, item := range allItems {
 		vc := vaultChain{item.TxOutItem.VaultPubKey, item.TxOutItem.Chain}
 		if _, ok := retryItems[vc]; !ok {
+			log.Info().
+				Str("vault_pubkey", item.TxOutItem.VaultPubKey.String()).
+				Str("chain", string(item.TxOutItem.Chain)).
+				Str("memo", item.TxOutItem.Memo).
+				Msg("found new item to sign")
 			itemsToSign = append(itemsToSign, item)
 		}
 	}
+
+	log.Info().
+		Int("new_items", len(itemsToSign)).
+		Int("retry_items", len(retryItems)).
+		Msg("Pipeline item breakdown")
 
 	// get the available capacities for each vault status
 	availableCapacities := make(map[types.VaultStatus]int)
@@ -156,6 +187,10 @@ func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.Switchl
 	}
 
 	// spawn signing routines for each item
+	log.Info().
+		Int("items_to_sign", len(itemsToSign)).
+		Msg("Starting to process signing items")
+
 	for _, item := range itemsToSign {
 		// return if the signer is stopped
 		if s.isStopped() {
@@ -166,12 +201,18 @@ func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.Switchl
 
 		// check if the vault/chain is locked
 		if lockedVaultChains[vc] {
+			log.Info().
+				Str("vault_pubkey", item.TxOutItem.VaultPubKey.String()).
+				Str("chain", string(item.TxOutItem.Chain)).
+				Msg("Skipping item - vault/chain is locked")
 			continue
 		}
 
-		// if no lock exists, create one
-		if _, ok := p.vaultChainLock[vc]; !ok {
-			p.vaultChainLock[vc] = make(chan struct{}, 1)
+		// if no lock exists, create one (skip for Stellar simple payments)
+		if item.TxOutItem.Chain != common.StellarChain {
+			if _, ok := p.vaultChainLock[vc]; !ok {
+				p.vaultChainLock[vc] = make(chan struct{}, 1)
+			}
 		}
 
 		// get vault to determine vault status
@@ -185,13 +226,26 @@ func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.Switchl
 
 		// check if the vault status semaphore has capacity
 		if availableCapacities[vault.Status] == 0 {
+			log.Info().
+				Str("vault_pubkey", item.TxOutItem.VaultPubKey.String()).
+				Str("chain", string(item.TxOutItem.Chain)).
+				Str("vault_status", string(vault.Status)).
+				Msg("Skipping item - no available capacity for vault status")
 			continue
 		}
 
-		// acquire the vault status semaphore and vault/chain lock
+		log.Info().
+			Str("vault_pubkey", item.TxOutItem.VaultPubKey.String()).
+			Str("chain", string(item.TxOutItem.Chain)).
+			Str("vault_status", string(vault.Status)).
+			Msg("Spawning signing routine for item")
+
+		// acquire the vault status semaphore and vault/chain lock (skip lock for Stellar)
 		availableCapacities[vault.Status]--
-		p.vaultChainLock[vc] <- struct{}{}
-		lockedVaultChains[vc] = true
+		if item.TxOutItem.Chain != common.StellarChain {
+			p.vaultChainLock[vc] <- struct{}{}
+			lockedVaultChains[vc] = true
+		}
 
 		// spawn signing routine
 		go func(item TxOutStoreItem, vaultStatus types.VaultStatus) {
@@ -206,6 +260,10 @@ func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.Switchl
 			s.processTransaction(item)
 		}(item, vault.Status)
 	}
+
+	log.Info().
+		Int("items_processed", len(itemsToSign)).
+		Msg("Pipeline SpawnSignings completed")
 }
 
 // Wait will block until all pipeline signing routines have completed.

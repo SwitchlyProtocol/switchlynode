@@ -36,11 +36,15 @@ type SolvencyReporter func(int64) error
 
 const (
 	// FeeUpdatePeriodBlocks is the block interval at which we report fee changes.
-	FeeUpdatePeriodBlocks = 20
+	// In production, we want more frequent updates for better responsiveness.
+	// 10 blocks = ~10 seconds on Stellar (much better than 20 seconds)
+	FeeUpdatePeriodBlocks = 10
 
 	// FeeCacheTransactions is the number of transactions over which we compute an average
 	// (mean) fee price to use for outbound transactions.
-	FeeCacheTransactions = 200
+	// In production, we want a smaller cache for faster adaptation to network changes.
+	// 100 transactions = faster response to network congestion changes
+	FeeCacheTransactions = 100
 
 	// defaultFeeMultiplier is the default multiplier for fee calculation
 	defaultFeeMultiplier = 1.5
@@ -89,6 +93,13 @@ type StellarBlockScanner struct {
 	isRunning *atomic.Bool
 }
 
+// newHealthyAtomicBool creates a new atomic.Bool initialized to true
+func newHealthyAtomicBool() *atomic.Bool {
+	b := &atomic.Bool{}
+	b.Store(true)
+	return b
+}
+
 // NewStellarBlockScanner create a new instance of BlockScan
 func NewStellarBlockScanner(rpcHost string,
 	cfg config.BifrostBlockScannerConfiguration,
@@ -117,7 +128,7 @@ func NewStellarBlockScanner(rpcHost string,
 		return nil, errors.New("sorobanRPCClient is nil")
 	}
 
-	return &StellarBlockScanner{
+	scanner := &StellarBlockScanner{
 		cfg:                   cfg,
 		logger:                log.With().Str("module", "stellar").Logger(),
 		db:                    scanStorage,
@@ -128,12 +139,35 @@ func NewStellarBlockScanner(rpcHost string,
 		globalNetworkFeeQueue: globalNetworkFeeQueue,
 		globalTxsQueue:        globalTxsQueue,
 		feeCache:              make([]sdkmath.Uint, 0, FeeCacheTransactions),
-		lastFee:               sdkmath.NewUint(baseFeeStroops), // Initialize with base fee
-		healthy:               &atomic.Bool{},
+		lastFee:               sdkmath.NewUint(100), // Initialize with initial fee for mocknet
+		healthy:               newHealthyAtomicBool(),
 		stopChan:              make(chan struct{}),
 		wg:                    &sync.WaitGroup{},
 		isRunning:             &atomic.Bool{},
-	}, nil
+	}
+
+	scanner.logger.Info().
+		Str("module", "stellar").
+		Str("chain_id", string(cfg.ChainID)).
+		Str("rpc_host", rpcHost).
+		Msg("StellarBlockScanner created")
+
+	scanner.logger.Info().
+		Str("module", "stellar").
+		Bool("is_healthy", scanner.healthy.Load()).
+		Msg("StellarBlockScanner initial health status")
+
+	return scanner, nil
+}
+
+// IsHealthy returns the current health status of the block scanner
+func (c *StellarBlockScanner) IsHealthy() bool {
+	healthStatus := c.healthy.Load()
+	c.logger.Info().
+		Bool("health_status", healthStatus).
+		Str("caller", "IsHealthy").
+		Msg("StellarBlockScanner.IsHealthy() called - returning health status")
+	return healthStatus
 }
 
 // GetHeight retrieves the current Stellar chain height from the Horizon API.
@@ -241,6 +275,16 @@ func (c *StellarBlockScanner) Start() {
 	}
 
 	c.logger.Info().Msg("Starting Stellar continuous block scanner")
+
+	// CRITICAL: Report initial network fee immediately on startup
+	// This ensures SwitchlyNode has a valid fee from the beginning
+	c.logger.Info().Msg("DEBUG: About to call reportInitialNetworkFee()")
+	if err := c.reportInitialNetworkFee(); err != nil {
+		c.logger.Warn().Err(err).Msg("failed to report initial network fee")
+	} else {
+		c.logger.Info().Msg("DEBUG: reportInitialNetworkFee() completed successfully")
+	}
+
 	c.wg.Add(1)
 	go c.continuousScanLoop()
 }
@@ -326,6 +370,12 @@ func (c *StellarBlockScanner) scanNewBlocks() error {
 			c.globalTxsQueue <- txIn
 		}
 
+		// CRITICAL: Report network fees for this block
+		// This ensures fees are updated even when no transactions are found
+		if err := c.updateFees(blockHeight); err != nil {
+			c.logger.Warn().Err(err).Int64("block_height", blockHeight).Msg("failed to update network fees")
+		}
+
 		// Update scan position to this block
 		if err := c.db.SetScanPos(blockHeight); err != nil {
 			c.logger.Error().Err(err).Int64("block_height", blockHeight).
@@ -344,10 +394,31 @@ func (c *StellarBlockScanner) scanNewBlocks() error {
 
 		// Update health status based on gap (similar to main blockscanner)
 		// Consider 3 blocks or less behind as healthy
+		currentHealth := c.healthy.Load()
 		if chainHeight-blockHeight <= 3 {
+			if !currentHealth {
+				c.logger.Info().
+					Int64("chain_height", chainHeight).
+					Int64("block_height", blockHeight).
+					Int64("gap", chainHeight-blockHeight).
+					Bool("previous_health", currentHealth).
+					Msg("Setting Stellar block scanner health to TRUE (gap <= 3)")
+			}
 			c.healthy.Store(true)
+			// Force a memory barrier to ensure the value is visible to other goroutines
+			_ = c.healthy.Load()
 		} else {
+			if currentHealth {
+				c.logger.Info().
+					Int64("chain_height", chainHeight).
+					Int64("block_height", blockHeight).
+					Int64("gap", chainHeight-blockHeight).
+					Bool("previous_health", currentHealth).
+					Msg("Setting Stellar block scanner health to FALSE (gap > 3)")
+			}
 			c.healthy.Store(false)
+			// Force a memory barrier to ensure the value is visible to other goroutines
+			_ = c.healthy.Load()
 		}
 	}
 
@@ -426,9 +497,9 @@ func (c *StellarBlockScanner) FetchLastHeight() (int64, error) {
 
 // GetNetworkFee returns the current chain network fee according to Bifrost.
 func (c *StellarBlockScanner) GetNetworkFee() (transactionSize, transactionFeeRate uint64) {
-	// Ensure we have a valid fee, fallback to base fee if needed
+	// Ensure we have a valid fee, fallback to initial fee if needed
 	if c.lastFee.IsZero() {
-		c.lastFee = sdkmath.NewUint(baseFeeStroops)
+		c.lastFee = sdkmath.NewUint(100)
 	}
 	return 1, c.lastFee.Uint64()
 }
@@ -453,7 +524,7 @@ func (c *StellarBlockScanner) updateFeeCache(fee common.Coin) {
 func (c *StellarBlockScanner) averageFee() sdkmath.Uint {
 	// avoid divide by zero
 	if len(c.feeCache) == 0 {
-		return sdkmath.NewUint(baseFeeStroops)
+		return sdkmath.NewUint(100)
 	}
 
 	// compute mean
@@ -503,6 +574,91 @@ func (c *StellarBlockScanner) updateFees(height int64) error {
 
 		c.lastFee = avgFee
 	}
+
+	// Always ensure we have a network fee - send default fee every few blocks if needed
+	if height%FeeUpdatePeriodBlocks == 0 {
+		defaultFee := sdkmath.NewUint(100)
+
+		c.logger.Info().
+			Int64("height", height).
+			Int("feeCache_len", len(c.feeCache)).
+			Bool("lastFee_isZero", c.lastFee.IsZero()).
+			Bool("queue_notNil", c.globalNetworkFeeQueue != nil).
+			Uint64("defaultFee", defaultFee.Uint64()).
+			Msg("stellar fee update check")
+
+		// Send default fee if we don't have a fee or if fee cache is empty
+		shouldSendFee := false
+		if len(c.feeCache) == 0 || c.lastFee.IsZero() {
+			shouldSendFee = true
+			c.logger.Info().Msg("sending fee because cache empty or lastFee zero")
+		}
+
+		if shouldSendFee && c.globalNetworkFeeQueue != nil {
+			c.globalNetworkFeeQueue <- common.NetworkFee{
+				Chain:           c.cfg.ChainID,
+				Height:          height,
+				TransactionSize: 1,
+				TransactionRate: defaultFee.Uint64(),
+			}
+
+			c.logger.Info().
+				Uint64("fee", defaultFee.Uint64()).
+				Int64("height", height).
+				Msg("sent default network fee to SwitchlyProtocol")
+
+			c.lastFee = defaultFee
+		} else if shouldSendFee {
+			c.logger.Warn().
+				Uint64("fee", defaultFee.Uint64()).
+				Int64("height", height).
+				Msg("global network fee queue not initialized, cannot send fee")
+		}
+	}
+
+	return nil
+}
+
+// reportInitialNetworkFee reports the initial network fee immediately on startup
+// This ensures SwitchlyNode has a valid fee from the beginning without waiting for blocks
+func (c *StellarBlockScanner) reportInitialNetworkFee() error {
+	c.logger.Info().Msg("DEBUG: reportInitialNetworkFee() started")
+
+	// Simple safety check
+	if c.globalNetworkFeeQueue == nil {
+		c.logger.Warn().Msg("global network fee queue not initialized, cannot report initial fee")
+		return errors.New("global network fee queue not initialized")
+	}
+	c.logger.Info().Msg("DEBUG: globalNetworkFeeQueue is not nil")
+
+	// Use a simple hardcoded fee to avoid any constant issues
+	// 100 stroops = 0.00001 XLM (very reasonable fallback fee)
+	initialFee := sdkmath.NewUint(100)
+	c.logger.Info().Msg("DEBUG: created initialFee")
+
+	// Report the initial fee immediately - use non-blocking send to avoid deadlock
+	c.logger.Info().Msg("DEBUG: about to send to globalNetworkFeeQueue")
+
+	// Use non-blocking send to prevent hanging
+	select {
+	case c.globalNetworkFeeQueue <- common.NetworkFee{
+		Chain:           c.cfg.ChainID,
+		Height:          1, // Use height 1 to indicate initial fee
+		TransactionSize: 1,
+		TransactionRate: initialFee.Uint64(),
+	}:
+		c.logger.Info().Msg("DEBUG: sent to globalNetworkFeeQueue successfully")
+	default:
+		c.logger.Warn().Msg("DEBUG: globalNetworkFeeQueue is full or blocked, skipping initial fee report")
+	}
+
+	c.logger.Info().
+		Uint64("fee", initialFee.Uint64()).
+		Msg("reported initial network fee to SwitchlyProtocol")
+
+	// Update lastFee to prevent duplicate reporting
+	c.lastFee = initialFee
+	c.logger.Info().Msg("DEBUG: updated lastFee")
 
 	return nil
 }
@@ -846,8 +1002,8 @@ func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, heig
 		return nil, nil
 	}
 
-	// Convert amount
-	coin, err := mapping.ConvertToSwitchlyProtocolAmount(event.Amount)
+	// Convert amount - router events provide amounts in base units (stroops)
+	coin, err := mapping.ConvertBaseUnitsToSwitchlyProtocolAmount(event.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -980,8 +1136,8 @@ func (c *StellarBlockScanner) processRouterTransferAllowanceEvent(event *RouterE
 		return nil, nil
 	}
 
-	// Convert amount
-	coin, err := mapping.ConvertToSwitchlyProtocolAmount(event.Amount)
+	// Convert amount - router events provide amounts in base units (stroops)
+	coin, err := mapping.ConvertBaseUnitsToSwitchlyProtocolAmount(event.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -1381,6 +1537,11 @@ func (c *StellarBlockScanner) FetchTxs(height, chainHeight int64) (types.TxIn, e
 
 	// Set the transaction array
 	txIn.TxArray = txInItems
+
+	// CRITICAL: Add network fee reporting here
+	if err := c.updateFees(height); err != nil {
+		c.logger.Warn().Err(err).Int64("height", height).Msg("failed to update network fees")
+	}
 
 	// CRITICAL FIX: Don't update scan position here - let the main block scanner handle it
 	// This prevents conflicts that cause blocks to be skipped

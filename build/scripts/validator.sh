@@ -15,7 +15,7 @@ PEER_API="${PEER_API:=$PEER}" # the hostname of a seed node API if different
 if [ ! -f ~/.switchlynode/config/genesis.json ]; then
   echo "Setting SwitchlyNode as Validator node"
 
-  create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
+  create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
 
   init_chain
 
@@ -39,7 +39,7 @@ fi
 # For mocknet cluster nodes, always check registration status and register if needed
 if [ "$NET" = "mocknet" ] && [ "$PEER" != "none" ]; then
   # Ensure we have the user created
-  create_thor_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
+  create_switchly_user "$SIGNER_NAME" "$SIGNER_PASSWD" "$SIGNER_SEED_PHRASE"
   
   NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
   echo "Node address: $NODE_ADDRESS"

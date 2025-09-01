@@ -154,7 +154,7 @@ func SWITCHValue(height int64, coin common.Coin) float64 {
 
 		price, err := strconv.ParseFloat(network.SwitchlyPriceInSwitch, 64)
 		if err != nil {
-			log.Panic().Err(err).Msg("failed to parse network rune price")
+			log.Panic().Err(err).Msg("failed to parse network switch price")
 		}
 
 		amt, _ := new(big.Float).Quo(

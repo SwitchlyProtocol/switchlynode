@@ -197,6 +197,8 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	c.ethScanner.globalNetworkFeeQueue = globalNetworkFeeQueue
 	c.globalSolvencyQueue = globalSolvencyQueue
 	c.tssKeySigner.Start()
+	// Seed initial network fee to avoid zero max gas during cold start
+	c.ethScanner.reportInitialNetworkFee()
 	c.blockScanner.Start(globalTxsQueue, globalNetworkFeeQueue)
 	c.wg.Add(1)
 	go c.unstuck()

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -213,6 +214,19 @@ func runWithContext(ctx context.Context, fn func() ([]byte, *types.TxInItem, err
 }
 
 func (s *Signer) processTransactions() {
+	s.logger.Info().Msg("Starting to process transactions")
+
+	// get all items from storage
+	items := s.storageList()
+	if len(items) == 0 {
+		s.logger.Debug().Msg("no items to process")
+		return
+	}
+
+	s.logger.Info().
+		Int("total_items", len(items)).
+		Msg("Processing transactions from storage")
+
 	signerConcurrency, err := s.switchlyBridge.GetMimir(constants.SignerConcurrency.String())
 	if err != nil {
 		s.logger.Error().Err(err).Msg("fail to get signer concurrency mimir")
@@ -601,7 +615,19 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 	// therefore reschedule the transaction to another signer. In a disaster
 	// scenario, the network could broadcast a transaction several times,
 	// bleeding funds.
-	if !chain.IsBlockScannerHealthy() {
+	s.logger.Info().
+		Str("chain", string(chain.GetChain())).
+		Str("memo", tx.Memo).
+		Msg("About to check block scanner health status")
+
+	blockScannerHealthy := chain.IsBlockScannerHealthy()
+	s.logger.Info().
+		Str("chain", string(chain.GetChain())).
+		Bool("block_scanner_healthy", blockScannerHealthy).
+		Str("memo", tx.Memo).
+		Msg("Block scanner health status checked")
+
+	if !blockScannerHealthy {
 		return nil, nil, fmt.Errorf("the block scanner for chain %s is unhealthy, not signing transactions due to it", chain.GetChain())
 	}
 
@@ -640,6 +666,15 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		defer lock.Unlock()
 	}
 
+	// For Stellar, serialize per-vault to avoid tx_bad_seq due to concurrency
+	if chain.GetChain() == common.StellarChain {
+		if xlmClient, ok := chain.(interface{ GetVaultLock(string) *sync.Mutex }); ok {
+			lock := xlmClient.GetVaultLock(tx.VaultPubKey.String())
+			lock.Lock()
+			defer lock.Unlock()
+		}
+	}
+
 	// If SignedTx is set, we already signed and should only retry broadcast.
 	var signedTx, checkpoint []byte
 	var elapse time.Duration
@@ -648,7 +683,8 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		s.logger.Info().Str("memo", tx.Memo).Msg("retrying broadcast of already signed tx")
 		signedTx = item.SignedTx
 		observation = item.Observation
-	} else {
+	}
+	if len(signedTx) == 0 {
 		startKeySign := time.Now()
 		signedTx, checkpoint, observation, err = chain.SignTx(tx, height)
 		if err != nil {
@@ -656,12 +692,22 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 			return checkpoint, nil, err
 		}
 		elapse = time.Since(startKeySign)
+
+		// Store signed tx in item for future retries
+		if len(signedTx) > 0 {
+			item.SignedTx = signedTx
+			item.Checkpoint = checkpoint
+			item.Observation = observation
+			if storeErr := s.storage.Set(item); storeErr != nil {
+				s.logger.Error().Err(storeErr).Msg("fail to store signed tx")
+			}
+		}
 	}
 
 	// looks like the transaction is already signed
 	if len(signedTx) == 0 {
-		s.logger.Warn().Msgf("signed transaction is empty")
-		return nil, nil, nil
+		s.logger.Warn().Msg("signed transaction is empty; skipping broadcast and will retry later")
+		return nil, nil, fmt.Errorf("no signed transaction available to broadcast")
 	}
 
 	// broadcast the transaction
@@ -669,11 +715,26 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 	if err != nil {
 		s.logger.Error().Err(err).Str("memo", tx.Memo).Msg("fail to broadcast tx to chain")
 
-		// store the signed tx for the next retry
-		item.SignedTx = signedTx
-		item.Observation = observation
+		// Clear stale items for specific recoverable cases
+		if strings.Contains(err.Error(), "sequence number stale (tx_bad_seq)") ||
+			strings.Contains(err.Error(), "tx_malformed") ||
+			strings.Contains(err.Error(), "timeout waiting for soroban transaction result") ||
+			strings.Contains(err.Error(), "no signed transaction available to broadcast") {
+			s.logger.Warn().
+				Str("chain", string(chain.GetChain())).
+				Str("memo", tx.Memo).
+				Msg("Clearing SignedTx and Checkpoint to force re-signing")
+			item.SignedTx = nil
+			item.Checkpoint = nil
+			item.Observation = nil
+		} else {
+			// Store the signed tx for the next retry (non-clearing errors)
+			item.SignedTx = signedTx
+			item.Observation = observation
+		}
+
 		if storeErr := s.storage.Set(item); storeErr != nil {
-			s.logger.Error().Err(storeErr).Msg("fail to update tx out store item with signed tx")
+			s.logger.Error().Err(storeErr).Msg("fail to update tx out store item after broadcast error")
 		}
 
 		return nil, observation, err
@@ -725,15 +786,27 @@ func (s *Signer) processTransaction(item TxOutStoreItem) {
 	s.logger.Info().
 		Int64("height", item.Height).
 		Int("status", int(item.Status)).
+		Str("chain", string(item.TxOutItem.Chain)).
+		Str("memo", item.TxOutItem.Memo).
 		Interface("tx", item.TxOutItem).
-		Msg("Signing transaction")
+		Msg("Processing transaction for signing")
 
 	// a single keysign should not take longer than 5 minutes , regardless TSS or local
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	checkpoint, obs, err := runWithContext(ctx, func() ([]byte, *types.TxInItem, error) {
+		s.logger.Info().
+			Str("chain", string(item.TxOutItem.Chain)).
+			Str("memo", item.TxOutItem.Memo).
+			Msg("About to call signAndBroadcast")
 		return s.signAndBroadcast(item)
 	})
 	if err != nil {
+		s.logger.Error().
+			Str("chain", string(item.TxOutItem.Chain)).
+			Str("memo", item.TxOutItem.Memo).
+			Err(err).
+			Msg("signAndBroadcast failed")
+
 		// mark the txout on round 7 failure to block other txs for the chain / pubkey
 		ksErr := tss.KeysignError{}
 		if errors.As(err, &ksErr) && ksErr.IsRound7() {
@@ -756,6 +829,11 @@ func (s *Signer) processTransaction(item TxOutStoreItem) {
 		// Otherwise, out-of-sync lists would cycle one timeout at a time, maybe never resynchronising.
 	}
 	cancel()
+
+	s.logger.Info().
+		Str("chain", string(item.TxOutItem.Chain)).
+		Str("memo", item.TxOutItem.Memo).
+		Msg("Transaction signed and broadcasted successfully")
 
 	// if enabled and the observation is non-nil, instant observe the outbound
 	if s.cfg.Signer.AutoObserve && obs != nil {

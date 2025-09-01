@@ -209,16 +209,36 @@ func (s *AssetMappingTestSuite) TestFromStellarAsset(c *C) {
 }
 
 func (s *AssetMappingTestSuite) TestConvertToSWITCHLYChainAmount(c *C) {
-	// Test XLM conversion (7 decimals to 8 decimals)
+	// Test XLM conversion from decimal amounts (7 decimals to 8 decimals)
 	mapping, _ := GetAssetByStellarAsset("native", "XLM", "")
-	coin, err := mapping.ConvertToSwitchlyProtocolAmount("10000000") // 1 XLM in stroops
+	coin, err := mapping.ConvertToSwitchlyProtocolAmount("1.0") // 1 XLM as decimal
 	c.Assert(err, IsNil)
 	c.Assert(coin.Amount.Uint64(), Equals, uint64(100000000)) // 1 XLM in SWITCHLYChain units (1e8)
 
-	// Test USDC conversion (7 decimals to 8 decimals) - use testnet address
+	// Test USDC conversion from decimal amounts (7 decimals to 8 decimals) - use testnet address
 	SetNetwork(StellarTestnet)
 	mapping, _ = GetAssetByStellarAsset("contract", "USDC", "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA")
-	coin, err = mapping.ConvertToSwitchlyProtocolAmount("10000000") // 1 USDC in 7-decimal format
+	coin, err = mapping.ConvertToSwitchlyProtocolAmount("1.0") // 1 USDC as decimal
+	c.Assert(err, IsNil)
+	c.Assert(coin.Amount.Uint64(), Equals, uint64(100000000)) // 1 USDC in SWITCHLYChain units (1e8)
+}
+
+func (s *AssetMappingTestSuite) TestConvertBaseUnitsToSWITCHLYChainAmount(c *C) {
+	// Test XLM conversion from base units (stroops) - this is what router events provide
+	mapping, _ := GetAssetByStellarAsset("native", "XLM", "")
+	coin, err := mapping.ConvertBaseUnitsToSwitchlyProtocolAmount("10000000") // 1 XLM in stroops
+	c.Assert(err, IsNil)
+	c.Assert(coin.Amount.Uint64(), Equals, uint64(100000000)) // 1 XLM in SWITCHLYChain units (1e8)
+
+	// Test large amount like what router events provide (10,000 XLM)
+	coin, err = mapping.ConvertBaseUnitsToSwitchlyProtocolAmount("100000000000") // 10,000 XLM in stroops
+	c.Assert(err, IsNil)
+	c.Assert(coin.Amount.Uint64(), Equals, uint64(1000000000000)) // 10,000 XLM in SWITCHLYChain units (1e12)
+
+	// Test USDC conversion from base units (7 decimals to 8 decimals) - use testnet address
+	SetNetwork(StellarTestnet)
+	mapping, _ = GetAssetByStellarAsset("contract", "USDC", "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA")
+	coin, err = mapping.ConvertBaseUnitsToSwitchlyProtocolAmount("10000000") // 1 USDC in base units
 	c.Assert(err, IsNil)
 	c.Assert(coin.Amount.Uint64(), Equals, uint64(100000000)) // 1 USDC in SWITCHLYChain units (1e8)
 }

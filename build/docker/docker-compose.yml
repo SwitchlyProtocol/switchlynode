@@ -102,7 +102,6 @@ services:
       - "host.docker.internal:host-gateway"
     environment: &switchlynode-environment
       <<: *switchly-environment
-      SEED: switchlynode
       SIGNER_SEED_PHRASE: "dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog dog fossil"
       SWITCHLYNODE_BLOCK_TIME: ${BLOCK_TIME:-1s}
       SWITCHLY_COSMOS_EBIFROST_ADDRESS: 0.0.0.0:50051
@@ -173,13 +172,13 @@ services:
       GAIA_HOST: ${GAIA_HOST:-http://gaia:26657}
       GAIA_GRPC_HOST: ${GAIA_GRPC_HOST:-gaia:9090}
       XLM_HOST: ${XLM_HOST:-stellar:8000}
-      BLOCK_SCANNER_BACKOFF: ${BLOCK_SCANNER_BACKOFF:-5s}
+      BLOCK_SCANNER_BACKOFF: ${BLOCK_SCANNER_BACKOFF:-60s}
       PEER: ${PEER:-}
       BIFROST_METRICS_PPROF_ENABLED: "true"
       BIFROST_SIGNER_BACKUP_KEYSHARES: "true"
       BIFROST_SIGNER_AUTO_OBSERVE: "false"
-      BIFROST_SIGNER_KEYGEN_TIMEOUT: 30s
-      BIFROST_SIGNER_KEYSIGN_TIMEOUT: 30s
+      BIFROST_SIGNER_KEYGEN_TIMEOUT: 45s
+      BIFROST_SIGNER_KEYSIGN_TIMEOUT: 45s
       BIFROST_CHAINS_AVAX_BLOCK_SCANNER_OBSERVATION_FLEXIBILITY_BLOCKS: "5"
       BIFROST_CHAINS_BCH_BLOCK_SCANNER_OBSERVATION_FLEXIBILITY_BLOCKS: "5"
       BIFROST_CHAINS_BTC_BLOCK_SCANNER_OBSERVATION_FLEXIBILITY_BLOCKS: "5"
@@ -232,6 +231,7 @@ services:
       # outbound fee settings for XLM
       BIFROST_CHAINS_XLM_BLOCK_SCANNER_OUTBOUND_FEE: 100000  # 0.01 XLM in stroops
       BIFROST_CHAINS_XLM_BLOCK_SCANNER_MAX_GAS_LIMIT: 1000000  # XLM transaction limit
+      BIFROST_CHAINS_XLM_BLOCK_SCANNER_OUTBOUND_GAS_LIMIT: 100000  # XLM outbound gas limit
 
       # set fixed gas rate for evm chains
       BIFROST_CHAINS_ETH_BLOCK_SCANNER_FIXED_GAS_RATE: 20_000_000_000 # 20 gwei
@@ -367,18 +367,20 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlynode:
+      switchlynode-cat:
         condition: service_healthy
+      bifrost:
+        condition: service_started
     environment:
       <<: *bifrost-environment
-      PEER: bifrost
+      PEER: ${PEER:-bifrost}
       CHAIN_API: switchlynode-cat:1317
       CHAIN_RPC: switchlynode-cat:26657
       BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-cat:50051
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     ports:
-      - 5040
-      - 6040
+      - 5041:5040
+      - 6041:6040
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-cat:/var/data/bifrost
@@ -390,18 +392,20 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlynode:
+      switchlynode-fox:
         condition: service_healthy
+      bifrost:
+        condition: service_started
     environment:
       <<: *bifrost-environment
-      PEER: bifrost
+      PEER: ${PEER:-bifrost}
       CHAIN_API: switchlynode-fox:1317
       CHAIN_RPC: switchlynode-fox:26657
       BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-fox:50051
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     ports:
-      - 5040
-      - 6040
+      - 5042:5040
+      - 6042:6040
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-fox:/var/data/bifrost
@@ -413,18 +417,21 @@ services:
     profiles:
       - mocknet-cluster
     depends_on:
-      switchlynode:
+      switchlynode-pig:
         condition: service_healthy
+      bifrost:
+        condition: service_started
     environment:
       <<: *bifrost-environment
-      PEER: bifrost
+      PEER: ${PEER:-bifrost}
+
       CHAIN_API: switchlynode-pig:1317
       CHAIN_RPC: switchlynode-pig:26657
       BIFROST_SWITCHLY_CHAIN_EBIFROST: switchlynode-pig:50051
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     ports:
-      - 5040
-      - 6040
+      - 5043:5040
+      - 6043:6040
     volumes:
       - "../scripts:/docker/scripts"
       - bifrost-pig:/var/data/bifrost

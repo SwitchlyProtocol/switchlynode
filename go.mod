@@ -124,7 +124,7 @@ require (
 	cosmossdk.io/x/evidence v0.1.1
 	cosmossdk.io/x/feegrant v0.1.1
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
-	github.com/stellar/go v0.0.0-20250613214159-65b2d613a208
+	github.com/stellar/go v0.0.0-20250822224526-9397ce4b6da2
 )
 
 require (

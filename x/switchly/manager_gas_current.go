@@ -277,7 +277,22 @@ func (gm *GasMgrVCUR) GetMaxGas(ctx cosmos.Context, chain common.Chain) (common.
 	if err != nil {
 		return common.NoCoin, fmt.Errorf("fail to get network fee for chain(%s): %w", chain, err)
 	}
-	amount = cosmos.NewUint(nf.TransactionSize * nf.TransactionFeeRate).MulUint64(3).QuoUint64(2)
+
+	// Fallback: ensure non-zero gas even if network fee has not been observed yet
+	if nf.TransactionSize == 0 || nf.TransactionFeeRate == 0 {
+		// Chain-specific fallback values in SWITCHLY decimals (8 decimals)
+		switch chain {
+		case common.StellarChain:
+			// Stellar: ~10,000 stroops = 0.001 XLM = 1,000,000 in 8-decimal precision
+			amount = cosmos.NewUint(1_000_000)
+		default:
+			// Generic minimal fallback
+			amount = cosmos.NewUint(1)
+		}
+	} else {
+		amount = cosmos.NewUint(nf.TransactionSize * nf.TransactionFeeRate).MulUint64(3).QuoUint64(2)
+	}
+
 	gasCoin := common.NewCoin(gasAsset, amount)
 	chainGasAssetPrecision := chain.GetGasAssetDecimal()
 	gasCoin.Amount = cosmos.RoundToDecimal(amount, chainGasAssetPrecision)
@@ -349,10 +364,10 @@ func (gm *GasMgrVCUR) ProcessGas(ctx cosmos.Context, keeper keeper.Keeper) {
 			}
 
 			gasPool := GasPool{
-				Asset:    coin.Asset,
-				AssetAmt: coin.Amount,
-				SwitchAmt:  switchGas,
-				Count:    gm.gasCount[coin.Asset],
+				Asset:     coin.Asset,
+				AssetAmt:  coin.Amount,
+				SwitchAmt: switchGas,
+				Count:     gm.gasCount[coin.Asset],
 			}
 			gm.gasEvent.UpsertGasPool(gasPool)
 

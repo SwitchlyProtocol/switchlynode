@@ -9,7 +9,7 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	"gitlab.com/switchly/thornode/x/switchly"
+	"github.com/switchlyprotocol/switchlynode/v3/x/switchly"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ecommon "github.com/ethereum/go-ethereum/common"

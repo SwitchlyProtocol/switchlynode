@@ -318,8 +318,8 @@ func (r *RouterEventScanner) processDepositEvent(tx horizon.Transaction, event S
 		return nil, fmt.Errorf("unsupported asset: %s", depositEvent.Asset)
 	}
 
-	// Convert amount
-	coin, err := mapping.ConvertToSwitchlyProtocolAmount(depositEvent.Amount)
+	// Convert amount - router events provide amounts in base units (stroops)
+	coin, err := mapping.ConvertBaseUnitsToSwitchlyProtocolAmount(depositEvent.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}
@@ -550,8 +550,8 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		}
 	}
 
-	// Convert amount
-	coin, err := mapping.ConvertToSwitchlyProtocolAmount(event.Amount)
+	// Convert amount - router events provide amounts in base units (stroops)
+	coin, err := mapping.ConvertBaseUnitsToSwitchlyProtocolAmount(event.Amount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert amount: %w", err)
 	}

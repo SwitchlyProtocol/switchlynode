@@ -151,6 +151,34 @@ func (e *ETHScanner) GetGasPrice() *big.Int {
 	return e.gasPrice
 }
 
+// reportInitialNetworkFee seeds a minimal non-zero network fee to SWITCHLYNode on startup.
+// This prevents zero-fee conditions where max gas calculation becomes empty before the first
+// dynamic gas report is sent from observed blocks.
+func (e *ETHScanner) reportInitialNetworkFee() {
+	if e.globalNetworkFeeQueue == nil {
+		return
+	}
+
+	txSize := e.cfg.MaxGasLimit
+	if txSize == 0 {
+		txSize = 21000
+	}
+
+	const minTxRate uint64 = 1
+
+	select {
+	case e.globalNetworkFeeQueue <- common.NetworkFee{
+		Chain:           common.ETHChain,
+		Height:          1,
+		TransactionSize: txSize,
+		TransactionRate: minTxRate,
+	}:
+		// seeded
+	default:
+		// queue busy; skip
+	}
+}
+
 func (e *ETHScanner) getContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), e.cfg.HTTPRequestTimeout)
 }

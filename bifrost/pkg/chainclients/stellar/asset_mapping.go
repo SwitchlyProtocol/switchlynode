@@ -341,14 +341,90 @@ func FromStellarAsset(asset txnbuild.Asset) (StellarAssetMapping, error) {
 }
 
 // ConvertToSwitchlyProtocolAmount converts a Stellar amount to SwitchlyProtocol amount
+// This function expects decimal amounts (e.g., "10.5" XLM) and converts them to base units
 func (s StellarAssetMapping) ConvertToSwitchlyProtocolAmount(stellarAmount string) (common.Coin, error) {
-	// Parse the stellar amount
-	stellarAmountBig, ok := new(big.Int).SetString(stellarAmount, 10)
+	// Lossless parse of a decimal string with s.StellarDecimals fractional digits
+	amt := strings.TrimSpace(stellarAmount)
+	if amt == "" {
+		return common.Coin{}, fmt.Errorf("invalid stellar amount: %s", stellarAmount)
+	}
+
+	integerPart := amt
+	fractionalPart := ""
+	if dot := strings.IndexByte(amt, '.'); dot >= 0 {
+		integerPart = amt[:dot]
+		fractionalPart = amt[dot+1:]
+	}
+
+	// Pad/truncate fractional to StellarDecimals
+	if len(fractionalPart) > s.StellarDecimals {
+		fractionalPart = fractionalPart[:s.StellarDecimals]
+	} else if len(fractionalPart) < s.StellarDecimals {
+		fractionalPart = fractionalPart + strings.Repeat("0", s.StellarDecimals-len(fractionalPart))
+	}
+
+	baseUnitsStr := integerPart + fractionalPart
+	if baseUnitsStr == "" {
+		baseUnitsStr = "0"
+	}
+
+	if strings.HasPrefix(baseUnitsStr, "+") {
+		baseUnitsStr = baseUnitsStr[1:]
+	}
+	if strings.HasPrefix(baseUnitsStr, "-") {
+		return common.Coin{}, fmt.Errorf("invalid stellar amount: %s", stellarAmount)
+	}
+
+	stellarAmountBig, ok := new(big.Int).SetString(baseUnitsStr, 10)
 	if !ok {
 		return common.Coin{}, fmt.Errorf("invalid stellar amount: %s", stellarAmount)
 	}
 
 	// SwitchlyProtocol uses 8 decimals, Stellar assets can have different decimals
+	switchlyProtocolDecimals := 8
+	decimalDiff := switchlyProtocolDecimals - s.StellarDecimals
+
+	var switchlyProtocolAmount *big.Int
+	if decimalDiff > 0 {
+		multiplier := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimalDiff)), nil)
+		switchlyProtocolAmount = new(big.Int).Mul(stellarAmountBig, multiplier)
+	} else if decimalDiff < 0 {
+		divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(-decimalDiff)), nil)
+		switchlyProtocolAmount = new(big.Int).Div(stellarAmountBig, divisor)
+	} else {
+		switchlyProtocolAmount = stellarAmountBig
+	}
+
+	switchlyProtocolAmountCosmos := cosmos.NewUintFromString(switchlyProtocolAmount.String())
+
+	return common.Coin{
+		Asset:  s.SwitchlyAsset,
+		Amount: switchlyProtocolAmountCosmos,
+	}, nil
+}
+
+// ConvertBaseUnitsToSwitchlyProtocolAmount converts Stellar base units to SwitchlyProtocol amount
+// This function expects amounts already in base units (e.g., "10000000" stroops) from contract events
+func (s StellarAssetMapping) ConvertBaseUnitsToSwitchlyProtocolAmount(stellarBaseUnits string) (common.Coin, error) {
+	amt := strings.TrimSpace(stellarBaseUnits)
+	if amt == "" {
+		return common.Coin{}, fmt.Errorf("invalid stellar base units: %s", stellarBaseUnits)
+	}
+
+	if strings.HasPrefix(amt, "+") {
+		amt = amt[1:]
+	}
+	if strings.HasPrefix(amt, "-") {
+		return common.Coin{}, fmt.Errorf("invalid stellar base units: %s", stellarBaseUnits)
+	}
+
+	// Parse the base units directly (no decimal processing needed)
+	stellarAmountBig, ok := new(big.Int).SetString(amt, 10)
+	if !ok {
+		return common.Coin{}, fmt.Errorf("invalid stellar base units: %s", stellarBaseUnits)
+	}
+
+	// SwitchlyProtocol uses 8 decimals, Stellar assets have s.StellarDecimals
 	switchlyProtocolDecimals := 8
 	decimalDiff := switchlyProtocolDecimals - s.StellarDecimals
 
@@ -366,7 +442,6 @@ func (s StellarAssetMapping) ConvertToSwitchlyProtocolAmount(stellarAmount strin
 		switchlyProtocolAmount = stellarAmountBig
 	}
 
-	// Convert to cosmos.Uint
 	switchlyProtocolAmountCosmos := cosmos.NewUintFromString(switchlyProtocolAmount.String())
 
 	return common.Coin{

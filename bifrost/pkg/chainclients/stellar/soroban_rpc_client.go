@@ -932,3 +932,63 @@ func (s *SorobanRPCClient) GetRouterEventsInRange(ctx context.Context, startLedg
 
 	return routerEvents, nil
 }
+
+// New helpers for send/get transaction
+
+type sendTransactionParams struct {
+	Transaction string `json:"transaction"`
+}
+
+type sendTransactionResult struct {
+	Hash string `json:"hash"`
+}
+
+type getTransactionParams struct {
+	Hash string `json:"hash"`
+}
+
+type getTransactionResult struct {
+	Status string `json:"status"`
+}
+
+// prepareTransaction structures
+
+type prepareTransactionParams struct {
+	Transaction string `json:"transaction"`
+}
+
+type prepareTransactionResult struct {
+	TransactionData string `json:"transactionData"`
+	MinResourceFee  string `json:"minResourceFee"`
+}
+
+func (s *SorobanRPCClient) SendTransaction(ctx context.Context, txXDR string) (string, error) {
+	req := SorobanRPCRequest{JSONRpc: "2.0", ID: 1, Method: "sendTransaction", Params: sendTransactionParams{Transaction: txXDR}}
+	var res sendTransactionResult
+	if err := s.makeRPCCall(ctx, req, &res); err != nil {
+		return "", err
+	}
+	if res.Hash == "" {
+		return "", fmt.Errorf("sendTransaction returned empty hash")
+	}
+	return res.Hash, nil
+}
+
+func (s *SorobanRPCClient) GetTransaction(ctx context.Context, hash string) (string, error) {
+	req := SorobanRPCRequest{JSONRpc: "2.0", ID: 1, Method: "getTransaction", Params: getTransactionParams{Hash: hash}}
+	var res getTransactionResult
+	if err := s.makeRPCCall(ctx, req, &res); err != nil {
+		return "", err
+	}
+	s.logger.Debug().Str("tx_hash", hash).Str("status", res.Status).Msg("polled soroban tx status")
+	return res.Status, nil
+}
+
+func (s *SorobanRPCClient) PrepareTransaction(ctx context.Context, txXDR string) (prepareTransactionResult, error) {
+	req := SorobanRPCRequest{JSONRpc: "2.0", ID: 1, Method: "prepareTransaction", Params: prepareTransactionParams{Transaction: txXDR}}
+	var res prepareTransactionResult
+	if err := s.makeRPCCall(ctx, req, &res); err != nil {
+		return prepareTransactionResult{}, err
+	}
+	return res, nil
+}

@@ -5,46 +5,21 @@
   "keygen_blocks": [],
   "last_chain_heights": [],
   "last_signed_height": "0",
-  "liquidity_providers": [
-    {
-      "asset": "ETH.ETH",
-      "asset_address": "0x90f2b1ae50e6018230e90a33f98c7844a0ab635a",
-      "last_add_height": "32",
-      "last_withdraw_height": "0",
-      "pending_asset": "0",
-      "pending_rune": "0",
-      "pending_tx_Id": "8A83AEBB9313D079BB3D08E6A798DD89D3B5BBBA71B9EAA2A2B31053854C307D",
-      "rune_address": "tswitch1m33k4tqk4ngwsksll4q3ppm9g6m80kp0qxtqzv",
-      "units": "50000000000"
-    }
-  ],
+  "liquidity_providers": [],
   "msg_swaps": [],
   "network": {
-    "bond_reward_rune": "16847841043",
+    "bond_reward_rune": "0",
     "total_bond_units": "0"
   },
-  "network_fee_voters": [
-    {
-      "block_height": "16",
-      "chain": "ETH",
-      "report_block_height": "8",
-      "signers": ["tswitch1pu3k2rgh9vth78xhsjcauwkljrnkkd4pkctyeh"]
-    }
-  ],
-  "network_fees": [
-    {
-      "chain": "ETH",
-      "transaction_fee_rate": "1",
-      "transaction_size": "80000"
-    }
-  ],
+  "network_fee_voters": [],
+  "network_fees": [],
   "node_accounts": [
     {
       "active_block_height": "1",
-      "bond": "0",
+      "bond": "1000000000000",
       "bond_address": "tswitch1pu3k2rgh9vth78xhsjcauwkljrnkkd4pkctyeh",
       "forced_to_leave": false,
-      "ip_address": "193.37.32.97",
+      "ip_address": "127.0.0.1",
       "leave_score": "0",
       "node_address": "tswitch1pu3k2rgh9vth78xhsjcauwkljrnkkd4pkctyeh",
       "pub_key_set": {
@@ -56,55 +31,16 @@
       "status": "Active",
       "status_since": "0",
       "validator_cons_pub_key": "tswitchcpub1zcjduepqnywlmv6cp575v942y24hlsyxvpc0gcwjps3nrw8ed2jr84npewxsv0r8vr",
-      "version": "0.19.0"
+      "version": "3.7.0"
     }
   ],
   "observed_tx_in_voters": [],
   "observed_tx_out_voters": [],
-  "pools": [
-    {
-      "asset": "ETH.ETH",
-      "balance_asset": "40000000000",
-      "balance_rune": "50000000000",
-      "pool_units": "50000000000",
-      "status": "Available"
-    }
-  ],
+  "pools": [],
   "reserve": "0",
   "reserve_contributors": [],
   "tss_keysign_fail_voters": [],
   "tss_voters": [],
   "tx_outs": [],
-  "vaults": [
-    {
-      "block_height": "24",
-      "chains": ["SWITCHLY", "BTC", "LTC", "BCH", "ETH", "AVAX"],
-      "coins": [
-        {
-          "amount": "40000000000",
-          "asset": "ETH.ETH"
-        }
-      ],
-      "contracts": [
-        {
-          "chain": "ETH",
-          "contract": "0xE65e9d372F8cAcc7b6dfcd4af6507851Ed31bb44"
-        },
-        {
-          "chain": "AVAX",
-          "contract": "0x17aB05351fC94a1a67Bf3f56DdbB941aE6c63E25"
-        }
-      ],
-      "inbound_tx_count": "4",
-      "membership": [
-        "tswitchpub1addwnpepqdp86fled9xmwlwa8dl7gxuww7tluwvwjkyt0wygn2juk7hq4j53qw7pwhd"
-      ],
-      "outbound_tx_count": "0",
-      "pending_tx_block_heights": [],
-      "pub_key": "tswitchpub1addwnpepqdp86fled9xmwlwa8dl7gxuww7tluwvwjkyt0wygn2juk7hq4j53qw7pwhd",
-      "status": "ActiveVault",
-      "status_since": "0",
-      "type": "AsgardVault"
-    }
-  ]
+  "vaults": []
 }
