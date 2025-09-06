@@ -34,10 +34,9 @@ services:
       # "dog" mnemonic addresses for faucet
       FAUCET: sthor1zf3gsk7edzwl9syyefvfhle37cjtql3585mpmq
 
-      # reuse 9R stagenet router contract deployments, or deploy your own new ones
-      ETH_CONTRACT: "0xB11a1735C2e3BCC5FC8c1d147fb64629d3d0caC5"
-      BSC_CONTRACT: "0x00335da4078f696b98ff619616f1c558e57b9e22"
-      AVAX_CONTRACT: "0xd6a6c0b3bb4150a98a379811934e440989209db6"
+      # reuse stagenet router contract deployments, or deploy your own new ones
+      ETH_CONTRACT: "0xa8D1Ff3bfA490cf7890D0D2C0A2f5815744A279F"
+      XLM_CONTRACT: "CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R" # testnet
 
   ######################################################################################
   # Genesis

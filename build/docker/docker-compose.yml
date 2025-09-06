@@ -34,7 +34,7 @@ services:
       SIGNER_NAME: switchly
       SIGNER_PASSWD: password
       SWITCHLYNODE_GRPC_ENABLE: true
-      XLM_CONTRACT: CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R # testnet
+      XLM_CONTRACT: "CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R" # testnet
     logging: &logging
       driver: "json-file"
       options:
@@ -214,7 +214,7 @@ services:
       BIFROST_CHAINS_XLM_DISABLED: "false"
       BIFROST_CHAINS_XLM_RPC_HOST: http://stellar:8000
       BIFROST_CHAINS_XLM_CHAIN_NETWORK: "testnet"
-      BIFROST_CHAINS_XLM_ROUTER_ADDRESS: "CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R"
+      BIFROST_CHAINS_XLM_ROUTER_ADDRESS: "CB7IQG5OEE2HWDXCOIBWRVEK6XZOENZDZF276YNPIMYDSAKVRPETYDQ5"
       
       # UTXO Chains - DISABLED
       BIFROST_CHAINS_BTC_DISABLED: "true"
@@ -543,6 +543,7 @@ services:
     volumes:
       - "../scripts:/docker/scripts"
     entrypoint: /docker/scripts/mock/start-eth.sh
+    
 
   # ------------------------------ base ------------------------------
 
