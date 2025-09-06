@@ -23,20 +23,27 @@ services:
     profiles:
       - _
     restart: unless-stopped
-    image: registry.gitlab.com/switchly/switchlynode:stagenet-2.137.3
+    build:       
+      context: ../..
+      dockerfile: ./build/docker/Dockerfile
     environment: &switchly-environment
       NET: stagenet
       CHAIN_ID: switchly
       SIGNER_NAME: switchly
       SIGNER_PASSWD: password
+      SWITCHLYNODE_GRPC_ENABLE: true
       SWITCHLY_SEED_NODES_ENDPOINT: ""
-
-      # "dog" mnemonic addresses for faucet
-      FAUCET: sthor1zf3gsk7edzwl9syyefvfhle37cjtql3585mpmq
 
       # reuse stagenet router contract deployments, or deploy your own new ones
       ETH_CONTRACT: "0xa8D1Ff3bfA490cf7890D0D2C0A2f5815744A279F"
-      XLM_CONTRACT: "CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R" # testnet
+      XLM_CONTRACT: "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4" # testnet
+
+    logging: &logging
+      driver: "json-file"
+      options:
+        max-size: "256m"
+        max-file: "3"
+    
 
   ######################################################################################
   # Genesis
@@ -48,6 +55,10 @@ services:
     <<: *switchly-defaults
     profiles:
       - genesis
+      - stagenet
+    depends_on:
+      - ethereum
+      - stellar
     ports:
       - 27147:27147
       - 27146:27146
@@ -66,14 +77,18 @@ services:
 
   genesis-bifrost: &genesis-bifrost
     <<: *switchly-defaults
-
     profiles:
       - genesis
+      - stagenet
+    depends_on:
+      genesis-switchlynode:
+        condition: service_healthy
     ports:
       - 5040:5040
       - 6040:6040
     entrypoint: /scripts/bifrost.sh
     volumes:
+      - "../../build/docker/scripts:/docker/scripts"
       - genesis-bifrost:/var/data/bifrost
       - genesis-switchlynode:/root/.switchlynode
     command: ["bifrost"]
@@ -84,9 +99,13 @@ services:
       CHAIN_API: genesis-switchlynode:1317
       CHAIN_RPC: genesis-switchlynode:27147
       BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: genesis-switchlynode:50051
+      ETH_HOST: ${ETH_HOST:-http://ethereum:8545}
+      XLM_HOST: ${XLM_HOST:-stellar:8000}
+      BLOCK_SCANNER_BACKOFF: ${BLOCK_SCANNER_BACKOFF:-60s}
+      PEER: ${PEER:-}
 
-      BIFROST_CHAINS_AVAX_DISABLED: "false"
-      BIFROST_CHAINS_AVAX_RPC_HOST: https://api.avax.network/ext/bc/C/rpc
+      BIFROST_CHAINS_AVAX_DISABLED: "true"
+      BIFROST_CHAINS_AVAX_RPC_HOST: ""
 
       BIFROST_CHAINS_GAIA_DISABLED: "true"
       BIFROST_CHAINS_GAIA_RPC_HOST: ""
@@ -110,8 +129,75 @@ services:
       BIFROST_CHAINS_LTC_DISABLED: "true"
       BIFROST_CHAINS_LTC_RPC_HOST: ""
 
-      BIFROST_CHAINS_ETH_DISABLED: "true"
-      BIFROST_CHAINS_ETH_RPC_HOST: ""
+      BIFROST_CHAINS_ETH_DISABLED: "false"
+      BIFROST_CHAINS_ETH_RPC_HOST: http://ethereum:8545
+
+      # Stellar (XLM) - ENABLED
+      BIFROST_CHAINS_XLM_DISABLED: "false"
+      BIFROST_CHAINS_XLM_RPC_HOST: http://stellar:8000
+
+
+  ######################################################################################
+  # Midgard
+  ######################################################################################
+
+  midgard:
+    profiles:
+      - midgard
+    depends_on:
+      midgard-db:
+        condition: service_healthy
+      genesis-switchlynode:
+        condition: service_healthy
+    build:
+      context: https://github.com/SwitchlyProtocol/midgard.git
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      MIDGARD_SWITCHLY_NODE_URL: http://genesis-switchlynode:1317/switchly
+      MIDGARD_SWITCHLY_TENDERMINT_URL: http://genesis-switchlynode:27147/websocket
+      MIDGARD_TIMESCALE_HOST: midgard-db
+      MIDGARD_SWITCHLY_LAST_CHAIN_BACKOFF: ${BLOCK_TIME:-2s}
+    ports:
+      - 8080:8080
+    logging: *logging
+
+  midgard-db:
+    profiles:
+      - midgard
+    image: timescale/timescaledb:2.13.0-pg15
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=midgard
+      - POSTGRES_PASSWORD=password
+    command: postgres -c 'max_connections=250'
+    logging: *logging
+
+
+  ######################################################################################
+  # Events
+  ######################################################################################
+
+  events:
+    restart: unless-stopped
+    profiles:
+      - stagenet
+    build:
+      context: ../..
+      dockerfile: ./tools/events/Dockerfile
+      args:
+        TAG: stagenet
+    environment:
+      CONSOLE: 1
+      ENDPOINTS_SWITCHLYNODE: http://genesis-switchlynode:1317
+      ENDPOINTS_MIDGARD: http://midgard:8080
+      NETWORK: stagenet
+      SCAN_STOP: 0
+      # output everything
+      THRESHOLDS_USD_VALUE: 0
+      THRESHOLDS_SWITCH_VALUE: 0
+      THRESHOLDS_DELTA_USD_VALUE: 0
+      THRESHOLDS_DELTA_PERCENT: 0
 
   ######################################################################################
   # Validator-1
@@ -121,6 +207,10 @@ services:
     <<: *genesis-switchlynode
     profiles:
       - validator-1
+      - stagenet
+    depends_on:
+      genesis-switchlynode:
+        condition: service_healthy
     ports: []
     environment: &validator-1-switchlynode-environment
       <<: *genesis-switchlynode-environment
@@ -135,6 +225,9 @@ services:
     <<: *genesis-bifrost
     profiles:
       - validator-1
+      - stagenet
+    depends_on:
+      - validator-1-switchlynode
     environment: &validator-1-bifrost-environment
       <<: *genesis-bifrost-environment
       PEER: genesis-bifrost
@@ -142,9 +235,10 @@ services:
       CHAIN_RPC: validator-1-switchlynode:27147
       BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: validator-1-switchlynode:50051
     ports:
-      - 5040
-      - 6040
+      - 5041:5040
+      - 6041:6040
     volumes:
+      - "../../build/docker/scripts:/docker/scripts"
       - validator-1-bifrost:/var/data/bifrost
       - validator-1-switchlynode:/root/.switchlynode
 
@@ -156,6 +250,10 @@ services:
     <<: *validator-1-switchlynode
     profiles:
       - validator-2
+      - stagenet
+    depends_on:
+      genesis-switchlynode:
+        condition: service_healthy
     ports: []
     environment:
       <<: *validator-1-switchlynode-environment
@@ -167,12 +265,19 @@ services:
     <<: *validator-1-bifrost
     profiles:
       - validator-2
+      - stagenet
+    depends_on:
+      - validator-2-switchlynode
     environment:
       <<: *validator-1-bifrost-environment
       CHAIN_API: validator-2-switchlynode:1317
       CHAIN_RPC: validator-2-switchlynode:27147
       BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: validator-2-switchlynode:50051
+    ports:
+      - 5042:5040
+      - 6042:6040
     volumes:
+      - "../../build/docker/scripts:/docker/scripts"
       - validator-2-bifrost:/var/data/bifrost
       - validator-2-switchlynode:/root/.switchlynode
 
@@ -184,6 +289,10 @@ services:
     <<: *validator-1-switchlynode
     profiles:
       - validator-3
+      - stagenet
+    depends_on:
+      genesis-switchlynode:
+        condition: service_healthy
     ports: []
     environment:
       <<: *validator-1-switchlynode-environment
@@ -195,11 +304,54 @@ services:
     <<: *validator-1-bifrost
     profiles:
       - validator-3
+      - stagenet
+    depends_on:
+      - validator-3-switchlynode
     environment:
       <<: *validator-1-bifrost-environment
       CHAIN_API: validator-3-switchlynode:1317
       CHAIN_RPC: validator-3-switchlynode:27147
       BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: validator-3-switchlynode:50051
+    ports:
+      - 5043:5040
+      - 6043:6040
     volumes:
+      - "../../build/docker/scripts:/docker/scripts"
       - validator-3-bifrost:/var/data/bifrost
       - validator-3-switchlynode:/root/.switchlynode
+
+  ######################################################################################
+  # Ethereum
+  ######################################################################################
+  ethereum:
+    profiles:
+      - stagenet
+    image: ethereum/client-go:v1.15.11
+    restart: unless-stopped
+    environment:
+      BLOCK_TIME: ${BLOCK_TIME:-5}
+    ports:
+      - 8545:8545
+      - 30301:30301
+      - 30303:30303
+    volumes:
+      - "../../build/docker/scripts:/docker/scripts"
+    entrypoint: /docker/scripts/stagenet/start-eth.sh
+
+  ######################################################################################
+  # Stellar
+  ######################################################################################
+  stellar:
+    profiles:
+      - stagenet
+    image: stellar/quickstart:testing
+    restart: unless-stopped
+    command: --testnet
+    environment:
+      BLOCK_TIME: ${BLOCK_TIME:-5}
+    ports:
+      - 8000:8000
+      - 11626:11626
+      - 11625:11625
+    volumes:
+      - "../../build/docker/scripts:/docker/scripts"

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -12,7 +13,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -614,12 +615,17 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 	return account, nil
 }
 
-// processOutboundTx builds a simple Payment operation for outbound transfers.
-// This implementation uses Stellar's native payment operations with memo truncation
-// instead of complex Soroban contract calls, providing better reliability and performance.
-func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, error) {
+// processOutboundTx builds a Soroban contract invocation for outbound transfers via the router.
+// This implementation uses the SwitchlyRouter contract's transfer_out function, which implements
+// gas-aware routing and allowance management aligned with the Ethereum router pattern.
+func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.InvokeHostFunction, error) {
 	if len(tx.Coins) == 0 {
 		return nil, fmt.Errorf("no coins to send")
+	}
+
+	// Verify router contract is configured
+	if c.routerAddress == "" {
+		return nil, fmt.Errorf("no router address configured - setXLM_CONTRACT")
 	}
 
 	// Extract the asset to transfer (single-asset transfers only)
@@ -635,57 +641,97 @@ func (c *Client) processOutboundTx(tx stypes.TxOutItem) (*txnbuild.Payment, erro
 		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
 	}
 
-	// Convert amount from SwitchlyNode units to Stellar asset units
-	// SwitchlyNode uses 8 decimals internally, but Stellar assets may use different precision
-	amountRaw := coin.Amount.Uint64()
-
-	// Format amount as decimal string with asset-specific precision for Stellar SDK
-	decimals := assetMapping.StellarDecimals
-	divisor := float64(1)
-	for i := 0; i < int(decimals); i++ {
-		divisor *= 10
-	}
-	amountStr := fmt.Sprintf("%.*f", int(decimals), float64(amountRaw)/divisor)
-
-	// Create the appropriate Stellar asset type
-	var stellarAsset txnbuild.Asset
+	// Get asset contract address for the transfer_out call
+	var assetContractAddr string
 	if assetMapping.StellarAssetType == "native" {
-		// Native Lumens (XLM)
-		stellarAsset = txnbuild.NativeAsset{}
-	} else {
-		// Issued asset (requires Code and Issuer)
-		stellarAsset = txnbuild.CreditAsset{
-			Code:   assetMapping.StellarAssetCode,
-			Issuer: assetMapping.StellarAssetIssuer,
+		// For native XLM, use the native wrapper contract address
+		if addr, exists := assetMapping.ContractAddresses[GetCurrentNetwork()]; exists {
+			assetContractAddr = addr
+		} else {
+			return nil, fmt.Errorf("no contract address configured for native XLM on network %s", GetCurrentNetwork())
 		}
+	} else {
+		// For non-native assets, use the issuer/contract address
+		assetContractAddr = assetMapping.StellarAssetIssuer
 	}
 
-	// Derive Stellar address from vault public key for logging
+	// Convert addresses to Soroban ScAddress format
+	routerScAddr, err := c.getScAddressPtrFromString(c.routerAddress)
+	if err != nil {
+		return nil, fmt.Errorf("fail to convert router address to ScAddress: %w", err)
+	}
+
 	vaultAddr, err := tx.VaultPubKey.GetAddress(common.StellarChain)
 	if err != nil {
 		return nil, fmt.Errorf("fail to get Stellar address for vault pub key(%s): %w", tx.VaultPubKey, err)
 	}
+	vaultScAddr, err := c.getScAddressPtrFromString(vaultAddr.String())
+	if err != nil {
+		return nil, fmt.Errorf("fail to convert vault address to ScAddress: %w", err)
+	}
+
+	toScAddr, err := c.getScAddressPtrFromString(tx.ToAddress.String())
+	if err != nil {
+		return nil, fmt.Errorf("fail to convert recipient address to ScAddress: %w", err)
+	}
+
+	assetScAddr, err := c.getScAddressPtrFromString(assetContractAddr)
+	if err != nil {
+		return nil, fmt.Errorf("fail to convert asset address to ScAddress: %w", err)
+	}
+
+	// Convert amount from SwitchlyNode units to raw units for the contract
+	// Contract expects raw units (no decimal conversion needed for i128)
+	amountRaw := coin.Amount.Uint64()
 
 	c.logger.Info().
+		Str("router_address", c.routerAddress).
 		Str("vault_address", vaultAddr.String()).
 		Str("to_address", tx.ToAddress.String()).
+		Str("asset_contract", assetContractAddr).
 		Str("switch_asset", coin.Asset.String()).
 		Str("stellar_asset", assetMapping.StellarAssetCode).
 		Str("asset_type", assetMapping.StellarAssetType).
-		Str("amount_stellar", amountStr).
-		Str("amount_raw", fmt.Sprintf("%d", amountRaw)).
+		Uint64("amount_raw", amountRaw).
 		Int("decimals", assetMapping.StellarDecimals).
-		Str("original_memo", tx.Memo).
-		Msg("building simple payment for outbound transfer")
+		Str("memo", tx.Memo).
+		Msg("building router contract invocation for outbound transfer")
 
-	// Create Stellar payment operation
-	payment := &txnbuild.Payment{
-		Destination: tx.ToAddress.String(),
-		Amount:      amountStr,
-		Asset:       stellarAsset,
+	// Build the transfer_out contract invocation
+	// Function signature: transfer_out(vault: Address, to: Address, asset: Address, amount: i128, memo: String)
+	invokeHostFunction := &txnbuild.InvokeHostFunction{
+		HostFunction: xdr.HostFunction{
+			Type: xdr.HostFunctionTypeHostFunctionTypeInvokeContract,
+			InvokeContract: &xdr.InvokeContractArgs{
+				ContractAddress: *routerScAddr,
+				FunctionName:    "transfer_out",
+				Args: []xdr.ScVal{
+					// vault: Address (the vault making the transfer)
+					{Type: xdr.ScValTypeScvAddress, Address: vaultScAddr},
+					// to: Address (recipient)
+					{Type: xdr.ScValTypeScvAddress, Address: toScAddr},
+					// asset: Address (asset contract to transfer)
+					{Type: xdr.ScValTypeScvAddress, Address: assetScAddr},
+					// amount: i128 (raw amount in contract units)
+					{Type: xdr.ScValTypeScvI128, I128: &xdr.Int128Parts{
+						Lo: xdr.Uint64(amountRaw),
+						Hi: xdr.Int64(0),
+					}},
+					// memo: String (full memo - no 28-byte truncation needed for contract calls)
+					{Type: xdr.ScValTypeScvString, Str: (*xdr.ScString)(&tx.Memo)},
+				},
+			},
+		},
+		SourceAccount: vaultAddr.String(),
 	}
 
-	return payment, nil
+	c.logger.Info().
+		Str("function_name", "transfer_out").
+		Int("arg_count", len(invokeHostFunction.HostFunction.InvokeContract.Args)).
+		Str("source_account", vaultAddr.String()).
+		Msg("router contract invocation built successfully")
+
+	return invokeHostFunction, nil
 }
 
 // truncateMemoForStellar truncates transaction memos to fit Stellar's 28-byte limit.
@@ -878,8 +924,8 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 			gasAsset.String(), vaultGasCoin.Amount.String(), requiredGas.Amount.String())
 	}
 
-	// Build the payment operation using our helper function
-	payment, err := c.processOutboundTx(tx)
+	// Build the router contract invocation using our helper function
+	contractInvocation, err := c.processOutboundTx(tx)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("fail to build outbound transaction: %w", err)
 	}
@@ -917,29 +963,120 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		return nil, nil, nil, fmt.Errorf("fail to marshal stellar checkpoint: %w", err)
 	}
 
-	// Apply memo truncation to comply with Stellar's 28-byte limit
-	truncatedMemo := c.truncateMemoForStellar(tx.Memo)
-
 	c.logger.Info().
-		Str("original_memo", tx.Memo).
-		Str("truncated_memo", truncatedMemo).
-		Int("original_len", len(tx.Memo)).
-		Int("truncated_len", len(truncatedMemo)).
-		Msg("using truncated memo for simple payment")
+		Str("memo", tx.Memo).
+		Int("memo_len", len(tx.Memo)).
+		Msg("using full memo for contract invocation (no 28-byte limit)")
 
-	// Build Stellar transaction with payment operation and truncated memo
+	// Build Stellar transaction with contract invocation operation
+	// Note: No memo needed in transaction envelope since memo is passed as contract parameter
 	builtTx, err := txnbuild.NewTransaction(txnbuild.TransactionParams{
 		SourceAccount:        &account,
 		IncrementSequenceNum: true,
-		Operations:           []txnbuild.Operation{payment},
+		Operations:           []txnbuild.Operation{contractInvocation},
 		BaseFee:              txnbuild.MinBaseFee,
-		Memo:                 txnbuild.MemoText(truncatedMemo),
 		Preconditions: txnbuild.Preconditions{
 			TimeBounds: txnbuild.NewTimeout(300),
 		},
 	})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("building tx: %w", err)
+	}
+
+	// For Soroban contract invocations, we need to simulate first to get authorization entries
+	c.logger.Info().Msg("simulating contract invocation to get authorization requirements")
+
+	// Convert unsigned transaction to XDR for simulation
+	unsignedXDR, err := builtTx.Base64()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fail to encode transaction for simulation: %w", err)
+	}
+
+	// Simulate the transaction to get required authorizations
+	simulationResult, err := c.simulateSorobanTransaction(unsignedXDR)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fail to simulate Soroban transaction: %w", err)
+	}
+
+	c.logger.Info().
+		Int("auth_count", len(simulationResult.Auth)).
+		Str("min_resource_fee", simulationResult.MinResourceFee).
+		Msg("simulation completed successfully")
+
+	// Add authorization entries to the contract invocation
+	// Parse XDR auth entries from simulation and add them to the contract invocation
+	if len(simulationResult.Auth) > 0 {
+		c.logger.Info().
+			Int("auth_entries", len(simulationResult.Auth)).
+			Msg("parsing authorization entries from simulation")
+
+		authEntries := make([]xdr.SorobanAuthorizationEntry, 0, len(simulationResult.Auth))
+		for i, authStr := range simulationResult.Auth {
+			// Decode base64 XDR auth entry
+			authBytes, err := base64.StdEncoding.DecodeString(authStr)
+			if err != nil {
+				c.logger.Error().
+					Err(err).
+					Int("auth_index", i).
+					Str("auth_xdr", authStr).
+					Msg("failed to decode auth entry base64")
+				return nil, nil, nil, fmt.Errorf("failed to decode auth entry %d: %w", i, err)
+			}
+
+			// Unmarshal XDR into SorobanAuthorizationEntry
+			var authEntry xdr.SorobanAuthorizationEntry
+			reader := bytes.NewReader(authBytes)
+			if _, err := xdr.Unmarshal(reader, &authEntry); err != nil {
+				c.logger.Error().
+					Err(err).
+					Int("auth_index", i).
+					Msg("failed to unmarshal auth entry XDR")
+				return nil, nil, nil, fmt.Errorf("failed to unmarshal auth entry %d: %w", i, err)
+			}
+
+			authEntries = append(authEntries, authEntry)
+			c.logger.Debug().
+				Int("auth_index", i).
+				Msg("successfully parsed authorization entry")
+		}
+
+		// Add parsed authorization entries to the contract invocation
+		contractInvocation.Auth = authEntries
+		c.logger.Info().
+			Int("auth_entries_added", len(authEntries)).
+			Msg("authorization entries added to contract invocation")
+	}
+
+	// Calculate resource fee from simulation
+	baseFee := int64(txnbuild.MinBaseFee)
+	if simulationResult.MinResourceFee != "" {
+		if resourceFee, parseErr := strconv.ParseInt(simulationResult.MinResourceFee, 10, 64); parseErr == nil && resourceFee > 0 {
+			// Add resource fee to base fee for Soroban operations
+			baseFee = int64(txnbuild.MinBaseFee) + resourceFee
+			c.logger.Info().
+				Int("base_fee", txnbuild.MinBaseFee).
+				Int64("resource_fee", resourceFee).
+				Int64("total_fee", baseFee).
+				Msg("calculated transaction fee with resource costs")
+		} else {
+			c.logger.Warn().
+				Str("min_resource_fee", simulationResult.MinResourceFee).
+				Msg("failed to parse resource fee, using minimum base fee")
+		}
+	}
+
+	// Rebuild transaction with authorization entries and resource fees
+	builtTx, err = txnbuild.NewTransaction(txnbuild.TransactionParams{
+		SourceAccount:        &account,
+		IncrementSequenceNum: true,
+		Operations:           []txnbuild.Operation{contractInvocation},
+		BaseFee:              baseFee,
+		Preconditions: txnbuild.Preconditions{
+			TimeBounds: txnbuild.NewTimeout(300),
+		},
+	})
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("rebuilding tx with authorization: %w", err)
 	}
 
 	// Sign the transaction using Stellar SDK's built-in signing methods
@@ -1083,29 +1220,27 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 	}
 }
 
-// BroadcastTx submits a signed transaction to the Stellar network via Horizon API.
-// This implementation uses direct Horizon submission for simple payments, providing
-// better performance and reliability compared to Soroban RPC.
+// BroadcastTx submits a signed transaction to the Stellar network via Soroban RPC.
+// This implementation uses Soroban RPC for contract invocations, providing proper
+// support for the SwitchlyRouter transfer_out function with authorization handling.
 func (c *Client) BroadcastTx(tx stypes.TxOutItem, txBytes []byte) (string, error) {
 	txeBase64 := string(txBytes)
 
-	// Submit via Horizon API for optimal performance with simple payments
+	// Submit via Soroban RPC for contract invocations
 	c.logger.Info().
 		Str("memo", tx.Memo).
-		Msg("broadcasting simple payment via Horizon API")
+		Msg("broadcasting contract invocation via Soroban RPC")
 
-	resp, err := c.horizonClient.SubmitTransactionXDR(txeBase64)
+	hash, err := c.submitSorobanTransaction(txeBase64)
 	if err != nil {
-		return c.handleBroadcastError(tx, fmt.Errorf("horizon submitTransaction failed: %w", err))
+		return c.handleBroadcastError(tx, fmt.Errorf("soroban submitTransaction failed: %w", err))
 	}
 
-	hash := resp.Hash
-
-	// Horizon API confirms transaction success immediately upon acceptance
+	// Soroban RPC confirms transaction success immediately upon acceptance
 	c.logger.Info().
 		Str("hash", hash).
 		Str("memo", tx.Memo).
-		Msg("simple payment broadcast successful via Horizon")
+		Msg("router contract invocation broadcast successful via Soroban RPC")
 
 	// Update local sequence tracking after successful broadcast
 	c.accts.AdvanceSequence(tx.VaultPubKey)
@@ -1566,4 +1701,97 @@ func (c *Client) simulateSorobanTransaction(txeBase64 string) (*SorobanSimulatio
 	res.TransactionData = sorobanResp.Result.TransactionData
 
 	return res, nil
+}
+
+// submitSorobanTransaction submits a signed transaction to Soroban RPC
+func (c *Client) submitSorobanTransaction(txeBase64 string) (string, error) {
+	// Use XLM_HOST environment variable for Soroban RPC endpoint
+	xlmHost := os.Getenv("XLM_HOST")
+	if xlmHost == "" {
+		xlmHost = "stellar:8000" // Default fallback
+	}
+	sorobanURL := fmt.Sprintf("http://%s/soroban/rpc", xlmHost)
+
+	// Prepare sendTransaction request
+	sendReq := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      1,
+		"method":  "sendTransaction",
+		"params": map[string]interface{}{
+			"transaction": txeBase64,
+		},
+	}
+
+	reqBody, err := json.Marshal(sendReq)
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to marshal sendTransaction request")
+		return "", fmt.Errorf("failed to marshal sendTransaction request: %w", err)
+	}
+
+	// Make HTTP request to Soroban RPC
+	resp, err := http.Post(sorobanURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		c.logger.Error().Err(err).Msg("soroban RPC sendTransaction request failed")
+		return "", fmt.Errorf("failed to call Soroban RPC sendTransaction: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.logger.Error().Err(err).Msg("failed to read sendTransaction response")
+		return "", fmt.Errorf("failed to read sendTransaction response: %w", err)
+	}
+
+	// Parse response
+	var sorobanResp struct {
+		JSONRpc string `json:"jsonrpc"`
+		ID      int    `json:"id"`
+		Result  struct {
+			Status                string `json:"status"`
+			Hash                  string `json:"hash"`
+			LatestLedger          int64  `json:"latestLedger"`
+			LatestLedgerCloseTime string `json:"latestLedgerCloseTime"`
+		} `json:"result,omitempty"`
+		Error struct {
+			Code    int    `json:"code"`
+			Message string `json:"message"`
+			Data    string `json:"data,omitempty"`
+		} `json:"error,omitempty"`
+	}
+
+	if err := json.Unmarshal(body, &sorobanResp); err != nil {
+		c.logger.Error().
+			Err(err).
+			Str("response_body", string(body)).
+			Msg("failed to parse sendTransaction response")
+		return "", fmt.Errorf("failed to parse sendTransaction response: %w", err)
+	}
+
+	// Check for JSON-RPC errors first
+	if sorobanResp.Error.Code != 0 {
+		c.logger.Error().
+			Int("error_code", sorobanResp.Error.Code).
+			Str("error_message", sorobanResp.Error.Message).
+			Str("error_data", sorobanResp.Error.Data).
+			Msg("soroban RPC sendTransaction returned error")
+		return "", fmt.Errorf("Soroban RPC sendTransaction error %d: %s", sorobanResp.Error.Code, sorobanResp.Error.Message)
+	}
+
+	// Check transaction status
+	if sorobanResp.Result.Status != "PENDING" && sorobanResp.Result.Status != "SUCCESS" {
+		c.logger.Error().
+			Str("status", sorobanResp.Result.Status).
+			Str("hash", sorobanResp.Result.Hash).
+			Msg("soroban transaction not accepted")
+		return "", fmt.Errorf("transaction not accepted, status: %s", sorobanResp.Result.Status)
+	}
+
+	c.logger.Info().
+		Str("hash", sorobanResp.Result.Hash).
+		Str("status", sorobanResp.Result.Status).
+		Int64("latest_ledger", sorobanResp.Result.LatestLedger).
+		Msg("soroban transaction submitted successfully")
+
+	return sorobanResp.Result.Hash, nil
 }

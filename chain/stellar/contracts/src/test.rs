@@ -157,11 +157,13 @@ fn test_transfer_allowance() {
     // Mint tokens to the old vault
     stellar_asset_client.mint(&old_vault, &1000);
     
-    // Test transfer allowance (vault rotation)
+    // Test vault rotation using return_vault_assets (simplified approach)
     let amount = 1000i128;
     let memo = String::from_str(&env, "MIGRATE:VAULT");
     
-    client.transfer_allowance(&old_vault, &new_vault, &asset, &amount, &memo);
+    let assets = vec![&env, asset.clone()];
+    let amounts = vec![&env, amount];
+    client.return_vault_assets(&old_vault, &new_vault, &assets, &amounts, &memo);
     
     // Verify token was transferred
     assert_eq!(token_client.balance(&old_vault), 0);
@@ -204,7 +206,7 @@ fn test_return_vault_assets() {
 }
 
 #[test]
-#[should_panic(expected = "Assets and amounts length mismatch")]
+#[should_panic(expected = "Assets and amounts array length mismatch")]
 fn test_return_vault_assets_length_mismatch() {
     let env = Env::default();
     env.mock_all_auths();
@@ -234,7 +236,7 @@ fn test_version() {
     let client = SwitchlyRouterClient::new(&env, &contract_id);
     
     let version = client.version();
-    assert_eq!(version, String::from_str(&env, "1.0.0"));
+    assert_eq!(version, String::from_str(&env, "3.0.0-stateless"));
 }
 
 #[test]
@@ -332,9 +334,14 @@ fn test_vault_rotation_scenario() {
     stellar_asset_client1.mint(&old_vault, &1500);
     stellar_asset_client2.mint(&old_vault, &3000);
     
-    // Transfer individual assets
-    client.transfer_allowance(&old_vault, &new_vault, &asset1, &1000i128, &String::from_str(&env, "ROTATE:ASSET1"));
-    client.transfer_allowance(&old_vault, &new_vault, &asset2, &2000i128, &String::from_str(&env, "ROTATE:ASSET2"));
+    // Transfer individual assets using return_vault_assets (simplified approach)
+    let assets1 = vec![&env, asset1.clone()];
+    let amounts1 = vec![&env, 1000i128];
+    client.return_vault_assets(&old_vault, &new_vault, &assets1, &amounts1, &String::from_str(&env, "ROTATE:ASSET1"));
+    
+    let assets2 = vec![&env, asset2.clone()];
+    let amounts2 = vec![&env, 2000i128];
+    client.return_vault_assets(&old_vault, &new_vault, &assets2, &amounts2, &String::from_str(&env, "ROTATE:ASSET2"));
     
     // Or transfer all assets at once
     let assets = vec![&env, asset1.clone(), asset2.clone()];
@@ -446,7 +453,7 @@ fn test_no_initialization_required() {
     
     // Should be able to call version immediately
     let version = client.version();
-    assert_eq!(version, String::from_str(&env, "1.0.0"));
+    assert_eq!(version, String::from_str(&env, "3.0.0-stateless"));
     
     // Verify token was transferred (no initialization was required)
     assert_eq!(token_client.balance(&from), 0);

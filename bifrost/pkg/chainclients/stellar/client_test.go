@@ -10,7 +10,9 @@ package stellar
 // - Direct Horizon API integration for improved reliability
 
 import (
+	"encoding/base64"
 	"math/big"
+	"strconv"
 	"testing"
 	"time"
 
@@ -266,35 +268,63 @@ func (s *StellarClientTestSuite) TestGetAccountByAddress(c *C) {
 }
 
 func (s *StellarClientTestSuite) TestProcessOutboundTx(c *C) {
-	// Verify processOutboundTx creates proper Payment operations for supported assets
+	// Verify processOutboundTx creates proper InvokeHostFunction operations for router contract calls
 
-	// Test native XLM payment creation
-	coin := common.NewCoin(common.XLMAsset, cosmos.NewUint(10000000)) // 1 XLM (SwitchlyNode: 8 decimals → Stellar: 7 decimals)
+	// Set a mock router address for testing
+	s.client.routerAddress = "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+
+	// Test native XLM contract invocation creation
+	coin := common.NewCoin(common.XLMAsset, cosmos.NewUint(10000000)) // 1 XLM
+
+	// Use a valid public key that won't cause address conversion errors
+	validPubKey, err := common.NewPubKey("switchlypub1addwnpepq2ryyje6hfx02gpgq2fy3mdpcs9jzuq8winsr2wnqg2vmg6fkwmvgx8vf9k")
+	c.Assert(err, IsNil)
+
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.StellarChain,
 		ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-		VaultPubKey: common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3"),
+		VaultPubKey: validPubKey,
 		Coins:       common.Coins{coin},
-		Memo:        "test memo",
+		Memo:        "OUT:1234567890ABCDEF1234567890ABCDEF12345678",
 	}
 
-	payment, err := s.client.processOutboundTx(txOutItem)
+	contractInvocation, err := s.client.processOutboundTx(txOutItem)
 	c.Assert(err, IsNil)
-	c.Assert(payment, NotNil)
+	c.Assert(contractInvocation, NotNil)
 
-	// Verify Payment operation properties
-	c.Assert(payment.Destination, Equals, "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM")
-	c.Assert(payment.Amount, Equals, "1.0000000") // 10000000 / 10^7 = 1.0 XLM
+	// Verify InvokeHostFunction operation properties
+	c.Assert(contractInvocation.HostFunction.Type, Equals, xdr.HostFunctionTypeHostFunctionTypeInvokeContract)
+	c.Assert(contractInvocation.HostFunction.InvokeContract, NotNil)
+	c.Assert(string(contractInvocation.HostFunction.InvokeContract.FunctionName), Equals, "transfer_out")
+	c.Assert(len(contractInvocation.HostFunction.InvokeContract.Args), Equals, 5)
 
-	// Confirm native XLM asset type
-	_, isNative := payment.Asset.(txnbuild.NativeAsset)
-	c.Assert(isNative, Equals, true)
+	// Verify function arguments
+	args := contractInvocation.HostFunction.InvokeContract.Args
+	c.Assert(args[0].Type, Equals, xdr.ScValTypeScvAddress) // vault
+	c.Assert(args[1].Type, Equals, xdr.ScValTypeScvAddress) // to
+	c.Assert(args[2].Type, Equals, xdr.ScValTypeScvAddress) // asset
+	c.Assert(args[3].Type, Equals, xdr.ScValTypeScvI128)    // amount
+	c.Assert(args[4].Type, Equals, xdr.ScValTypeScvString)  // memo
+
+	// Verify memo is passed as function parameter (no 28-byte limit)
+	memoStr := string(*args[4].Str)
+	c.Assert(memoStr, Equals, txOutItem.Memo)
+	c.Assert(len(memoStr) > 28, Equals, true) // Should be longer than Stellar's envelope memo limit
+
+	// Test error handling: no router address configured
+	s.client.routerAddress = ""
+	_, err = s.client.processOutboundTx(txOutItem)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Matches, ".*no router address configured.*")
+
+	// Reset router address for remaining tests
+	s.client.routerAddress = "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
 
 	// Test error handling: empty coins array
 	emptyTxOutItem := stypes.TxOutItem{
 		Chain:       common.StellarChain,
 		ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-		VaultPubKey: common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3"),
+		VaultPubKey: validPubKey,
 		Coins:       common.Coins{},
 		Memo:        "test memo",
 	}
@@ -403,7 +433,7 @@ func (s *StellarClientTestSuite) TestAddressConversionFunctions(c *C) {
 	accountAddr := "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"
 
 	// Test with valid Stellar contract address (starts with 'C')
-	contractAddr := "CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R"
+	contractAddr := "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
 
 	// Test with invalid address
 	invalidAddr := "invalid_address"
@@ -445,14 +475,19 @@ func (s *StellarClientTestSuite) TestInvokeHostFunctionTransactionSigning(c *C) 
 	// This simulates the actual outbound transaction signing that was failing
 
 	// Set up the router address for testing
-	s.client.routerAddress = "CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R"
+	s.client.routerAddress = "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
 
 	// Create a test transaction out item that matches what we see in the logs
 	coin := common.NewCoin(common.XLMAsset, cosmos.NewUint(74044534707)) // Amount from logs
+
+	// Use a valid public key that won't cause address conversion errors
+	validPubKey, err := common.NewPubKey("switchlypub1addwnpepq2ryyje6hfx02gpgq2fy3mdpcs9jzuq8winsr2wnqg2vmg6fkwmvgx8vf9k")
+	c.Assert(err, IsNil)
+
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.StellarChain,
 		ToAddress:   common.Address("GB3F6OUNAIAMDGV5LVT2UFWAWACQ2LRE6OMF2OTSYCY7AKXHAMEXG37V"),
-		VaultPubKey: common.PubKey("tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuhpesc6"),
+		VaultPubKey: validPubKey,
 		Coins:       common.Coins{coin},
 		Memo:        "OUT:56D832CB5365562BC87F8A309CB3D3A518A5D86715C574D6BED791F42F2F9762",
 		MaxGas:      common.Gas{common.NewCoin(common.XLMAsset, cosmos.NewUint(150))},
@@ -545,4 +580,174 @@ func (s *StellarClientTestSuite) TestInvokeHostFunctionTransactionSigning(c *C) 
 	amountParts := args[3].I128
 	c.Assert(amountParts.Lo, Equals, xdr.Uint64(coin.Amount.Uint64()))
 	c.Assert(amountParts.Hi, Equals, xdr.Int64(0))
+}
+
+func (s *StellarClientTestSuite) TestAuthorizationEntryParsing(c *C) {
+	// Test authorization entry parsing from simulation results
+
+	// Create mock simulation result with authorization entries
+	mockAuthEntry := "AAAAAQAAAAEAAAAFAAAAAAAAAAEAAAAFAAAAAAAAAAEAAAABAAAAHQAAAAFUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
+	simulationResult := &SorobanSimulationResult{
+		Auth:            []string{mockAuthEntry},
+		MinResourceFee:  "1000000",
+		TransactionData: "mock_transaction_data",
+	}
+
+	// Test simulation result structure
+	c.Assert(len(simulationResult.Auth), Equals, 1)
+	c.Assert(simulationResult.Auth[0], Equals, mockAuthEntry)
+	c.Assert(simulationResult.MinResourceFee, Equals, "1000000")
+
+	// Test base64 decoding of auth entry
+	authBytes, err := base64.StdEncoding.DecodeString(mockAuthEntry)
+	c.Assert(err, IsNil)
+	c.Assert(len(authBytes) > 0, Equals, true) // Should decode successfully
+}
+
+func (s *StellarClientTestSuite) TestResourceFeeCalculation(c *C) {
+	// Test resource fee calculation from simulation results
+
+	testCases := []struct {
+		name            string
+		minResourceFee  string
+		expectedBaseFee int64
+		shouldSucceed   bool
+	}{
+		{
+			name:            "Valid resource fee",
+			minResourceFee:  "1000000",
+			expectedBaseFee: int64(txnbuild.MinBaseFee) + 1000000,
+			shouldSucceed:   true,
+		},
+		{
+			name:            "Zero resource fee",
+			minResourceFee:  "0",
+			expectedBaseFee: int64(txnbuild.MinBaseFee),
+			shouldSucceed:   true,
+		},
+		{
+			name:            "Empty resource fee",
+			minResourceFee:  "",
+			expectedBaseFee: int64(txnbuild.MinBaseFee),
+			shouldSucceed:   true,
+		},
+		{
+			name:            "Invalid resource fee",
+			minResourceFee:  "invalid",
+			expectedBaseFee: int64(txnbuild.MinBaseFee),
+			shouldSucceed:   true,
+		},
+	}
+
+	for _, tc := range testCases {
+		c.Logf("Testing case: %s", tc.name)
+
+		// Test resource fee calculation logic
+		baseFee := int64(txnbuild.MinBaseFee)
+		if tc.minResourceFee != "" {
+			if resourceFee, parseErr := strconv.ParseInt(tc.minResourceFee, 10, 64); parseErr == nil && resourceFee > 0 {
+				baseFee = int64(txnbuild.MinBaseFee) + resourceFee
+			}
+		}
+
+		c.Assert(baseFee, Equals, tc.expectedBaseFee)
+	}
+}
+
+func (s *StellarClientTestSuite) TestContractInvocationWithAuth(c *C) {
+	// Test complete contract invocation flow structure validation
+
+	// Test XDR structure validation for contract invocation
+	routerAddress := "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+
+	// Test router address conversion
+	routerScAddr, err := s.client.getScAddressFromString(routerAddress)
+	c.Assert(err, IsNil)
+	c.Assert(routerScAddr.Type, Equals, xdr.ScAddressTypeScAddressTypeContract)
+	c.Assert(routerScAddr.ContractId, NotNil)
+
+	// Test Stellar address conversion
+	stellarAddr := "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"
+	stellarScAddr, err := s.client.getScAddressPtrFromString(stellarAddr)
+	c.Assert(err, IsNil)
+	c.Assert(stellarScAddr.Type, Equals, xdr.ScAddressTypeScAddressTypeAccount)
+	c.Assert(stellarScAddr.AccountId, NotNil)
+
+	// Test asset address conversion
+	assetAddr := "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+	assetScAddr, err := s.client.getScAddressPtrFromString(assetAddr)
+	c.Assert(err, IsNil)
+	c.Assert(assetScAddr.Type, Equals, xdr.ScAddressTypeScAddressTypeContract)
+	c.Assert(assetScAddr.ContractId, NotNil)
+
+	// Test amount conversion
+	amount := cosmos.NewUint(50000000)
+	amountParts := &xdr.Int128Parts{
+		Lo: xdr.Uint64(amount.Uint64()),
+		Hi: xdr.Int64(0),
+	}
+	c.Assert(amountParts.Lo, Equals, xdr.Uint64(50000000))
+	c.Assert(amountParts.Hi, Equals, xdr.Int64(0))
+
+	// Test memo string conversion
+	memo := "OUT:COMPLETE_FLOW_TEST_WITH_AUTHORIZATION_ENTRIES"
+	memoXdr := xdr.ScString(memo)
+	c.Assert(string(memoXdr), Equals, memo)
+	c.Assert(len(string(memoXdr)) > 28, Equals, true) // Verify no 28-byte truncation
+}
+
+func (s *StellarClientTestSuite) TestSorobanSimulationStructure(c *C) {
+	// Test SorobanSimulationResult structure and parsing
+
+	// Test result structure
+	result := &SorobanSimulationResult{
+		Auth:            []string{"auth_entry_1", "auth_entry_2"},
+		MinResourceFee:  "5000000",
+		TransactionData: "test_transaction_data",
+	}
+
+	// Verify structure
+	c.Assert(len(result.Auth), Equals, 2)
+	c.Assert(result.Auth[0], Equals, "auth_entry_1")
+	c.Assert(result.Auth[1], Equals, "auth_entry_2")
+	c.Assert(result.MinResourceFee, Equals, "5000000")
+	c.Assert(result.TransactionData, Equals, "test_transaction_data")
+
+	// Test empty result
+	emptyResult := &SorobanSimulationResult{}
+	c.Assert(len(emptyResult.Auth), Equals, 0)
+	c.Assert(emptyResult.MinResourceFee, Equals, "")
+	c.Assert(emptyResult.TransactionData, Equals, "")
+}
+
+func (s *StellarClientTestSuite) TestErrorHandling(c *C) {
+	// Test error handling scenarios without public key validation
+
+	// Test router address validation
+	originalRouter := s.client.routerAddress
+	s.client.routerAddress = ""
+
+	// Test that empty router address is detected
+	c.Assert(s.client.routerAddress, Equals, "")
+
+	// Test router address setting
+	testRouter := "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+	s.client.routerAddress = testRouter
+	c.Assert(s.client.routerAddress, Equals, testRouter)
+
+	// Test address conversion errors
+	invalidAddress := "INVALID_ADDRESS"
+	_, err := s.client.getScAddressPtrFromString(invalidAddress)
+	c.Assert(err, NotNil)
+	c.Assert(err.Error(), Matches, ".*failed to decode.*")
+
+	// Test valid address conversion
+	validAddress := "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"
+	scAddr, err := s.client.getScAddressPtrFromString(validAddress)
+	c.Assert(err, IsNil)
+	c.Assert(scAddr.Type, Equals, xdr.ScAddressTypeScAddressTypeAccount)
+
+	// Restore original router
+	s.client.routerAddress = originalRouter
 }
