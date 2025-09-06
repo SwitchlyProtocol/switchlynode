@@ -5,7 +5,7 @@
 # trunk-ignore-all(yamllint/empty-values)
 
 volumes:
-  genesis-switchlynode:
+  switchlynode:
   genesis-bifrost:
   validator-1-switchlynode:
   validator-1-bifrost:
@@ -23,7 +23,7 @@ services:
     profiles:
       - _
     restart: unless-stopped
-    build:       
+    build:
       context: ../..
       dockerfile: ./build/docker/Dockerfile
     environment: &switchly-environment
@@ -51,7 +51,7 @@ services:
 
   # ------------------------------ switchlynode ------------------------------
 
-  genesis-switchlynode: &genesis-switchlynode
+  switchlynode: &switchlynode
     <<: *switchly-defaults
     profiles:
       - genesis
@@ -66,10 +66,16 @@ services:
       - 6060:6060
     volumes:
       - ./mnt:/mnt
-      - genesis-switchlynode:/root/.switchlynode
+      - switchlynode:/root/.switchlynode
     entrypoint: /scripts/genesis.sh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1317/cosmos/base/tendermint/v1beta1/node_info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
-    environment: &genesis-switchlynode-environment
+    environment: &switchlynode-environment
       <<: *switchly-environment
       SEED: switchlynode
 
@@ -81,24 +87,24 @@ services:
       - genesis
       - stagenet
     depends_on:
-      genesis-switchlynode:
+      switchlynode:
         condition: service_healthy
     ports:
       - 5040:5040
       - 6040:6040
     entrypoint: /scripts/bifrost.sh
     volumes:
-      - "../../build/docker/scripts:/docker/scripts"
+      - "../../build/scripts:/docker/scripts"
       - genesis-bifrost:/var/data/bifrost
-      - genesis-switchlynode:/root/.switchlynode
+      - switchlynode:/root/.switchlynode
     command: ["bifrost"]
 
     environment: &genesis-bifrost-environment
       <<: *switchly-environment
 
-      CHAIN_API: genesis-switchlynode:1317
-      CHAIN_RPC: genesis-switchlynode:27147
-      BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: genesis-switchlynode:50051
+      CHAIN_API: switchlynode:1317
+      CHAIN_RPC: switchlynode:27147
+      BIFROST_SWITCHLYCHAIN_CHAIN_EBIFROST: switchlynode:50051
       ETH_HOST: ${ETH_HOST:-http://ethereum:8545}
       XLM_HOST: ${XLM_HOST:-stellar:8000}
       BLOCK_SCANNER_BACKOFF: ${BLOCK_SCANNER_BACKOFF:-60s}
@@ -147,15 +153,15 @@ services:
     depends_on:
       midgard-db:
         condition: service_healthy
-      genesis-switchlynode:
+      switchlynode:
         condition: service_healthy
     build:
       context: https://github.com/SwitchlyProtocol/midgard.git
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      MIDGARD_SWITCHLY_NODE_URL: http://genesis-switchlynode:1317/switchly
-      MIDGARD_SWITCHLY_TENDERMINT_URL: http://genesis-switchlynode:27147/websocket
+      MIDGARD_SWITCHLY_NODE_URL: http://switchlynode:1317/switchly
+      MIDGARD_SWITCHLY_TENDERMINT_URL: http://switchlynode:27147/websocket
       MIDGARD_TIMESCALE_HOST: midgard-db
       MIDGARD_SWITCHLY_LAST_CHAIN_BACKOFF: ${BLOCK_TIME:-2s}
     ports:
@@ -171,6 +177,12 @@ services:
       - POSTGRES_USER=midgard
       - POSTGRES_PASSWORD=password
     command: postgres -c 'max_connections=250'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U midgard"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     logging: *logging
 
 
@@ -189,7 +201,7 @@ services:
         TAG: stagenet
     environment:
       CONSOLE: 1
-      ENDPOINTS_SWITCHLYNODE: http://genesis-switchlynode:1317
+      ENDPOINTS_SWITCHLYNODE: http://switchlynode:1317
       ENDPOINTS_MIDGARD: http://midgard:8080
       NETWORK: stagenet
       SCAN_STOP: 0
@@ -204,18 +216,18 @@ services:
   ######################################################################################
 
   validator-1-switchlynode: &validator-1-switchlynode
-    <<: *genesis-switchlynode
+    <<: *switchlynode
     profiles:
       - validator-1
       - stagenet
     depends_on:
-      genesis-switchlynode:
+      switchlynode:
         condition: service_healthy
     ports: []
     environment: &validator-1-switchlynode-environment
-      <<: *genesis-switchlynode-environment
-      PEER: genesis-switchlynode
-      SEEDS: genesis-switchlynode
+      <<: *switchlynode-environment
+      PEER: switchlynode
+      SEEDS: switchlynode
     volumes:
       - ./mnt:/mnt
       - validator-1-switchlynode:/root/.switchlynode
@@ -238,7 +250,7 @@ services:
       - 5041:5040
       - 6041:6040
     volumes:
-      - "../../build/docker/scripts:/docker/scripts"
+      - "../../build/scripts:/docker/scripts"
       - validator-1-bifrost:/var/data/bifrost
       - validator-1-switchlynode:/root/.switchlynode
 
@@ -252,7 +264,7 @@ services:
       - validator-2
       - stagenet
     depends_on:
-      genesis-switchlynode:
+      switchlynode:
         condition: service_healthy
     ports: []
     environment:
@@ -277,7 +289,7 @@ services:
       - 5042:5040
       - 6042:6040
     volumes:
-      - "../../build/docker/scripts:/docker/scripts"
+      - "../../build/scripts:/docker/scripts"
       - validator-2-bifrost:/var/data/bifrost
       - validator-2-switchlynode:/root/.switchlynode
 
@@ -291,7 +303,7 @@ services:
       - validator-3
       - stagenet
     depends_on:
-      genesis-switchlynode:
+      switchlynode:
         condition: service_healthy
     ports: []
     environment:
@@ -316,7 +328,7 @@ services:
       - 5043:5040
       - 6043:6040
     volumes:
-      - "../../build/docker/scripts:/docker/scripts"
+      - "../../build/scripts:/docker/scripts"
       - validator-3-bifrost:/var/data/bifrost
       - validator-3-switchlynode:/root/.switchlynode
 
@@ -334,9 +346,17 @@ services:
       - 8545:8545
       - 30301:30301
       - 30303:30303
-    volumes:
-      - "../../build/docker/scripts:/docker/scripts"
-    entrypoint: /docker/scripts/stagenet/start-eth.sh
+    command: >
+      --sepolia
+      --http --http.api eth,net,web3
+      --http.addr 0.0.0.0
+      --http.port 8545
+      --http.corsdomain "*"
+      --ws --ws.api eth,net,web3
+      --ws.addr 0.0.0.0
+      --ws.port 8546
+      --authrpc.port 8551
+      --datadir /sepolia-data
 
   ######################################################################################
   # Stellar
@@ -354,4 +374,4 @@ services:
       - 11626:11626
       - 11625:11625
     volumes:
-      - "../../build/docker/scripts:/docker/scripts"
+      - "../../build/scripts:/docker/scripts"
