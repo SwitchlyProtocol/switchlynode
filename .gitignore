@@ -88,3 +88,9 @@ preparam.data
 coverage.xml
 report.xml
 /switchlynode
+# Rust build artifacts
+chain/stellar/contracts/target/
+chain/stellar/target/
+build/bifrost
+build/recover-keyshare-backup
+build/switchlynode
