@@ -252,7 +252,10 @@ func (p *pipeline) SpawnSignings(s pipelineSigner, bridge switchlyclient.Switchl
 			// release the vault status semaphore and vault/chain lock when complete
 			defer func() {
 				vc2 := vaultChain{item.TxOutItem.VaultPubKey, item.TxOutItem.Chain}
-				<-p.vaultChainLock[vc2]
+				// Only release vault/chain lock for non-Stellar chains (since Stellar skips locking)
+				if item.TxOutItem.Chain != common.StellarChain {
+					<-p.vaultChainLock[vc2]
+				}
 				p.vaultStatusConcurrency[vaultStatus].release(1)
 			}()
 
