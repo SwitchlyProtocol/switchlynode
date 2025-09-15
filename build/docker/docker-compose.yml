@@ -34,7 +34,8 @@ services:
       SIGNER_NAME: switchly
       SIGNER_PASSWD: password
       SWITCHLYNODE_GRPC_ENABLE: true
-      XLM_CONTRACT: "CC7XNCYBCI2UVAE2A5TUBALEXMZXTYHLMKYOA6FSXVRT42YLR76NQR7R" # testnet
+      XLM_CONTRACT: "CA2LDIRKDFHX2WPWKL7C3CNTFICTOH5E6RG6MP74TT56F7QQ6LXCMBHN" # fixed router
+    
     logging: &logging
       driver: "json-file"
       options:
@@ -171,7 +172,7 @@ services:
       AVAX_HOST: ${AVAX_HOST:-http://avalanche:9650/ext/bc/C/rpc}
       GAIA_HOST: ${GAIA_HOST:-http://gaia:26657}
       GAIA_GRPC_HOST: ${GAIA_GRPC_HOST:-gaia:9090}
-      XLM_HOST: ${XLM_HOST:-stellar:8000}
+      XLM_HOST: ${XLM_HOST:-http://stellar:8000}
       BLOCK_SCANNER_BACKOFF: ${BLOCK_SCANNER_BACKOFF:-60s}
       PEER: ${PEER:-}
       BIFROST_METRICS_PPROF_ENABLED: "true"
@@ -195,7 +196,7 @@ services:
       BIFROST_CHAINS_BSC_BLOCK_SCANNER_MAX_GAS_LIMIT: 80000
       BIFROST_CHAINS_BASE_BLOCK_SCANNER_MAX_GAS_LIMIT: 80000
 
-      # EVM Chains - DISABLED
+      # BNB chain - DISABLED
       BIFROST_CHAINS_BSC_DISABLED: "true"
       BIFROST_CHAINS_BSC_RPC_HOST: ${BSC_HOST:-http://binance-smart:8545}
       BIFROST_CHAINS_BASE_DISABLED: "true"
@@ -205,7 +206,7 @@ services:
       BIFROST_CHAINS_ETH_DISABLED: "false"
       BIFROST_CHAINS_ETH_RPC_HOST: ${ETH_HOST:-http://ethereum:8545}
 
-      # enable xrp
+      # XRP - DISABLED
       BIFROST_CHAINS_XRP_DISABLED: "true"
       BIFROST_CHAINS_XRP_RPC_HOST: http://xrp:5005
       BIFROST_CHAINS_XRP_CHAIN_NETWORK: "1234"
@@ -213,8 +214,6 @@ services:
       # Stellar (XLM) - ENABLED
       BIFROST_CHAINS_XLM_DISABLED: "false"
       BIFROST_CHAINS_XLM_RPC_HOST: http://stellar:8000
-      BIFROST_CHAINS_XLM_CHAIN_NETWORK: "testnet"
-      BIFROST_CHAINS_XLM_ROUTER_ADDRESS: "CB7IQG5OEE2HWDXCOIBWRVEK6XZOENZDZF276YNPIMYDSAKVRPETYDQ5"
       
       # UTXO Chains - DISABLED
       BIFROST_CHAINS_BTC_DISABLED: "true"

@@ -219,7 +219,6 @@ services:
     <<: *switchlynode
     profiles:
       - validator-1
-      - stagenet
     depends_on:
       switchlynode:
         condition: service_healthy
@@ -237,7 +236,6 @@ services:
     <<: *genesis-bifrost
     profiles:
       - validator-1
-      - stagenet
     depends_on:
       - validator-1-switchlynode
     environment: &validator-1-bifrost-environment
@@ -262,7 +260,6 @@ services:
     <<: *validator-1-switchlynode
     profiles:
       - validator-2
-      - stagenet
     depends_on:
       switchlynode:
         condition: service_healthy
@@ -277,7 +274,6 @@ services:
     <<: *validator-1-bifrost
     profiles:
       - validator-2
-      - stagenet
     depends_on:
       - validator-2-switchlynode
     environment:
@@ -300,8 +296,7 @@ services:
   validator-3-switchlynode:
     <<: *validator-1-switchlynode
     profiles:
-      - validator-3
-      - stagenet
+      - validator-3   
     depends_on:
       switchlynode:
         condition: service_healthy
@@ -316,7 +311,6 @@ services:
     <<: *validator-1-bifrost
     profiles:
       - validator-3
-      - stagenet
     depends_on:
       - validator-3-switchlynode
     environment:

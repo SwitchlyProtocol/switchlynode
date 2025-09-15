@@ -1321,7 +1321,7 @@ func (c *StellarBlockScanner) getRouterAddresses() ([]string, error) {
 
 	// Fallback: Check for environment variable configuration
 	// This allows manual configuration for testing/mocknet environments
-	envRouterAddress := os.Getenv("BIFROST_CHAINS_XLM_ROUTER_ADDRESS")
+	envRouterAddress := os.Getenv("XLM_CONTRACT")
 	if envRouterAddress != "" {
 		// Split multiple addresses if comma-separated
 		addresses := strings.Split(envRouterAddress, ",")
@@ -1365,9 +1365,9 @@ func (c *StellarBlockScanner) getRouterAddresses() ([]string, error) {
 
 // getEnvironmentRouterAddress checks for router addresses configured via environment variables
 func (c *StellarBlockScanner) getEnvironmentRouterAddress() string {
-	// Check for environment variable BIFROST_CHAINS_XLM_ROUTER_ADDRESS
+	// Check for environment variableXLM_CONTRACT
 	// This allows operators to configure router addresses for testing/mocknet
-	if routerAddr := os.Getenv("BIFROST_CHAINS_XLM_ROUTER_ADDRESS"); routerAddr != "" {
+	if routerAddr := os.Getenv("XLM_CONTRACT"); routerAddr != "" {
 		if c.isValidStellarContractAddress(routerAddr) {
 			return routerAddr
 		}
@@ -1376,8 +1376,8 @@ func (c *StellarBlockScanner) getEnvironmentRouterAddress() string {
 			Msg("invalid router address in environment variable")
 	}
 
-	// Check for environment variable BIFROST_CHAINS_XLM_ROUTER_ADDRESSES (comma-separated)
-	if routerAddrs := os.Getenv("BIFROST_CHAINS_XLM_ROUTER_ADDRESSES"); routerAddrs != "" {
+	// Check for environment variableXLM_CONTRACTES (comma-separated)
+	if routerAddrs := os.Getenv("XLM_CONTRACTES"); routerAddrs != "" {
 		addresses := strings.Split(routerAddrs, ",")
 		for _, addr := range addresses {
 			addr = strings.TrimSpace(addr)

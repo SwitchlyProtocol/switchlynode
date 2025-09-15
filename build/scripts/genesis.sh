@@ -160,14 +160,14 @@ cat > ~/.switchlynode/data/priv_validator_state.json << EOF
 }
 EOF
 
-# Force genesis file reload by updating genesis time AND chain_id
+# Force genesis file reload by updating genesis time only
 # This ensures Cosmos SDK treats this as a completely new chain
 CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%6NZ")
-CHAIN_ID="switchly-$(date +%s)"
-jq --arg time "$CURRENT_TIME" --arg chain_id "$CHAIN_ID" '.genesis_time = $time | .chain_id = $chain_id' ~/.switchlynode/config/genesis.json > /tmp/genesis_fixed.json
+# Update only genesis time, keep chain_id unchanged
+jq --arg time "$CURRENT_TIME" '.genesis_time = $time' ~/.switchlynode/config/genesis.json > /tmp/genesis_fixed.json
 mv /tmp/genesis_fixed.json ~/.switchlynode/config/genesis.json
 
-echo "Updated genesis time and chain_id to force complete reload. Final node account count:"
+echo "Updated genesis time to force complete reload. Final node account count:"
 cat ~/.switchlynode/config/genesis.json | jq '.app_state.switchly.node_accounts | length'
 
 # Ensure we also clear any cosmos app database

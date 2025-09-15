@@ -716,10 +716,8 @@ func (s *Signer) signAndBroadcast(item TxOutStoreItem) ([]byte, *types.TxInItem,
 		s.logger.Error().Err(err).Str("memo", tx.Memo).Msg("fail to broadcast tx to chain")
 
 		// Clear stale items for specific recoverable cases
-		if strings.Contains(err.Error(), "sequence number stale (tx_bad_seq)") ||
-			strings.Contains(err.Error(), "tx_malformed") ||
-			strings.Contains(err.Error(), "timeout waiting for soroban transaction result") ||
-			strings.Contains(err.Error(), "no signed transaction available to broadcast") {
+		if strings.Contains(err.Error(), "tx_bad_seq") ||
+			strings.Contains(err.Error(), "tx_malformed") {
 			s.logger.Warn().
 				Str("chain", string(chain.GetChain())).
 				Str("memo", tx.Memo).

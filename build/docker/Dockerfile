@@ -27,7 +27,7 @@ FROM debian:bullseye-20241111-slim@sha256:60a596681410bd31a48e5975806a24cd78328f
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
-  ca-certificates=20210119 \
+  ca-certificates \
   curl \
   jq=1.6-2.1 \
   libffi-dev=3.3-6 \
@@ -36,6 +36,7 @@ RUN apt-get update && \
   procps=2:3.3.17-5 \
   python3=3.9.2-3 \
   python3-pip=20.3.4-4+deb11u1 && \
+  update-ca-certificates && \
   rm -rf /var/lib/apt/lists/* && \
   pip3 install --no-cache-dir requests==2.32.3 web3==7.5.0 retry==0.9.2
 
