@@ -4,6 +4,9 @@
 
 # trunk-ignore-all(yamllint/empty-values)
 
+# Compose project name (otherwise defaults to the parent dir "docker" -> docker-switchlynode-1).
+name: switchly
+
 volumes:
   cli:
   switchlynode:
