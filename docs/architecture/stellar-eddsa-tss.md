@@ -1,0 +1,178 @@
+# Stellar EdDSA Threshold Signing — Implementation Plan
+
+Status: **Plan / in progress.** Stellar outbound signing currently uses an **insecure
+placeholder**; this document is the concrete plan to replace it with real threshold signing, and
+tracks the foundational pieces that have been started.
+
+---
+
+## 1. Problem
+
+Stellar classic accounts are **ed25519**. SwitchlyProtocol vaults are secured by **secp256k1**
+threshold signing (go-tss / `binance-chain/tss-lib`). The network therefore cannot, today, produce
+a valid signature for a Stellar vault account.
+
+The current code papers over this by **deriving the vault's ed25519 key from the public secp256k1
+vault pubkey**:
+
+- Address (chain side, served via `/inbound_addresses`):
+  [`common/pubkey.go` `GetAddress(StellarChain)`](../../common/pubkey.go) —
+  `ed25519Seed = SHA256(secp256k1_pubkey)`, `addr = strkey(ed25519.NewKeyFromSeed(seed).Public())`.
+- Signing (bifrost):
+  [`bifrost/pkg/chainclients/stellar/client.go` `DeriveStellarkeyFromVaultPubKey`](../../bifrost/pkg/chainclients/stellar/client.go)
+  — identical `SHA256(secp256k1_pubkey)` seed, plus a hardcoded `SD…` secret key for one mocknet
+  vault.
+
+**The secp256k1 vault pubkey is public.** Anyone can recompute `SHA256(pubkey)`, obtain the ed25519
+seed, and **drain the vault**. This is acceptable only for a single-process mocknet demo and must
+never run on stagenet/mainnet.
+
+### Goal
+
+The vault holds a **real ed25519 key produced by an EdDSA threshold-keygen ceremony**; no single
+node (and certainly no outside party) can reconstruct it. Stellar outbounds are signed by an EdDSA
+**threshold keysign** over the transaction hash. The vault's Stellar address is derived from the
+**real** ed25519 group public key.
+
+---
+
+## 2. Why this is multi-component
+
+The signing curve is hardcoded to ECDSA/secp256k1 throughout:
+
+| Layer | Today | Evidence |
+|-------|-------|----------|
+| TSS library | `binance-chain/tss-lib` (thorchain fork v0.1.5) — **no `eddsa` package** | `go.mod`; only `ecdsa/keygen`, `ecdsa/signing` exist |
+| go-tss keygen | imports `ecdsa/keygen` | `bifrost/tss/go-tss/keygen/tss_keygen.go` |
+| go-tss keysign | imports `ecdsa/signing`, `endCh` is `*signing.SignatureData`, returns `tsslibcommon.ECSignature` | `bifrost/tss/go-tss/keysign/tss_keysign.go` |
+| go-tss verify | `ecdsa.Verify(...)` | `bifrost/tss/go-tss/keysign/notifier.go:55` |
+| go-tss requests | no algorithm field | `keygen/request.go`, `keysign/request.go` |
+| chain: Vault | single secp256k1 `pub_key` | `proto/switchly/v1/types/type_vault.proto:25` |
+| chain: address | secp256k1 → SHA256 → ed25519 | `common/pubkey.go` `GetAddress(StellarChain)` |
+| bifrost: sign | secp256k1 → SHA256 → ed25519 + hardcoded key | `stellar/client.go` |
+
+So "real TSS signing for Stellar" is **not** a bifrost-only change.
+
+---
+
+## 3. Library decision
+
+Two options to obtain EdDSA threshold primitives:
+
+**(A) Upgrade to a tss-lib with EdDSA — `bnb-chain/tss-lib/v2`** (has `eddsa/keygen`,
+`eddsa/signing` on `tss.Edwards()`).
+- Pro: maintained; EdDSA is first-class.
+- Con: v2's API differs substantially from the pinned 2020 fork (party/params/message-routing/curve
+  selection). go-tss's `common`, `keygen`, `keysign`, `blame`, and `conversion` packages are written
+  against the old API and would need a broad rewrite. High blast radius for the **existing** secp256k1
+  path that secures every other chain.
+
+**(B) Port an `eddsa` package into the existing `gitlab.com/thorchain/tss/tss-lib` fork**, mirroring
+its `ecdsa/{keygen,signing}` packages on `tss.Edwards()`.
+- Pro: keeps the ECDSA path byte-for-byte unchanged; EdDSA added alongside; smallest risk to existing
+  vaults.
+- Con: we own the port; must vendor/track upstream EdDSA rounds.
+
+**Recommendation: (B)** — additive, lowest risk to the secp256k1 path. Gate all EdDSA code behind an
+explicit algorithm parameter so the default behavior is unchanged.
+
+> Either way, **TSS protocol changes are consensus/ceremony-critical**: all validators must run the
+> same library version. This ships behind a network upgrade/hard-fork, not a rolling bifrost update.
+
+---
+
+## 4. Design
+
+### 4.1 Algorithm selection (go-tss)
+
+Introduce an algorithm type and thread it through (default `ECDSA`, preserving today's behavior):
+
+```go
+// bifrost/tss/go-tss/common (new)
+type Algo string
+const ( ECDSA Algo = "ecdsa"; EdDSA Algo = "eddsa" )
+```
+
+- Add `Algo Algo` to `keygen.Request` and `keysign.Request` (omitempty → defaults to ECDSA on the
+  wire for back-compat).
+- `keygen/tss_keygen.go`, `keysign/tss_keysign.go`: branch on `Algo` to construct either the
+  `ecdsa/*` or `eddsa/*` party, `endCh` type, and result conversion. Curve = `tss.S256()` vs
+  `tss.Edwards()`.
+- `keysign/notifier.go`: verify with `ecdsa.Verify` or `ed25519.Verify` per algo.
+- `blame`: EdDSA keygen/keysign have different round counts/names than ECDSA; add EdDSA round tables.
+
+### 4.2 bifrost keymanager
+
+- `bifrost/tss/tss_signer.go` `KeySign.RemoteSign(msg, poolPubKey, algo)` (or a sibling
+  `RemoteSignEdDSA`) that sets `Request.Algo = EdDSA`.
+- The signature returned for EdDSA is the raw 64-byte `R||S`; no secp256k1 recovery/`V`.
+
+### 4.3 Chain: vault key material
+
+- **Proto**: add `string ed25519_pub_key = N;` to `Vault` (bech32 ed25519, or strkey). Keep the
+  existing secp256k1 `pub_key` as the vault identity/index.
+- **Keygen ceremony** (`x/switchly` keygen handler + `bifrost/observer`/signer keygen path): when a
+  churn keygen runs, perform a **second, EdDSA keygen** over the same membership and report the
+  ed25519 group pubkey alongside the secp256k1 one. Store it on the `Vault`.
+- **Migration/churn**: funds move from old → new vault as today; the new vault's ed25519 key is
+  generated in the same ceremony. Old placeholder vaults cannot be migrated to (no recoverable real
+  key) — see §6 rollout.
+
+### 4.4 Address derivation
+
+- `common/pubkey.go` `GetAddress(StellarChain)`: derive from the **real ed25519 vault pubkey**, not
+  `SHA256(secp256k1)`. Because `common.PubKey` is the secp256k1 key, the cleanest approach is a
+  dedicated path that takes the ed25519 pubkey (the chain looks it up on the `Vault`). Introduce:
+  ```go
+  // common (new, pure, unit-tested) — see foundational pieces
+  func Ed25519PubKeyToStellarAddress(ed25519Pub []byte) (Address, error)
+  ```
+  and have the Stellar inbound-address code resolve the vault's `ed25519_pub_key` and call it.
+
+### 4.5 bifrost Stellar client
+
+- `stellar/client.go`: remove `DeriveStellarkeyFromVaultPubKey` (SHA256 + hardcoded key) and
+  `signTransactionLocally`. `SignTx` builds the unsigned tx, computes the Stellar tx **signature
+  base/hash**, calls `RemoteSign(hash, vaultPubKey, EdDSA)`, and attaches the 64-byte ed25519
+  signature as a `DecoratedSignature` with the vault's ed25519 hint.
+- The signing key's public half = the vault `ed25519_pub_key` (fetched from the chain), so the
+  source-account signature satisfies the router's `vault.require_auth()`.
+
+---
+
+## 5. Foundational pieces (started now)
+
+Low-risk, independently testable building blocks that don't change the running secp256k1 path:
+
+1. **`common.Ed25519PubKeyToStellarAddress`** — pure strkey encoding of a 32-byte ed25519 pubkey to a
+   `G…` address, with unit tests (incl. the known SAC/test vectors). This is the seam that §4.4 and
+   §4.5 both consume.
+2. **go-tss `Algo` type** — the `ecdsa`/`eddsa` enum + `Algo` field on `keygen.Request`/
+   `keysign.Request` (defaulted to `ecdsa`, no behavioral change), as the scaffolding for §4.1.
+3. **Honest guard** — until the EdDSA path exists, the Stellar signer must refuse to run with real
+   funds. `SignTx`/client startup hard-fails on `stagenet`/`mainnet` (only the placeholder derivation
+   is permitted on `mocknet`). This makes it impossible to ship the insecure derivation to a network
+   with value while the real implementation is built.
+
+---
+
+## 6. Rollout / safety
+
+- EdDSA TSS is a **consensus-critical** change: version-gate the keygen/keysign algorithm and ship via
+  a coordinated network upgrade; all validators must run the EdDSA-capable build before the first
+  EdDSA churn.
+- Placeholder vaults have **no real key** and must never hold mainnet/stagenet funds. Stellar stays
+  disabled on those networks (guard in §5.3) until a churn has produced a real EdDSA vault.
+- Add cross-impl test vectors (keygen group key, keysign over a fixed message) and a localnet
+  multi-node keygen+keysign integration test before enabling on any public network.
+
+---
+
+## 7. Work breakdown
+
+1. Library: port/enable `eddsa/{keygen,signing}` (option B). *(largest; consensus-critical)*
+2. go-tss: `Algo` plumbing, party/endCh/verify/blame branches. *(scaffolding started — §5.2)*
+3. Chain: `Vault.ed25519_pub_key` proto + keygen ceremony + storage + churn.
+4. common: ed25519→Stellar address; remove SHA256 hack. *(helper started — §5.1)*
+5. bifrost: EdDSA `RemoteSign`; Stellar `SignTx` via threshold ed25519; remove placeholder. *(guard — §5.3)*
+6. Tests + localnet multi-node validation; version gate; rollout.
