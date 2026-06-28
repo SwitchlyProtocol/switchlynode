@@ -84,7 +84,6 @@ type Client struct {
 	networkPassphrase   string
 	routerAddress       string
 	localPubKey         common.PubKey
-	localPrivKey        []byte
 	accts               *StellarMetaDataStore
 	// vaultLocks serializes sign/broadcast per vault to avoid sequence races
 	vaultLocks   map[string]*sync.Mutex
@@ -140,17 +139,14 @@ func NewClient(
 		return nil, errors.New("SwitchlyProtocol bridge is nil")
 	}
 
-	// Extract local private key and public key for single-node fallback
+	// Extract the local node public key (used for identity/logging).
 	var localPubKey common.PubKey
-	var localPrivKey []byte
 	if switchKeys != nil {
 		logger.Info().Msg("switchKeys provided to Stellar client")
 		privKey, err := switchKeys.GetPrivateKey()
 		if err != nil {
 			logger.Warn().Err(err).Msg("failed to get private key from switchKeys")
 		} else {
-			localPrivKey = privKey.Bytes()
-			logger.Info().Int("privkey_len", len(localPrivKey)).Msg("extracted private key")
 			// Convert cosmos private key's public key to common.PubKey (like gaia client)
 			temp, err := codec.ToCmtPubKeyInterface(privKey.PubKey())
 			if err != nil {
@@ -315,7 +311,6 @@ func NewClient(
 		networkPassphrase:   networkPassphrase,
 		routerAddress:       routerAddress,
 		localPubKey:         localPubKey,
-		localPrivKey:        localPrivKey,
 		accts:               NewStellarMetaDataStore(),
 		vaultLocks:          make(map[string]*sync.Mutex),
 	}, nil
@@ -866,60 +861,54 @@ func (c *Client) ExtractSecp256k1FromTswitchpub(pubkeyStr string) ([]byte, error
 	return secp256k1PubKey.SerializeCompressed(), nil
 }
 
-// DeriveStellarkeyFromVaultPubKey derives a Stellar keypair from vault public key string
+// DeriveStellarkeyFromVaultPubKey derives a Stellar signing keypair for a vault.
+//
+// SECURITY: this is an INSECURE PLACEHOLDER, permitted on mocknet builds only. It derives the vault's
+// ed25519 key deterministically from the PUBLIC secp256k1 vault pubkey (SHA-256 seed), so the private
+// key is recoverable by anyone from public data and must never secure real funds. It is the signing
+// counterpart of the address-side placeholder in common.PubKey.GetAddress(StellarChain), and is gated
+// to mocknet via placeholderStellarSigningAllowed. Real signing requires EdDSA threshold signing; see
+// docs/architecture/stellar-eddsa-tss.md.
 func (c *Client) DeriveStellarkeyFromVaultPubKey(vaultPubKeyStr string) (*keypair.Full, error) {
-	// Temporary fix: Use hardcoded key for specific vault
-	if vaultPubKeyStr == "tswitchpub1addwnpepqfshsq2y6ejy2ysxmq4gj8n8mzuzyulk9wh4n946jv5w2vpwdn2yuhpesc6" {
-		stellarKeypair, err := keypair.Parse("SDU445S72U626H77XHP5RHAS25G3EBSCWTOEYXHYAU5RGGU6RJ7DX3NW")
-		if err != nil {
-			return nil, fmt.Errorf("fail to parse hardcoded private key: %w", err)
-		}
-		return stellarKeypair.(*keypair.Full), nil
+	if !placeholderStellarSigningAllowed {
+		return nil, fmt.Errorf("refusing to derive Stellar signing key: the placeholder derivation is insecure and is disabled on non-mocknet builds; EdDSA threshold signing is required (see docs/architecture/stellar-eddsa-tss.md)")
 	}
 
-	// Extract secp256k1 public key bytes (handles both tswitchpub and cosmospub)
+	// Extract secp256k1 public key bytes (handles both tswitchpub and cosmospub).
 	secp256k1Bytes, err := c.ExtractSecp256k1FromTswitchpub(vaultPubKeyStr)
 	if err != nil {
 		return nil, fmt.Errorf("fail to extract secp256k1 public key: %w", err)
 	}
 
-	// Hash the secp256k1 public key to get a 32-byte seed for ed25519
+	// INSECURE (mocknet only): seed an ed25519 key from the PUBLIC secp256k1 pubkey. Matches the
+	// address derived by common.PubKey.GetAddress(StellarChain).
 	hasher := sha256.New()
 	hasher.Write(secp256k1Bytes)
-	ed25519SeedBytes := hasher.Sum(nil)
-
-	// Convert to [32]byte for Stellar keypair creation
 	var ed25519Seed [32]byte
-	copy(ed25519Seed[:], ed25519SeedBytes[:32])
+	copy(ed25519Seed[:], hasher.Sum(nil)[:32])
 
-	// Create Stellar keypair from the ed25519 seed
 	stellarKeypair, err := keypair.FromRawSeed(ed25519Seed)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create Stellar keypair from ed25519 seed: %w", err)
 	}
-
 	return stellarKeypair, nil
 }
 
-// SignTransactionWithTSS signs a Stellar transaction using vault key derivation
-func (c *Client) SignTransactionWithTSS(stellarTx *txnbuild.Transaction, vaultPubKey common.PubKey, networkPassphrase string) (*txnbuild.Transaction, error) {
-	return c.signTransactionWithTSS(stellarTx, vaultPubKey, networkPassphrase)
-}
-
-// signTransactionWithTSS signs a Stellar transaction
+// signTransactionWithTSS signs a Stellar transaction with the vault key.
+//
+// NOTE: despite the name this does NOT yet perform threshold signing — it uses the insecure
+// placeholder derivation (DeriveStellarkeyFromVaultPubKey), which is gated to mocknet. See
+// docs/architecture/stellar-eddsa-tss.md for the real EdDSA threshold-signing plan.
 func (c *Client) signTransactionWithTSS(stellarTx *txnbuild.Transaction, vaultPubKey common.PubKey, networkPassphrase string) (*txnbuild.Transaction, error) {
 	c.logger.Info().
 		Str("vault_pubkey", vaultPubKey.String()).
-		Msg("signing Stellar transaction")
+		Msg("signing Stellar transaction (placeholder key derivation - mocknet only)")
 
-	// Use vault key derivation for signing (with our hardcoded key fix)
-	c.logger.Info().Msg("using vault key derivation for signing")
 	stellarKeypair, err := c.DeriveStellarkeyFromVaultPubKey(vaultPubKey.String())
 	if err != nil {
 		return nil, fmt.Errorf("fail to derive Stellar keypair from vault key: %w", err)
 	}
 
-	// Sign the transaction with the derived keypair
 	signedTx, err := stellarTx.Sign(networkPassphrase, stellarKeypair)
 	if err != nil {
 		return nil, fmt.Errorf("fail to sign transaction with derived keypair: %w", err)
@@ -928,30 +917,6 @@ func (c *Client) signTransactionWithTSS(stellarTx *txnbuild.Transaction, vaultPu
 	c.logger.Info().
 		Str("derived_address", stellarKeypair.Address()).
 		Msg("transaction signed successfully with vault-derived keypair")
-	return signedTx, nil
-}
-
-// signTransactionLocally signs a transaction with the local private key
-func (c *Client) signTransactionLocally(stellarTx *txnbuild.Transaction, networkPassphrase string) (*txnbuild.Transaction, error) {
-	c.logger.Info().Msg("signing transaction locally")
-
-	if len(c.localPrivKey) == 0 {
-		return nil, fmt.Errorf("no local private key available")
-	}
-
-	var seed [32]byte
-	copy(seed[:], c.localPrivKey[:32])
-	kp, err := keypair.FromRawSeed(seed)
-	if err != nil {
-		return nil, fmt.Errorf("fail to create keypair: %w", err)
-	}
-
-	signedTx, err := stellarTx.Sign(networkPassphrase, kp)
-	if err != nil {
-		return nil, fmt.Errorf("fail to sign transaction locally: %w", err)
-	}
-
-	c.logger.Info().Msg("transaction signed successfully with local key")
 	return signedTx, nil
 }
 
