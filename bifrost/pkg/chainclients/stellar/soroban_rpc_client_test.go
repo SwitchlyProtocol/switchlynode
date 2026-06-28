@@ -1,10 +1,12 @@
 package stellar
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/stellar/go/xdr"
@@ -12,6 +14,27 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/config"
 )
+
+// TestParseContractEventLedgerTime is a regression guard: the Soroban getEvents response carries
+// the ledger close time in the `ledgerClosedAt` field (RFC3339), not `ledgerCloseTime`. If the
+// struct tag drifts, LedgerTime is empty and ParseContractEvent silently falls back to time.Now().
+func (s *SorobanRPCTestSuite) TestParseContractEventLedgerTime(c *C) {
+	const closedAt = "2026-06-28T15:51:45Z"
+	raw := `{"type":"contract","ledger":3330056,"ledgerClosedAt":"` + closedAt +
+		`","contractId":"CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH","id":"x","topic":[],"value":"","inSuccessfulContractCall":true,"txHash":"abc"}`
+
+	var ev ContractEvent
+	c.Assert(json.Unmarshal([]byte(raw), &ev), IsNil)
+	c.Assert(ev.LedgerTime, Equals, closedAt)
+
+	re, err := s.client.ParseContractEvent(ev)
+	c.Assert(err, IsNil)
+	c.Assert(re, NotNil)
+
+	want, perr := time.Parse(time.RFC3339, closedAt)
+	c.Assert(perr, IsNil)
+	c.Assert(re.LedgerTime.Equal(want), Equals, true)
+}
 
 type SorobanRPCTestSuite struct {
 	client *SorobanRPCClient

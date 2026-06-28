@@ -628,87 +628,6 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 	return account, nil
 }
 
-// processOutboundTx converts a TxOutItem into a Stellar-specific transaction operation.
-// This method is kept for compatibility with other chain clients (XRP, Cosmos pattern).
-func (c *Client) processOutboundTx(tx stypes.TxOutItem) (txnbuild.Operation, error) {
-	if len(tx.Coins) == 0 {
-		return nil, fmt.Errorf("no coins to send")
-	}
-
-	coin := tx.Coins[0]
-
-	// Validate the asset is supported
-	assetMapping, found := GetAssetBySwitchlyAsset(coin.Asset)
-	if !found {
-		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
-	}
-
-	// Create the asset for the payment
-	var asset txnbuild.Asset
-	if assetMapping.StellarAssetType == "native" {
-		asset = txnbuild.NativeAsset{}
-	} else {
-		asset = txnbuild.CreditAsset{
-			Code:   assetMapping.StellarAssetCode,
-			Issuer: assetMapping.StellarAssetIssuer,
-		}
-	}
-
-	// Convert amount to Stellar format
-	stellarAmount := coin.Amount.Uint64()
-	amountStr := fmt.Sprintf("%.7f", float64(stellarAmount)/10000000)
-
-	// Create the payment operation
-	payment := &txnbuild.Payment{
-		Destination: tx.ToAddress.String(),
-		Asset:       asset,
-		Amount:      amountStr,
-	}
-
-	c.logger.Info().
-		Str("destination", tx.ToAddress.String()).
-		Str("asset", coin.Asset.String()).
-		Str("amount", amountStr).
-		Msg("created simple payment operation")
-
-	return payment, nil
-}
-
-// TruncateMemoForStellar truncates memo to fit Stellar's 28-byte limit
-func (c *Client) TruncateMemoForStellar(originalMemo string) string {
-	return c.truncateMemoForStellar(originalMemo)
-}
-
-func (c *Client) truncateMemoForStellar(originalMemo string) string {
-	const maxBytes = 28
-	const dots = "...."
-
-	// Return memo unchanged if it already fits within the limit.
-	if len(originalMemo) <= maxBytes {
-		return originalMemo
-	}
-
-	// For "OUT:" outbound memos, preserve the prefix and keep a symmetric head/tail of the
-	// hash so both ends survive: OUT: + head + dots + tail == 28 bytes.
-	if strings.HasPrefix(originalMemo, "OUT:") {
-		const prefix = "OUT:"
-		hashPart := originalMemo[len(prefix):]
-		avail := maxBytes - len(prefix) - len(dots) // budget for head+tail
-		head := avail / 2
-		tail := avail - head
-		return prefix + hashPart[:head] + dots + hashPart[len(hashPart)-tail:]
-	}
-
-	// Otherwise take a symmetric midpoint truncation of the whole memo.
-	avail := maxBytes - len(dots)
-	head := avail / 2
-	tail := avail - head
-	return originalMemo[:head] + dots + originalMemo[len(originalMemo)-tail:]
-}
-
-// SignTx signs a Stellar transaction using simple payments with proper ed25519 key derivation.
-// This implementation follows THORNode's approach: transactions are only marked as signed
-// after successful broadcast to prevent pipeline deadlocks.
 func (c *Client) getNextSequence(vaultPubKey common.PubKey) (int64, error) {
 	// Get current account sequence from Horizon (just like the test script)
 	acc, err := c.GetAccount(vaultPubKey, nil)
@@ -723,96 +642,6 @@ func (c *Client) getNextSequence(vaultPubKey common.PubKey) (int64, error) {
 		Msg("got current sequence from Horizon - SDK will increment")
 
 	return acc.Sequence, nil
-}
-
-// buildSimplePaymentTransaction constructs a simple Stellar payment transaction
-func (c *Client) buildSimplePaymentTransaction(tx stypes.TxOutItem, sequence int64, memo string) (*txnbuild.Transaction, error) {
-	c.logger.Info().
-		Str("vault", tx.VaultPubKey.String()).
-		Str("to", tx.ToAddress.String()).
-		Str("memo", memo).
-		Int64("sequence", sequence).
-		Msg("building simple payment transaction")
-
-	// Get vault's Stellar address
-	vaultAddr := c.GetAddress(tx.VaultPubKey)
-	if vaultAddr == "" {
-		return nil, fmt.Errorf("fail to get vault address")
-	}
-
-	// Validate we have coins to send
-	if len(tx.Coins) == 0 {
-		return nil, fmt.Errorf("no coins to send")
-	}
-	coin := tx.Coins[0]
-
-	// Get asset mapping for validation
-	assetMapping, found := GetAssetBySwitchlyAsset(coin.Asset)
-	if !found {
-		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
-	}
-
-	// Create the asset (following script pattern)
-	var asset txnbuild.Asset
-	if assetMapping.StellarAssetType == "native" {
-		asset = txnbuild.NativeAsset{}
-	} else {
-		asset = txnbuild.CreditAsset{
-			Code:   assetMapping.StellarAssetCode,
-			Issuer: assetMapping.StellarAssetIssuer,
-		}
-	}
-
-	// Convert amount to Stellar format
-	stellarAmount := coin.Amount.Uint64()
-	amountStr := fmt.Sprintf("%.7f", float64(stellarAmount)/10000000)
-
-	c.logger.Info().
-		Str("asset_type", assetMapping.StellarAssetType).
-		Str("amount_stroops", fmt.Sprintf("%d", stellarAmount)).
-		Str("amount_xlm", amountStr).
-		Msg("payment details")
-
-	// Create source account (following script pattern)
-	sourceAccount := &txnbuild.SimpleAccount{
-		AccountID: vaultAddr,
-		Sequence:  sequence,
-	}
-
-	// Create payment operation (following script pattern)
-	payment := &txnbuild.Payment{
-		Destination: tx.ToAddress.String(),
-		Asset:       asset,
-		Amount:      amountStr,
-	}
-
-	// Build transaction parameters (following working test script pattern)
-	txParams := txnbuild.TransactionParams{
-		SourceAccount:        sourceAccount,
-		IncrementSequenceNum: true, // Let Stellar SDK increment sequence automatically
-		Operations:           []txnbuild.Operation{payment},
-		BaseFee:              txnbuild.MinBaseFee,
-		Memo:                 txnbuild.MemoText(memo),
-		Preconditions: txnbuild.Preconditions{
-			TimeBounds: txnbuild.NewInfiniteTimeout(),
-		},
-	}
-
-	// Build transaction
-	stellarTx, err := txnbuild.NewTransaction(txParams)
-	if err != nil {
-		return nil, fmt.Errorf("fail to build transaction: %w", err)
-	}
-
-	// Sign transaction using TSS (return Transaction object like test script)
-	signedTx, err := c.signTransactionWithTSS(stellarTx, tx.VaultPubKey, c.networkPassphrase)
-	if err != nil {
-		return nil, fmt.Errorf("fail to sign transaction: %w", err)
-	}
-
-	c.logger.Info().
-		Msg("simple payment transaction built and signed successfully")
-	return signedTx, nil
 }
 
 // scvalI128FromBaseUnits converts a non-negative base-unit amount string into an ScVal i128.
@@ -1126,8 +955,9 @@ func (c *Client) signTransactionLocally(stellarTx *txnbuild.Transaction, network
 	return signedTx, nil
 }
 
-// signTransactionWithTSS_Remote signs a transaction using TSS by deriving ed25519 keypair from secp256k1 vault key
-
+// SignTx signs a Stellar transaction using simple payments with proper ed25519 key derivation.
+// This implementation follows THORNode's approach: transactions are only marked as signed
+// after successful broadcast to prevent pipeline deadlocks.
 func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, checkpoint []byte, _ *stypes.TxInItem, err error) {
 	defer func() {
 		if err != nil && !strings.Contains(err.Error(), "fail to broadcast") {
@@ -1152,7 +982,7 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		}
 	}()
 
-	// Check signer cache (following ETH pattern)
+	// Check signer cache to avoid signing the same transaction multiple times (following XRP pattern)
 	if c.signerCacheManager.HasSigned(tx.CacheHash()) {
 		c.logger.Info().Msgf("transaction(%+v), signed before , ignore", tx)
 		return nil, nil, nil, nil
@@ -1201,22 +1031,14 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		return nil, nil, nil, fmt.Errorf("fail to marshal stellar checkpoint: %w", err)
 	}
 
-	// Build and sign the outbound. Prefer routing through the Soroban router contract so the full
-	// SwitchlyProtocol memo is preserved in the emitted transfer_out event; fall back to a plain
-	// payment (with the lossy 28-byte memo) only when no router is configured.
-	var stellarSignedTx *txnbuild.Transaction
-	if c.routerAddress != "" && c.sorobanRPCClient != nil {
-		stellarSignedTx, err = c.buildRouterTransferOutTransaction(tx, sequence, tx.Memo)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("fail to build router transfer_out transaction: %w", err)
-		}
-	} else {
-		c.logger.Warn().Msg("no stellar router configured, falling back to simple payment with truncated memo")
-		truncatedMemo := c.truncateMemoForStellar(tx.Memo)
-		stellarSignedTx, err = c.buildSimplePaymentTransaction(tx, sequence, truncatedMemo)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("fail to build transaction: %w", err)
-		}
+	// Outbound XLM must always go through the Soroban router so the full SwitchlyProtocol memo is
+	// preserved in the emitted transfer_out event; a plain Stellar payment can only carry 28 bytes.
+	if c.routerAddress == "" || c.sorobanRPCClient == nil {
+		return nil, nil, nil, fmt.Errorf("stellar router not configured: outbound requires the router contract")
+	}
+	stellarSignedTx, err := c.buildRouterTransferOutTransaction(tx, sequence, tx.Memo)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fail to build router transfer_out transaction: %w", err)
 	}
 
 	// Convert to XDR for storage

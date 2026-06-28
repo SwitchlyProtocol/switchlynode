@@ -87,7 +87,7 @@ type GetEventsResponse struct {
 type ContractEvent struct {
 	Type                     string   `json:"type"`
 	Ledger                   uint32   `json:"ledger"`
-	LedgerTime               string   `json:"ledgerCloseTime"`
+	LedgerTime               string   `json:"ledgerClosedAt"`
 	ContractID               string   `json:"contractId"`
 	ID                       string   `json:"id"`
 	PagingToken              string   `json:"pagingToken"`
