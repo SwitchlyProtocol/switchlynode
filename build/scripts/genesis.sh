@@ -198,6 +198,14 @@ fi
 echo "Final verification - starting with genesis containing:"
 cat ~/.switchlynode/config/genesis.json | jq '.app_state.switchly.node_accounts | length'
 
+# mocknet: create + fund the XLM Asgard vault on the local stellar net once it appears
+# (post-keygen). This is a background setup script (not a separate container): a Stellar
+# account must exist before it can hold assets, and the vault address is only known at runtime.
+if [ "$NET" = "mocknet" ] && [ "${BIFROST_CHAINS_XLM_DISABLED:-false}" != "true" ]; then
+  STELLAR_HOST="${XLM_HOST:-http://stellar:8000}" SWITCHLYNODE_API="http://localhost:1317" \
+    bash "$(dirname "$0")/stellar/fund-vault.sh" &
+fi
+
 export SIGNER_NAME
 export SIGNER_PASSWD
 exec switchlynode start --home /root/.switchlynode
