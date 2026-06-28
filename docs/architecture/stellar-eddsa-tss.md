@@ -153,6 +153,13 @@ Low-risk, independently testable building blocks that don't change the running s
    non-mocknet builds, so a stagenet/mainnet binary physically cannot sign with the recoverable
    placeholder key. The hardcoded key and dead signing helpers were removed.
 4. ✅ **EdDSA→Stellar compatibility spike** (`bifrost/tss/eddsacompat`) — see §6.
+5. ✅ **`common.WithCurveForAlgo`** (`bifrost/tss/go-tss/common/curve.go`) — serializes and switches
+   tss-lib's process-global curve (secp256k1 ↔ Edwards) for the duration of a ceremony, restoring it
+   afterward (the §3 hazard), with a test.
+6. ✅ **`Algo` request plumbing + keyshare schema** — `Algo` field on `keygen.Request` /
+   `keysign.Request` (omitempty → ECDSA), and `storage.KeygenLocalState` gains `Algo` +
+   `EdDSALocalData` (opaque `json.RawMessage`, per §6.1) with a round-trip test. No eddsa proto is
+   pulled into bifrost's import graph, so this is a safe, ECDSA-unchanged foundation.
 
 ---
 
@@ -168,13 +175,42 @@ the fork's `eddsa/{keygen,signing}` fixtures and asserts:
 - the group public key maps to a valid Stellar `G…` address via `common.Ed25519PubKeyToStellarAddress`.
 
 So the cryptographic foundation is proven with the library already in the repo; the remaining work is
-plumbing, not crypto. Two wiring notes surfaced by the spike:
+plumbing, not crypto. Three wiring hazards surfaced:
 - **Global curve** (see §3): EdDSA ceremonies must `tss.SetCurve(edwards.Edwards())` and be serialized
-  against ECDSA, restoring afterward.
+  against ECDSA, restoring afterward. Implemented as `common.WithCurveForAlgo` (§5.5).
 - **Message encoding**: tss-lib signs `msg.(*big.Int).Bytes()`, which drops leading zero bytes. Stellar
   tx hashes are fixed 32-byte values that may have leading zeros, so the keysign wrapper must encode
   the hash so signer and verifier agree on the exact bytes (e.g. fixed-width, or document the
   invariant) — otherwise verification fails ~1/256 of the time.
+
+### 6.1 BLOCKER (prerequisite for Layer 2): protobuf message-name conflict
+
+**A binary cannot link both `ecdsa/keygen` and `eddsa/keygen` from this tss-lib fork.** Both register
+protobuf messages (`KGRound1Message`, `KGRound2Message1`, `KGRound2Message2`, …) under the **same
+`protob` proto package**, so the modern `google.golang.org/protobuf` runtime panics at init:
+
+```
+panic: proto: file "protob/eddsa-keygen.proto" has a name conflict over KGRound2Message2
+```
+
+The `eddsacompat` spike avoids this only because its test binary links eddsa **without** ecdsa.
+bifrost links ecdsa for every chain, so the moment any package in bifrost's (non-test) import graph
+pulls in `eddsa/{keygen,signing}`, **bifrost panics on startup**. This gates the entire go-tss EdDSA
+wiring (Layer 2): the parties, save data, and signature types all live in those packages.
+
+Resolution options (decision required before Layer 2):
+1. **Patch the tss-lib fork** to put the eddsa protos in a distinct proto package (e.g. `protob.eddsa`)
+   and/or rename the messages, regenerate the `.pb.go`, and vendor via a `go.mod` `replace`.
+   *Recommended:* permanent, clean, leaves the ECDSA path untouched; cost is owning the fork patch.
+2. **`GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn`** (or `ignore`) env var — verified to make it load,
+   but it must be set in every bifrost process (a missed env var = startup panic) and lets two
+   identically-named descriptors coexist. A fragile stopgap for evaluation only; not for production.
+3. **Upgrade to `bnb-chain/tss-lib/v2`** (eddsa protos already namespaced) — also a broad go-tss API
+   rewrite (rejected in §3 for blast radius).
+
+Until this is resolved, Layer-1 scaffolding deliberately keeps eddsa protos **out of bifrost's import
+graph**: `storage.KeygenLocalState.EdDSALocalData` is opaque `json.RawMessage`, not the typed
+`eddsa/keygen.LocalPartySaveData`.
 
 ---
 
@@ -194,8 +230,9 @@ plumbing, not crypto. Two wiring notes surfaced by the spike:
 
 1. ✅ Library: the fork already ships `eddsa/{keygen,signing,resharing}` — no port needed; spike proves
    Stellar-verifiability (§6). Remaining: manage the global-curve switch (§3).
-2. go-tss: `Algo` plumbing (type done — §5.2), then party/endCh/verify/blame branches + curve switch.
-   *(consensus-critical)*
+2. go-tss: `Algo` plumbing (type, request fields, curve helper, keyshare schema — done §5.2/§5.5/§5.6).
+   **BLOCKED on §6.1** (protobuf message-name conflict) before the eddsa party/endCh/verify/blame
+   branches + server curve switch can land in bifrost. *(consensus-critical)*
 3. Chain: `Vault.ed25519_pub_key` proto + keygen ceremony (run an EdDSA keygen alongside secp256k1) +
    storage + churn.
 4. ✅ common: ed25519→Stellar address seam (§5.1). Remaining: resolve the vault's real ed25519 pubkey
