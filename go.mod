@@ -124,6 +124,7 @@ require (
 	cosmossdk.io/x/evidence v0.1.1
 	cosmossdk.io/x/feegrant v0.1.1
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
+	github.com/decred/dcrd/dcrec/edwards/v2 v2.0.0
 	github.com/stellar/go v0.0.0-20250822224526-9397ce4b6da2
 )
 
@@ -183,7 +184,6 @@ require (
 	github.com/dchest/siphash v1.2.2 // indirect
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/decred/dcrd/crypto/ripemd160 v1.0.2 // indirect
-	github.com/decred/dcrd/dcrec/edwards/v2 v2.0.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v2 v2.0.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
