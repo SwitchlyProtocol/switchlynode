@@ -251,21 +251,26 @@ func AddAssetMapping(mapping StellarAssetMapping) {
 	}
 }
 
-// UpdateContractAddress updates the contract address for an asset on a specific network
+// UpdateContractAddress registers the Soroban contract (SAC) address for an asset on a specific
+// network. It matches both Soroban "contract" assets and native/classic assets (e.g. native XLM,
+// whose SAC id is derived from the network passphrase and so differs per network — notably on the
+// local standalone net used by mocknet). For "contract" assets the issuer field doubles as the
+// contract address and is kept in sync for the active network; native/classic assets retain their
+// canonical issuer (e.g. "" for native XLM), so it is not overwritten here.
 func UpdateContractAddress(assetCode string, network StellarNetwork, contractAddress string) bool {
 	for i := range stellarAssetMappings {
 		mapping := &stellarAssetMappings[i]
-		if mapping.StellarAssetType == "contract" && mapping.StellarAssetCode == assetCode {
-			if mapping.ContractAddresses == nil {
-				mapping.ContractAddresses = make(map[StellarNetwork]string)
-			}
-			mapping.ContractAddresses[network] = contractAddress
-			// Update issuer if this is the current network
-			if network == currentNetwork {
-				mapping.StellarAssetIssuer = contractAddress
-			}
-			return true
+		if mapping.StellarAssetCode != assetCode {
+			continue
 		}
+		if mapping.ContractAddresses == nil {
+			mapping.ContractAddresses = make(map[StellarNetwork]string)
+		}
+		mapping.ContractAddresses[network] = contractAddress
+		if mapping.StellarAssetType == "contract" && network == currentNetwork {
+			mapping.StellarAssetIssuer = contractAddress
+		}
+		return true
 	}
 	return false
 }
@@ -397,9 +402,15 @@ func (s StellarAssetMapping) ConvertToSwitchlyProtocolAmount(stellarAmount strin
 
 	switchlyProtocolAmountCosmos := cosmos.NewUintFromString(switchlyProtocolAmount.String())
 
+	// Report the asset's native decimals so SwitchlyNode knows XLM is 7-decimal (vs the 8-decimal
+	// internal representation). The chain stores this on the pool and rounds outbound amounts down to
+	// the asset's precision; without it, scheduled outbounds carry precision the signed/observed
+	// transfer_out can't represent, so the outbound observation fails to match the scheduled item
+	// ("no matched tx out item") and the node is slashed. Mirrors the GAIA client.
 	return common.Coin{
-		Asset:  s.SwitchlyAsset,
-		Amount: switchlyProtocolAmountCosmos,
+		Asset:    s.SwitchlyAsset,
+		Amount:   switchlyProtocolAmountCosmos,
+		Decimals: int64(s.StellarDecimals),
 	}, nil
 }
 
@@ -444,9 +455,15 @@ func (s StellarAssetMapping) ConvertBaseUnitsToSwitchlyProtocolAmount(stellarBas
 
 	switchlyProtocolAmountCosmos := cosmos.NewUintFromString(switchlyProtocolAmount.String())
 
+	// Report the asset's native decimals so SwitchlyNode knows XLM is 7-decimal (vs the 8-decimal
+	// internal representation). The chain stores this on the pool and rounds outbound amounts down to
+	// the asset's precision; without it, scheduled outbounds carry precision the signed/observed
+	// transfer_out can't represent, so the outbound observation fails to match the scheduled item
+	// ("no matched tx out item") and the node is slashed. Mirrors the GAIA client.
 	return common.Coin{
-		Asset:  s.SwitchlyAsset,
-		Amount: switchlyProtocolAmountCosmos,
+		Asset:    s.SwitchlyAsset,
+		Amount:   switchlyProtocolAmountCosmos,
+		Decimals: int64(s.StellarDecimals),
 	}, nil
 }
 

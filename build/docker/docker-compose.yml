@@ -225,6 +225,10 @@ services:
       BIFROST_CHAINS_BCH_DISABLED: "true"
       BIFROST_CHAINS_DOGE_DISABLED: "true"
       
+      # Start scanning from the beginning of the LOCAL standalone net. The default.yaml value
+      # (1000) targets the public testnet (millions of ledgers); on a fresh local net (a few
+      # hundred ledgers) it would idle and skip the early deposits.
+      BIFROST_CHAINS_XLM_BLOCK_SCANNER_START_BLOCK_HEIGHT: 1
       # xlm rate limiting configurations - more conservative for Horizon API
       BIFROST_CHAINS_XLM_BLOCK_SCANNER_BLOCK_HEIGHT_DISCOVER_BACK_OFF: 15s
       BIFROST_CHAINS_XLM_BLOCK_SCANNER_BLOCK_RETRY_INTERVAL: 30s
