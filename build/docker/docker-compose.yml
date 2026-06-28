@@ -34,8 +34,9 @@ services:
       SIGNER_NAME: switchly
       SIGNER_PASSWD: password
       SWITCHLYNODE_GRPC_ENABLE: true
-      XLM_CONTRACT: "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH" # fixed router
-    
+      # XLM_CONTRACT is set dynamically for mocknet by deploy_stellar_contract (genesis.sh);
+      # stagenet sets it to the predeployed public-testnet router in tools/stagenet.
+
     logging: &logging
       driver: "json-file"
       options:
@@ -623,12 +624,39 @@ services:
       - mocknet-cluster
     image: stellar/quickstart:testing
     restart: unless-stopped
-    command: --testnet
+    # Local, isolated standalone network (not the public testnet) with Soroban RPC enabled.
+    # --protocol-version 26 + --limits seed the Soroban network config-settings AND keep the
+    # network protocol compatible with the stellar-cli pinned in the bootstrap image (Dockerfile
+    # STELLAR_CLI_VERSION): cli v27 works against p26; the quickstart image has no p27 config-
+    # settings yet. If you bump the CLI, bump this protocol to match (cli protocol >= net by <=1).
+    # mocknet auto-deploys the router + native SAC to this net via deploy_stellar_contract.
+    command: --local --enable-soroban-rpc --protocol-version 26 --limits unlimited
     environment:
       BLOCK_TIME: ${BLOCK_TIME:-5}
     ports:
       - 8000:8000
       - 11626:11626
       - 11625:11625
+    volumes:
+      - "../scripts:/docker/scripts"
+
+  # ------------------------------ stellar vault funder ------------------------------
+  # One-shot: waits for the post-keygen XLM Asgard vault to appear in /inbound_addresses,
+  # then friendbot-funds it on the local standalone network (a Stellar account must exist
+  # before it can hold/move assets). Reuses the switchly image for curl + jq.
+  stellar-vault-funder:
+    <<: *switchly-defaults
+    profiles:
+      - mocknet
+      - mocknet-cluster
+    restart: on-failure
+    depends_on:
+      - stellar
+      - switchlynode
+    environment:
+      <<: *switchly-environment
+      SWITCHLYNODE_API: ${SWITCHLYNODE_API:-http://switchlynode:1317}
+      STELLAR_HOST: ${XLM_HOST:-http://stellar:8000}
+    entrypoint: ["/bin/bash", "/docker/scripts/stellar/fund-vault.sh"]
     volumes:
       - "../scripts:/docker/scripts"

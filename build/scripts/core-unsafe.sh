@@ -28,7 +28,26 @@ deploy_evm_contracts() {
   wait
 }
 
-init_mocknet() {  
+# deploy_stellar_contract deploys the Soroban router (+ native SAC) to the LOCAL standalone
+# Stellar network used by mocknet and records the contract id in genesis chain_contracts.
+# Analog of deploy_evm_contracts for the EVM chains.
+deploy_stellar_contract() {
+  echo "Deploying XLM (Stellar) router to local network at $XLM_HOST"
+  if ! bash scripts/stellar/stellar-tool.sh deploy "$XLM_HOST" >/tmp/stellar-tool.log 2>&1; then
+    cat /tmp/stellar-tool.log
+    return 1
+  fi
+  cat /tmp/stellar-tool.log
+  CONTRACT=$(grep </tmp/stellar-tool.log "Router Contract Address" | awk '{print $NF}')
+  if [ -z "$CONTRACT" ]; then
+    echo "FATAL: failed to deploy Stellar router"
+    return 1
+  fi
+  echo "XLM Contract Address: $CONTRACT"
+  set_xlm_contract "$CONTRACT"
+}
+
+init_mocknet() {
   NODE_ADDRESS=$(echo "$SIGNER_PASSWD" | switchlynode keys show "$SIGNER_NAME" -a --keyring-backend file)
 
   if [ "$PEER" = "none" ]; then

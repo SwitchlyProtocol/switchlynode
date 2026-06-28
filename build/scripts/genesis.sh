@@ -76,6 +76,11 @@ genesis_init() {
 
     # deploy evm contracts
     deploy_evm_contracts
+
+    # deploy the stellar (XLM) router to the local standalone network (mocknet only)
+    if [ "${BIFROST_CHAINS_XLM_DISABLED:-false}" != "true" ]; then
+      deploy_stellar_contract
+    fi
   fi
 
   if [ "$NET" = "stagenet" ]; then

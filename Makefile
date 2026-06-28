@@ -11,7 +11,7 @@ endif
 # Config
 ########################################################################################
 
-.PHONY: build test tools export healthcheck run-mocknet build-mocknet stop-mocknet halt-mocknet ps-mocknet reset-mocknet logs-mocknet openapi
+.PHONY: build test tools export healthcheck run-mocknet build-mocknet stop-mocknet halt-mocknet ps-mocknet reset-mocknet logs-mocknet openapi regenerate-stellar-router-wasm
 
 # pull branch name from CI if unset and available
 ifdef CI_COMMIT_BRANCH
@@ -123,6 +123,13 @@ tools:
 	go install -tags ${TAG} ./tools/pubkey2address
 	go install -tags ${TAG} ./tools/p2p-check
 	go install -tags ${TAG} ./tools/recover-keyshare-backup
+
+# Regenerate the vendored Stellar router wasm consumed by mocknet's deploy_stellar_contract.
+# Requires the stellar CLI + rust wasm toolchain (see chain/stellar/README.md).
+regenerate-stellar-router-wasm:
+	$(MAKE) -C chain/stellar build
+	cp chain/stellar/target/wasm32v1-none/release/switchly_router.wasm build/scripts/stellar/switchly_router.wasm
+	@echo "updated build/scripts/stellar/switchly_router.wasm"
 
 # ------------------------------ Gitlab CI ------------------------------
 
