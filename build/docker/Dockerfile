@@ -23,22 +23,25 @@ RUN make install
 # Deploy
 ########################################################################################
 
-FROM debian:bullseye-20241111-slim@sha256:60a596681410bd31a48e5975806a24cd78328f3fd6b9ee5bc64dca6d46a51f29
+# bookworm (glibc 2.36, openssl 3, libdbus) — required by the prebuilt stellar-cli used for the
+# mocknet Soroban deploy; the older bullseye base (glibc 2.31) cannot run modern stellar-cli.
+FROM debian:bookworm-slim@sha256:60eac759739651111db372c07be67863818726f754804b8707c90979bda511df
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   ca-certificates \
   curl \
-  jq=1.6-2.1 \
-  libffi-dev=3.3-6 \
-  libssl-dev=1.1.1w-0+deb11u3 \
-  openssl=1.1.1w-0+deb11u3 \
-  procps=2:3.3.17-5 \
-  python3=3.9.2-3 \
-  python3-pip=20.3.4-4+deb11u1 && \
+  jq \
+  libffi-dev \
+  libdbus-1-3 \
+  libssl-dev \
+  openssl \
+  procps \
+  python3 \
+  python3-pip && \
   update-ca-certificates && \
   rm -rf /var/lib/apt/lists/* && \
-  pip3 install --no-cache-dir requests==2.32.3 web3==7.5.0 retry==0.9.2
+  pip3 install --no-cache-dir --break-system-packages requests==2.32.3 web3==7.5.0 retry==0.9.2
 
 # Stellar CLI (prebuilt) for deploying the local Soroban router + native SAC in mocknet,
 # mirroring python3/web3 used by evm-tool.py for the EVM chains.
@@ -48,7 +51,7 @@ RUN case "${TARGETARCH:-amd64}" in \
   arm64) SARCH=aarch64 ;; \
   *) SARCH=x86_64 ;; \
   esac && \
-  curl -sSL "https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_CLI_VERSION}/stellar-cli-${STELLAR_CLI_VERSION}-${SARCH}-unknown-linux-gnu.tar.gz" \
+  curl -fsSL "https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_CLI_VERSION}/stellar-cli-${STELLAR_CLI_VERSION}-${SARCH}-unknown-linux-gnu.tar.gz" \
   | tar -xz -C /usr/local/bin stellar && \
   chmod +x /usr/local/bin/stellar && \
   stellar --version
