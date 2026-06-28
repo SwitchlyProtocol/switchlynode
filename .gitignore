@@ -5,6 +5,7 @@ test/regression/mnt/blocks/**/[0-9]*.json
 .DS_Store
 *.swp
 *.swo
+*.bak
 .vscode
 .idea
 .env*

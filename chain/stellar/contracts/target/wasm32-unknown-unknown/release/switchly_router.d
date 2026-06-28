@@ -1,1 +1,0 @@
-/Users/mayowa/Documents/projects/switchlynode/chain/stellar/contracts/target/wasm32-unknown-unknown/release/switchly_router.wasm: /Users/mayowa/Documents/projects/switchlynode/chain/stellar/contracts/src/lib.rs

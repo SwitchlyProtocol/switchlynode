@@ -992,3 +992,44 @@ func (s *SorobanRPCClient) PrepareTransaction(ctx context.Context, txXDR string)
 	}
 	return res, nil
 }
+
+// simulateTransaction structures (standard Soroban RPC `simulateTransaction` method)
+
+type simulateTransactionParams struct {
+	Transaction string `json:"transaction"`
+}
+
+type simulateHostFunctionResult struct {
+	XDR  string   `json:"xdr"`
+	Auth []string `json:"auth"`
+}
+
+// SimulateTransactionResult is the subset of the Soroban `simulateTransaction` response we need
+// to assemble an invoke-host-function transaction: the resource footprint (transactionData),
+// the minimum resource fee and the authorization entries required for the invocation.
+type SimulateTransactionResult struct {
+	TransactionData string                       `json:"transactionData"`
+	MinResourceFee  string                       `json:"minResourceFee"`
+	Results         []simulateHostFunctionResult `json:"results"`
+	LatestLedger    uint32                       `json:"latestLedger"`
+	Error           string                       `json:"error"`
+}
+
+// SimulateTransaction runs the Soroban `simulateTransaction` RPC method against an unsigned
+// transaction XDR and returns the footprint, resource fee and auth entries needed to invoke a
+// contract. Unlike PrepareTransaction it surfaces the authorization entries, which are required
+// for the router's `vault.require_auth()` to be satisfied.
+func (s *SorobanRPCClient) SimulateTransaction(ctx context.Context, txXDR string) (SimulateTransactionResult, error) {
+	req := SorobanRPCRequest{JSONRpc: "2.0", ID: 1, Method: "simulateTransaction", Params: simulateTransactionParams{Transaction: txXDR}}
+	var res SimulateTransactionResult
+	if err := s.makeRPCCall(ctx, req, &res); err != nil {
+		return SimulateTransactionResult{}, err
+	}
+	if res.Error != "" {
+		return SimulateTransactionResult{}, fmt.Errorf("soroban simulateTransaction failed: %s", res.Error)
+	}
+	if res.TransactionData == "" {
+		return SimulateTransactionResult{}, fmt.Errorf("soroban simulateTransaction returned empty transactionData")
+	}
+	return res, nil
+}

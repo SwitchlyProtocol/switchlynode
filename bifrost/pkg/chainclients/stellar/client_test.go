@@ -11,7 +11,6 @@ package stellar
 
 import (
 	"encoding/base64"
-	"fmt"
 	"math/big"
 	"os"
 	"strconv"
@@ -303,7 +302,7 @@ func (s *StellarClientTestSuite) TestProcessOutboundTx(c *C) {
 	c.Assert(isNative, Equals, true)
 
 	// Test that router address doesn't affect behavior (router contracts not implemented yet)
-	s.client.routerAddress = "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+	s.client.routerAddress = "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
 	operation2, err2 := s.client.processOutboundTx(txOutItem)
 	c.Assert(err2, IsNil)
 	c.Assert(operation2, NotNil)
@@ -315,7 +314,7 @@ func (s *StellarClientTestSuite) TestProcessOutboundTx(c *C) {
 	c.Assert(payment2.Amount, Equals, "1.0000000")
 
 	// Reset router address for remaining tests
-	s.client.routerAddress = "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+	s.client.routerAddress = "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
 
 	// Test error handling: empty coins array
 	emptyTxOutItem := stypes.TxOutItem{
@@ -430,7 +429,7 @@ func (s *StellarClientTestSuite) TestAddressConversionFunctions(c *C) {
 	accountAddr := "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"
 
 	// Test with valid Stellar contract address (starts with 'C')
-	contractAddr := "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+	contractAddr := "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
 
 	// Test with invalid address
 	invalidAddr := "invalid_address"
@@ -472,14 +471,13 @@ func (s *StellarClientTestSuite) TestInvokeHostFunctionTransactionSigning(c *C) 
 	// This simulates the actual outbound transaction signing that was failing
 
 	// Set up the router address for testing
-	s.client.routerAddress = "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+	s.client.routerAddress = "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
 
 	// Create a test transaction out item that matches what we see in the logs
 	coin := common.NewCoin(common.XLMAsset, cosmos.NewUint(74044534707)) // Amount from logs
 
 	// Use a valid public key that won't cause address conversion errors
-	validPubKey, err := common.NewPubKey("tswitchpub1addwnpepqflvfv08t6qt95lmttd6wpf3ss8wx63e9vf6fvyuj2yy6nnyna576qmw2y8")
-	c.Assert(err, IsNil)
+	validPubKey := newTestVaultPubKey(c)
 
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.StellarChain,
@@ -656,7 +654,7 @@ func (s *StellarClientTestSuite) TestContractInvocationWithAuth(c *C) {
 	// Test complete contract invocation flow structure validation
 
 	// Test XDR structure validation for contract invocation
-	routerAddress := "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+	routerAddress := "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
 
 	// Test router address conversion
 	routerScAddr, err := s.client.getScAddressFromString(routerAddress)
@@ -694,33 +692,6 @@ func (s *StellarClientTestSuite) TestContractInvocationWithAuth(c *C) {
 	c.Assert(len(string(memoXdr)) > 28, Equals, true) // Verify no 28-byte truncation
 }
 
-func (s *StellarClientTestSuite) TestSorobanSimulationStructure(c *C) {
-	// Test SorobanSimulationResult structure and parsing - functionality removed in cleanup
-
-	// Test result structure - commented out since SorobanSimulationResult removed
-	// result := &SorobanSimulationResult{
-	// 	Auth:            []string{"auth_entry_1", "auth_entry_2"},
-	// 	MinResourceFee:  "5000000",
-	// 	TransactionData: "test_transaction_data",
-	// }
-
-	// // Verify structure
-	// c.Assert(len(result.Auth), Equals, 2)
-	// c.Assert(result.Auth[0], Equals, "auth_entry_1")
-	// c.Assert(result.Auth[1], Equals, "auth_entry_2")
-	// c.Assert(result.MinResourceFee, Equals, "5000000")
-	// c.Assert(result.TransactionData, Equals, "test_transaction_data")
-
-	// // Test empty result
-	// emptyResult := &SorobanSimulationResult{}
-	// c.Assert(len(emptyResult.Auth), Equals, 0)
-	// c.Assert(emptyResult.MinResourceFee, Equals, "")
-	// c.Assert(emptyResult.TransactionData, Equals, "")
-
-	// Placeholder test to ensure function doesn't fail
-	c.Assert(true, Equals, true)
-}
-
 func (s *StellarClientTestSuite) TestErrorHandling(c *C) {
 	// Test error handling scenarios without public key validation
 
@@ -732,7 +703,7 @@ func (s *StellarClientTestSuite) TestErrorHandling(c *C) {
 	c.Assert(s.client.routerAddress, Equals, "")
 
 	// Test router address setting
-	testRouter := "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4"
+	testRouter := "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
 	s.client.routerAddress = testRouter
 	c.Assert(s.client.routerAddress, Equals, testRouter)
 
@@ -775,79 +746,26 @@ func (s *StellarClientTestSuite) TestManualXDRConstruction(c *C) {
 	c.Assert(err.Error(), Not(Matches), ".*txnbuild.*")
 }
 
-// TestVaultMigrationDetection tests the migration memo detection
-func (s *StellarClientTestSuite) TestVaultMigrationDetection(c *C) {
-	// Test migration memo detection
-	testCases := []struct {
-		memo        string
-		isMigration bool
-	}{
-		{"MIGRATE:12345", true},
-		{"MIGRATE:0", true},
-		{"migrate:123", false},     // lowercase
-		{"OUT:MIGRATE:123", false}, // not at start
-		{"MIGRATION:123", false},   // wrong format
-		{"MIGRATE", false},         // no colon
-		{"MIGRATE:", false},        // no block height
-		{"OUT:NORMAL", false},      // normal transaction
-		{"", false},                // empty memo
-	}
-
-	for _, tc := range testCases {
-		// result := s.client.isMigrationTransaction(tc.memo) // Method removed in cleanup
-		result := false // Migration detection simplified
-		c.Assert(result, Equals, tc.isMigration,
-			Commentf("Memo '%s' should return %v", tc.memo, tc.isMigration))
-	}
-}
-
-// TestVaultMigrationTransaction tests vault migration functionality
-func (s *StellarClientTestSuite) TestVaultMigrationTransaction(c *C) {
-	// Test vault migration with multiple assets - commented out since method removed
-	// coins := common.Coins{
-	// 	common.NewCoin(common.XLMAsset, cosmos.NewUint(1000000)),
-	// 	common.NewCoin(common.XLMUSDC, cosmos.NewUint(500000)),
-	// }
-
-	// txOutItem commented out since migration functionality removed
-	// txOutItem := stypes.TxOutItem{
-	// 	Chain:       common.StellarChain,
-	// 	ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),                     // new vault
-	// 	VaultPubKey: common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3"), // old vault
-	// 	Coins:       coins,
-	// 	Memo:        "MIGRATE:12345",
-	// 	MaxGas:      common.Gas{common.NewCoin(common.XLMAsset, cosmos.NewUint(1000))},
-	// 	GasRate:     1,
-	// }
-
-	// Test that migration transactions are properly detected and routed - commented out since txOutItem removed
-	// _, _, _, err := s.client.SignTx(txOutItem, 1)
-	err := fmt.Errorf("migration functionality removed")
-	c.Assert(err, NotNil) // Migration functionality simplified
-
-	// Verify it's attempting vault migration (not regular transfer)
-	// In test environment, may fail at account validation before reaching migration logic
-	c.Assert(err, NotNil) // Should fail in test environment
-	// Accept various types of test environment failures
-	c.Assert(err.Error(), Matches, ".*migration.*|.*return_vault_assets.*|.*XLM_CONTRACT.*|.*vault account.*|.*stellar address.*")
-}
-
-// TestCreateScAddress tests ScAddress creation from different address types
+// TestCreateScAddress tests ScAddress creation from account and contract addresses
+// via getScAddressFromString.
 func (s *StellarClientTestSuite) TestCreateScAddress(c *C) {
 	testCases := []struct {
 		name    string
 		address string
 		isValid bool
+		scType  xdr.ScAddressType
 	}{
 		{
 			name:    "valid account address",
 			address: "GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM",
 			isValid: true,
+			scType:  xdr.ScAddressTypeScAddressTypeAccount,
 		},
 		{
 			name:    "valid contract address",
-			address: "CA2LDIRKDFHX2WPWKL7C3CNTFICTOH5E6RG6MP74TT56F7QQ6LXCMBHN",
+			address: testRouterContract,
 			isValid: true,
+			scType:  xdr.ScAddressTypeScAddressTypeContract,
 		},
 		{
 			name:    "invalid address",
@@ -862,91 +780,13 @@ func (s *StellarClientTestSuite) TestCreateScAddress(c *C) {
 	}
 
 	for _, tc := range testCases {
-		// scAddr, err := s.client.createScAddress(tc.address) // Method removed in cleanup
-		var scAddr interface{}
-		var err error = fmt.Errorf("createScAddress method removed")
-
+		scAddr, err := s.client.getScAddressFromString(tc.address)
 		if tc.isValid {
 			c.Assert(err, IsNil, Commentf("Test case: %s", tc.name))
-			c.Assert(scAddr, NotNil, Commentf("Test case: %s", tc.name))
+			c.Assert(scAddr.Type, Equals, tc.scType, Commentf("Test case: %s", tc.name))
 		} else {
 			c.Assert(err, NotNil, Commentf("Test case: %s should fail", tc.name))
-			c.Assert(scAddr, IsNil, Commentf("Test case: %s should return nil", tc.name))
 		}
-	}
-}
-
-// TestBuildTransaction tests base transaction construction
-func (s *StellarClientTestSuite) TestBuildTransaction(c *C) {
-	// Test building a basic transaction structure - method removed in cleanup
-
-	// Variables commented out since buildTransaction method removed
-	// contractID := "CA2LDIRKDFHX2WPWKL7C3CNTFICTOH5E6RG6MP74TT56F7QQ6LXCMBHN"
-	// functionName := "transfer_out"
-	// args := []xdr.ScVal{...}
-	// sourceAccount := xdr.MuxedAccount{...}
-
-	// tx, err := s.client.buildTransaction(contractID, functionName, args, sourceAccount, 1, 100) // Method removed
-	// var tx interface{}
-	err := fmt.Errorf("buildTransaction method removed")
-
-	// Test logic updated since buildTransaction method was removed
-	c.Assert(err, NotNil) // Now expecting error since method removed
-	// c.Assert(tx, NotNil)
-	// c.Assert(tx.Operations, HasLen, 1)
-	// c.Assert(tx.Operations[0].Body.Type, Equals, xdr.OperationTypeInvokeHostFunction)
-	// c.Assert(tx.Fee, Equals, xdr.Uint32(100))
-	// c.Assert(tx.SeqNum, Equals, xdr.SequenceNumber(1))
-}
-
-// TestSigningMethodSelection tests local vs TSS signing selection
-func (s *StellarClientTestSuite) TestSigningMethodSelection(c *C) {
-	// Test that the client properly selects signing methods
-
-	// Variables commented out since signTransaction method removed
-	// tx := &xdr.Transaction{
-	// 	Fee:    xdr.Uint32(100),
-	// 	SeqNum: xdr.SequenceNumber(1),
-	// }
-	// vaultPubKey := common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3")
-
-	// _, err := s.client.signTransaction(tx, vaultPubKey) // Method removed
-	err := fmt.Errorf("signTransaction method removed")
-	c.Assert(err, NotNil) // Will fail in test env but should attempt TSS path
-
-	// Verify it attempted TSS signing - updated since method removed
-	if err != nil {
-		c.Assert(err.Error(), Matches, ".*signTransaction method removed.*")
-	}
-}
-
-// TestMultiAssetMigrationConstruction tests building migration transactions with multiple assets
-func (s *StellarClientTestSuite) TestMultiAssetMigrationConstruction(c *C) {
-	// Test the buildVaultMigrationTransaction method - commented out since method removed
-	// coins := common.Coins{
-	// 	common.NewCoin(common.XLMAsset, cosmos.NewUint(1000000)),
-	// 	common.NewCoin(common.XLMUSDC, cosmos.NewUint(500000)),
-	// }
-
-	// txOutItem commented out since buildVaultMigrationTransaction method removed
-	// txOutItem := stypes.TxOutItem{
-	// 	Chain:       common.StellarChain,
-	// 	ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-	// 	VaultPubKey: common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3"),
-	// 	Coins:       coins,
-	// 	Memo:        "MIGRATE:12345",
-	// }
-
-	// This will fail in test environment but should validate the structure
-	// _, err := s.client.buildVaultMigrationTransaction(txOutItem, 1, "CA2LDIRKDFHX2WPWKL7C3CNTFICTOH5E6RG6MP74TT56F7QQ6LXCMBHN") // Method removed
-	err := fmt.Errorf("buildVaultMigrationTransaction method removed")
-
-	c.Assert(err, NotNil) // Will fail due to test environment
-
-	// Verify it's attempting to build migration transaction
-	if err != nil {
-		// Should be related to environment setup, not logic errors
-		c.Assert(err.Error(), Not(Matches), ".*panic.*|.*nil pointer.*")
 	}
 }
 
@@ -967,39 +807,6 @@ func (s *StellarClientTestSuite) TestAssetMappingForMigration(c *C) {
 		currentNet := GetCurrentNetwork()
 		_, exists := mapping.ContractAddresses[currentNet]
 		c.Assert(exists, Equals, true, Commentf("Asset %s should have address for network %s", asset, currentNet))
-	}
-}
-
-// TestTransactionTypeRouting tests that transactions are routed correctly
-func (s *StellarClientTestSuite) TestTransactionTypeRouting(c *C) {
-	baseItem := stypes.TxOutItem{
-		Chain:       common.StellarChain,
-		ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-		VaultPubKey: common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3"),
-		Coins:       common.Coins{common.NewCoin(common.XLMAsset, cosmos.NewUint(1000000))},
-		MaxGas:      common.Gas{common.NewCoin(common.XLMAsset, cosmos.NewUint(1000))},
-		GasRate:     1,
-	}
-
-	testCases := []struct {
-		name            string
-		memo            string
-		expectMigration bool
-	}{
-		{"regular transfer", "OUT:TRANSFER", false},
-		{"vault migration", "MIGRATE:12345", true},
-		{"empty memo", "", false},
-		{"swap transaction", "SWAP:BTC.BTC:switchly1address", false},
-	}
-
-	for _, tc := range testCases {
-		item := baseItem
-		item.Memo = tc.memo
-
-		// isMigration := s.client.isMigrationTransaction(tc.memo) // Method removed in cleanup
-		isMigration := false // Migration detection simplified
-		c.Assert(isMigration, Equals, tc.expectMigration,
-			Commentf("Test case '%s' with memo '%s'", tc.name, tc.memo))
 	}
 }
 

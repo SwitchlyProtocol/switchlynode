@@ -681,39 +681,29 @@ func (c *Client) TruncateMemoForStellar(originalMemo string) string {
 
 func (c *Client) truncateMemoForStellar(originalMemo string) string {
 	const maxBytes = 28
+	const dots = "...."
 
-	// Return memo unchanged if it already fits within the limit
+	// Return memo unchanged if it already fits within the limit.
 	if len(originalMemo) <= maxBytes {
 		return originalMemo
 	}
 
-	// Parse memo components (expected format: "OUT:TXHASH")
-	parts := strings.Split(originalMemo, ":")
-	if len(parts) < 2 {
-		// Handle memos without colon separator - take first 28 bytes
-		return originalMemo[:maxBytes]
+	// For "OUT:" outbound memos, preserve the prefix and keep a symmetric head/tail of the
+	// hash so both ends survive: OUT: + head + dots + tail == 28 bytes.
+	if strings.HasPrefix(originalMemo, "OUT:") {
+		const prefix = "OUT:"
+		hashPart := originalMemo[len(prefix):]
+		avail := maxBytes - len(prefix) - len(dots) // budget for head+tail
+		head := avail / 2
+		tail := avail - head
+		return prefix + hashPart[:head] + dots + hashPart[len(hashPart)-tail:]
 	}
 
-	// Reconstruct with OUT: prefix and process the hash portion
-	prefix := "OUT:"
-	hashPart := strings.Join(parts[1:], ":")
-
-	// Calculate remaining space for hash content after prefix (24 bytes)
-	availableForHash := maxBytes - len(prefix)
-
-	if len(hashPart) <= availableForHash {
-		return prefix + hashPart
-	}
-
-	// Use format: OUT: + first 8 chars + last 12 chars (total 24 chars for hash)
-	// This gives us: OUT:12345678...890ABCDEF123 (28 bytes total)
-	if len(hashPart) >= 20 {
-		truncatedHash := hashPart[:8] + "..." + hashPart[len(hashPart)-12:]
-		return prefix + truncatedHash
-	}
-
-	// Fallback for shorter hashes - just truncate to fit
-	return prefix + hashPart[:availableForHash]
+	// Otherwise take a symmetric midpoint truncation of the whole memo.
+	avail := maxBytes - len(dots)
+	head := avail / 2
+	tail := avail - head
+	return originalMemo[:head] + dots + originalMemo[len(originalMemo)-tail:]
 }
 
 // SignTx signs a Stellar transaction using simple payments with proper ed25519 key derivation.
@@ -822,6 +812,189 @@ func (c *Client) buildSimplePaymentTransaction(tx stypes.TxOutItem, sequence int
 
 	c.logger.Info().
 		Msg("simple payment transaction built and signed successfully")
+	return signedTx, nil
+}
+
+// scvalI128FromBaseUnits converts a non-negative base-unit amount string into an ScVal i128.
+func scvalI128FromBaseUnits(baseUnits string) (xdr.ScVal, error) {
+	v, ok := new(big.Int).SetString(strings.TrimSpace(baseUnits), 10)
+	if !ok || v.Sign() < 0 {
+		return xdr.ScVal{}, fmt.Errorf("invalid base-unit amount: %s", baseUnits)
+	}
+	if v.BitLen() > 127 {
+		return xdr.ScVal{}, fmt.Errorf("amount overflows i128: %s", baseUnits)
+	}
+	mask := new(big.Int).SetUint64(^uint64(0))
+	lo := new(big.Int).And(v, mask).Uint64()
+	hi := new(big.Int).Rsh(v, 64).Int64()
+	i128 := xdr.Int128Parts{Hi: xdr.Int64(hi), Lo: xdr.Uint64(lo)}
+	return xdr.ScVal{Type: xdr.ScValTypeScvI128, I128: &i128}, nil
+}
+
+// assetContractScAddress resolves the Soroban contract (SAC) address of an asset as an ScAddress.
+// Soroban-native tokens carry their contract address in the issuer field; native XLM and classic
+// assets have their canonical SAC contract id derived deterministically from the network passphrase.
+func (c *Client) assetContractScAddress(mapping StellarAssetMapping) (xdr.ScAddress, error) {
+	if mapping.StellarAssetType == "contract" && mapping.StellarAssetIssuer != "" {
+		return c.getScAddressFromString(mapping.StellarAssetIssuer)
+	}
+	xdrAsset, err := mapping.ToStellarAsset().ToXDR()
+	if err != nil {
+		return xdr.ScAddress{}, fmt.Errorf("fail to convert asset to xdr: %w", err)
+	}
+	hash, err := xdrAsset.ContractID(c.networkPassphrase)
+	if err != nil {
+		return xdr.ScAddress{}, fmt.Errorf("fail to derive asset contract id: %w", err)
+	}
+	contractID := xdr.ContractId(hash)
+	return xdr.ScAddress{Type: xdr.ScAddressTypeScAddressTypeContract, ContractId: &contractID}, nil
+}
+
+// buildTransferOutInvokeOp builds the router `transfer_out(vault, to, asset, amount, memo)`
+// InvokeHostFunction operation carrying the full SwitchlyProtocol memo. The vault is set as the
+// operation source account so the router's `vault.require_auth()` is satisfied via source-account
+// authorization (covered by the transaction signature). This is the pure, network-free core of the
+// router outbound path and is unit tested.
+func (c *Client) buildTransferOutInvokeOp(tx stypes.TxOutItem, memo string) (*txnbuild.InvokeHostFunction, error) {
+	if c.routerAddress == "" {
+		return nil, fmt.Errorf("no stellar router address configured")
+	}
+	if len(tx.Coins) == 0 {
+		return nil, fmt.Errorf("no coins to send")
+	}
+	coin := tx.Coins[0]
+	mapping, found := GetAssetBySwitchlyAsset(coin.Asset)
+	if !found {
+		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
+	}
+
+	vaultAddr := c.GetAddress(tx.VaultPubKey)
+	if vaultAddr == "" {
+		return nil, fmt.Errorf("fail to get vault address")
+	}
+
+	vaultScAddr, err := c.getScAddressFromString(vaultAddr)
+	if err != nil {
+		return nil, fmt.Errorf("fail to encode vault address: %w", err)
+	}
+	toScAddr, err := c.getScAddressFromString(tx.ToAddress.String())
+	if err != nil {
+		return nil, fmt.Errorf("fail to encode recipient address: %w", err)
+	}
+	assetScAddr, err := c.assetContractScAddress(mapping)
+	if err != nil {
+		return nil, fmt.Errorf("fail to resolve asset contract: %w", err)
+	}
+	routerScAddr, err := c.getScAddressFromString(c.routerAddress)
+	if err != nil {
+		return nil, fmt.Errorf("fail to encode router address: %w", err)
+	}
+	if routerScAddr.Type != xdr.ScAddressTypeScAddressTypeContract {
+		return nil, fmt.Errorf("router address is not a contract address: %s", c.routerAddress)
+	}
+
+	amountVal, err := scvalI128FromBaseUnits(mapping.ConvertFromSwitchlyProtocolAmount(coin.Amount))
+	if err != nil {
+		return nil, err
+	}
+
+	memoStr := xdr.ScString(memo)
+	args := []xdr.ScVal{
+		{Type: xdr.ScValTypeScvAddress, Address: &vaultScAddr},
+		{Type: xdr.ScValTypeScvAddress, Address: &toScAddr},
+		{Type: xdr.ScValTypeScvAddress, Address: &assetScAddr},
+		amountVal,
+		{Type: xdr.ScValTypeScvString, Str: &memoStr},
+	}
+
+	hostFn := xdr.HostFunction{
+		Type: xdr.HostFunctionTypeHostFunctionTypeInvokeContract,
+		InvokeContract: &xdr.InvokeContractArgs{
+			ContractAddress: routerScAddr,
+			FunctionName:    xdr.ScSymbol("transfer_out"),
+			Args:            args,
+		},
+	}
+
+	return &txnbuild.InvokeHostFunction{
+		HostFunction:  hostFn,
+		SourceAccount: vaultAddr,
+	}, nil
+}
+
+// buildRouterTransferOutTransaction builds, simulates and signs a Soroban transfer_out invocation
+// against the router contract. It carries the full memo, then simulates the transaction to attach
+// the resource footprint (SorobanData) and authorization entries before signing.
+func (c *Client) buildRouterTransferOutTransaction(tx stypes.TxOutItem, sequence int64, memo string) (*txnbuild.Transaction, error) {
+	if c.sorobanRPCClient == nil {
+		return nil, fmt.Errorf("soroban rpc client not configured")
+	}
+
+	op, err := c.buildTransferOutInvokeOp(tx, memo)
+	if err != nil {
+		return nil, err
+	}
+	vaultAddr := op.SourceAccount
+
+	// build constructs a transaction from the current state of op. A fresh SimpleAccount is used
+	// each call so the sequence is deterministic across the simulate and sign builds.
+	build := func() (*txnbuild.Transaction, error) {
+		return txnbuild.NewTransaction(txnbuild.TransactionParams{
+			SourceAccount:        &txnbuild.SimpleAccount{AccountID: vaultAddr, Sequence: sequence},
+			IncrementSequenceNum: true,
+			Operations:           []txnbuild.Operation{op},
+			BaseFee:              txnbuild.MinBaseFee,
+			Preconditions:        txnbuild.Preconditions{TimeBounds: txnbuild.NewInfiniteTimeout()},
+		})
+	}
+
+	// 1) Build an unsigned transaction and simulate it.
+	unsignedTx, err := build()
+	if err != nil {
+		return nil, fmt.Errorf("fail to build unsigned soroban tx: %w", err)
+	}
+	unsignedXDR, err := unsignedTx.Base64()
+	if err != nil {
+		return nil, fmt.Errorf("fail to encode unsigned soroban tx: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	sim, err := c.sorobanRPCClient.SimulateTransaction(ctx, unsignedXDR)
+	if err != nil {
+		return nil, fmt.Errorf("fail to simulate soroban tx: %w", err)
+	}
+
+	// 2) Apply the simulation results (footprint + auth) onto the operation.
+	var sorobanData xdr.SorobanTransactionData
+	if err = xdr.SafeUnmarshalBase64(sim.TransactionData, &sorobanData); err != nil {
+		return nil, fmt.Errorf("fail to decode soroban transaction data: %w", err)
+	}
+	op.Ext = xdr.TransactionExt{V: 1, SorobanData: &sorobanData}
+
+	if len(sim.Results) > 0 {
+		auth := make([]xdr.SorobanAuthorizationEntry, 0, len(sim.Results[0].Auth))
+		for _, a := range sim.Results[0].Auth {
+			var entry xdr.SorobanAuthorizationEntry
+			if err = xdr.SafeUnmarshalBase64(a, &entry); err != nil {
+				return nil, fmt.Errorf("fail to decode soroban auth entry: %w", err)
+			}
+			auth = append(auth, entry)
+		}
+		op.Auth = auth
+	}
+
+	// 3) Rebuild with the footprint/auth attached and sign. The resource fee is taken from
+	// SorobanData by the SDK, on top of the inclusion BaseFee.
+	preparedTx, err := build()
+	if err != nil {
+		return nil, fmt.Errorf("fail to build prepared soroban tx: %w", err)
+	}
+
+	signedTx, err := c.signTransactionWithTSS(preparedTx, tx.VaultPubKey, c.networkPassphrase)
+	if err != nil {
+		return nil, fmt.Errorf("fail to sign soroban tx: %w", err)
+	}
 	return signedTx, nil
 }
 
@@ -1028,11 +1201,22 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 		return nil, nil, nil, fmt.Errorf("fail to marshal stellar checkpoint: %w", err)
 	}
 
-	// Build and sign transaction (simple approach like test script)
-	truncatedMemo := c.truncateMemoForStellar(tx.Memo)
-	stellarSignedTx, err := c.buildSimplePaymentTransaction(tx, sequence, truncatedMemo)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("fail to build transaction: %w", err)
+	// Build and sign the outbound. Prefer routing through the Soroban router contract so the full
+	// SwitchlyProtocol memo is preserved in the emitted transfer_out event; fall back to a plain
+	// payment (with the lossy 28-byte memo) only when no router is configured.
+	var stellarSignedTx *txnbuild.Transaction
+	if c.routerAddress != "" && c.sorobanRPCClient != nil {
+		stellarSignedTx, err = c.buildRouterTransferOutTransaction(tx, sequence, tx.Memo)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to build router transfer_out transaction: %w", err)
+		}
+	} else {
+		c.logger.Warn().Msg("no stellar router configured, falling back to simple payment with truncated memo")
+		truncatedMemo := c.truncateMemoForStellar(tx.Memo)
+		stellarSignedTx, err = c.buildSimplePaymentTransaction(tx, sequence, truncatedMemo)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("fail to build transaction: %w", err)
+		}
 	}
 
 	// Convert to XDR for storage

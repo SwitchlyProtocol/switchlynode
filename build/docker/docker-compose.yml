@@ -34,7 +34,7 @@ services:
       SIGNER_NAME: switchly
       SIGNER_PASSWD: password
       SWITCHLYNODE_GRPC_ENABLE: true
-      XLM_CONTRACT: "CA2LDIRKDFHX2WPWKL7C3CNTFICTOH5E6RG6MP74TT56F7QQ6LXCMBHN" # fixed router
+      XLM_CONTRACT: "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH" # fixed router
     
     logging: &logging
       driver: "json-file"
