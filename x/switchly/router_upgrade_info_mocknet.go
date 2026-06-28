@@ -19,8 +19,9 @@ var (
 	baseOldRouter = ``
 	baseNewRouter = ``
 
-	// XLM Router - Stellar Contract IDs (not addresses)
-	xlmOldRouter = `CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH`
-	// Fixed Stellar router contract with proper transfer_out implementation
-	xlmNewRouter = `CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH`
+	// XLM Router - deployed fresh to the local standalone network at genesis
+	// (deploy_stellar_contract); the genesis chain_contracts entry is the source of truth,
+	// so there is no static upgrade target for mocknet.
+	xlmOldRouter = ``
+	xlmNewRouter = ``
 )

@@ -40,6 +40,19 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/* && \
   pip3 install --no-cache-dir requests==2.32.3 web3==7.5.0 retry==0.9.2
 
+# Stellar CLI (prebuilt) for deploying the local Soroban router + native SAC in mocknet,
+# mirroring python3/web3 used by evm-tool.py for the EVM chains.
+ARG STELLAR_CLI_VERSION=27.0.0
+ARG TARGETARCH
+RUN case "${TARGETARCH:-amd64}" in \
+  arm64) SARCH=aarch64 ;; \
+  *) SARCH=x86_64 ;; \
+  esac && \
+  curl -sSL "https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_CLI_VERSION}/stellar-cli-${STELLAR_CLI_VERSION}-${SARCH}-unknown-linux-gnu.tar.gz" \
+  | tar -xz -C /usr/local/bin stellar && \
+  chmod +x /usr/local/bin/stellar && \
+  stellar --version
+
 # Copy the compiled binaries over.
 COPY --from=build /go/bin/switchlynode /go/bin/bifrost /go/bin/recover-keyshare-backup /usr/bin/
 COPY --from=build /go/pkg/mod/github.com/!cosm!wasm/wasmvm/v2@v2.1.2/internal/api/libwasmvm.*.so /usr/lib
