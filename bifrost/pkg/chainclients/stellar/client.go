@@ -297,6 +297,33 @@ func NewClient(
 		}
 	}
 
+	// Register the native XLM Stellar Asset Contract (SAC) for the active network. The SAC id is
+	// derived deterministically from the network passphrase, so on a local/standalone network it
+	// differs from the public mainnet/testnet SACs baked into the asset mapping. Without this,
+	// inbound router deposit events carrying the local native SAC address are rejected as
+	// "unsupported asset". On the public networks this derives to the same canonical SAC already in
+	// the mapping, so it is effectively a no-op there.
+	if nativeXDR, err := (txnbuild.NativeAsset{}).ToXDR(); err == nil {
+		if hash, err := nativeXDR.ContractID(networkPassphrase); err == nil {
+			if sacAddr, err := strkey.Encode(strkey.VersionByteContract, hash[:]); err == nil {
+				if UpdateContractAddress("XLM", stellarNetwork, sacAddr) {
+					logger.Info().
+						Str("native_xlm_sac", sacAddr).
+						Str("network", string(stellarNetwork)).
+						Msg("registered native XLM SAC for active network")
+				} else {
+					logger.Error().
+						Str("native_xlm_sac", sacAddr).
+						Msg("failed to register native XLM SAC: no XLM asset mapping matched")
+				}
+			} else {
+				logger.Warn().Err(err).Msg("failed to strkey-encode native XLM SAC")
+			}
+		} else {
+			logger.Warn().Err(err).Msg("failed to derive native XLM SAC contract id")
+		}
+	}
+
 	return &Client{
 		logger:              logger,
 		cfg:                 cfg,
@@ -380,55 +407,46 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	}
 }
 
-// waitForStellarSync waits for the Stellar node to be fully synced.
-// It continuously checks the current height until it stabilizes (difference <= 2 over 3 seconds).
-// Returns the final synced height or an error if sync detection fails.
+// waitForStellarSync waits until the Stellar node is live and serving a sane ledger height, then
+// returns that height so the scanner can begin from the current tip.
+//
+// It intentionally does NOT require the height to be "stable" (near-constant over time). A healthy
+// network advances every few seconds, and on a fast standalone network (mocknet closes ~1 ledger/s)
+// a stability requirement (e.g. delta <= 2 over 3s) never holds — the node looks perpetually
+// "unsynced" and scanning never starts. Instead we simply confirm the node responds with a positive,
+// non-decreasing height across two reads (i.e. it is up and not regressing).
 func (c *Client) waitForStellarSync() (int64, error) {
 	const (
-		stabilityCheckDelay = 3 * time.Second
-		pollInterval        = 5 * time.Second
-		maxHeightDifference = 2
+		recheckDelay = 2 * time.Second
+		pollInterval = 5 * time.Second
 	)
 
 	for {
 		height, err := getCurrentStellarHeight(c.horizonClient)
-		if err != nil {
-			c.logger.Debug().Err(err).Msg("STELLAR: Failed to get current height, retrying...")
+		if err != nil || height <= 0 {
+			c.logger.Debug().Err(err).Int64("height", height).Msg("STELLAR: node not ready yet, retrying...")
 			time.Sleep(pollInterval)
 			continue
 		}
 
-		if height <= 0 {
-			c.logger.Debug().Msg("STELLAR: No height available yet, retrying...")
-			time.Sleep(pollInterval)
-			continue
-		}
-
-		// Verify height stability by checking again after a delay
-		time.Sleep(stabilityCheckDelay)
+		// Confirm the node is live: it responds again with a non-decreasing height.
+		time.Sleep(recheckDelay)
 		secondHeight, secondErr := getCurrentStellarHeight(c.horizonClient)
-		if secondErr != nil {
-			c.logger.Debug().Err(secondErr).Msg("STELLAR: Failed to verify height stability, retrying...")
+		if secondErr != nil || secondHeight <= 0 {
+			c.logger.Debug().Err(secondErr).Msg("STELLAR: re-check failed, retrying...")
+			time.Sleep(pollInterval)
+			continue
+		}
+		if secondHeight < height {
+			c.logger.Debug().
+				Int64("first_height", height).
+				Int64("second_height", secondHeight).
+				Msg("STELLAR: height regressed, retrying...")
+			time.Sleep(pollInterval)
 			continue
 		}
 
-		if secondHeight <= 0 {
-			c.logger.Debug().Msg("STELLAR: No height available on second check, retrying...")
-			continue
-		}
-
-		heightDifference := secondHeight - height
-		if heightDifference <= maxHeightDifference {
-			return secondHeight, nil
-		}
-
-		c.logger.Debug().
-			Int64("first_height", height).
-			Int64("second_height", secondHeight).
-			Int64("difference", heightDifference).
-			Msg("STELLAR: Height not stable yet, continuing to wait...")
-
-		time.Sleep(pollInterval)
+		return secondHeight, nil
 	}
 }
 

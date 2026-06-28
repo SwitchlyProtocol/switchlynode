@@ -302,54 +302,76 @@ func (c *StellarBlockScanner) Stop() {
 	c.logger.Info().Msg("Stellar continuous block scanner stopped")
 }
 
-// continuousScanLoop runs every 60 seconds to continuously ingest new blocks
+// continuousScanLoop continuously ingests new blocks, catching up to the chain tip as fast as the
+// node allows and only idling briefly once at the tip. The previous implementation processed at
+// most 50 blocks once every 60s (a hard 50 blocks/min ceiling). That cannot keep pace with fast
+// networks such as the local standalone net used by mocknet (~1 ledger/s ≈ 60/min): the scanner
+// fell behind indefinitely and never observed deposits. Here we re-run scanNewBlocks back-to-back
+// while behind, and sleep only a short interval when caught up.
 func (c *StellarBlockScanner) continuousScanLoop() {
 	defer c.wg.Done()
 	defer c.logger.Info().Msg("Stellar continuous scan loop stopped")
 
-	ticker := time.NewTicker(60 * time.Second)
-	defer ticker.Stop()
+	const idleInterval = 2 * time.Second
 
-	c.logger.Info().Msg("Stellar continuous scan loop started - scanning every 60 seconds")
+	c.logger.Info().Msg("Stellar continuous scan loop started")
 
 	for {
 		select {
 		case <-c.stopChan:
 			return
-		case <-ticker.C:
-			if err := c.scanNewBlocks(); err != nil {
-				c.logger.Error().Err(err).Msg("Failed to scan new blocks in continuous loop")
+		default:
+		}
+
+		caughtUp, err := c.scanNewBlocks()
+		if err != nil {
+			c.logger.Error().Err(err).Msg("Failed to scan new blocks in continuous loop")
+			caughtUp = true // back off on error to avoid a hot loop
+		}
+
+		// Only idle when at the chain tip; while behind, immediately scan the next batch.
+		if caughtUp {
+			select {
+			case <-c.stopChan:
+				return
+			case <-time.After(idleInterval):
 			}
 		}
 	}
 }
 
-// scanNewBlocks scans all new blocks from the current stored position to the latest Stellar height
-func (c *StellarBlockScanner) scanNewBlocks() error {
+// scanNewBlocks scans up to a bounded batch of new blocks from the current stored position toward
+// the latest Stellar height. It returns caughtUp=true when, after this batch, the scanner has
+// reached the chain tip (so the caller can idle); caughtUp=false means more blocks remain and the
+// caller should scan again immediately.
+func (c *StellarBlockScanner) scanNewBlocks() (bool, error) {
 	// Get current stored position
 	currentPos, err := c.db.GetScanPos()
 	if err != nil {
 		c.logger.Error().Err(err).Msg("Failed to get current scan position")
-		return err
+		return false, err
 	}
 
 	// Get current Stellar height
 	chainHeight, err := c.GetHeight()
 	if err != nil {
 		c.logger.Error().Err(err).Msg("Failed to get current Stellar height")
-		return err
+		return false, err
 	}
 
 	if chainHeight <= currentPos {
 		c.logger.Debug().Int64("current_pos", currentPos).Int64("chain_height", chainHeight).
 			Msg("No new blocks to scan")
-		return nil
+		return true, nil
 	}
 
-	// Calculate how many blocks to process
-	blocksToProcess := chainHeight - currentPos
-	if blocksToProcess > 50 { // Limit to prevent overwhelming the system
-		blocksToProcess = 50
+	// Calculate how many blocks to process. Bound each batch to keep memory/work in check; the
+	// caller loops back-to-back while behind, so this is a chunk size, not a per-minute ceiling.
+	const maxBatch = 50
+	fullGap := chainHeight - currentPos
+	blocksToProcess := fullGap
+	if blocksToProcess > maxBatch {
+		blocksToProcess = maxBatch
 	}
 
 	// Process blocks sequentially from current position + 1
@@ -380,7 +402,7 @@ func (c *StellarBlockScanner) scanNewBlocks() error {
 		if err := c.db.SetScanPos(blockHeight); err != nil {
 			c.logger.Error().Err(err).Int64("block_height", blockHeight).
 				Msg("Failed to update scan position")
-			return err
+			return false, err
 		}
 
 		// Use standard blockscanner logging format to match other chains
@@ -422,7 +444,8 @@ func (c *StellarBlockScanner) scanNewBlocks() error {
 		}
 	}
 
-	return nil
+	// Caught up when this batch covered the entire remaining gap to the chain tip.
+	return fullGap <= blocksToProcess, nil
 }
 
 // HandleGapDetection performs Stellar-specific gap detection and position adjustment
@@ -1095,18 +1118,73 @@ func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, heig
 // processRouterTransferOutEvent processes router transfer out events
 // Aligns with TransferOutEvent struct in the Stellar contract
 func (c *StellarBlockScanner) processRouterTransferOutEvent(event *RouterEvent, height int64) (*types.TxInItem, error) {
-	// Transfer out events are outbound transactions, not inbound
-	// We don't generate TxInItems for these, but we log them for monitoring
+	// transfer_out is a vault OUTBOUND. We must still emit a TxInItem: the observer recognises a tx
+	// whose Sender is a vault address as an outbound observation (MsgObservedTxOut), and the
+	// OUT:<inbound-hash> memo lets SwitchlyNode match it to the scheduled outbound and mark it
+	// complete. Without this the outbound stays pending forever and the signer keeps re-broadcasting.
+	// (mocknet runs with auto_observe=false, so the block scanner is the only path that confirms
+	// outbounds — exactly as for the other chains.)
+	if event.Asset == "" {
+		c.logger.Warn().Str("tx_hash", event.TransactionHash).Msg("missing asset in router transfer out event")
+		return nil, nil
+	}
+	if event.Amount == "" || event.Amount == "0" {
+		c.logger.Debug().Str("tx_hash", event.TransactionHash).Msg("transfer out amount is 0, ignoring")
+		return nil, nil
+	}
+
+	mapping, found := GetAssetByAddress(event.Asset)
+	if !found {
+		c.logger.Warn().Str("asset_address", event.Asset).Msg("unsupported asset in router transfer out event")
+		return nil, nil
+	}
+
+	coin, err := mapping.ConvertBaseUnitsToSwitchlyProtocolAmount(event.Amount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert amount: %w", err)
+	}
+
+	// For transfer_out the vault is the sender ('from') and the recipient is 'to'.
+	vaultAddr := event.FromAddress
+	if vaultAddr == "" {
+		c.logger.Warn().Str("tx_hash", event.TransactionHash).Msg("missing vault (from) address in router transfer out event")
+		return nil, nil
+	}
+	toAddr := event.ToAddress
+	if toAddr == "" {
+		c.logger.Warn().Str("tx_hash", event.TransactionHash).Msg("missing recipient (to) address in router transfer out event")
+		return nil, nil
+	}
+
+	vaultPubKey, err := c.getVaultPubKeyForXLM()
+	if err != nil || vaultPubKey.IsEmpty() {
+		c.logger.Warn().Err(err).Str("tx_hash", event.TransactionHash).Msg("failed to get vault public key for XLM chain")
+		return nil, nil
+	}
+
+	txInItem := &types.TxInItem{
+		BlockHeight:         height,
+		Tx:                  event.TransactionHash,
+		Sender:              vaultAddr, // vault is the sender -> observer treats this as an outbound
+		To:                  toAddr,    // recipient
+		Coins:               common.Coins{coin},
+		Memo:                event.Memo, // OUT:<inbound hash>
+		ObservedVaultPubKey: vaultPubKey,
+		Gas: common.Gas{
+			{Asset: common.XLMAsset, Amount: cosmos.NewUint(baseFeeStroops)},
+		},
+	}
+
 	c.logger.Info().
 		Str("tx_hash", event.TransactionHash).
-		Str("vault", event.FromAddress).
-		Str("to", event.ToAddress).
-		Str("asset", event.Asset).
-		Str("amount", event.Amount).
+		Str("vault", vaultAddr).
+		Str("to", toAddr).
+		Str("asset", mapping.SwitchlyAsset.String()).
+		Str("amount", coin.Amount.String()).
 		Str("memo", event.Memo).
-		Msg("router transfer out event detected (outbound transaction)")
+		Msg("processed router transfer out event (outbound observation)")
 
-	return nil, nil
+	return txInItem, nil
 }
 
 // processRouterTransferAllowanceEvent processes router transfer allowance events (vault rotation)

@@ -488,6 +488,17 @@ func (s *SorobanRPCClient) parseEventValue(valueXDR string, routerEvent *RouterE
 	return s.parseScVal(scVal, routerEvent)
 }
 
+// isOutboundRouterEventType reports whether a router event represents assets leaving a vault
+// (transfer_out), in which case the event's `vault` field is the sender rather than the destination.
+func isOutboundRouterEventType(eventType string) bool {
+	switch strings.ToLower(eventType) {
+	case "transfer_out", "transferout", "router_transfer_out":
+		return true
+	default:
+		return false
+	}
+}
+
 // parseScVal parses an XDR ScVal and extracts router event data
 func (s *SorobanRPCClient) parseScVal(scVal xdr.ScVal, routerEvent *RouterEvent) error {
 	switch scVal.Type {
@@ -510,7 +521,15 @@ func (s *SorobanRPCClient) parseScVal(scVal xdr.ScVal, routerEvent *RouterEvent)
 				case "to":
 					routerEvent.ToAddress = value
 				case "vault":
-					routerEvent.ToAddress = value // Vault is the destination for deposits
+					// The vault's role depends on the event direction. For a deposit the vault is the
+					// destination (the user pays into it); for a transfer_out the vault is the SENDER.
+					// routerEvent.Type is the event signature (parsed from the topic) and is already
+					// set before this value map is parsed.
+					if isOutboundRouterEventType(routerEvent.Type) {
+						routerEvent.FromAddress = value
+					} else {
+						routerEvent.ToAddress = value
+					}
 				case "memo":
 					routerEvent.Memo = value
 				case "destination":
