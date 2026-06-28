@@ -1,11 +1,13 @@
 [package]
 name = "switchly-router"
-version = "1.0.0"
+version = "3.0.0"
 edition = "2021"
 authors = ["SWITCHLYChain <dev@switchly.org>"]
-description = "Stellar Router Contract for SWITCHLYChain Integration"
+description = "Stellar (Soroban) Router Contract for Switchly Integration"
 repository = "https://github.com/switchly/switchlynode"
 license = "MIT"
+
+# Build profiles are defined once at the workspace root (../Cargo.toml).
 
 [lib]
 crate-type = ["cdylib"]
@@ -19,17 +21,3 @@ soroban-sdk = { version = "21.0.0", features = ["testutils"] }
 [features]
 default = []
 testutils = ["soroban-sdk/testutils"]
-
-[profile.release]
-opt-level = "z"
-overflow-checks = true
-debug = 0
-strip = "symbols"
-debug-assertions = false
-panic = "abort"
-codegen-units = 1
-lto = true
-
-[profile.release-with-logs]
-inherits = "release"
-debug-assertions = true 

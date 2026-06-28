@@ -36,7 +36,7 @@ services:
 
       # reuse stagenet router contract deployments, or deploy your own new ones
       ETH_CONTRACT: "0xa8D1Ff3bfA490cf7890D0D2C0A2f5815744A279F"
-      XLM_CONTRACT: "CDOPUOETBQ35YN33H4IH5K32WDDLA5J5OVNRUUPGCO7F7S5DDBMJVLY4" # testnet
+      XLM_CONTRACT: "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH" # testnet
 
     logging: &logging
       driver: "json-file"
