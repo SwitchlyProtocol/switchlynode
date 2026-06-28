@@ -2,10 +2,10 @@ package stellar
 
 // Stellar Client Test Suite
 //
-// This test suite covers the updated Stellar client implementation that uses
-// simple Payment operations for outbound transactions. Key features tested:
-// - Simple payments for all mapped Stellar assets (native XLM and issued tokens)
-// - Memo truncation to comply with Stellar's 28-byte limit
+// Outbound transactions always go through the Soroban router's transfer_out so the full
+// SwitchlyProtocol memo is preserved on-chain. Key areas tested:
+// - Router transfer_out invocation building (asset/address/amount/memo args)
+// - Asset mapping for native XLM and issued tokens
 // - Ed25519 key derivation for signature compatibility
 // - Direct Horizon API integration for improved reliability
 
@@ -177,7 +177,7 @@ func (s *StellarClientTestSuite) TestNetworkPassphrase(c *C) {
 }
 
 func (s *StellarClientTestSuite) TestSignTxValidation(c *C) {
-	// Test transaction signing validation with simple payment approach
+	// SignTx should fail fast on an unresolvable vault address in the test environment.
 	coin := common.NewCoin(common.XLMAsset, cosmos.NewUint(1000000)) // 1 XLM in stroops
 	txOutItem := stypes.TxOutItem{
 		Chain:       common.StellarChain,
@@ -193,42 +193,6 @@ func (s *StellarClientTestSuite) TestSignTxValidation(c *C) {
 	_, _, _, err := s.client.SignTx(txOutItem, 1)
 	c.Assert(err, NotNil)
 	c.Assert(err.Error(), Matches, ".*invalid stellar address.*") // Should fail due to invalid test address
-}
-
-func (s *StellarClientTestSuite) TestSignTxSimplePaymentApproach(c *C) {
-	// Verify that our implementation uses simple payments with memo truncation
-	// All memo lengths should work, with long memos being truncated to 28 bytes
-
-	// Test with various memo lengths to ensure they're handled properly
-	testCases := []struct {
-		name string
-		memo string
-	}{
-		{"short memo", "test"},
-		{"28 byte memo", "1234567890123456789012345678"}, // Exactly 28 bytes
-		{"long memo", "OUT:1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF"}, // 67 bytes
-		{"very long memo", "OUT:LONG_TRANSACTION_ID_" + string(make([]byte, 100))},            // Very long
-	}
-
-	coin := common.NewCoin(common.XLMAsset, cosmos.NewUint(1000000))
-
-	for _, tc := range testCases {
-		txOutItem := stypes.TxOutItem{
-			Chain:       common.StellarChain,
-			ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-			VaultPubKey: common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3"),
-			Coins:       common.Coins{coin},
-			Memo:        tc.memo,
-			MaxGas:      common.Gas{common.NewCoin(common.XLMAsset, cosmos.NewUint(1000))},
-			GasRate:     1,
-		}
-
-		// All should fail due to invalid stellar address in test environment, not memo length
-		_, _, _, err := s.client.SignTx(txOutItem, 1)
-		c.Assert(err, NotNil, Commentf("Test case: %s", tc.name))
-		c.Assert(err.Error(), Matches, ".*invalid stellar address.*",
-			Commentf("Expected invalid address error for case: %s, got: %v", tc.name, err))
-	}
 }
 
 func (s *StellarClientTestSuite) TestGetHeight(c *C) {
@@ -266,117 +230,6 @@ func (s *StellarClientTestSuite) TestGetAccountByAddress(c *C) {
 	if err == nil {
 		c.Assert(account, NotNil)
 	}
-}
-
-func (s *StellarClientTestSuite) TestProcessOutboundTx(c *C) {
-	// Test processOutboundTx creates proper payment operations
-
-	// Test native XLM payment creation
-	coin := common.NewCoin(common.XLMAsset, cosmos.NewUint(10000000)) // 1 XLM
-
-	// Use an empty public key to focus on testing the core processOutboundTx logic
-	validPubKey := common.PubKey("")
-
-	txOutItem := stypes.TxOutItem{
-		Chain:       common.StellarChain,
-		ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-		VaultPubKey: validPubKey,
-		Coins:       common.Coins{coin},
-		Memo:        "OUT:1234567890ABCDEF1234567890ABCDEF12345678",
-	}
-
-	// Test simple payment (no router configured)
-	s.client.routerAddress = ""
-	operation, err := s.client.processOutboundTx(txOutItem)
-	c.Assert(err, IsNil)
-	c.Assert(operation, NotNil)
-
-	// Verify it's a Payment operation
-	payment, ok := operation.(*txnbuild.Payment)
-	c.Assert(ok, Equals, true)
-	c.Assert(payment.Destination, Equals, txOutItem.ToAddress.String())
-	c.Assert(payment.Amount, Equals, "1.0000000") // 10000000 stroops = 1 XLM
-
-	// Verify asset is native XLM
-	_, isNative := payment.Asset.(txnbuild.NativeAsset)
-	c.Assert(isNative, Equals, true)
-
-	// Test that router address doesn't affect behavior (router contracts not implemented yet)
-	s.client.routerAddress = "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
-	operation2, err2 := s.client.processOutboundTx(txOutItem)
-	c.Assert(err2, IsNil)
-	c.Assert(operation2, NotNil)
-
-	// Should still return a Payment operation (same as without router)
-	payment2, ok2 := operation2.(*txnbuild.Payment)
-	c.Assert(ok2, Equals, true)
-	c.Assert(payment2.Destination, Equals, txOutItem.ToAddress.String())
-	c.Assert(payment2.Amount, Equals, "1.0000000")
-
-	// Reset router address for remaining tests
-	s.client.routerAddress = "CAWZ7WYQBG2ENE7S7PAKPYVWKTOV3FMXMIKSOBBZE3JBJXTQWDGZDRGH"
-
-	// Test error handling: empty coins array
-	emptyTxOutItem := stypes.TxOutItem{
-		Chain:       common.StellarChain,
-		ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-		VaultPubKey: validPubKey,
-		Coins:       common.Coins{},
-		Memo:        "test memo",
-	}
-
-	_, err = s.client.processOutboundTx(emptyTxOutItem)
-	c.Assert(err, NotNil)
-	c.Assert(err.Error(), Matches, ".*no coins to send.*")
-
-	// Test error handling: unsupported asset
-	unsupportedAsset := common.Asset{Chain: common.StellarChain, Symbol: "UNKNOWN", Ticker: "UNKNOWN"}
-	unsupportedCoin := common.NewCoin(unsupportedAsset, cosmos.NewUint(1000000))
-	unsupportedTxOutItem := stypes.TxOutItem{
-		Chain:       common.StellarChain,
-		ToAddress:   common.Address("GABLIYZNBBEF74O7FW2VXHNP2IZUPUOEPJCXA4VB5B56E2EWKSNIONZTLM"),
-		VaultPubKey: common.PubKey("switchlypub1addwnpepqflvfnmttdczhsls2l74m7p74xyswjhsl8xv45g42u37q0pdqg9v97ggmj3"),
-		Coins:       common.Coins{unsupportedCoin},
-		Memo:        "test unsupported memo",
-	}
-
-	_, err = s.client.processOutboundTx(unsupportedTxOutItem)
-	c.Assert(err, NotNil)
-	c.Assert(err.Error(), Matches, ".*unsupported asset.*")
-}
-
-func (s *StellarClientTestSuite) TestTruncateMemoForStellar(c *C) {
-	// Verify memo truncation logic handles various scenarios correctly
-
-	// Test case: memo within 28-byte limit (no truncation)
-	shortMemo := "OUT:ABC123"
-	truncated := s.client.truncateMemoForStellar(shortMemo)
-	c.Assert(truncated, Equals, shortMemo)
-	c.Assert(len(truncated), Equals, 10)
-	c.Assert(len(truncated) <= 28, Equals, true)
-
-	// Test case: long memo requiring midpoint truncation
-	longMemo := "OUT:26582E155FACA962DDA2A4C6E94F19C60EC6AC1C2BC27E80421AB545C395DBAA"
-	truncated = s.client.truncateMemoForStellar(longMemo)
-	c.Assert(len(truncated), Equals, 28)
-	c.Assert(truncated, Equals, "OUT:26582E155F....45C395DBAA")
-
-	// Verify proper format: OUT: prefix with midpoint dots
-	c.Assert(truncated[:4], Equals, "OUT:")
-	c.Assert(truncated[14:18], Equals, "....")
-
-	// Test case: memo without colon separator
-	noColonMemo := "VERY_LONG_MEMO_WITHOUT_COLON_THAT_NEEDS_TRUNCATION_ABCDEF123456789"
-	truncated = s.client.truncateMemoForStellar(noColonMemo)
-	c.Assert(len(truncated), Equals, 28)
-	c.Assert(truncated, Equals, "VERY_LONG_ME....DEF123456789")
-
-	// Test edge case: memo exactly at 28-byte limit
-	exactMemo := "OUT:123456789012345678901234" // Precisely 28 bytes
-	c.Assert(len(exactMemo), Equals, 28)
-	truncated = s.client.truncateMemoForStellar(exactMemo)
-	c.Assert(truncated, Equals, exactMemo)
-	c.Assert(len(truncated), Equals, 28)
 }
 
 func (s *StellarClientTestSuite) TestConfirmationCount(c *C) {
