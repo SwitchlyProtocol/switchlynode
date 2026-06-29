@@ -50,6 +50,25 @@ func NewTssKeyGen(keys *switchlyclient.Keys, server *tss.TssServer, bridge switc
 	}, nil
 }
 
+// eddsaKeygenEnabled reports whether to also run the EdDSA (ed25519) keygen at churn and report the
+// group key to the chain. Two gates:
+//   - the EDDSAKEYGENENABLED mimir (> 0): the network-wide, coordinated-upgrade switch — read from the
+//     chain so every validator flips at the same height (all must already run an EdDSA-capable build).
+//   - the BIFROST_EDDSA_KEYGEN_VALIDATION env var: a per-node dev/mocknet override.
+//
+// Disabled by default, so production ECDSA-only churns are byte-identical until the network opts in.
+func (kg *KeyGen) eddsaKeygenEnabled() bool {
+	if os.Getenv("BIFROST_EDDSA_KEYGEN_VALIDATION") == "true" {
+		return true
+	}
+	v, err := kg.bridge.GetMimir("EDDSAKEYGENENABLED")
+	if err != nil {
+		kg.logger.Debug().Err(err).Msg("fail to read EDDSAKEYGENENABLED mimir")
+		return false
+	}
+	return v > 0
+}
+
 func (kg *KeyGen) getVersion() semver.Version {
 	requestTime := time.Now()
 	if !kg.currentVersion.Equals(semver.Version{}) && requestTime.Sub(kg.lastCheck).Seconds() < constants.SwitchlyBlockTime.Seconds() {
@@ -155,17 +174,16 @@ func (kg *KeyGen) GenerateNewKey(keygenBlockHeight int64, pKeys common.PubKeys) 
 		return common.EmptyPubKeySet, blame, fmt.Errorf("fail to create common.PubKey,%w", err)
 	}
 
-	// EdDSA (ed25519) group key for the Stellar vault. When enabled (BIFROST_EDDSA_KEYGEN_VALIDATION),
-	// run the EdDSA keygen over the same membership and carry its real ed25519 group key in the returned
-	// PubKeySet, so it can be reported to the chain and stored in the vault (docs §9.2). The go-tss
-	// server serializes the curve per-ceremony (WithCurveForAlgo inside TssServer.Keygen), so we must
-	// NOT wrap here — curveMu is not reentrant and would deadlock. Gated so production (ECDSA-only)
-	// churns are byte-identical; the network-version gate lands with the coordinated upgrade.
+	// EdDSA (ed25519) group key for the Stellar vault. When enabled, run the EdDSA keygen over the same
+	// membership and carry its real ed25519 group key in the returned PubKeySet, so it can be reported
+	// to the chain and stored in the vault (docs §9.2). The go-tss server serializes the curve
+	// per-ceremony (WithCurveForAlgo inside TssServer.Keygen), so we must NOT wrap here — curveMu is not
+	// reentrant and would deadlock. Gated so production (ECDSA-only) churns are byte-identical.
 	//
 	// Default: mirror the secp256k1 key into the Ed25519 slot (the legacy placeholder), exactly as
 	// before, so a disabled/failed EdDSA keygen leaves behaviour unchanged.
 	ed25519PubKey := cpk
-	if os.Getenv("BIFROST_EDDSA_KEYGEN_VALIDATION") == "true" {
+	if kg.eddsaKeygenEnabled() {
 		edReq := keygen.Request{
 			Keys:        keys,
 			Version:     currentVersion.String(),
