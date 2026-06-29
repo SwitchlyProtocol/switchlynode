@@ -339,15 +339,10 @@ func (b *switchlyBridge) GetKeygenStdTx(poolPubKey, ed25519PubKey common.PubKey,
 	if err != nil {
 		return nil, fmt.Errorf("failed to get signer address: %w", err)
 	}
-	msg, err := stypes.NewMsgTssPool(inputPks.Strings(), poolPubKey, secp256k1Signature, keysharesBackup, keygenType, height, blame, chains.Strings(), signerAddr, keygenTime)
-	if err != nil {
-		return nil, err
-	}
-	// Carry the EdDSA (ed25519) group key for the Stellar vault alongside the secp256k1 pool key. Empty
-	// / equal-to-secp256k1 when EdDSA is disabled, so ECDSA-only churns are unaffected. Not part of the
-	// TSS id (getTssID), so it does not change keygen consensus.
-	msg.Ed25519PubKey = ed25519PubKey
-	return msg, nil
+	// Pass the EdDSA group key as the trailing arg so it is carried on the message AND folded into the
+	// TSS id (keygen consensus requires members to agree on it). Empty when EdDSA is disabled, so
+	// ECDSA-only churns are byte-identical.
+	return stypes.NewMsgTssPool(inputPks.Strings(), poolPubKey, secp256k1Signature, keysharesBackup, keygenType, height, blame, chains.Strings(), signerAddr, keygenTime, ed25519PubKey)
 }
 
 // GetInboundOutbound separate the txs into inbound and outbound

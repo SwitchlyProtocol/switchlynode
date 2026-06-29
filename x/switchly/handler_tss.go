@@ -78,7 +78,7 @@ func MsgTssPoolValidateV3_0_0(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) 
 		return fmt.Errorf("only asgard vaults allowed for tss")
 	}
 
-	newMsg, err := NewMsgTssPool(msg.PubKeys, msg.PoolPubKey, nil, nil, msg.KeygenType, msg.Height, msg.Blame, msg.Chains, msg.Signer, msg.KeygenTime)
+	newMsg, err := NewMsgTssPool(msg.PubKeys, msg.PoolPubKey, nil, nil, msg.KeygenType, msg.Height, msg.Blame, msg.Chains, msg.Signer, msg.KeygenTime, msg.Ed25519PubKey)
 	if err != nil {
 		return fmt.Errorf("fail to recreate MsgTssPool,err: %w", err)
 	}
