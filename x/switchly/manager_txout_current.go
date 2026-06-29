@@ -407,8 +407,9 @@ func (tos *TxOutStorageVCUR) DiscoverOutbounds(ctx cosmos.Context, transactionFe
 	}
 
 	for _, vault := range vaults {
-		// Ensure SWITCHLYNode are not sending from and to the same address
-		fromAddr, err := vault.PubKey.GetAddress(toi.Chain)
+		// Ensure SWITCHLYNode are not sending from and to the same address (Stellar uses the vault's
+		// ed25519 key for its address).
+		fromAddr, err := vault.PubKeyForChain(toi.Chain).GetAddress(toi.Chain)
 		if err != nil || fromAddr.IsEmpty() || toi.ToAddress.Equals(fromAddr) {
 			continue
 		}
