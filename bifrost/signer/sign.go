@@ -402,7 +402,7 @@ func (s *Signer) processKeygenBlock(keygenBlock ttypes.KeygenBlock) {
 		// generate a verification signature to ensure we can sign with the new key
 		secp256k1Sig := s.secp256k1VerificationSignature(pubKey.Secp256k1)
 
-		if err = s.sendKeygenToSwitchly(keygenBlock.Height, pubKey.Secp256k1, secp256k1Sig, blame, keygenReq.GetMembers(), keygenReq.Type, keygenTime); err != nil {
+		if err = s.sendKeygenToSwitchly(keygenBlock.Height, pubKey.Secp256k1, pubKey.Ed25519, secp256k1Sig, blame, keygenReq.GetMembers(), keygenReq.Type, keygenTime); err != nil {
 			s.errCounter.WithLabelValues("fail_to_broadcast_keygen", "").Inc()
 			s.logger.Error().Err(err).Msg("fail to broadcast keygen")
 		}
@@ -464,7 +464,7 @@ func (s *Signer) secp256k1VerificationSignature(pk common.PubKey) []byte {
 	return sigBytes
 }
 
-func (s *Signer) sendKeygenToSwitchly(height int64, poolPk common.PubKey, secp256k1Signature []byte, blame ttypes.Blame, input common.PubKeys, keygenType ttypes.KeygenType, keygenTime int64) error {
+func (s *Signer) sendKeygenToSwitchly(height int64, poolPk, ed25519Pk common.PubKey, secp256k1Signature []byte, blame ttypes.Blame, input common.PubKeys, keygenType ttypes.KeygenType, keygenTime int64) error {
 	// collect supported chains in the configuration
 	chains := common.Chains{
 		common.SWITCHLYChain,
@@ -488,7 +488,7 @@ func (s *Signer) sendKeygenToSwitchly(height int64, poolPk common.PubKey, secp25
 		}
 	}
 
-	keygenMsg, err := s.switchlyBridge.GetKeygenStdTx(poolPk, secp256k1Signature, keyshares, blame, input, keygenType, chains, height, keygenTime)
+	keygenMsg, err := s.switchlyBridge.GetKeygenStdTx(poolPk, ed25519Pk, secp256k1Signature, keyshares, blame, input, keygenType, chains, height, keygenTime)
 	if err != nil {
 		return fmt.Errorf("fail to get keygen id: %w", err)
 	}

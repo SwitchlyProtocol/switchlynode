@@ -84,7 +84,7 @@ type SwitchlyBridge interface {
 	GetContext() client.Context
 	GetContractAddress() ([]PubKeyContractAddressPair, error)
 	GetErrataMsg(txID common.TxID, chain common.Chain) sdk.Msg
-	GetKeygenStdTx(poolPubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error)
+	GetKeygenStdTx(poolPubKey, ed25519PubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error)
 	GetKeysignParty(vaultPubKey common.PubKey) (common.PubKeys, error)
 	GetMimir(key string) (int64, error)
 	GetMimirWithRef(template, ref string) (int64, error)
@@ -334,12 +334,20 @@ func (b *switchlyBridge) GetSolvencyMsg(height int64, chain common.Chain, pubKey
 }
 
 // GetKeygenStdTx get keygen tx from params
-func (b *switchlyBridge) GetKeygenStdTx(poolPubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
+func (b *switchlyBridge) GetKeygenStdTx(poolPubKey, ed25519PubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame stypes.Blame, inputPks common.PubKeys, keygenType stypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
 	signerAddr, err := b.keys.GetSignerInfo().GetAddress()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get signer address: %w", err)
 	}
-	return stypes.NewMsgTssPool(inputPks.Strings(), poolPubKey, secp256k1Signature, keysharesBackup, keygenType, height, blame, chains.Strings(), signerAddr, keygenTime)
+	msg, err := stypes.NewMsgTssPool(inputPks.Strings(), poolPubKey, secp256k1Signature, keysharesBackup, keygenType, height, blame, chains.Strings(), signerAddr, keygenTime)
+	if err != nil {
+		return nil, err
+	}
+	// Carry the EdDSA (ed25519) group key for the Stellar vault alongside the secp256k1 pool key. Empty
+	// / equal-to-secp256k1 when EdDSA is disabled, so ECDSA-only churns are unaffected. Not part of the
+	// TSS id (getTssID), so it does not change keygen consensus.
+	msg.Ed25519PubKey = ed25519PubKey
+	return msg, nil
 }
 
 // GetInboundOutbound separate the txs into inbound and outbound

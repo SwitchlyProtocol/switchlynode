@@ -418,6 +418,11 @@ func MsgTssPoolHandleV3_0_0(ctx cosmos.Context, mgr Manager, msg *MsgTssPool) (*
 			chains := voter.ConsensusChains()
 			vault := NewVault(ctx.BlockHeight(), InitVault, vaultType, voter.PoolPubKey, chains.Strings(), mgr.Keeper().GetChainContracts(ctx, chains))
 			vault.Membership = voter.PubKeys
+			// EdDSA (ed25519) group key for the Stellar vault, produced by the same keygen as the
+			// secp256k1 PoolPubKey. Empty for ECDSA-only churns (vault unchanged). All honest members
+			// derive the same ed25519 key from the deterministic DKG. (Consensus-hardening — folding the
+			// ed25519 key into the TSS voter id — is a follow-up; see docs §9.2.)
+			vault.Ed25519PubKey = msg.Ed25519PubKey
 
 			if err := mgr.Keeper().SetVault(ctx, vault); err != nil {
 				return nil, fmt.Errorf("fail to save vault: %w", err)
