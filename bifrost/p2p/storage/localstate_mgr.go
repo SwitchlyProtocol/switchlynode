@@ -2,6 +2,8 @@ package storage
 
 import (
 	"bytes"
+	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -80,7 +82,14 @@ func NewFileStateMgr(folder string) (*FileStateMgr, error) {
 func (fsm *FileStateMgr) getFilePathName(pubKey string) (string, error) {
 	ret, err := conversion.CheckKeyOnCurve(pubKey)
 	if err != nil {
-		return "", err
+		// EdDSA group keys are hex-encoded 32-byte ed25519 keys, not bech32 secp256k1 keys, so the
+		// secp256k1 on-curve check above fails for them. Accept a well-formed ed25519 hex key (it is
+		// filename-safe) so EdDSA keyshares can be persisted/loaded.
+		if b, herr := hex.DecodeString(pubKey); herr == nil && len(b) == ed25519.PublicKeySize {
+			ret = true
+		} else {
+			return "", err
+		}
 	}
 	if !ret {
 		return "", errors.New("invalid pubkey for file name")
