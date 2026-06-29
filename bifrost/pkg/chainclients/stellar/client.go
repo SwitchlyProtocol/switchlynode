@@ -340,30 +340,37 @@ func (c *Client) Start(globalTxsQueue chan stypes.TxIn, globalErrataQueue chan s
 	c.stellarScanner.globalTxsQueue = globalTxsQueue
 	c.tssKeyManager.Start()
 
-	// Wait for Stellar node to be fully synced before starting block scanner
-	// This ensures Bifrost starts scanning from the latest block height
-	c.logger.Info().Msg("STELLAR: Waiting for Stellar node to be fully synced...")
+	// Wait for the Stellar node to be fully synced, then start the block scanner — but do so in a
+	// goroutine. The observer starts chain clients in a synchronous loop (observer/observe.go), so a
+	// blocking Start() here would stall startup of every subsequent component, including the signer's
+	// keygen scanner. Other chain clients (e.g. ETH) spawn their workers and return immediately; match
+	// that contract so Start() never blocks the observer loop.
+	c.wg.Add(1)
+	go func() {
+		defer c.wg.Done()
+		c.logger.Info().Msg("STELLAR: Waiting for Stellar node to be fully synced...")
 
-	syncHeight, err := c.waitForStellarSync()
-	if err != nil {
-		c.logger.Error().Err(err).Msg("STELLAR: Failed to wait for sync completion")
-		return
-	}
+		syncHeight, err := c.waitForStellarSync()
+		if err != nil {
+			c.logger.Error().Err(err).Msg("STELLAR: Failed to wait for sync completion")
+			return
+		}
 
-	// Set scanner position to the latest synced block height
-	// This is the initial scan position when the node first syncs
-	if err := c.storage.SetScanPos(syncHeight); err != nil {
-		c.logger.Error().Err(err).Int64("sync_height", syncHeight).
-			Msg("STELLAR: Failed to set scan position")
-		return
-	}
+		// Set scanner position to the latest synced block height
+		// This is the initial scan position when the node first syncs
+		if err := c.storage.SetScanPos(syncHeight); err != nil {
+			c.logger.Error().Err(err).Int64("sync_height", syncHeight).
+				Msg("STELLAR: Failed to set scan position")
+			return
+		}
 
-	c.logger.Info().Int64("sync_height", syncHeight).
-		Msg("STELLAR: Node fully synced! Starting continuous scanner from latest block")
+		c.logger.Info().Int64("sync_height", syncHeight).
+			Msg("STELLAR: Node fully synced! Starting continuous scanner from latest block")
 
-	// Start the Stellar continuous block scanner instead of the main block scanner
-	// This ensures continuous ingestion every 60 seconds as required
-	c.stellarScanner.Start()
+		// Start the Stellar continuous block scanner instead of the main block scanner
+		// This ensures continuous ingestion every 60 seconds as required
+		c.stellarScanner.Start()
+	}()
 
 	c.wg.Add(1)
 	go runners.SolvencyCheckRunner(c.GetChain(), c, c.switchlyBridge, c.stopchan, c.wg, constants.SwitchlyBlockTime)

@@ -205,6 +205,11 @@ services:
       BIFROST_CHAINS_BSC_RPC_HOST: ${BSC_HOST:-http://binance-smart:8545}
       BIFROST_CHAINS_BASE_DISABLED: "true"
       BIFROST_CHAINS_BASE_RPC_HOST: http://base:8545
+
+      # GAIA + AVAX - DISABLED (no gaia/avalanche service in this compose; leaving them
+      # enabled stalls bifrost chain-client loading and blocks the TSS keygen path)
+      BIFROST_CHAINS_GAIA_DISABLED: "true"
+      BIFROST_CHAINS_AVAX_DISABLED: "true"
       
       # Ethereum (ETH) - ENABLED
       BIFROST_CHAINS_ETH_DISABLED: "false"
