@@ -1,6 +1,7 @@
 package tss
 
 import (
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"os"
@@ -154,12 +155,16 @@ func (kg *KeyGen) GenerateNewKey(keygenBlockHeight int64, pKeys common.PubKeys) 
 		return common.EmptyPubKeySet, blame, fmt.Errorf("fail to create common.PubKey,%w", err)
 	}
 
-	// VALIDATION (opt-in, OFF by default): when BIFROST_EDDSA_KEYGEN_VALIDATION=true, run a second
-	// EdDSA (ed25519) keygen over the same membership and log the group key. Each node is a separate
-	// process, so WithCurveForAlgo safely switches the process-global curve to Edwards for this
-	// ceremony (no concurrent secp256k1 ceremony at churn). This is how the EdDSA keygen is validated
-	// on the docker mocknet-cluster; storing the ed25519 key into the vault PubKeySet (and using it for
-	// Stellar) is a follow-up. Failure is logged, not fatal. Gated so production churns are unaffected.
+	// EdDSA (ed25519) group key for the Stellar vault. When enabled (BIFROST_EDDSA_KEYGEN_VALIDATION),
+	// run the EdDSA keygen over the same membership and carry its real ed25519 group key in the returned
+	// PubKeySet, so it can be reported to the chain and stored in the vault (docs §9.2). The go-tss
+	// server serializes the curve per-ceremony (WithCurveForAlgo inside TssServer.Keygen), so we must
+	// NOT wrap here — curveMu is not reentrant and would deadlock. Gated so production (ECDSA-only)
+	// churns are byte-identical; the network-version gate lands with the coordinated upgrade.
+	//
+	// Default: mirror the secp256k1 key into the Ed25519 slot (the legacy placeholder), exactly as
+	// before, so a disabled/failed EdDSA keygen leaves behaviour unchanged.
+	ed25519PubKey := cpk
 	if os.Getenv("BIFROST_EDDSA_KEYGEN_VALIDATION") == "true" {
 		edReq := keygen.Request{
 			Keys:        keys,
@@ -167,22 +172,24 @@ func (kg *KeyGen) GenerateNewKey(keygenBlockHeight int64, pKeys common.PubKeys) 
 			BlockHeight: keygenBlockHeight,
 			Algo:        gotsscommon.EdDSA,
 		}
-		// The go-tss server now sets/serializes the curve per-ceremony (WithCurveForAlgo inside
-		// TssServer.Keygen), so we must NOT wrap here too — curveMu is not reentrant and would deadlock.
 		edResp, edErr := kg.server.Keygen(edReq)
-		if edErr != nil || edResp.Status != gotsscommon.Success {
-			kg.logger.Error().Err(edErr).
-				Str("round", edResp.Blame.Round).
-				Int64("height", keygenBlockHeight).
-				Msg("EDDSA-KEYGEN-VALIDATION: failed")
-		} else {
-			kg.logger.Info().
-				Str("ed25519_group_key", edResp.PubKey).
-				Int64("height", keygenBlockHeight).
-				Msg("EDDSA-KEYGEN-VALIDATION: success")
+		switch {
+		case edErr != nil || edResp.Status != gotsscommon.Success:
+			kg.logger.Error().Err(edErr).Str("round", edResp.Blame.Round).
+				Int64("height", keygenBlockHeight).Msg("EDDSA-KEYGEN: failed")
+		default:
+			// edResp.PubKey is the hex-encoded 32-byte ed25519 group key (conversion.GetTssPubKeyEdDSA)
+			if raw, e := hex.DecodeString(edResp.PubKey); e != nil {
+				kg.logger.Error().Err(e).Str("ed25519_group_key", edResp.PubKey).Msg("EDDSA-KEYGEN: fail to decode group key hex")
+			} else if edpk, e := common.NewPubKeyFromEd25519(raw); e != nil {
+				kg.logger.Error().Err(e).Str("ed25519_group_key", edResp.PubKey).Msg("EDDSA-KEYGEN: fail to encode ed25519 pubkey")
+			} else {
+				ed25519PubKey = edpk
+				kg.logger.Info().Str("ed25519_group_key", edResp.PubKey).Str("ed25519_pubkey", edpk.String()).
+					Int64("height", keygenBlockHeight).Msg("EDDSA-KEYGEN: success")
+			}
 		}
 	}
 
-	// TODO later on SWITCHLYNode need to have both secp256k1 key and ed25519
-	return common.NewPubKeySet(cpk, cpk), blame, nil
+	return common.NewPubKeySet(cpk, ed25519PubKey), blame, nil
 }
