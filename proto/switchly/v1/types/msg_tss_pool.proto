@@ -23,4 +23,8 @@ message MsgTssPool {
   int64 keygen_time = 9;
   bytes keyshares_backup = 10;
   bytes secp256k1_signature = 11;
+  // Optional ed25519 (EdDSA) group public key for the Stellar vault, alongside the secp256k1
+  // pool_pub_key. Empty for ECDSA-only churns (wire-identical to pre-EdDSA nodes); set once a
+  // version-gated EdDSA keygen runs. Stored into the vault and used to derive/sign Stellar.
+  string ed25519_pub_key = 12 [(gogoproto.casttype) = "github.com/switchlyprotocol/switchlynode/v3/common.PubKey"];
 }
