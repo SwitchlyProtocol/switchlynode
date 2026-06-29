@@ -14,6 +14,7 @@ import (
 	"github.com/binance-chain/tss-lib/crypto"
 	btss "github.com/binance-chain/tss-lib/tss"
 	"github.com/btcsuite/btcd/btcec"
+	"github.com/decred/dcrd/dcrec/edwards/v2"
 	coskey "github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types/bech32/legacybech32" // nolint:staticcheck
 	crypto2 "github.com/libp2p/go-libp2p-core/crypto"
@@ -165,6 +166,23 @@ func GetTssPubKey(pubKeyPoint *crypto.ECPoint) (string, cosmos.AccAddress, error
 	pubKey, err := sdk.MarshalPubKey(sdk.AccPK, &compressedPubkey) // nolint:staticcheck
 	addr := cosmos.AccAddress(compressedPubkey.Address().Bytes())
 	return pubKey, addr, err
+}
+
+// GetTssPubKeyEdDSA encodes the EdDSA group public key (an Edwards25519 point produced by an eddsa
+// keygen) as a hex-encoded 32-byte ed25519 public key. Unlike the secp256k1 GetTssPubKey, the result
+// is the raw ed25519 key (Stellar's address is derived from it downstream via
+// common.Ed25519PubKeyToStellarAddress). The point's coordinates are Edwards-curve values, so the
+// caller must run with the tss-lib global curve set to Edwards.
+func GetTssPubKeyEdDSA(pubKeyPoint *crypto.ECPoint) (string, error) {
+	if pubKeyPoint == nil {
+		return "", errors.New("invalid point")
+	}
+	pk := edwards.PublicKey{
+		Curve: edwards.Edwards(),
+		X:     pubKeyPoint.X(),
+		Y:     pubKeyPoint.Y(),
+	}
+	return hex.EncodeToString(pk.Serialize()), nil
 }
 
 func BytesToHashString(msg []byte) (string, error) {
