@@ -55,15 +55,26 @@ init_mocknet() {
     exit 1
   fi
 
-  # wait for peer
-  until curl -s "$PEER:$PORT_RPC" 1>/dev/null 2>&1; do
-    echo "Waiting for peer: $PEER:$PORT_RPC"
+  # wait for the peer to be past the first block — a deposit sent before then fails with
+  # "switchlynode is not ready; please wait for first block" and (with --yes) surfaces no error
+  until curl -s "$PEER:$PORT_RPC/status" 2>/dev/null | grep -q '"latest_block_height":"[1-9]'; do
+    echo "Waiting for peer $PEER to produce blocks..."
     sleep 3
   done
 
-  printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly deposit 100000000000000 SWITCH "bond:$NODE_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes
-
-  # send bond
+  # send bond, retrying until the node account actually shows a bond. The original single-shot deposit
+  # had no retry/verification: it can pass CheckTx (code 0 from --yes) yet not bond if it raced chain
+  # readiness or hit a sequence mismatch, leaving the node stuck unbonded and never churned in.
+  echo "Bonding node $NODE_ADDRESS..."
+  for _ in $(seq 1 20); do
+    BOND=$(curl -s "http://$PEER:1317/switchly/node/$NODE_ADDRESS" 2>/dev/null | jq -r '.total_bond // "0"')
+    if [ -n "$BOND" ] && [ "$BOND" != "0" ] && [ "$BOND" != "null" ]; then
+      echo "Node bonded: $BOND"
+      break
+    fi
+    printf "%s\n" "$SIGNER_PASSWD" | switchlynode tx switchly deposit 100000000000000 SWITCH "bond:$NODE_ADDRESS" --node tcp://"$PEER":26657 --from "$SIGNER_NAME" --keyring-backend=file --chain-id "$CHAIN_ID" --yes 2>&1 | grep -E "txhash:|raw_log:|code:" || true
+    sleep 5
+  done
 
   sleep 2 # wait for switchly to commit a block , otherwise it get the wrong sequence number
 

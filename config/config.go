@@ -318,6 +318,17 @@ func InitSwitchly(ctx context.Context) {
 	seedAddrs, tmSeeds := switchlySeeds()
 	config.Switchly.Tendermint.P2P.Seeds = strings.Join(tmSeeds, ",")
 
+	// For the mocknet cluster, also pin the resolved seed(s) as persistent peers. The cluster is a
+	// tiny static set of nodes; relying on transient seed discovery alone lets the PEX reactor drop
+	// the connection (the seed disconnects peers that re-request too soon), after which a follower
+	// node stops receiving blocks and falls behind — which in turn keeps its paired bifrost from ever
+	// seeing the node as Ready (the keygen never forms). Persistent peers keep the link alive.
+	if os.Getenv("NET") == "mocknet" && config.Switchly.Tendermint.P2P.PersistentPeers == "" && len(tmSeeds) > 0 {
+		config.Switchly.Tendermint.P2P.PersistentPeers = strings.Join(tmSeeds, ",")
+		log.Info().Str("persistent_peers", config.Switchly.Tendermint.P2P.PersistentPeers).
+			Msg("mocknet: pinned seeds as persistent peers")
+	}
+
 	// set the Tendermint external address
 	if os.Getenv("EXTERNAL_IP") != "" {
 		config.Switchly.Tendermint.P2P.ExternalAddress = fmt.Sprintf("%s:%d", os.Getenv("EXTERNAL_IP"), p2pPort)
@@ -1012,45 +1023,71 @@ type WhitelistCosmosAsset struct {
 	SwitchlySymbol string `mapstructure:"symbol"`
 }
 
-// GetBootstrapPeers return the internal bootstrap peers in a slice of maddr.Multiaddr
+// GetBootstrapPeers return the internal bootstrap peers in a slice of maddr.Multiaddr.
+//
+// Each configured peer is a host/IP whose libp2p id is fetched over HTTP from its :6040/p2pid
+// endpoint. Because cluster bifrosts can start simultaneously (a peer's :6040 may not be up when we
+// first ask), resolution is retried: we re-resolve the full set until every configured peer answers
+// or we exhaust the retries, then return whatever resolved. The previous one-shot resolution would
+// return zero peers when started together, leaving the TSS mesh unformed and keygen unable to
+// form a party. Self is harmless in the list — the p2p layer skips dialing its own id.
 func (c BifrostTSSConfiguration) GetBootstrapPeers() ([]maddr.Multiaddr, error) {
+	peers := resolveAddrs(c.BootstrapPeers)
+	want := 0
+	for _, ip := range peers {
+		if len(ip) > 0 {
+			want++
+		}
+	}
+
 	var addrs []maddr.Multiaddr
+	for retry := 0; retry < MaxRetries; retry++ {
+		addrs = addrs[:0]
+		for _, ip := range peers {
+			if len(ip) == 0 {
+				continue
+			}
 
-	for _, ip := range resolveAddrs(c.BootstrapPeers) {
-		if len(ip) == 0 {
-			continue
+			// fetch the p2pid
+			res, err := httpClient.Get(fmt.Sprintf("http://%s:6040/p2pid", ip))
+			if err != nil {
+				log.Debug().Err(err).Str("peer", ip).Msg("failed to get p2p id, will retry")
+				continue
+			}
+
+			// skip peers with a bad response status
+			if res.StatusCode != http.StatusOK {
+				res.Body.Close()
+				log.Warn().Msgf("failed to get p2p id, status code: %d", res.StatusCode)
+				continue
+			}
+
+			// read the response
+			body, err := io.ReadAll(res.Body)
+			if err != nil {
+				res.Body.Close()
+				log.Error().Err(err).Msg("failed to read p2p id response")
+				continue
+			}
+			res.Body.Close()
+
+			// format the multiaddr
+			peerMultiAddr := fmt.Sprintf("/ip4/%s/tcp/5040/ipfs/%s", ip, string(body))
+
+			addr, err := maddr.NewMultiaddr(peerMultiAddr)
+			if err != nil {
+				log.Error().Err(err).Str("addr", peerMultiAddr).Msg("failed to parse multiaddr")
+				continue
+			}
+			addrs = append(addrs, addr)
 		}
 
-		// fetch the p2pid
-		res, err := httpClient.Get(fmt.Sprintf("http://%s:6040/p2pid", ip))
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get p2p id")
-			continue
+		// stop once every configured peer has answered
+		if len(addrs) >= want {
+			break
 		}
-
-		// skip peers with a bad response status
-		if res.StatusCode != http.StatusOK {
-			log.Warn().Msgf("failed to get p2p id, status code: %d", res.StatusCode)
-			continue
-		}
-
-		// read the response
-		body, err := io.ReadAll(res.Body)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to read p2p id response")
-			continue
-		}
-		res.Body.Close()
-
-		// format the multiaddr
-		peerMultiAddr := fmt.Sprintf("/ip4/%s/tcp/5040/ipfs/%s", ip, string(body))
-
-		addr, err := maddr.NewMultiaddr(peerMultiAddr)
-		if err != nil {
-			log.Error().Err(err).Str("addr", peerMultiAddr).Msg("failed to parse multiaddr")
-			continue
-		}
-		addrs = append(addrs, addr)
+		log.Info().Int("resolved", len(addrs)).Int("want", want).Msg("waiting for bootstrap peers...")
+		time.Sleep(RetryBackoff)
 	}
 
 	if len(addrs) == 0 {
