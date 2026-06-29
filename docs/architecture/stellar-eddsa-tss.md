@@ -198,19 +198,38 @@ bifrost links ecdsa for every chain, so the moment any package in bifrost's (non
 pulls in `eddsa/{keygen,signing}`, **bifrost panics on startup**. This gates the entire go-tss EdDSA
 wiring (Layer 2): the parties, save data, and signature types all live in those packages.
 
-Resolution options (decision required before Layer 2):
-1. **Patch the tss-lib fork** to put the eddsa protos in a distinct proto package (e.g. `protob.eddsa`)
-   and/or rename the messages, regenerate the `.pb.go`, and vendor via a `go.mod` `replace`.
-   *Recommended:* permanent, clean, leaves the ECDSA path untouched; cost is owning the fork patch.
-2. **`GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn`** (or `ignore`) env var — verified to make it load,
-   but it must be set in every bifrost process (a missed env var = startup panic) and lets two
-   identically-named descriptors coexist. A fragile stopgap for evaluation only; not for production.
-3. **Upgrade to `bnb-chain/tss-lib/v2`** (eddsa protos already namespaced) — also a broad go-tss API
-   rewrite (rejected in §3 for blast radius).
+Resolution options that were considered:
+1. **Patch the tss-lib fork** to give the eddsa protos a distinct proto package and regenerate.
+2. **`GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn`** env var — verified to load, but every node process
+   must set it (a missed env var = startup panic) and it lets duplicate descriptors coexist. Fragile.
+3. **Upgrade to `bnb-chain/tss-lib/v2`** (eddsa protos already namespaced, curve per-`Parameters`).
 
-Until this is resolved, Layer-1 scaffolding deliberately keeps eddsa protos **out of bifrost's import
-graph**: `storage.KeygenLocalState.EdDSALocalData` is opaque `json.RawMessage`, not the typed
-`eddsa/keygen.LocalPartySaveData`.
+**DECISION: option 1 (fork-patch).** Option 3 (v2) was evaluated end-to-end (see git history /
+reverted §6.2–§6.3): it does solve both this conflict and the global-curve hazard, **but** it forces
+`btcd ≥ v0.23`, which dropped the root `btcd/btcec` package, cascading into a repo-wide
+`btcec → btcec/v2` migration *and* an old-`btcsuite/btcutil → btcd/btcutil` migration across the
+consensus-critical bitcoin/UTXO signing stack (3 parts; ~⅔ done before pivoting). That blast radius is
+far larger than this proto conflict warrants, so the v2 work was **reverted** and we take the
+fork-patch, which touches **no dependencies** and leaves the ECDSA/UTXO signing path untouched.
+
+Fork-patch plan (sequenced):
+1. Vendor the fork: copy `gitlab.com/thorchain/tss/tss-lib@v0.1.5` into the repo (e.g.
+   `third_party/tss-lib`) and add a `go.mod` `replace github.com/binance-chain/tss-lib => ./third_party/tss-lib`;
+   confirm the repo still builds unchanged.
+2. Namespace the eddsa protos: edit `protob/eddsa-*.proto` to declare a distinct proto `package`
+   (e.g. `eddsa`) so the message full-names no longer collide with the ecdsa ones.
+3. Regenerate the eddsa `.pb.go` with **`buf` + `protoc-gen-go`** (both go-installable — the fork's
+   Makefile uses modern `protoc --go_out=module=…`, i.e. `google.golang.org/protobuf`, which the repo
+   already depends on; no system `protoc` needed).
+4. Prove coexistence: a test linking **both** `ecdsa/keygen` and `eddsa/keygen` no longer panics at
+   init (the `eddsacompat` spike can be extended to import both).
+5. Then the EdDSA go-tss wiring (Layer 2) can land, **reusing the kept Layer-1 foundations** (the
+   `Algo` selector, `WithCurveForAlgo`, and the keyshare schema — see §5; the global-curve hazard
+   stays, since the fork keeps tss-lib's process-global curve, so `WithCurveForAlgo` remains needed).
+
+Until the proto conflict is fixed, Layer-1 scaffolding deliberately keeps eddsa protos **out of
+bifrost's import graph**: `storage.KeygenLocalState.EdDSALocalData` is opaque `json.RawMessage`, not
+the typed `eddsa/keygen.LocalPartySaveData`.
 
 ---
 
