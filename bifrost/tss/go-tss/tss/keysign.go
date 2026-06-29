@@ -21,9 +21,9 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
 )
 
-func (t *TssServer) waitForSignatures(msgID, poolPubKey string, msgsToSign [][]byte, sigChan chan string) (keysign.Response, error) {
+func (t *TssServer) waitForSignatures(msgID, poolPubKey string, algo common.Algo, msgsToSign [][]byte, sigChan chan string) (keysign.Response, error) {
 	// TSS keysign include both form party and keysign itself, thus we wait twice of the timeout
-	data, err := t.signatureNotifier.WaitForSignature(msgID, msgsToSign, poolPubKey, t.conf.KeySignTimeout, sigChan)
+	data, err := t.signatureNotifier.WaitForSignature(msgID, msgsToSign, poolPubKey, algo, t.conf.KeySignTimeout, sigChan)
 	if err != nil {
 		return keysign.Response{}, err
 	}
@@ -150,7 +150,20 @@ func (t *TssServer) generateSignature(msgID string, msgsToSign [][]byte, req key
 			Blame:  blame.Blame{},
 		}, nil
 	}
-	signatureData, err := keysignInstance.SignMessage(msgsToSign, localStateItem, signers)
+	var signatureData []*tsslibcommon.ECSignature
+	// Run the signing under the process-global curve for this algo, serialized via WithCurveForAlgo, so
+	// a concurrent ECDSA and EdDSA ceremony in the same process can't race the shared global curve (see
+	// docs/architecture/stellar-eddsa-tss.md §9). Only the signing rounds are wrapped (joinParty is
+	// curve-independent); ECDSA output is unchanged (secp256k1 is the default curve).
+	err = common.WithCurveForAlgo(common.NormalizeAlgo(req.Algo), func() error {
+		var e error
+		if common.NormalizeAlgo(req.Algo) == common.EdDSA {
+			signatureData, e = keysignInstance.SignMessageEdDSA(msgsToSign, localStateItem, signers)
+		} else {
+			signatureData, e = keysignInstance.SignMessage(msgsToSign, localStateItem, signers)
+		}
+		return e
+	})
 	// the statistic of keygen only care about Tss it self, even if the following http response aborts,
 	// it still counted as a successful keygen as the Tss model runs successfully.
 	if err != nil {
@@ -284,7 +297,7 @@ func (t *TssServer) KeySign(req keysign.Request) (keysign.Response, error) {
 	// we wait for signatures
 	go func() {
 		defer wg.Done()
-		receivedSig, errWait = t.waitForSignatures(msgID, req.PoolPubKey, msgsToSign, sigChan)
+		receivedSig, errWait = t.waitForSignatures(msgID, req.PoolPubKey, common.NormalizeAlgo(req.Algo), msgsToSign, sigChan)
 		// we received an valid signature indeed
 		if errWait == nil {
 			sigChan <- "signature received"
@@ -330,8 +343,11 @@ func (t *TssServer) batchSignatures(sigs []*tsslibcommon.ECSignature, msgsToSign
 		r := base64.StdEncoding.EncodeToString(sig.R)
 		s := base64.StdEncoding.EncodeToString(sig.S)
 		recovery := base64.StdEncoding.EncodeToString(sig.SignatureRecovery)
+		// canonical serialized signature; for EdDSA this is the 64-byte ed25519 sig (R/S above are
+		// big.Int bytes and cannot be reassembled for ed25519). Harmless for ECDSA.
+		encoded := base64.StdEncoding.EncodeToString(sig.GetSignature())
 
-		signature := keysign.NewSignature(msg, r, s, recovery)
+		signature := keysign.NewSignature(msg, r, s, recovery, encoded)
 		signatures = append(signatures, signature)
 	}
 	return keysign.NewResponse(

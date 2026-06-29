@@ -199,6 +199,29 @@ func (s *PubKeyTestSuite) TestPubKey(c *C) {
 	c.Assert(pk2.Equals(pk), Equals, true)
 }
 
+func (s *PubKeyTestSuite) TestEd25519PubKeyToStellarAddress(c *C) {
+	// Known strkey vector: 32 zero bytes -> the canonical all-zero Stellar account id.
+	addr, err := Ed25519PubKeyToStellarAddress(make([]byte, 32))
+	c.Assert(err, IsNil)
+	c.Assert(addr.String(), Equals, "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF")
+	c.Assert(IsValidXLMAddress(addr.String()), Equals, true)
+
+	// A wrong-length key is rejected (must be ed25519.PublicKeySize).
+	_, err = Ed25519PubKeyToStellarAddress(make([]byte, 31))
+	c.Assert(err, NotNil)
+
+	// The (placeholder) GetAddress(StellarChain) path routes its final encoding through the same
+	// helper and yields a valid Stellar account address.
+	_, pubKey, _ := testdata.KeyTestPubAddr()
+	spk, err := cosmos.Bech32ifyPubKey(cosmos.Bech32PubKeyTypeAccPub, pubKey)
+	c.Assert(err, IsNil)
+	pk, err := NewPubKey(spk)
+	c.Assert(err, IsNil)
+	xlmAddr, err := pk.GetAddress(StellarChain)
+	c.Assert(err, IsNil)
+	c.Assert(IsValidXLMAddress(xlmAddr.String()), Equals, true)
+}
+
 func (s *PubKeyTestSuite) TestPubKeySet(c *C) {
 	_, pubKey, _ := testdata.KeyTestPubAddr()
 	spk, err := cosmos.Bech32ifyPubKey(cosmos.Bech32PubKeyTypeAccPub, pubKey)

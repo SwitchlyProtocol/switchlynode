@@ -10,6 +10,9 @@ ENV GOOS=linux
 
 WORKDIR /app
 COPY go.mod go.sum ./
+# go.mod replaces github.com/binance-chain/tss-lib with the vendored fork in ./third_party/tss-lib;
+# it must be present before `go mod download` can resolve modules.
+COPY third_party ./third_party
 RUN go mod download
 
 COPY . .

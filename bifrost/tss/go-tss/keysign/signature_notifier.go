@@ -18,6 +18,7 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
+	gotsscommon "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
 )
 
 var signatureNotifierProtocol protocol.ID = "/p2p/signatureNotifier"
@@ -196,8 +197,8 @@ func (s *SignatureNotifier) removeNotifier(n *Notifier) {
 }
 
 // WaitForSignature wait until keysign finished and signature is available
-func (s *SignatureNotifier) WaitForSignature(messageID string, message [][]byte, poolPubKey string, timeout time.Duration, sigChan chan string) ([]*common.ECSignature, error) {
-	n, err := NewNotifier(messageID, message, poolPubKey)
+func (s *SignatureNotifier) WaitForSignature(messageID string, message [][]byte, poolPubKey string, algo gotsscommon.Algo, timeout time.Duration, sigChan chan string) ([]*common.ECSignature, error) {
+	n, err := NewNotifier(messageID, message, poolPubKey, algo)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create notifier")
 	}

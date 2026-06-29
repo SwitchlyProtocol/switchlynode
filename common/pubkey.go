@@ -215,26 +215,20 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 		if err != nil {
 			return NoAddress, err
 		}
-		// Stellar uses ed25519, but we have secp256k1 from Switchly
-		// We need to derive an ed25519 key deterministically from the secp256k1 key
-		// Use SHA-256 hash of the secp256k1 public key as the ed25519 private key seed
-		secp256k1PubKey := pk.Bytes()
-
-		// Hash the secp256k1 public key to get a 32-byte seed for ed25519
+		// PLACEHOLDER derivation (INSECURE — mocknet only). Stellar accounts are ed25519, but vaults
+		// hold a secp256k1 key. Until EdDSA threshold keygen lands (the vault will then carry a real
+		// ed25519 group pubkey; see docs/architecture/stellar-eddsa-tss.md), derive a deterministic
+		// ed25519 key from the secp256k1 pubkey. The secp256k1 pubkey is PUBLIC, so this ed25519 key
+		// is NOT secret and must never secure real funds. The final encoding goes through
+		// Ed25519PubKeyToStellarAddress — the same seam the real ed25519 vault key will use.
 		hasher := sha256.New()
-		hasher.Write(secp256k1PubKey)
-		ed25519Seed := hasher.Sum(nil)
-
-		// Generate ed25519 key pair from the seed
-		ed25519PrivKey := ed25519.NewKeyFromSeed(ed25519Seed)
-		ed25519PubKey := ed25519PrivKey.Public().(ed25519.PublicKey)
-
-		// Encode the ed25519 public key into a Stellar address using strkey format
-		addr, err := strkey.Encode(strkey.VersionByteAccountID, ed25519PubKey)
+		hasher.Write(pk.Bytes())
+		ed25519PrivKey := ed25519.NewKeyFromSeed(hasher.Sum(nil))
+		stellarAddr, err := Ed25519PubKeyToStellarAddress(ed25519PrivKey.Public().(ed25519.PublicKey))
 		if err != nil {
-			return NoAddress, fmt.Errorf("failed to encode Stellar address: %w", err)
+			return NoAddress, err
 		}
-		addressString = addr
+		addressString = stellarAddr.String()
 	default:
 		// Only EVM chains remain.
 		if !chain.IsEVM() {
@@ -253,6 +247,21 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 	}
 	pubkeyToAddressCache[key] = address
 	return address, nil
+}
+
+// Ed25519PubKeyToStellarAddress encodes a 32-byte ed25519 public key as a Stellar account address
+// (strkey "G..." form). This is the single seam that turns a vault's ed25519 group public key into a
+// Stellar address; the chain (inbound address) and bifrost (outbound signing) must agree on it. Once
+// EdDSA threshold keygen lands, the real ed25519 vault pubkey is passed here directly.
+func Ed25519PubKeyToStellarAddress(ed25519Pub []byte) (Address, error) {
+	if len(ed25519Pub) != ed25519.PublicKeySize {
+		return NoAddress, fmt.Errorf("invalid ed25519 public key length: got %d, want %d", len(ed25519Pub), ed25519.PublicKeySize)
+	}
+	encoded, err := strkey.Encode(strkey.VersionByteAccountID, ed25519Pub)
+	if err != nil {
+		return NoAddress, fmt.Errorf("failed to encode Stellar address: %w", err)
+	}
+	return NewAddress(encoded)
 }
 
 // GetThorAddress will return the address for SWITCHLYChain (legacy method)

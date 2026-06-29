@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	libp2pcrypto "github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/pkg/chainclients"
@@ -72,6 +74,41 @@ type VaultResponse struct {
 // -------------------------------------------------------------------------------------
 // Health Server
 // -------------------------------------------------------------------------------------
+
+// LocalPeerIDFromPubKey derives the libp2p peer id from the node's secp256k1 public key bytes — the
+// same derivation the p2p host uses — so the id can be known (and served) before the host and the TSS
+// server start.
+func LocalPeerIDFromPubKey(pubKeyBytes []byte) (string, error) {
+	ppk, err := libp2pcrypto.UnmarshalSecp256k1PublicKey(pubKeyBytes)
+	if err != nil {
+		return "", err
+	}
+	pid, err := peer.IDFromPublicKey(ppk)
+	if err != nil {
+		return "", err
+	}
+	return pid.String(), nil
+}
+
+// StartEarlyP2PIDServer serves only /p2pid (the given peer id) on addr before the full HealthServer
+// exists. Cluster bootstrap resolves peers via :6040/p2pid during p2p.StartP2P, but the full
+// HealthServer only starts afterwards (it needs the TSS server). Without serving the id early,
+// simultaneously-started bifrosts deadlock — each blocks in bootstrap waiting for peers' /p2pid while
+// none is being served yet. Returns the server so the caller can Close() it before the full
+// HealthServer takes over the same address.
+func StartEarlyP2PIDServer(addr, peerID string) *http.Server {
+	router := mux.NewRouter()
+	router.Handle("/p2pid", http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(peerID))
+	})).Methods(http.MethodGet)
+	srv := &http.Server{Addr: addr, Handler: router, ReadHeaderTimeout: 2 * time.Second}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error().Err(err).Msg("early p2pid server error")
+		}
+	}()
+	return srv
+}
 
 // HealthServer to provide something for health check and also p2pid
 type HealthServer struct {

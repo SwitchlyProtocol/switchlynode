@@ -18,10 +18,30 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
 )
 
-// KeygenLocalState is a structure used to represent the data we saved locally for different keygen
+// Keyshare algorithms. The empty value is treated as ECDSA for backward compatibility with state
+// written before EdDSA support existed. These mirror bifrost/tss/go-tss/common.Algo but are kept as
+// plain strings here to avoid a package import cycle.
+const (
+	AlgoECDSA = "ecdsa"
+	AlgoEdDSA = "eddsa"
+)
+
+// KeygenLocalState is a structure used to represent the data we saved locally for different keygen.
+//
+// A vault has its own keyshare per signing algorithm: secp256k1 (ECDSA, used by every chain today) in
+// LocalData, and optionally ed25519 (EdDSA, required for Stellar) in EdDSALocalData. Algo records
+// which scheme this state is for; an empty Algo means ECDSA (legacy state).
+//
+// EdDSALocalData is stored as opaque JSON (the marshaled tss-lib eddsa/keygen.LocalPartySaveData) on
+// purpose: this package is linked into every bifrost binary, and importing tss-lib's eddsa/keygen here
+// alongside its ecdsa/keygen panics at init (both register protobuf messages under the same names in
+// the "protob" package). The EdDSA keygen/keysign code paths marshal/unmarshal this field. See the
+// proto-namespace blocker in docs/architecture/stellar-eddsa-tss.md.
 type KeygenLocalState struct {
 	PubKey          string                    `json:"pub_key"`
 	LocalData       keygen.LocalPartySaveData `json:"local_data"`
+	EdDSALocalData  json.RawMessage           `json:"eddsa_local_data,omitempty"`
+	Algo            string                    `json:"algo,omitempty"`
 	ParticipantKeys []string                  `json:"participant_keys"` // the participant of last key gen
 	LocalPartyKey   string                    `json:"local_party_key"`
 }

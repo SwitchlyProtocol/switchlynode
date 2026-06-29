@@ -1,7 +1,9 @@
 package keysign
 
 import (
+	"crypto/ed25519"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 
@@ -24,18 +26,18 @@ func (*NotifierTestSuite) SetUpSuite(c *C) {
 func (NotifierTestSuite) TestNewNotifier(c *C) {
 	testMSg := [][]byte{[]byte("hello"), []byte("world")}
 	poolPubKey := conversion.GetRandomPubKey()
-	n, err := NewNotifier("", testMSg, poolPubKey)
+	n, err := NewNotifier("", testMSg, poolPubKey, common.ECDSA)
 	c.Assert(err, NotNil)
 	c.Assert(n, IsNil)
-	n, err = NewNotifier("aasfdasdf", nil, poolPubKey)
-	c.Assert(err, NotNil)
-	c.Assert(n, IsNil)
-
-	n, err = NewNotifier("hello", testMSg, "")
+	n, err = NewNotifier("aasfdasdf", nil, poolPubKey, common.ECDSA)
 	c.Assert(err, NotNil)
 	c.Assert(n, IsNil)
 
-	n, err = NewNotifier("hello", testMSg, poolPubKey)
+	n, err = NewNotifier("hello", testMSg, "", common.ECDSA)
+	c.Assert(err, NotNil)
+	c.Assert(n, IsNil)
+
+	n, err = NewNotifier("hello", testMSg, poolPubKey, common.ECDSA)
 	c.Assert(err, IsNil)
 	c.Assert(n, NotNil)
 	ch := n.GetResponseChannel()
@@ -49,7 +51,7 @@ func (NotifierTestSuite) TestNotifierHappyPath(c *C) {
 	messageID, err := common.MsgToHashString(buf)
 	c.Assert(err, IsNil)
 	poolPubKey := `tswitchpub1qg39rnhj7egrrhxmgx2rq3wsaes4lgeh2t2jtluqqhntxsr5qfwpsccayz3`
-	n, err := NewNotifier(messageID, [][]byte{buf}, poolPubKey)
+	n, err := NewNotifier(messageID, [][]byte{buf}, poolPubKey, common.ECDSA)
 	c.Assert(err, IsNil)
 	c.Assert(n, NotNil)
 	sigFile := "../test_data/signature_notify/sig1.json"
@@ -78,4 +80,31 @@ func (NotifierTestSuite) TestNotifierHappyPath(c *C) {
 	result := <-n.GetResponseChannel()
 	c.Assert(result, NotNil)
 	c.Assert(signature.GetSignature().String() == result[0].String(), Equals, true)
+}
+
+// TestNotifierEdDSA verifies the ed25519 branch of verifySignature: a real crypto/ed25519 signature
+// over the message, with the hex-encoded 32-byte pubkey as the pool key, must verify; a tampered
+// signature must not. This mirrors how a threshold ed25519 signature is checked for the Stellar vault.
+func (NotifierTestSuite) TestNotifierEdDSA(c *C) {
+	pub, priv, err := ed25519.GenerateKey(nil)
+	c.Assert(err, IsNil)
+	msg := []byte("stellar-tx-hash-placeholder-32by")
+	sig := ed25519.Sign(priv, msg)
+
+	n, err := NewNotifier("eddsa-msg-id", [][]byte{msg}, hex.EncodeToString(pub), common.EdDSA)
+	c.Assert(err, IsNil)
+	c.Assert(n, NotNil)
+
+	good := &tsslibcommon.ECSignature{Signature: sig, M: msg}
+	ok, err := n.verifySignature(good, msg)
+	c.Assert(err, IsNil)
+	c.Assert(ok, Equals, true)
+
+	// tamper the signature -> must fail verification (no error, just false)
+	bad := make([]byte, len(sig))
+	copy(bad, sig)
+	bad[0] ^= 0xff
+	ok, err = n.verifySignature(&tsslibcommon.ECSignature{Signature: bad, M: msg}, msg)
+	c.Assert(err, IsNil)
+	c.Assert(ok, Equals, false)
 }

@@ -184,6 +184,9 @@ services:
       BIFROST_SIGNER_AUTO_OBSERVE: "false"
       BIFROST_SIGNER_KEYGEN_TIMEOUT: 45s
       BIFROST_SIGNER_KEYSIGN_TIMEOUT: 45s
+      # run a second EdDSA (ed25519) keygen after the ECDSA churn keygen and log the group key
+      # (mocknet validation of the Stellar EdDSA TSS path; off in production)
+      BIFROST_EDDSA_KEYGEN_VALIDATION: "true"
       BIFROST_CHAINS_AVAX_BLOCK_SCANNER_OBSERVATION_FLEXIBILITY_BLOCKS: "5"
       BIFROST_CHAINS_BCH_BLOCK_SCANNER_OBSERVATION_FLEXIBILITY_BLOCKS: "5"
       BIFROST_CHAINS_BTC_BLOCK_SCANNER_OBSERVATION_FLEXIBILITY_BLOCKS: "5"
@@ -205,6 +208,11 @@ services:
       BIFROST_CHAINS_BSC_RPC_HOST: ${BSC_HOST:-http://binance-smart:8545}
       BIFROST_CHAINS_BASE_DISABLED: "true"
       BIFROST_CHAINS_BASE_RPC_HOST: http://base:8545
+
+      # GAIA + AVAX - DISABLED (no gaia/avalanche service in this compose; leaving them
+      # enabled stalls bifrost chain-client loading and blocks the TSS keygen path)
+      BIFROST_CHAINS_GAIA_DISABLED: "true"
+      BIFROST_CHAINS_AVAX_DISABLED: "true"
       
       # Ethereum (ETH) - ENABLED
       BIFROST_CHAINS_ETH_DISABLED: "false"
