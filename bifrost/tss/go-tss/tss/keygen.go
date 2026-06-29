@@ -122,14 +122,21 @@ func (t *TssServer) Keygen(req keygen.Request) (keygen.Response, error) {
 	// as the Tss model runs successfully.
 	beforeKeygen := time.Now()
 	var k *bcrypto.ECPoint
-	if common.NormalizeAlgo(req.Algo) == common.EdDSA {
-		// NOTE: the caller must have set the tss-lib global curve to Edwards before calling Keygen.
-		// The server does not set the global curve per-ceremony — doing so would flip it mid-flight
-		// for the other in-process parties of the same ceremony (the 4-node test). See docs §9.
-		k, err = keygenInstance.GenerateNewKeyEdDSA(req)
-	} else {
-		k, err = keygenInstance.GenerateNewKey(req)
-	}
+	// Run the DKG under the process-global curve for this algo. tss-lib selects the curve via a process
+	// global, so an ECDSA ceremony and an EdDSA ceremony (e.g. an active node's migration keysign while
+	// the EdDSA keygen runs) must not execute concurrently or one reads the other's curve and produces
+	// invalid points. WithCurveForAlgo serializes all ceremonies on this curve. Only the DKG rounds are
+	// wrapped (joinParty above is curve-independent), so the lock is held briefly. ECDSA output is
+	// unchanged (secp256k1 is the default curve). See docs/architecture/stellar-eddsa-tss.md §9.
+	err = common.WithCurveForAlgo(common.NormalizeAlgo(req.Algo), func() error {
+		var e error
+		if common.NormalizeAlgo(req.Algo) == common.EdDSA {
+			k, e = keygenInstance.GenerateNewKeyEdDSA(req)
+		} else {
+			k, e = keygenInstance.GenerateNewKey(req)
+		}
+		return e
+	})
 	keygenTime := time.Since(beforeKeygen)
 	if err != nil {
 		t.tssMetrics.UpdateKeyGen(keygenTime, false)

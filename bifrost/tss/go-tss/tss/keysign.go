@@ -151,13 +151,19 @@ func (t *TssServer) generateSignature(msgID string, msgsToSign [][]byte, req key
 		}, nil
 	}
 	var signatureData []*tsslibcommon.ECSignature
-	if common.NormalizeAlgo(req.Algo) == common.EdDSA {
-		// NOTE: the caller must have set the tss-lib global curve to Edwards before KeySign (the
-		// server does not flip the global curve per-ceremony — see docs §9).
-		signatureData, err = keysignInstance.SignMessageEdDSA(msgsToSign, localStateItem, signers)
-	} else {
-		signatureData, err = keysignInstance.SignMessage(msgsToSign, localStateItem, signers)
-	}
+	// Run the signing under the process-global curve for this algo, serialized via WithCurveForAlgo, so
+	// a concurrent ECDSA and EdDSA ceremony in the same process can't race the shared global curve (see
+	// docs/architecture/stellar-eddsa-tss.md §9). Only the signing rounds are wrapped (joinParty is
+	// curve-independent); ECDSA output is unchanged (secp256k1 is the default curve).
+	err = common.WithCurveForAlgo(common.NormalizeAlgo(req.Algo), func() error {
+		var e error
+		if common.NormalizeAlgo(req.Algo) == common.EdDSA {
+			signatureData, e = keysignInstance.SignMessageEdDSA(msgsToSign, localStateItem, signers)
+		} else {
+			signatureData, e = keysignInstance.SignMessage(msgsToSign, localStateItem, signers)
+		}
+		return e
+	})
 	// the statistic of keygen only care about Tss it self, even if the following http response aborts,
 	// it still counted as a successful keygen as the Tss model runs successfully.
 	if err != nil {

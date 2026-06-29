@@ -167,12 +167,9 @@ func (kg *KeyGen) GenerateNewKey(keygenBlockHeight int64, pKeys common.PubKeys) 
 			BlockHeight: keygenBlockHeight,
 			Algo:        gotsscommon.EdDSA,
 		}
-		var edResp keygen.Response
-		edErr := gotsscommon.WithCurveForAlgo(gotsscommon.EdDSA, func() error {
-			var e error
-			edResp, e = kg.server.Keygen(edReq)
-			return e
-		})
+		// The go-tss server now sets/serializes the curve per-ceremony (WithCurveForAlgo inside
+		// TssServer.Keygen), so we must NOT wrap here too — curveMu is not reentrant and would deadlock.
+		edResp, edErr := kg.server.Keygen(edReq)
 		if edErr != nil || edResp.Status != gotsscommon.Success {
 			kg.logger.Error().Err(edErr).
 				Str("round", edResp.Blame.Round).
