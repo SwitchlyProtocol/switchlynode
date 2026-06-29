@@ -139,13 +139,16 @@ func (t *TssServer) notifyJoinPartyChan() {
 func (t *TssServer) requestToMsgId(request interface{}) (string, error) {
 	var dat []byte
 	var keys []string
+	var algo common.Algo
 	switch value := request.(type) {
 	case keygen.Request:
 		keys = value.Keys
+		algo = value.Algo
 	case keysign.Request:
 		sort.Strings(value.Messages)
 		dat = []byte(strings.Join(value.Messages, ","))
 		keys = value.SignerPubKeys
+		algo = value.Algo
 	default:
 		t.logger.Error().Msg("unknown request type")
 		return "", errors.New("unknown request type")
@@ -156,6 +159,13 @@ func (t *TssServer) requestToMsgId(request interface{}) (string, error) {
 		keyAccumulation += el
 	}
 	dat = append(dat, []byte(keyAccumulation)...)
+	// An EdDSA ceremony runs over the same members (and, for keysign, messages) as the ECDSA one, so
+	// without a discriminator they hash to the same routing id and their TSS messages collide — the
+	// EdDSA keygen then stalls in round 1. Give EdDSA a distinct id; ECDSA keeps its original id (no
+	// suffix) so its message routing stays byte-for-byte unchanged.
+	if common.NormalizeAlgo(algo) == common.EdDSA {
+		dat = append(dat, []byte("eddsa")...)
+	}
 	return common.MsgToHashString(dat)
 }
 
