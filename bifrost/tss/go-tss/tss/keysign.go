@@ -21,9 +21,9 @@ import (
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
 )
 
-func (t *TssServer) waitForSignatures(msgID, poolPubKey string, msgsToSign [][]byte, sigChan chan string) (keysign.Response, error) {
+func (t *TssServer) waitForSignatures(msgID, poolPubKey string, algo common.Algo, msgsToSign [][]byte, sigChan chan string) (keysign.Response, error) {
 	// TSS keysign include both form party and keysign itself, thus we wait twice of the timeout
-	data, err := t.signatureNotifier.WaitForSignature(msgID, msgsToSign, poolPubKey, t.conf.KeySignTimeout, sigChan)
+	data, err := t.signatureNotifier.WaitForSignature(msgID, msgsToSign, poolPubKey, algo, t.conf.KeySignTimeout, sigChan)
 	if err != nil {
 		return keysign.Response{}, err
 	}
@@ -291,7 +291,7 @@ func (t *TssServer) KeySign(req keysign.Request) (keysign.Response, error) {
 	// we wait for signatures
 	go func() {
 		defer wg.Done()
-		receivedSig, errWait = t.waitForSignatures(msgID, req.PoolPubKey, msgsToSign, sigChan)
+		receivedSig, errWait = t.waitForSignatures(msgID, req.PoolPubKey, common.NormalizeAlgo(req.Algo), msgsToSign, sigChan)
 		// we received an valid signature indeed
 		if errWait == nil {
 			sigChan <- "signature received"
