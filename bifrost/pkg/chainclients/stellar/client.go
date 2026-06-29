@@ -1061,6 +1061,11 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("fail to build router transfer_out transaction: %w", err)
 	}
+	if stellarSignedTx == nil {
+		// EdDSA threshold keysign determined this node is not in the committee — nothing to broadcast.
+		c.logger.Info().Msg("not in keysign committee for this stellar outbound, skipping")
+		return nil, nil, nil, nil
+	}
 
 	// Convert to XDR for storage
 	signedTxXDR, err := stellarSignedTx.Base64()
