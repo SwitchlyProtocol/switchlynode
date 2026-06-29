@@ -59,7 +59,7 @@ func (m *MockSwitchlyBridge) GetErrataMsg(txID common.TxID, chain common.Chain) 
 	return nil
 }
 
-func (m *MockSwitchlyBridge) GetKeygenStdTx(poolPubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame switchlytypes.Blame, inputPks common.PubKeys, keygenType switchlytypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
+func (m *MockSwitchlyBridge) GetKeygenStdTx(poolPubKey, ed25519PubKey common.PubKey, secp256k1Signature, keysharesBackup []byte, blame switchlytypes.Blame, inputPks common.PubKeys, keygenType switchlytypes.KeygenType, chains common.Chains, height, keygenTime int64) (sdk.Msg, error) {
 	return nil, nil
 }
 

@@ -77,6 +77,18 @@ func (m Vault) IsEmpty() bool {
 	return m.PubKey.IsEmpty()
 }
 
+// PubKeyForChain returns the vault public key whose signature scheme matches the chain: the ed25519
+// group key for Stellar (which uses ed25519 accounts), the secp256k1 key for every other chain. Falls
+// back to the secp256k1 key when no ed25519 key is set (legacy/ECDSA-only vaults), preserving the
+// previous behaviour. Address derivation and outbound source addresses must go through this so a
+// Stellar vault's address comes from its real ed25519 group key.
+func (m Vault) PubKeyForChain(chain common.Chain) common.PubKey {
+	if chain.Equals(common.StellarChain) && !m.Ed25519PubKey.IsEmpty() {
+		return m.Ed25519PubKey
+	}
+	return m.PubKey
+}
+
 // Contains check whether the given pubkey is party of the originally node who create this vault
 func (m Vault) Contains(pubkey common.PubKey) bool {
 	return m.GetMembership().Contains(pubkey)

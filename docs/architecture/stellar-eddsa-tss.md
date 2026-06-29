@@ -248,42 +248,94 @@ form (CometBFT validators can't stay synced with the seed; bifrost TSS bootstrap
 as ECDSA on this cluster; closing the loop needs the cluster p2p repaired (separate, non-consensus).
 
 **Hard constraint — the global curve and concurrency.** The fork selects the curve via a process
-global (`tss.SetCurve`). A per-ceremony mutex around the curve (`WithCurveForAlgo`) is correct for a
-**production node** (one process = one party; serialize its ECDSA vs EdDSA ceremonies) — but it would
-**deadlock the in-process 4-node test** (`tss_4nodes_test.go`), because there the 4 interdependent
-parties of one ceremony run in a single process and would each block on the same curve mutex. So:
-- production server `Keygen`/`KeySign` set the curve per-ceremony under the existing per-op lockers
-  (`tssKeyGenLocker` etc.); concurrent ECDSA-keysign + EdDSA-keysign in one process is the residual
-  hazard to guard (rare for EdDSA; document/serialize). This is the cost of the fork's global curve
-  (v2's per-`Parameters` curve would have removed it — but at the btcec/btcutil cascade cost).
-- the 4-node EdDSA test sets the global curve to Edwards once for the all-EdDSA block (no per-party
-  mutex), and validates an EdDSA keygen→keysign round (sig verifies under `crypto/ed25519`).
+global (`tss.SetCurve`). **RESOLVED** by the curve **algo-gate** in `bifrost/tss/go-tss/common/curve.go`:
+`WithCurveForAlgo` lets any number of *same-algo* ceremonies run concurrently under one shared curve,
+but a *different-algo* ceremony waits until the in-flight ones drain (then it switches the global
+curve); the default secp256k1 curve is restored when idle. `TssServer.Keygen`/`KeySign` wrap the DKG /
+signing rounds (not joinParty) in it. This both (a) fixes the real hazard — an active node's ECDSA
+migration keysign was racing the EdDSA churn keygen on the global curve, corrupting the EdDSA rounds —
+and (b) does NOT deadlock the in-process 4-node test, since its 4 same-ceremony (same-algo) parties all
+acquire the gate concurrently. A plain per-ceremony mutex would have deadlocked that test. ECDSA output
+is unchanged (secp256k1 is the default curve).
 
-### 9.1 Remaining (consensus-critical — coordinated upgrade)
+### 9.1 DONE — EdDSA threshold keygen validated on the mocknet cluster (2026-06-29)
 
-These are the only pieces left for end-to-end EdDSA, and both are gated on a network upgrade:
+The go-tss/bifrost layer is complete and **a real multi-party EdDSA keygen succeeds on the docker
+mocknet-cluster** (`EDDSA-KEYGEN-VALIDATION: success`, 3/3 members, consistent ed25519 group key;
+ECDSA churn reliably 1→3→4). The chain of fixes that got it green (all on `stellar/eddsa-tss-plan`):
+`/p2pid` served before `comm.Start()` (bootstrap deadlock), full bifrost bootstrap mesh on mocknet,
+widened bootstrap retry, EdDSA-distinct TSS msgID (`requestToMsgId` includes algo), the **curve
+algo-gate** (`WithCurveForAlgo` reworked: concurrent same-algo ceremonies allowed, ECDSA↔EdDSA
+serialized; `TssServer.Keygen/KeySign` wrap the DKG/signing — this is the resolution of the §9
+"global curve concurrency" hazard *and* it does NOT deadlock the in-process 4-node test), the
+**`GetMsgRound` EdDSA cases** (the round-1 stall: eddsa msg types hit "unknown round" and were
+dropped), and accepting a hex ed25519 key as a keyshare filename. The crypto was already proven in
+`bifrost/tss/eddsacompat`.
 
-1. **Carry the ed25519 group key from keygen to the chain.** `bifrost/tss/keygen.go GenerateNewKey`
-   must run *both* the ECDSA and EdDSA keygen at churn (the gated hook already does the second one) and
-   return both keys; `common.NewPubKeySet(secp, eddsa)` instead of `(cpk, cpk)`.
-2. **`MsgTssPool` + vault storage.** `MsgTssPool` carries a single secp256k1 `PoolPubKey`; add an
-   **optional** `ed25519_pub_key` field (additive; empty == today's behavior, so ECDSA-only churns are
-   byte-identical) and store it into the vault `PubKeySet.Ed25519` in `handler_tss_keysign.go`. The
-   vault query/`inbound_addresses` then exposes it. *Proto + handler = state-machine change → version
-   gate + coordinated upgrade; every validator must run the EdDSA build before the first EdDSA churn.*
-3. **Stellar `SignTx`.** Replace the mocknet placeholder: fetch the vault `ed25519_pub_key`, compute the
-   Stellar tx **signature base** (hash; §6 leading-zero caveat), call `KeySign.RemoteSignEdDSA`, and
-   attach a `DecoratedSignature{Hint: lastByte(pubkey), Signature: sig}`. Remove the placeholder once
-   real keys exist (the §5.3 gate stays until then).
+### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED (pending version gate + e2e validation)
+
+The end-to-end EdDSA path is now wired (additive; ECDSA byte-for-byte unchanged because every new
+field/branch is empty/inactive unless a vault carries an ed25519 key):
+- ✅ **ed25519 representation** — `common.NewPubKeyFromEd25519` + `PubKey.Ed25519Raw`;
+  `GetAddress(StellarChain)` derives from a real ed25519 key (32 bytes) via `Ed25519PubKeyToStellarAddress`,
+  secp256k1 keeps the mocknet placeholder.
+- ✅ **bifrost returns both keys** — `GenerateNewKey` puts the real ed25519 group key in
+  `PubKeySet.Ed25519` (gated by `BIFROST_EDDSA_KEYGEN_VALIDATION`; defaults to the secp256k1 placeholder).
+- ✅ **proto** — `MsgTssPool.ed25519_pub_key` (#12) and `Vault.ed25519_pub_key` (#24), regenerated with
+  the pinned proto-builder (clean diff).
+- ✅ **report + store** — `sendKeygenToSwitchly`/`GetKeygenStdTx` carry it; `handler_tss` stores it into
+  the vault on keygen success (not in `getTssID`, so keygen consensus is unchanged).
+- ✅ **address** — `Vault.PubKeyForChain` returns the ed25519 key for Stellar; used by the inbound-address
+  query and the outbound source-address selection.
+- ✅ **Stellar SignTx** — `signTransactionWithTSS` looks up the vault ed25519 key, hashes the tx, runs
+  `KeySign.RemoteSignEdDSA`, and attaches an `xdr.DecoratedSignature`; placeholder kept as fallback.
+
+**Still remaining before any public network:**
+1. **Version gate.** The feature is currently gated by the `BIFROST_EDDSA_KEYGEN_VALIDATION` env flag
+   (fine for mocknet/cluster). Replace it with a network-version/mimir gate so all validators begin
+   producing+reporting the ed25519 key at the same coordinated-upgrade height.
+2. **Consensus-harden the ed25519 key** — currently taken from the consensus-triggering `MsgTssPool`;
+   fold it into the TSS voter id (or vote on it) so a malicious member can't set a wrong vault key.
+3. **e2e validation on the cluster** — enable the gate, drive a churn → ed25519 vault, then an XLM
+   outbound, and confirm `transfer_out` verifies under the vault's ed25519 key (keygen is already green).
+4. Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists.
+
+Original recipe (for reference):
+
+1. **ed25519 representation.** Encode the keygen's hex ed25519 group key as a bech32 cosmos ed25519
+   pubkey so it fits `common.PubKey`/`PubKeySet.Ed25519` and flows through existing plumbing
+   (`crypto/keys/ed25519.PubKey{Key: raw}` → `legacybech32.MarshalPubKey(AccPK, …)`). Add helpers
+   `common.NewPubKeyEd25519(hex)` and an accessor to get the raw/hex back. `GetAddress(StellarChain)`
+   then derives the Stellar address from the *real* ed25519 key via the existing
+   `Ed25519PubKeyToStellarAddress` seam (replacing the §5.3 SHA256 placeholder).
+2. **bifrost keygen returns both keys.** `bifrost/tss/keygen.go GenerateNewKey`: run the EdDSA keygen
+   unconditionally (promote the gated hook), and return `common.NewPubKeySet(cpk, ed25519PubKey)`.
+3. **`MsgTssPool` proto.** Add `string ed25519_pool_pub_key = 12 [(gogoproto.casttype)=…common.PubKey]`
+   (additive, optional — empty == today, so ECDSA-only churns are wire-identical). `sendKeygenToSwitchly`
+   / `NewMsgTssPool` carry it; bifrost also produces a *second* verification signature (ed25519) like
+   the existing secp256k1 one. **Regenerate via `make proto-gen` (docker cosmos/proto-builder) and
+   confirm the diff is limited to the new field — a proto-builder version mismatch can churn all
+   generated files, so pin/verify.**
+4. **`Vault` proto + handler.** Add `string ed25519_pub_key = 24` to `type_vault.proto`; in
+   `handler_tss_pool`/vault creation store the `MsgTssPool` ed25519 key into the vault. Expose it in the
+   vault query / `inbound_addresses`. Keep churn/migration/keysign keyed by the secp256k1 identity.
+5. **Stellar `SignTx`.** Replace the mocknet placeholder (`signTransactionWithTSS`): resolve the vault's
+   ed25519 key, compute the Stellar tx **signature base** hash (§6 leading-zero caveat), call
+   `KeySign.RemoteSignEdDSA(hash, ed25519Hex)`, attach `xdr.DecoratedSignature{Hint: last 4 bytes of the
+   ed25519 pubkey, Signature: sig}`. Remove `DeriveStellarkeyFromVaultPubKey` and the §5.3 gate once a
+   churn has produced a real EdDSA vault.
+6. **Validate** by enabling the version gate on the cluster and driving an XLM outbound through a churn
+   (the keygen path is already green); confirm `transfer_out` verifies under the vault's ed25519 key.
 
 `EdDSALocalData` can also become the typed `eddsa/keygen.LocalPartySaveData` now the proto conflict is
 gone (it is `json.RawMessage` today only to keep eddsa protos out of bifrost's graph pre-patch).
 
-### 9.2 Validation prerequisite (non-consensus)
+### 9.3 Validation prerequisite (non-consensus) — DONE
 
-Before enabling on any network, the cluster must actually complete a multi-node keygen+keysign. The
-mocknet-cluster p2p needs repair (CometBFT validator peer-sync / PEX, and bifrost TSS `bootstrap_peers`
-from `PEER`). This is devops/config, not consensus, and currently blocks ECDSA churn too.
+The mocknet-cluster now completes a real multi-node keygen (see §9.1). The p2p repairs that unblocked
+it (validator persistent-peers/sync, bifrost `/p2pid`-before-bootstrap, full bootstrap mesh, retries)
+are committed and gated to mocknet. Keysign across the cluster is the natural next validation once the
+chain (§9.2) provides the vault ed25519 key for an outbound.
 
 ---
 
@@ -305,8 +357,9 @@ from `PEER`). This is devops/config, not consensus, and currently blocks ECDSA c
    Stellar-verifiability (§6). Remaining: manage the global-curve switch (§3).
 2. ✅ go-tss: `Algo` plumbing + the eddsa keygen/keysign party branches + server curve switch +
    notifier `ed25519.Verify` (unblocked by §6.1 fork-patch). *(consensus-critical; ECDSA byte-unchanged)*
-3. Chain: `MsgTssPool` optional `ed25519_pub_key` + store into vault `PubKeySet.Ed25519` + churn runs
-   both keygens (§9.1). **Remaining — consensus-critical, coordinated upgrade.**
+3. Chain: `MsgTssPool` optional `ed25519_pub_key` + store into the vault + churn runs both keygens, then
+   Stellar `SignTx` via `RemoteSignEdDSA` — concrete recipe in **§9.2**. **Remaining — consensus-critical,
+   coordinated upgrade** (the bifrost/TSS keygen layer it builds on is now validated, §9.1).
 4. ✅ common: ed25519→Stellar address seam (§5.1). Remaining: resolve the vault's real ed25519 pubkey
    for `GetAddress(StellarChain)` and remove the SHA256 placeholder (depends on #3).
 5. ✅ bifrost EdDSA `RemoteSignEdDSA` primitive. Remaining: Stellar `SignTx` via threshold ed25519

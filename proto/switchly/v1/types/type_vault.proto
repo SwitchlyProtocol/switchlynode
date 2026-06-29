@@ -34,4 +34,8 @@ message Vault {
   repeated int64 pending_tx_block_heights = 11;
   repeated types.ChainContract routers = 22 [(gogoproto.nullable) = false];
   repeated string frozen = 23;
+  // ed25519 (EdDSA) group public key for the Stellar vault, set from the keygen alongside pub_key
+  // (secp256k1). Empty on legacy/ECDSA-only vaults. GetAddress(StellarChain) derives the Stellar
+  // address from this key when present (otherwise the secp256k1 placeholder).
+  string ed25519_pub_key = 24 [(gogoproto.casttype) = "github.com/switchlyprotocol/switchlynode/v3/common.PubKey"];
 }

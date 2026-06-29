@@ -919,12 +919,61 @@ func (c *Client) DeriveStellarkeyFromVaultPubKey(vaultPubKeyStr string) (*keypai
 	return stellarKeypair, nil
 }
 
-// signTransactionWithTSS signs a Stellar transaction with the vault key.
-//
-// NOTE: despite the name this does NOT yet perform threshold signing — it uses the insecure
-// placeholder derivation (DeriveStellarkeyFromVaultPubKey), which is gated to mocknet. See
-// docs/architecture/stellar-eddsa-tss.md for the real EdDSA threshold-signing plan.
+// signTransactionWithTSS signs a Stellar transaction with the vault's ed25519 group key via EdDSA
+// threshold signing. It looks up the vault's ed25519 key on-chain (stored from the EdDSA keygen),
+// hashes the tx (the Stellar signature base), runs the threshold keysign, and attaches the resulting
+// ed25519 signature as a decorated signature hinted by the group key. When the vault has no ed25519
+// key (legacy/pre-EdDSA vault) it falls back to the insecure mocknet placeholder derivation. See
+// docs/architecture/stellar-eddsa-tss.md.
 func (c *Client) signTransactionWithTSS(stellarTx *txnbuild.Transaction, vaultPubKey common.PubKey, networkPassphrase string) (*txnbuild.Transaction, error) {
+	vault, err := c.switchlyBridge.GetVault(vaultPubKey.String())
+	if err != nil {
+		return nil, fmt.Errorf("fail to get vault for %s: %w", vaultPubKey, err)
+	}
+	if vault.Ed25519PubKey.IsEmpty() {
+		return c.signTransactionWithPlaceholder(stellarTx, vaultPubKey, networkPassphrase)
+	}
+
+	edRaw, err := vault.Ed25519PubKey.Ed25519Raw()
+	if err != nil {
+		return nil, fmt.Errorf("fail to decode vault ed25519 key: %w", err)
+	}
+
+	// Stellar signs the ed25519 signature base = the 32-byte tx hash for this network.
+	hash, err := stellarTx.Hash(networkPassphrase)
+	if err != nil {
+		return nil, fmt.Errorf("fail to hash stellar tx: %w", err)
+	}
+
+	c.logger.Info().Str("vault_pubkey", vaultPubKey.String()).
+		Str("ed25519_pubkey", vault.Ed25519PubKey.String()).Msg("signing Stellar tx via EdDSA threshold keysign")
+
+	sig, err := c.tssKeyManager.RemoteSignEdDSA(hash[:], hex.EncodeToString(edRaw))
+	if err != nil {
+		return nil, fmt.Errorf("fail to tss-sign stellar tx: %w", err)
+	}
+	if len(sig) == 0 {
+		// this node was not part of the keysign committee
+		return nil, nil
+	}
+
+	// decorated signature, hinted by the last 4 bytes of the ed25519 group public key (Stellar's hint)
+	var hint [4]byte
+	copy(hint[:], edRaw[len(edRaw)-4:])
+	signedTx, err := stellarTx.AddSignatureDecorated(xdr.DecoratedSignature{
+		Hint:      xdr.SignatureHint(hint),
+		Signature: xdr.Signature(sig),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail to attach ed25519 signature: %w", err)
+	}
+	return signedTx, nil
+}
+
+// signTransactionWithPlaceholder signs with the INSECURE mocknet-only placeholder key derived from the
+// secp256k1 vault key (DeriveStellarkeyFromVaultPubKey is itself gated to mocknet). Used only until a
+// vault carries a real ed25519 group key from the EdDSA keygen.
+func (c *Client) signTransactionWithPlaceholder(stellarTx *txnbuild.Transaction, vaultPubKey common.PubKey, networkPassphrase string) (*txnbuild.Transaction, error) {
 	c.logger.Info().
 		Str("vault_pubkey", vaultPubKey.String()).
 		Msg("signing Stellar transaction (placeholder key derivation - mocknet only)")
@@ -1029,6 +1078,11 @@ func (c *Client) SignTx(tx stypes.TxOutItem, switchlyHeight int64) (signedTx, ch
 	stellarSignedTx, err := c.buildRouterTransferOutTransaction(tx, sequence, tx.Memo)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("fail to build router transfer_out transaction: %w", err)
+	}
+	if stellarSignedTx == nil {
+		// EdDSA threshold keysign determined this node is not in the committee — nothing to broadcast.
+		c.logger.Info().Msg("not in keysign committee for this stellar outbound, skipping")
+		return nil, nil, nil, nil
 	}
 
 	// Convert to XDR for storage

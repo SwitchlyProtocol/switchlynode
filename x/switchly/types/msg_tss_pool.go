@@ -34,8 +34,15 @@ var (
 )
 
 // NewMsgTssPool is a constructor function for MsgTssPool
-func NewMsgTssPool(pks []string, poolpk common.PubKey, secp256k1Signature, keysharesBackup []byte, keygenType KeygenType, height int64, bl Blame, chains []string, signer cosmos.AccAddress, keygenTime int64) (*MsgTssPool, error) {
-	id, err := getTssID(pks, poolpk, height, bl)
+// NewMsgTssPool builds a MsgTssPool. ed25519pk is an optional (variadic) trailing arg carrying the
+// EdDSA group key for the Stellar vault; when present it is folded into the TSS id so keygen consensus
+// requires agreement on it. Existing callers that pass no ed25519 key are unaffected (id unchanged).
+func NewMsgTssPool(pks []string, poolpk common.PubKey, secp256k1Signature, keysharesBackup []byte, keygenType KeygenType, height int64, bl Blame, chains []string, signer cosmos.AccAddress, keygenTime int64, ed25519pk ...common.PubKey) (*MsgTssPool, error) {
+	var edpk common.PubKey
+	if len(ed25519pk) > 0 {
+		edpk = ed25519pk[0]
+	}
+	id, err := getTssID(pks, poolpk, edpk, height, bl)
 	if err != nil {
 		return nil, fmt.Errorf("fail to get tss id: %w", err)
 	}
@@ -43,6 +50,7 @@ func NewMsgTssPool(pks []string, poolpk common.PubKey, secp256k1Signature, keysh
 		ID:                 id,
 		PubKeys:            pks,
 		PoolPubKey:         poolpk,
+		Ed25519PubKey:      edpk,
 		Height:             height,
 		KeygenType:         keygenType,
 		Blame:              bl,
@@ -55,7 +63,7 @@ func NewMsgTssPool(pks []string, poolpk common.PubKey, secp256k1Signature, keysh
 }
 
 // getTssID
-func getTssID(members []string, poolPk common.PubKey, height int64, bl Blame) (string, error) {
+func getTssID(members []string, poolPk, ed25519Pk common.PubKey, height int64, bl Blame) (string, error) {
 	// ensure input pubkeys list is deterministically sorted
 	sort.SliceStable(members, func(i, j int) bool {
 		return members[i] < members[j]
@@ -77,6 +85,12 @@ func getTssID(members []string, poolPk common.PubKey, height int64, bl Blame) (s
 		sb.WriteString("p:" + item)
 	}
 	sb.WriteString(poolPk.String())
+	// Fold the EdDSA group key into the id so EdDSA keygen consensus requires agreement on it — a member
+	// reporting a different ed25519 key gets a different id and cannot join the honest consensus.
+	// Appended only when present, so ECDSA-only ids stay byte-identical.
+	if !ed25519Pk.IsEmpty() {
+		sb.WriteString("e:" + ed25519Pk.String())
+	}
 	sb.WriteString(fmt.Sprintf("%d", height))
 	hash := sha256.New()
 	_, err := hash.Write([]byte(sb.String()))
