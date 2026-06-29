@@ -1032,16 +1032,25 @@ type WhitelistCosmosAsset struct {
 // return zero peers when started together, leaving the TSS mesh unformed and keygen unable to
 // form a party. Self is harmless in the list — the p2p layer skips dialing its own id.
 func (c BifrostTSSConfiguration) GetBootstrapPeers() ([]maddr.Multiaddr, error) {
-	peers := resolveAddrs(c.BootstrapPeers)
-	want := 0
-	for _, ip := range peers {
-		if len(ip) > 0 {
-			want++
+	// dedupe resolved IPs
+	seen := map[string]bool{}
+	var peers []string
+	for _, ip := range resolveAddrs(c.BootstrapPeers) {
+		if len(ip) == 0 || seen[ip] {
+			continue
 		}
+		seen[ip] = true
+		peers = append(peers, ip)
 	}
+	want := len(peers)
+
+	// Resolve more patiently than the default few retries. When cluster bifrosts (re)start together,
+	// this runs during p2p start — before a peer's :6040/p2pid HTTP endpoint (which comes up later in
+	// its own boot) is reachable — so a short retry window gives zero peers and an unformed TSS mesh.
+	const bootstrapResolveRetries = 24
 
 	var addrs []maddr.Multiaddr
-	for retry := 0; retry < MaxRetries; retry++ {
+	for retry := 0; retry < bootstrapResolveRetries; retry++ {
 		addrs = addrs[:0]
 		for _, ip := range peers {
 			if len(ip) == 0 {
@@ -1082,8 +1091,9 @@ func (c BifrostTSSConfiguration) GetBootstrapPeers() ([]maddr.Multiaddr, error) 
 			addrs = append(addrs, addr)
 		}
 
-		// stop once every configured peer has answered
-		if len(addrs) >= want {
+		// Stop once we have all peers except (at most) ourselves — our own :6040/p2pid is not up yet at
+		// this point in startup, so requiring the full set would always burn every retry.
+		if want > 0 && len(addrs) >= want-1 {
 			break
 		}
 		log.Info().Int("resolved", len(addrs)).Int("want", want).Msg("waiting for bootstrap peers...")
