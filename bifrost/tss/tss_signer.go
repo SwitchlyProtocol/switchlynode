@@ -1,6 +1,7 @@
 package tss
 
 import (
+	"crypto/ed25519"
 	"encoding/base64"
 	"fmt"
 	"math/big"
@@ -14,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/switchlyclient"
+	gotsscommon "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keysign"
 	"github.com/switchlyprotocol/switchlynode/v3/constants"
 	"github.com/switchlyprotocol/switchlynode/v3/x/switchly/types"
@@ -92,13 +94,51 @@ func (s *KeySign) Stop() {
 
 // RemoteSign send the request to local task queue
 func (s *KeySign) RemoteSign(msg []byte, poolPubKey string) ([]byte, []byte, error) {
-	if len(msg) == 0 {
-		return nil, nil, nil
+	resp, err := s.submit(msg, poolPubKey, gotsscommon.ECDSA)
+	if err != nil || resp == nil {
+		// resp == nil means this node was not chosen for the keysign committee
+		return nil, nil, err
 	}
+	s.logger.Debug().Str("R", resp.R).Str("S", resp.S).Str("recovery", resp.RecoveryID).Msg("tss result")
+	data, err := getSignature(resp.R, resp.S)
+	if err != nil {
+		return nil, nil, fmt.Errorf("fail to decode tss signature: %w", err)
+	}
+	bRecoveryId, err := base64.StdEncoding.DecodeString(resp.RecoveryID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("fail to decode recovery id: %w", err)
+	}
+	return data, bRecoveryId, nil
+}
 
+// RemoteSignEdDSA performs an ed25519 threshold keysign and returns the canonical 64-byte ed25519
+// signature (little-endian R||S) — the form Stellar accepts. poolPubKey is the hex 32-byte ed25519
+// group key. Returns (nil, nil) when this node was not selected for the keysign committee.
+func (s *KeySign) RemoteSignEdDSA(msg []byte, poolPubKey string) ([]byte, error) {
+	resp, err := s.submit(msg, poolPubKey, gotsscommon.EdDSA)
+	if err != nil || resp == nil {
+		return nil, err
+	}
+	sig, err := base64.StdEncoding.DecodeString(resp.EncodedSignature)
+	if err != nil {
+		return nil, fmt.Errorf("fail to decode eddsa signature: %w", err)
+	}
+	if len(sig) != ed25519.SignatureSize {
+		return nil, fmt.Errorf("unexpected eddsa signature length: %d", len(sig))
+	}
+	return sig, nil
+}
+
+// submit queues a single keysign task for the given scheme and waits for the result. It returns
+// (nil, nil) when this node was not part of the keysign committee (no signature, no error).
+func (s *KeySign) submit(msg []byte, poolPubKey string, algo gotsscommon.Algo) (*tssKeySignResult, error) {
+	if len(msg) == 0 {
+		return nil, nil
+	}
 	encodedMsg := base64.StdEncoding.EncodeToString(msg)
 	task := tssKeySignTask{
 		PoolPubKey: poolPubKey,
+		Algo:       algo,
 		Msg:        encodedMsg,
 		Resp:       make(chan tssKeySignResult, 1),
 	}
@@ -106,39 +146,31 @@ func (s *KeySign) RemoteSign(msg []byte, poolPubKey string) ([]byte, []byte, err
 	select {
 	case resp := <-task.Resp:
 		if resp.Err != nil {
-			return nil, nil, fmt.Errorf("fail to tss sign: %w", resp.Err)
+			return nil, fmt.Errorf("fail to tss sign: %w", resp.Err)
 		}
-
-		if len(resp.R) == 0 && len(resp.S) == 0 {
-			// this means the node tried to do keysign , however this node has not been chosen to take part in the keysign committee
-			return nil, nil, nil
+		if len(resp.R) == 0 && len(resp.S) == 0 && len(resp.EncodedSignature) == 0 {
+			// this node was not chosen to take part in the keysign committee
+			return nil, nil
 		}
-		s.logger.Debug().Str("R", resp.R).Str("S", resp.S).Str("recovery", resp.RecoveryID).Msg("tss result")
-		data, err := getSignature(resp.R, resp.S)
-		if err != nil {
-			return nil, nil, fmt.Errorf("fail to decode tss signature: %w", err)
-		}
-		bRecoveryId, err := base64.StdEncoding.DecodeString(resp.RecoveryID)
-		if err != nil {
-			return nil, nil, fmt.Errorf("fail to decode recovery id: %w", err)
-		}
-		return data, bRecoveryId, nil
+		return &resp, nil
 	case <-time.After(time.Minute * tssKeysignTimeout):
-		return nil, nil, fmt.Errorf("TIMEOUT: fail to sign message:%s after %d minutes", encodedMsg, tssKeysignTimeout)
+		return nil, fmt.Errorf("TIMEOUT: fail to sign message:%s after %d minutes", encodedMsg, tssKeysignTimeout)
 	}
 }
 
 type tssKeySignTask struct {
 	PoolPubKey string
+	Algo       gotsscommon.Algo
 	Msg        string
 	Resp       chan tssKeySignResult
 }
 
 type tssKeySignResult struct {
-	R          string
-	S          string
-	RecoveryID string
-	Err        error
+	R                string
+	S                string
+	RecoveryID       string
+	EncodedSignature string
+	Err              error
 }
 
 func (s *KeySign) processKeySignTasks() {
@@ -261,6 +293,8 @@ func (s *KeySign) toLocalTSSSigner(poolPubKey string, tasks []*tssKeySignTask) {
 	tssMsg := keysign.Request{
 		PoolPubKey: poolPubKey,
 		Messages:   msgToSign,
+		// every task batched under a poolPubKey shares the same scheme (a pool key is ECDSA xor EdDSA)
+		Algo: tasks[0].Algo,
 	}
 	currentVersion := s.getVersion()
 	tssMsg.Version = currentVersion.String()
@@ -291,10 +325,11 @@ func (s *KeySign) toLocalTSSSigner(poolPubKey string, tasks []*tssKeySignTask) {
 			for _, sig := range keySignResp.Signatures {
 				if t.Msg == sig.Msg {
 					t.Resp <- tssKeySignResult{
-						R:          sig.R,
-						S:          sig.S,
-						RecoveryID: sig.RecoveryID,
-						Err:        nil,
+						R:                sig.R,
+						S:                sig.S,
+						RecoveryID:       sig.RecoveryID,
+						EncodedSignature: sig.EncodedSignature,
+						Err:              nil,
 					}
 					found = true
 					break

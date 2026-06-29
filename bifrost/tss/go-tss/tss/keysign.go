@@ -337,8 +337,11 @@ func (t *TssServer) batchSignatures(sigs []*tsslibcommon.ECSignature, msgsToSign
 		r := base64.StdEncoding.EncodeToString(sig.R)
 		s := base64.StdEncoding.EncodeToString(sig.S)
 		recovery := base64.StdEncoding.EncodeToString(sig.SignatureRecovery)
+		// canonical serialized signature; for EdDSA this is the 64-byte ed25519 sig (R/S above are
+		// big.Int bytes and cannot be reassembled for ed25519). Harmless for ECDSA.
+		encoded := base64.StdEncoding.EncodeToString(sig.GetSignature())
 
-		signature := keysign.NewSignature(msg, r, s, recovery)
+		signature := keysign.NewSignature(msg, r, s, recovery, encoded)
 		signatures = append(signatures, signature)
 	}
 	return keysign.NewResponse(
