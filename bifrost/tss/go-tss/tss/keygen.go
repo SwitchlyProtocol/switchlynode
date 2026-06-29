@@ -3,11 +3,14 @@ package tss
 import (
 	"time"
 
+	bcrypto "github.com/binance-chain/tss-lib/crypto"
+
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/conversion"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/p2p/messages"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/blame"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
+	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
 )
 
 func (t *TssServer) Keygen(req keygen.Request) (keygen.Response, error) {
@@ -118,7 +121,15 @@ func (t *TssServer) Keygen(req keygen.Request) (keygen.Response, error) {
 	// following http response aborts, it still counted as a successful keygen
 	// as the Tss model runs successfully.
 	beforeKeygen := time.Now()
-	k, err := keygenInstance.GenerateNewKey(req)
+	var k *bcrypto.ECPoint
+	if common.NormalizeAlgo(req.Algo) == common.EdDSA {
+		// NOTE: the caller must have set the tss-lib global curve to Edwards before calling Keygen.
+		// The server does not set the global curve per-ceremony — doing so would flip it mid-flight
+		// for the other in-process parties of the same ceremony (the 4-node test). See docs §9.
+		k, err = keygenInstance.GenerateNewKeyEdDSA(req)
+	} else {
+		k, err = keygenInstance.GenerateNewKey(req)
+	}
 	keygenTime := time.Since(beforeKeygen)
 	if err != nil {
 		t.tssMetrics.UpdateKeyGen(keygenTime, false)
@@ -129,7 +140,16 @@ func (t *TssServer) Keygen(req keygen.Request) (keygen.Response, error) {
 		t.tssMetrics.UpdateKeyGen(keygenTime, true)
 	}
 
-	newPubKey, addr, err := conversion.GetTssPubKey(k)
+	var newPubKey, addrStr string
+	if common.NormalizeAlgo(req.Algo) == common.EdDSA {
+		// EdDSA keygen yields a raw ed25519 group key; it has no cosmos (secp256k1) address — the
+		// Stellar address is derived downstream from the ed25519 key.
+		newPubKey, err = conversion.GetTssPubKeyEdDSA(k)
+	} else {
+		var addr cosmos.AccAddress
+		newPubKey, addr, err = conversion.GetTssPubKey(k)
+		addrStr = addr.String()
+	}
 	if err != nil {
 		t.logger.Error().Err(err).Msg("failed to generate new tss pubkey from generated key")
 		status = common.Fail
@@ -139,7 +159,7 @@ func (t *TssServer) Keygen(req keygen.Request) (keygen.Response, error) {
 	t.logger.Trace().Msgf("returning from keygen with status=%d, blaming=%+v", status, blameNodes.BlameNodes)
 	return keygen.NewResponse(
 		newPubKey,
-		addr.String(),
+		addrStr,
 		status,
 		blameNodes,
 	), nil

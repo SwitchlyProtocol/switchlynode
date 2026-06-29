@@ -150,7 +150,14 @@ func (t *TssServer) generateSignature(msgID string, msgsToSign [][]byte, req key
 			Blame:  blame.Blame{},
 		}, nil
 	}
-	signatureData, err := keysignInstance.SignMessage(msgsToSign, localStateItem, signers)
+	var signatureData []*tsslibcommon.ECSignature
+	if common.NormalizeAlgo(req.Algo) == common.EdDSA {
+		// NOTE: the caller must have set the tss-lib global curve to Edwards before KeySign (the
+		// server does not flip the global curve per-ceremony — see docs §9).
+		signatureData, err = keysignInstance.SignMessageEdDSA(msgsToSign, localStateItem, signers)
+	} else {
+		signatureData, err = keysignInstance.SignMessage(msgsToSign, localStateItem, signers)
+	}
 	// the statistic of keygen only care about Tss it self, even if the following http response aborts,
 	// it still counted as a successful keygen as the Tss model runs successfully.
 	if err != nil {

@@ -3,6 +3,7 @@ package tss
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	gotsscommon "github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/common"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/keygen"
 	"github.com/switchlyprotocol/switchlynode/v3/bifrost/tss/go-tss/tss"
 
@@ -150,6 +152,38 @@ func (kg *KeyGen) GenerateNewKey(keygenBlockHeight int64, pKeys common.PubKeys) 
 	cpk, err := common.NewPubKey(resp.PubKey)
 	if err != nil {
 		return common.EmptyPubKeySet, blame, fmt.Errorf("fail to create common.PubKey,%w", err)
+	}
+
+	// VALIDATION (opt-in, OFF by default): when BIFROST_EDDSA_KEYGEN_VALIDATION=true, run a second
+	// EdDSA (ed25519) keygen over the same membership and log the group key. Each node is a separate
+	// process, so WithCurveForAlgo safely switches the process-global curve to Edwards for this
+	// ceremony (no concurrent secp256k1 ceremony at churn). This is how the EdDSA keygen is validated
+	// on the docker mocknet-cluster; storing the ed25519 key into the vault PubKeySet (and using it for
+	// Stellar) is a follow-up. Failure is logged, not fatal. Gated so production churns are unaffected.
+	if os.Getenv("BIFROST_EDDSA_KEYGEN_VALIDATION") == "true" {
+		edReq := keygen.Request{
+			Keys:        keys,
+			Version:     currentVersion.String(),
+			BlockHeight: keygenBlockHeight,
+			Algo:        gotsscommon.EdDSA,
+		}
+		var edResp keygen.Response
+		edErr := gotsscommon.WithCurveForAlgo(gotsscommon.EdDSA, func() error {
+			var e error
+			edResp, e = kg.server.Keygen(edReq)
+			return e
+		})
+		if edErr != nil || edResp.Status != gotsscommon.Success {
+			kg.logger.Error().Err(edErr).
+				Str("round", edResp.Blame.Round).
+				Int64("height", keygenBlockHeight).
+				Msg("EDDSA-KEYGEN-VALIDATION: failed")
+		} else {
+			kg.logger.Info().
+				Str("ed25519_group_key", edResp.PubKey).
+				Int64("height", keygenBlockHeight).
+				Msg("EDDSA-KEYGEN-VALIDATION: success")
+		}
 	}
 
 	// TODO later on SWITCHLYNode need to have both secp256k1 key and ed25519
