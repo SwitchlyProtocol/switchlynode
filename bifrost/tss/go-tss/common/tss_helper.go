@@ -15,6 +15,8 @@ import (
 
 	"github.com/binance-chain/tss-lib/ecdsa/keygen"
 	"github.com/binance-chain/tss-lib/ecdsa/signing"
+	eddsakeygen "github.com/binance-chain/tss-lib/eddsa/keygen"
+	eddsasigning "github.com/binance-chain/tss-lib/eddsa/signing"
 	btss "github.com/binance-chain/tss-lib/tss"
 	"github.com/btcsuite/btcd/btcec"
 	tcrypto "github.com/cometbft/cometbft/crypto"
@@ -212,6 +214,24 @@ func GetMsgRound(msg []byte, partyID *btss.PartyID, isBroadcast bool) (blame.Rou
 			Index:    7,
 			RoundMsg: messages.KEYSIGN7,
 		}, nil
+
+	// EdDSA keygen rounds. These tss-lib types share names with the ECDSA ones but are distinct Go
+	// types (eddsa/keygen vs ecdsa/keygen); without these cases every received EdDSA keygen message
+	// falls through to "unknown round" and is dropped, so the keygen never advances past round 1.
+	case *eddsakeygen.KGRound1Message:
+		return blame.RoundInfo{Index: 0, RoundMsg: messages.KEYGEN1}, nil
+	case *eddsakeygen.KGRound2Message1:
+		return blame.RoundInfo{Index: 1, RoundMsg: messages.KEYGEN2aUnicast}, nil
+	case *eddsakeygen.KGRound2Message2:
+		return blame.RoundInfo{Index: 2, RoundMsg: messages.KEYGEN2b}, nil
+
+	// EdDSA signing rounds (eddsa/signing).
+	case *eddsasigning.SignRound1Message:
+		return blame.RoundInfo{Index: 0, RoundMsg: messages.KEYSIGN1b}, nil
+	case *eddsasigning.SignRound2Message:
+		return blame.RoundInfo{Index: 1, RoundMsg: messages.KEYSIGN2Unicast}, nil
+	case *eddsasigning.SignRound3Message:
+		return blame.RoundInfo{Index: 2, RoundMsg: messages.KEYSIGN3}, nil
 
 	default:
 		return blame.RoundInfo{}, errors.New("unknown round")
