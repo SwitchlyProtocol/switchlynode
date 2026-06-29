@@ -272,13 +272,35 @@ serialized; `TssServer.Keygen/KeySign` wrap the DKG/signing — this is the reso
 dropped), and accepting a hex ed25519 key as a keyshare filename. The crypto was already proven in
 `bifrost/tss/eddsacompat`.
 
-### 9.2 Remaining (consensus-critical — coordinated upgrade): chain storage + Stellar SignTx
+### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED (pending version gate + e2e validation)
 
-The bifrost/TSS layer produces a real ed25519 group key; the chain must persist it and bifrost must
-sign with it. This is a state-machine change → **version-gate it and ship via a coordinated upgrade**
-(all validators on the EdDSA build before the first EdDSA churn). ECDSA stays byte-for-byte unchanged.
+The end-to-end EdDSA path is now wired (additive; ECDSA byte-for-byte unchanged because every new
+field/branch is empty/inactive unless a vault carries an ed25519 key):
+- ✅ **ed25519 representation** — `common.NewPubKeyFromEd25519` + `PubKey.Ed25519Raw`;
+  `GetAddress(StellarChain)` derives from a real ed25519 key (32 bytes) via `Ed25519PubKeyToStellarAddress`,
+  secp256k1 keeps the mocknet placeholder.
+- ✅ **bifrost returns both keys** — `GenerateNewKey` puts the real ed25519 group key in
+  `PubKeySet.Ed25519` (gated by `BIFROST_EDDSA_KEYGEN_VALIDATION`; defaults to the secp256k1 placeholder).
+- ✅ **proto** — `MsgTssPool.ed25519_pub_key` (#12) and `Vault.ed25519_pub_key` (#24), regenerated with
+  the pinned proto-builder (clean diff).
+- ✅ **report + store** — `sendKeygenToSwitchly`/`GetKeygenStdTx` carry it; `handler_tss` stores it into
+  the vault on keygen success (not in `getTssID`, so keygen consensus is unchanged).
+- ✅ **address** — `Vault.PubKeyForChain` returns the ed25519 key for Stellar; used by the inbound-address
+  query and the outbound source-address selection.
+- ✅ **Stellar SignTx** — `signTransactionWithTSS` looks up the vault ed25519 key, hashes the tx, runs
+  `KeySign.RemoteSignEdDSA`, and attaches an `xdr.DecoratedSignature`; placeholder kept as fallback.
 
-Concrete recipe:
+**Still remaining before any public network:**
+1. **Version gate.** The feature is currently gated by the `BIFROST_EDDSA_KEYGEN_VALIDATION` env flag
+   (fine for mocknet/cluster). Replace it with a network-version/mimir gate so all validators begin
+   producing+reporting the ed25519 key at the same coordinated-upgrade height.
+2. **Consensus-harden the ed25519 key** — currently taken from the consensus-triggering `MsgTssPool`;
+   fold it into the TSS voter id (or vote on it) so a malicious member can't set a wrong vault key.
+3. **e2e validation on the cluster** — enable the gate, drive a churn → ed25519 vault, then an XLM
+   outbound, and confirm `transfer_out` verifies under the vault's ed25519 key (keygen is already green).
+4. Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists.
+
+Original recipe (for reference):
 
 1. **ed25519 representation.** Encode the keygen's hex ed25519 group key as a bech32 cosmos ed25519
    pubkey so it fits `common.PubKey`/`PubKeySet.Ed25519` and flows through existing plumbing
