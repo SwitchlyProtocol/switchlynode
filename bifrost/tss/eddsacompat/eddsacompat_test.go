@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	ecdsakeygen "github.com/binance-chain/tss-lib/ecdsa/keygen"
 	eddsakeygen "github.com/binance-chain/tss-lib/eddsa/keygen"
 	eddsasigning "github.com/binance-chain/tss-lib/eddsa/signing"
 	"github.com/binance-chain/tss-lib/test"
@@ -16,6 +17,12 @@ import (
 
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 )
+
+// Linking BOTH ecdsa/keygen and eddsa/keygen from the tss-lib fork in one binary must NOT panic at
+// init. Before the fork-patch (giving the eddsa protos a distinct `eddsa` proto package) this
+// collided — both registered protobuf messages named KGRound2Message2 under the same (empty) package.
+// Referencing an ecdsa type here forces its proto package to link alongside eddsa's.
+var _ = ecdsakeygen.LocalPartySaveData{}
 
 // TestThresholdEdDSAVerifiesUnderStellarEd25519 runs a real in-process t-of-n threshold EdDSA signing
 // ceremony (using tss-lib's eddsa keygen fixtures) and asserts the resulting signature + group public
