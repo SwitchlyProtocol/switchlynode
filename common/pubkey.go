@@ -14,6 +14,7 @@ import (
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcutil/bech32"
 	"github.com/cosmos/cosmos-sdk/crypto/codec"
+	cosmosed25519 "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	dogchaincfg "github.com/eager7/dogd/chaincfg"
 	"github.com/eager7/dogutil"
 	ltcchaincfg "github.com/ltcsuite/ltcd/chaincfg"
@@ -74,6 +75,36 @@ func NewPubKeyFromCrypto(pk crypto.PubKey) (PubKey, error) {
 		return EmptyPubKey, fmt.Errorf("fail to create PubKey from crypto.PubKey,err:%w", err)
 	}
 	return PubKey(s), nil
+}
+
+// NewPubKeyFromEd25519 encodes a raw 32-byte ed25519 public key (e.g. a TSS group key produced by the
+// EdDSA keygen) as a bech32 cosmos account pubkey, so it can be carried in a common.PubKey /
+// PubKeySet.Ed25519. Stellar vaults are ed25519; GetAddress(StellarChain) derives the Stellar address
+// from such a key. The input is the canonical 32-byte ed25519 public key (not hex).
+func NewPubKeyFromEd25519(raw []byte) (PubKey, error) {
+	if len(raw) != ed25519.PublicKeySize {
+		return EmptyPubKey, fmt.Errorf("invalid ed25519 public key length: got %d, want %d", len(raw), ed25519.PublicKeySize)
+	}
+	s, err := cosmos.Bech32ifyPubKey(cosmos.Bech32PubKeyTypeAccPub, &cosmosed25519.PubKey{Key: raw})
+	if err != nil {
+		return EmptyPubKey, fmt.Errorf("fail to bech32 encode ed25519 pubkey: %w", err)
+	}
+	return PubKey(s), nil
+}
+
+// Ed25519Raw returns the raw 32-byte ed25519 public key if this PubKey encodes an ed25519 key. It
+// errors for secp256k1 (or any non-ed25519) keys. Used to derive the Stellar address and to drive
+// the EdDSA threshold keysign (which keys on the raw/hex ed25519 group key).
+func (p PubKey) Ed25519Raw() ([]byte, error) {
+	pk, err := cosmos.GetPubKeyFromBech32(cosmos.Bech32PubKeyTypeAccPub, string(p))
+	if err != nil {
+		return nil, fmt.Errorf("fail to parse pub key(%s): %w", p, err)
+	}
+	raw := pk.Bytes()
+	if len(raw) != ed25519.PublicKeySize {
+		return nil, fmt.Errorf("pubkey is not ed25519 (length %d)", len(raw))
+	}
+	return raw, nil
 }
 
 // Equals check whether two are the same
@@ -215,20 +246,29 @@ func (p PubKey) GetAddress(chain Chain) (Address, error) {
 		if err != nil {
 			return NoAddress, err
 		}
-		// PLACEHOLDER derivation (INSECURE — mocknet only). Stellar accounts are ed25519, but vaults
-		// hold a secp256k1 key. Until EdDSA threshold keygen lands (the vault will then carry a real
-		// ed25519 group pubkey; see docs/architecture/stellar-eddsa-tss.md), derive a deterministic
-		// ed25519 key from the secp256k1 pubkey. The secp256k1 pubkey is PUBLIC, so this ed25519 key
-		// is NOT secret and must never secure real funds. The final encoding goes through
-		// Ed25519PubKeyToStellarAddress — the same seam the real ed25519 vault key will use.
-		hasher := sha256.New()
-		hasher.Write(pk.Bytes())
-		ed25519PrivKey := ed25519.NewKeyFromSeed(hasher.Sum(nil))
-		stellarAddr, err := Ed25519PubKeyToStellarAddress(ed25519PrivKey.Public().(ed25519.PublicKey))
-		if err != nil {
-			return NoAddress, err
+		raw := pk.Bytes()
+		if len(raw) == ed25519.PublicKeySize {
+			// Real ed25519 vault group key (from EdDSA threshold keygen): derive the Stellar address
+			// directly. This is the production path once the vault carries an ed25519 key.
+			stellarAddr, err := Ed25519PubKeyToStellarAddress(raw)
+			if err != nil {
+				return NoAddress, err
+			}
+			addressString = stellarAddr.String()
+		} else {
+			// PLACEHOLDER derivation (INSECURE — mocknet only), used while a vault still holds only a
+			// secp256k1 key. Stellar accounts are ed25519; derive a deterministic ed25519 key from the
+			// (PUBLIC) secp256k1 pubkey, so this is NOT secret and must never secure real funds. Goes
+			// through the same Ed25519PubKeyToStellarAddress seam as the real key.
+			hasher := sha256.New()
+			hasher.Write(raw)
+			ed25519PrivKey := ed25519.NewKeyFromSeed(hasher.Sum(nil))
+			stellarAddr, err := Ed25519PubKeyToStellarAddress(ed25519PrivKey.Public().(ed25519.PublicKey))
+			if err != nil {
+				return NoAddress, err
+			}
+			addressString = stellarAddr.String()
 		}
-		addressString = stellarAddr.String()
 	default:
 		// Only EVM chains remain.
 		if !chain.IsEVM() {
