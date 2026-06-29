@@ -212,24 +212,47 @@ consensus-critical bitcoin/UTXO signing stack (3 parts; ~⅔ done before pivotin
 far larger than this proto conflict warrants, so the v2 work was **reverted** and we take the
 fork-patch, which touches **no dependencies** and leaves the ECDSA/UTXO signing path untouched.
 
-Fork-patch plan (sequenced):
-1. Vendor the fork: copy `gitlab.com/thorchain/tss/tss-lib@v0.1.5` into the repo (e.g.
-   `third_party/tss-lib`) and add a `go.mod` `replace github.com/binance-chain/tss-lib => ./third_party/tss-lib`;
-   confirm the repo still builds unchanged.
-2. Namespace the eddsa protos: edit `protob/eddsa-*.proto` to declare a distinct proto `package`
-   (e.g. `eddsa`) so the message full-names no longer collide with the ecdsa ones.
-3. Regenerate the eddsa `.pb.go` with **`buf` + `protoc-gen-go`** (both go-installable — the fork's
-   Makefile uses modern `protoc --go_out=module=…`, i.e. `google.golang.org/protobuf`, which the repo
-   already depends on; no system `protoc` needed).
-4. Prove coexistence: a test linking **both** `ecdsa/keygen` and `eddsa/keygen` no longer panics at
-   init (the `eddsacompat` spike can be extended to import both).
-5. Then the EdDSA go-tss wiring (Layer 2) can land, **reusing the kept Layer-1 foundations** (the
-   `Algo` selector, `WithCurveForAlgo`, and the keyshare schema — see §5; the global-curve hazard
-   stays, since the fork keeps tss-lib's process-global curve, so `WithCurveForAlgo` remains needed).
+Fork-patch — **DONE** (commit "fork-patch tss-lib to namespace eddsa protos"):
+1. ✅ Vendored `gitlab.com/thorchain/tss/tss-lib@v0.1.5` into `third_party/tss-lib` with a `go.mod`
+   `replace`; no dependency versions change; repo builds. See `third_party/tss-lib/SWITCHLY-PATCH.md`.
+2. ✅ Added `package eddsa;` to `protob/eddsa-*.proto`.
+3. ✅ Regenerated the 4 eddsa `.pb.go` with `buf` + `protoc-gen-go v1.35.1` (ONLY those 4 files differ
+   from upstream; ECDSA + all hand-written Go byte-identical; go directive bumped 1.17→1.21 for `any`).
+4. ✅ Proven: `bifrost/tss/eddsacompat` links **both** ecdsa+eddsa with no init panic, and the
+   threshold EdDSA sig still verifies under `crypto/ed25519` → valid Stellar address.
 
-Until the proto conflict is fixed, Layer-1 scaffolding deliberately keeps eddsa protos **out of
-bifrost's import graph**: `storage.KeygenLocalState.EdDSALocalData` is opaque `json.RawMessage`, not
-the typed `eddsa/keygen.LocalPartySaveData`.
+The proto conflict is resolved; bifrost can now link EdDSA.
+
+## 9. Layer 2 — wire EdDSA through go-tss (remaining)
+
+Reuses the kept Layer-1 foundations (the `Algo` selector, `WithCurveForAlgo`, the `KeygenLocalState`
+schema). Work items:
+- **Pubkey encoder** ✅ `conversion.GetTssPubKeyEdDSA` — Edwards point → hex ed25519 group key (tested).
+- **keygen**: a parallel `GenerateNewKey` path for `Algo==EdDSA` (use `eddsa/keygen.NewLocalParty` —
+  **no Paillier pre-params** — its own `endCh`/save-data type; return the `EDDSAPub` point). Server
+  `Keygen` branches on `req.Algo`, sets the Edwards curve, and reports the key via `GetTssPubKeyEdDSA`.
+- **keysign**: a parallel `SignMessage` path using `eddsa/signing`; load the eddsa keyshare from
+  `KeygenLocalState.EdDSALocalData`; the result is the raw 64-byte ed25519 sig.
+- **notifier**: verify with `ed25519.Verify` (or decred) for EdDSA.
+- **blame**: EdDSA keygen/keysign have different round counts than ECDSA — add their round tables.
+
+**Hard constraint — the global curve and concurrency.** The fork selects the curve via a process
+global (`tss.SetCurve`). A per-ceremony mutex around the curve (`WithCurveForAlgo`) is correct for a
+**production node** (one process = one party; serialize its ECDSA vs EdDSA ceremonies) — but it would
+**deadlock the in-process 4-node test** (`tss_4nodes_test.go`), because there the 4 interdependent
+parties of one ceremony run in a single process and would each block on the same curve mutex. So:
+- production server `Keygen`/`KeySign` set the curve per-ceremony under the existing per-op lockers
+  (`tssKeyGenLocker` etc.); concurrent ECDSA-keysign + EdDSA-keysign in one process is the residual
+  hazard to guard (rare for EdDSA; document/serialize). This is the cost of the fork's global curve
+  (v2's per-`Parameters` curve would have removed it — but at the btcec/btcutil cascade cost).
+- the 4-node EdDSA test sets the global curve to Edwards once for the all-EdDSA block (no per-party
+  mutex), and validates an EdDSA keygen→keysign round (sig verifies under `crypto/ed25519`).
+
+After Layer 2: chain side (`Vault.ed25519_pub_key` proto + run an EdDSA keygen at churn, keyed by the
+secp256k1 vault identity, stored in `EdDSALocalData`) and the bifrost `SignTx` (threshold ed25519 over
+the tx hash; §6 leading-zero caveat). Now that the conflict is gone, `EdDSALocalData` can become the
+typed `eddsa/keygen.LocalPartySaveData` (it is `json.RawMessage` today only to keep eddsa protos out of
+bifrost's graph pre-patch).
 
 ---
 
