@@ -1032,10 +1032,20 @@ type WhitelistCosmosAsset struct {
 // return zero peers when started together, leaving the TSS mesh unformed and keygen unable to
 // form a party. Self is harmless in the list — the p2p layer skips dialing its own id.
 func (c BifrostTSSConfiguration) GetBootstrapPeers() ([]maddr.Multiaddr, error) {
+	raw := append([]string{}, c.BootstrapPeers...)
+	// On the mocknet cluster, dial every bifrost directly (full mesh). The seed-only topology connects
+	// each follower to the seed but not to each other, so the TSS join party only ever sees 1-2 of the
+	// 3 members and times out "leader not reachable" whenever the elected leader is a non-seed node. A
+	// full direct mesh makes any leader reachable. This is only viable because /p2pid is now served
+	// before p2p start (cmd/bifrost), so simultaneous startup no longer deadlocks here. Gated to
+	// mocknet; production peering is unchanged.
+	if os.Getenv("NET") == "mocknet" {
+		raw = append(raw, "bifrost", "bifrost-cat", "bifrost-fox", "bifrost-pig")
+	}
 	// dedupe resolved IPs
 	seen := map[string]bool{}
 	var peers []string
-	for _, ip := range resolveAddrs(c.BootstrapPeers) {
+	for _, ip := range resolveAddrs(raw) {
 		if len(ip) == 0 || seen[ip] {
 			continue
 		}
