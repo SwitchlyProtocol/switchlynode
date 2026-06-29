@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -132,6 +133,18 @@ func main() {
 			Msg("keysign timeout must be shorter than jail time")
 	}
 
+	// Serve /p2pid (derived from the node key) before StartP2P, so cluster peers can resolve each other
+	// during bootstrap. The full HealthServer needs the TSS server and only comes up later; without this
+	// early endpoint, simultaneously-started bifrosts deadlock in bootstrap. The full HealthServer takes
+	// over cfg.TSS.InfoAddress below.
+	var earlyP2PIDSrv *http.Server
+	if localPeerID, e := LocalPeerIDFromPubKey(priKey.PubKey().Bytes()); e != nil {
+		log.Error().Err(e).Msg("fail to derive local peer id for early p2pid server")
+	} else {
+		earlyP2PIDSrv = StartEarlyP2PIDServer(cfg.TSS.InfoAddress, localPeerID)
+		log.Info().Str("peer_id", localPeerID).Str("addr", cfg.TSS.InfoAddress).Msg("serving /p2pid early for bootstrap")
+	}
+
 	comm, stateManager, err := p2p.StartP2P(
 		cfg.TSS,
 		tmPrivateKey,
@@ -183,6 +196,10 @@ func main() {
 		log.Fatal().Msg("fail to load any chains")
 	}
 	tssKeysignMetricMgr := metrics.NewTssKeysignMetricMgr()
+	// bootstrap is done; free cfg.TSS.InfoAddress for the full HealthServer (which also serves /p2pid).
+	if earlyP2PIDSrv != nil {
+		_ = earlyP2PIDSrv.Close()
+	}
 	healthServer := NewHealthServer(cfg.TSS.InfoAddress, tssIns, chains)
 	go func() {
 		defer log.Info().Msg("health server exit")
