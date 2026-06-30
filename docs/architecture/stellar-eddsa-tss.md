@@ -272,7 +272,7 @@ serialized; `TssServer.Keygen/KeySign` wrap the DKG/signing — this is the reso
 dropped), and accepting a hex ed25519 key as a keyshare filename. The crypto was already proven in
 `bifrost/tss/eddsacompat`.
 
-### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED + version-gated + storage-validated (consensus-harden + full live churn deferred)
+### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED + version-gated + LIVE-CLUSTER VALIDATED (consensus-harden + placeholder removal deferred)
 
 The end-to-end EdDSA path is now wired (additive; ECDSA byte-for-byte unchanged because every new
 field/branch is empty/inactive unless a vault carries an ed25519 key):
@@ -304,18 +304,32 @@ field/branch is empty/inactive unless a vault carries an ed25519 key):
    vault again takes its ed25519 key from the consensus-triggering `MsgTssPool`. Proper hardening must
    be a **voter-side majority tally** of the reported ed25519 keys (a `TssVoter` change that picks the
    key a supermajority agree on, decoupled from the secp256k1 id) — tracked as a follow-up.
-3. ✅ **On-chain storage validated deterministically; live keygen green.** The EdDSA threshold keygen is
-   validated on the cluster (§9.1: 3/3 members, consistent ed25519 group key). The consensus-critical
-   **chain storage** path is validated by `TestKeygenSuccessHandlerEd25519` — it drives a full keygen
-   consensus on a `MsgTssPool` carrying a real ed25519 key and asserts the vault stores it, exposes it
-   via `PubKeyForChain(XLM)`, and derives a valid Stellar (strkey `G…`, 56-char) inbound address.
-   The full live churn→vault→XLM-outbound loop is **blocked by environmental mocknet-cluster p2p
-   flakiness** (the 4-node ECDSA `joinParty` intermittently fails with `signers fail to sync`, cycling
-   the blamed node), *not* by the EdDSA code — the storage logic the deterministic test exercises is
-   exactly what runs once a churn completes. Re-attempt the full live loop once the cluster mesh is
-   reliable (or on a less contended host).
+3. ✅ **Full live-cluster loop VALIDATED end-to-end (2026-06-30).** On the mocknet cluster: the four
+   validators stay synced through churn, a churn keygen creates a new asgard vault, and that vault
+   carries the **real ed25519 group key** with the XLM inbound address derived from it. Confirmed on a
+   live churn vault: `ed25519_pub_key = tswitchpub1zcjduepq4220n7a8…` and both the vault's XLM address
+   and `/switchly/inbound_addresses` XLM = `GCVJJ6P3U7HR2K3D5IVQ6JEXOFVGMDTBEI74OEU6X3P7YNMPXT3JHAPL`,
+   which equals the strkey encoding of the keygen's raw ed25519 group key. `TestKeygenSuccessHandlerEd25519`
+   additionally pins the storage path deterministically.
+
+   Getting the cluster to churn reliably required two non-EdDSA fixes (the earlier "signers fail to
+   sync"/no-vault symptoms were these, not the EdDSA code):
+   - **`SEEDS` regression (the real chain-sync root cause).** Each follower's `SEEDS` had been reduced
+     to the seed only, so followers PEX-spammed the seed for each other's addresses faster than
+     CometBFT's 10s PEX `minInterval`; the seed disconnected them and they froze below the keygen
+     height. Restored upstream thorchain's full-mesh `SEEDS` (every node lists all others) — stable
+     mesh, no PEX hack needed.
+   - **Stale per-service images (operational trap).** Each `switchlynode-{cat,fox,pig}` builds its own
+     image; rebuilding only `switchlynode` left the followers on an older binary → different app hash →
+     `CONSENSUS FAILURE` at the first state-changing block. **Always rebuild all four switchlynode
+     images (and all four bifrost images) together.**
+   - Inbound-address bug found+fixed during validation: `queryInboundAddresses` derived the XLM address
+     from `vault.PubKey` (secp256k1 placeholder) instead of `vault.PubKeyForChain(XLM)` (ed25519); it
+     would have advertised an unspendable XLM inbound address. `ed25519_pub_key` is now also exposed in
+     the vault query.
 4. ⏳ Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists on
-   a running network (depends on a completed live churn under the gate).
+   a running network. The placeholder is still the required `GetAddress(XLM)` fallback for legacy/
+   non-ed25519 vaults (e.g. the genesis vault) until every active vault carries an ed25519 key.
 
 Original recipe (for reference):
 
