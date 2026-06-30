@@ -29,6 +29,9 @@ message QueryVaultResponse{
   repeated VaultRouter routers = 12 [(gogoproto.jsontag) = "routers"];
   repeated VaultAddress addresses = 13 [(gogoproto.jsontag) = "addresses"];
   repeated string frozen = 14;
+  // the EdDSA (ed25519) group key for chains that use ed25519 accounts (e.g. Stellar); empty for
+  // ECDSA-only vaults.
+  string ed25519_pub_key = 15;
 }
 
 message QueryAsgardVaultsRequest{

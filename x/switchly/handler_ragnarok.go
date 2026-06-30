@@ -100,7 +100,14 @@ func (h RagnarokHandler) handleV3_0_0(ctx cosmos.Context, msg MsgRagnarok) (*cos
 			// this type of tx out is special, because it doesn't have relevant tx
 			// in to trigger it, it is trigger by switchlyprotocol itself.
 
+			// Resolve the vault's address via PubKeyForChain so a Stellar ragnarok matches its real
+			// ed25519-derived from-address; falls back to the bare key for non-ed25519 chains.
 			fromAddress, _ := tx.VaultPubKey.GetAddress(tx.Chain)
+			if vault, vErr := h.mgr.Keeper().GetVault(ctx, tx.VaultPubKey); vErr == nil && !vault.IsEmpty() {
+				if a, aErr := vault.PubKeyForChain(tx.Chain).GetAddress(tx.Chain); aErr == nil {
+					fromAddress = a
+				}
+			}
 
 			if tx.InHash.Equals(common.BlankTxID) &&
 				tx.OutHash.IsEmpty() &&

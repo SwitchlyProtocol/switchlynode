@@ -1,9 +1,11 @@
 package switchly
 
 import (
+	"crypto/ed25519"
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/blang/semver"
 	se "github.com/cosmos/cosmos-sdk/types/errors"
@@ -709,6 +711,67 @@ func (s *HandlerTssSuite) TestKeygenSuccessHandler(c *C) {
 		c.Assert(err, IsNil)
 		c.Assert(j.ReleaseHeight <= helper.ctx.BlockHeight(), Equals, true)
 	}
+}
+
+// TestKeygenSuccessHandlerEd25519 deterministically validates the consensus-critical EdDSA storage
+// path: once keygen consensus is reached on a MsgTssPool carrying a real ed25519 group key, the
+// created vault stores it, exposes it as the XLM-chain key, and derives a valid Stellar (strkey G...)
+// inbound address from it. This proves the on-chain path without depending on the (flaky) live p2p
+// mesh — the cluster's ECDSA churn joinParty is environmentally unreliable, but the storage logic
+// exercised here is exactly what runs once a churn does complete.
+func (s *HandlerTssSuite) TestKeygenSuccessHandlerEd25519(c *C) {
+	helper := newTssHandlerTestHelper(c)
+	handler := NewTssHandler(NewDummyMgrWithKeeper(helper.keeper))
+	keygenTime := int64(1024)
+	poolPubKey := GetRandomPubKey()
+
+	// a real, deterministic ed25519 group key, distinct from the secp256k1 pool key
+	edSeed := make([]byte, ed25519.SeedSize)
+	for i := range edSeed {
+		edSeed[i] = byte(i + 1)
+	}
+	edPub := ed25519.NewKeyFromSeed(edSeed).Public().(ed25519.PublicKey)
+	ed25519PubKey, err := common.NewPubKeyFromEd25519(edPub)
+	c.Assert(err, IsNil)
+	c.Assert(ed25519PubKey.IsEmpty(), Equals, false)
+	c.Assert(ed25519PubKey.Equals(poolPubKey), Equals, false)
+
+	// Drive a vote from every member (vault creation needs complete consensus) with an identical
+	// secp256k1 check signature (the handle path tallies it for ConsensusCheckSignature quorum), each
+	// carrying the ed25519 key. The signature bytes are opaque here — handle does not verify them
+	// (only the validate path does), it only requires a supermajority to agree.
+	checkSig := []byte("ed25519-keygen-check-signature")
+	for _, item := range helper.members {
+		thorAddr, err := item.GetThorAddress()
+		c.Assert(err, IsNil)
+		tssMsg, err := NewMsgTssPool(helper.members.Strings(), poolPubKey, checkSig, nil, AsgardKeygen, helper.ctx.BlockHeight(), Blame{}, common.Chains{common.SwitchNative.Chain}.Strings(), thorAddr, keygenTime, ed25519PubKey)
+		c.Assert(err, IsNil)
+		c.Assert(tssMsg.Ed25519PubKey.Equals(ed25519PubKey), Equals, true)
+		_, err = handler.handle(helper.ctx, tssMsg)
+		c.Assert(err, IsNil)
+	}
+
+	// the created vault must carry the real ed25519 key
+	vault, err := helper.keeper.GetVault(helper.ctx, poolPubKey)
+	c.Assert(err, IsNil)
+	c.Assert(vault.Ed25519PubKey.Equals(ed25519PubKey), Equals, true)
+	c.Assert(vault.Ed25519PubKey.Equals(vault.PubKey), Equals, false)
+
+	// XLM resolves to the ed25519 key; other chains stay on secp256k1
+	c.Assert(vault.PubKeyForChain(common.StellarChain).Equals(ed25519PubKey), Equals, true)
+	c.Assert(vault.PubKeyForChain(common.SwitchNative.Chain).Equals(poolPubKey), Equals, true)
+
+	// the Stellar inbound address derives from the ed25519 key (real strkey: G... + 56 chars)
+	xlmAddr, err := vault.PubKeyForChain(common.StellarChain).GetAddress(common.StellarChain)
+	c.Assert(err, IsNil)
+	c.Assert(xlmAddr.IsEmpty(), Equals, false)
+	c.Assert(strings.HasPrefix(xlmAddr.String(), "G"), Equals, true)
+	c.Assert(len(xlmAddr.String()), Equals, 56)
+
+	// and it equals the canonical strkey encoding of the raw ed25519 key
+	wantAddr, err := common.Ed25519PubKeyToStellarAddress(edPub)
+	c.Assert(err, IsNil)
+	c.Assert(xlmAddr.Equals(wantAddr), Equals, true)
 }
 
 func (s *HandlerTssSuite) TestObservingSlashing(c *C) {

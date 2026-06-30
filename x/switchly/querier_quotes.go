@@ -356,7 +356,9 @@ func quoteInboundInfo(ctx cosmos.Context, mgr *Mgrs, amount sdkmath.Uint, chain 
 		constAccessor := mgr.GetConstants()
 		signingTransactionPeriod := constAccessor.GetInt64Value(constants.SigningTransactionPeriod)
 		vault := mgr.Keeper().GetMostSecure(ctx, active, signingTransactionPeriod)
-		address, err = vault.PubKey.GetAddress(chain)
+		// PubKeyForChain so a Stellar quote advertises the vault's real ed25519-derived inbound
+		// address, not the secp256k1 placeholder. No-op for non-ed25519 chains.
+		address, err = vault.PubKeyForChain(chain).GetAddress(chain)
 		if err != nil {
 			return common.NoAddress, common.NoAddress, 0, err
 		}

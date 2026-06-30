@@ -352,8 +352,9 @@ func (r *RouterEventScanner) processDepositEvent(tx horizon.Transaction, event S
 		return nil, nil
 	}
 
-	// Verify we can get a valid XLM address from this vault pub key
-	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	// Resolve the vault's real XLM account (ed25519-derived) rather than the secp256k1 placeholder,
+	// so the observed from/to addresses match the account the router actually moved funds for.
+	xlmAddress, err := vaultStellarAddress(r.bridge, vaultPubKey)
 	if err != nil {
 		r.logger.Warn().Err(err).
 			Str("tx_hash", tx.Hash).
@@ -593,8 +594,9 @@ func (r *RouterEventScanner) processDepositEventFromSoroban(event *RouterEvent, 
 		return nil, nil
 	}
 
-	// Verify we can get a valid XLM address from this vault pub key
-	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	// Resolve the vault's real XLM account (ed25519-derived) rather than the secp256k1 placeholder,
+	// so the observed from/to addresses match the account the router actually moved funds for.
+	xlmAddress, err := vaultStellarAddress(r.bridge, vaultPubKey)
 	if err != nil {
 		r.logger.Warn().Err(err).
 			Str("tx_hash", event.TransactionHash).

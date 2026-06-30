@@ -616,8 +616,11 @@ func (vm *NetworkMgrVCUR) migrateFunds(ctx cosmos.Context, mgr Manager) error {
 
 				// GetMostSecure also takes into account migration outbound items.
 				target := vm.k.GetMostSecure(ctx, targetVaults, signingTransactionPeriod)
-				// get address of asgard pubkey
-				addr, err := target.PubKey.GetAddress(coin.Asset.GetChain())
+				// Get the destination address for the target vault on this chain. Must go through
+				// PubKeyForChain so Stellar migrations land at the new vault's real ed25519-derived
+				// account rather than the secp256k1 placeholder (which the vault cannot spend, stranding
+				// the migrated funds). No-op for non-ed25519 chains.
+				addr, err := target.PubKeyForChain(coin.Asset.GetChain()).GetAddress(coin.Asset.GetChain())
 				if err != nil {
 					return err
 				}

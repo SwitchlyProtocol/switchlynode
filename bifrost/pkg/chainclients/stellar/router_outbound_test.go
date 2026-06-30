@@ -70,7 +70,7 @@ func (s *StellarClientTestSuite) TestBuildTransferOutInvokeOp(c *C) {
 		Memo:        memo,
 	}
 
-	op, err := s.client.buildTransferOutInvokeOp(txOutItem, memo)
+	op, err := s.client.buildTransferOutInvokeOp(txOutItem, memo, vaultAddr)
 	c.Assert(err, IsNil)
 	c.Assert(op, NotNil)
 	c.Assert(op.SourceAccount, Equals, vaultAddr)
@@ -116,9 +116,11 @@ func (s *StellarClientTestSuite) TestBuildTransferOutInvokeOpErrors(c *C) {
 		Memo:        "OUT:abc",
 	}
 
+	vaultAddr := s.client.GetAddress(vaultPubKey)
+
 	// no router configured
 	s.client.routerAddress = ""
-	_, err := s.client.buildTransferOutInvokeOp(base, base.Memo)
+	_, err := s.client.buildTransferOutInvokeOp(base, base.Memo, vaultAddr)
 	c.Assert(err, NotNil)
 
 	s.client.routerAddress = testRouterContract
@@ -126,12 +128,16 @@ func (s *StellarClientTestSuite) TestBuildTransferOutInvokeOpErrors(c *C) {
 	// empty coins
 	noCoins := base
 	noCoins.Coins = common.Coins{}
-	_, err = s.client.buildTransferOutInvokeOp(noCoins, noCoins.Memo)
+	_, err = s.client.buildTransferOutInvokeOp(noCoins, noCoins.Memo, vaultAddr)
 	c.Assert(err, NotNil)
 
 	// unsupported asset
 	bad := base
 	bad.Coins = common.Coins{common.NewCoin(common.Asset{Chain: common.StellarChain, Symbol: "NOPE", Ticker: "NOPE"}, cosmos.NewUint(1))}
-	_, err = s.client.buildTransferOutInvokeOp(bad, bad.Memo)
+	_, err = s.client.buildTransferOutInvokeOp(bad, bad.Memo, vaultAddr)
+	c.Assert(err, NotNil)
+
+	// empty vault address
+	_, err = s.client.buildTransferOutInvokeOp(base, base.Memo, "")
 	c.Assert(err, NotNil)
 }

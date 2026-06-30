@@ -13,7 +13,10 @@ import (
 )
 
 // MockSwitchlyBridge is a mock implementation for testing
-type MockSwitchlyBridge struct{}
+type MockSwitchlyBridge struct {
+	// VaultToReturn is returned by GetVault; the zero value is an empty vault (previous behaviour).
+	VaultToReturn switchlytypes.Vault
+}
 
 func (m *MockSwitchlyBridge) EnsureNodeWhitelisted() error {
 	return nil
@@ -36,7 +39,7 @@ func (m *MockSwitchlyBridge) GetAsgards() (switchlytypes.Vaults, error) {
 }
 
 func (m *MockSwitchlyBridge) GetVault(pubkey string) (switchlytypes.Vault, error) {
-	return switchlytypes.Vault{}, nil
+	return m.VaultToReturn, nil
 }
 
 func (m *MockSwitchlyBridge) GetConfig() config.BifrostClientConfiguration {

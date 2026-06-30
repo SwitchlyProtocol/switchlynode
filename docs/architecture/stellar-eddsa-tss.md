@@ -272,7 +272,7 @@ serialized; `TssServer.Keygen/KeySign` wrap the DKG/signing — this is the reso
 dropped), and accepting a hex ed25519 key as a keyshare filename. The crypto was already proven in
 `bifrost/tss/eddsacompat`.
 
-### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED (pending version gate + e2e validation)
+### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED + version-gated + LIVE-CLUSTER VALIDATED (consensus-harden + placeholder removal deferred)
 
 The end-to-end EdDSA path is now wired (additive; ECDSA byte-for-byte unchanged because every new
 field/branch is empty/inactive unless a vault carries an ed25519 key):
@@ -290,15 +290,73 @@ field/branch is empty/inactive unless a vault carries an ed25519 key):
 - ✅ **Stellar SignTx** — `signTransactionWithTSS` looks up the vault ed25519 key, hashes the tx, runs
   `KeySign.RemoteSignEdDSA`, and attaches an `xdr.DecoratedSignature`; placeholder kept as fallback.
 
-**Still remaining before any public network:**
-1. **Version gate.** The feature is currently gated by the `BIFROST_EDDSA_KEYGEN_VALIDATION` env flag
-   (fine for mocknet/cluster). Replace it with a network-version/mimir gate so all validators begin
-   producing+reporting the ed25519 key at the same coordinated-upgrade height.
-2. **Consensus-harden the ed25519 key** — currently taken from the consensus-triggering `MsgTssPool`;
-   fold it into the TSS voter id (or vote on it) so a malicious member can't set a wrong vault key.
-3. **e2e validation on the cluster** — enable the gate, drive a churn → ed25519 vault, then an XLM
-   outbound, and confirm `transfer_out` verifies under the vault's ed25519 key (keygen is already green).
-4. Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists.
+**Progress on the remaining items:**
+1. ✅ **Version gate.** Added the network-wide `EDDSAKEYGENENABLED` mimir gate (`kg.eddsaKeygenEnabled()`):
+   bifrost runs+reports the ed25519 keygen only when the mimir is > 0, so every validator flips at the
+   same height. The `BIFROST_EDDSA_KEYGEN_VALIDATION` env var remains as a per-node dev/mocknet override.
+   Production ECDSA-only churns stay byte-identical until the network opts in.
+2. ⚠️ **Consensus-harden the ed25519 key — deferred (a first attempt was reverted).** Folding the
+   ed25519 key into `getTssID` (so keygen consensus requires agreement on it) was implemented and then
+   **reverted**: the EdDSA keygen is a *separate* ceremony from the ECDSA churn keygen and can
+   independently fail on a subset of members, who then report the secp256k1 placeholder. Those members
+   compute a different id, so the keygen voter never reaches consensus and **no vault is created**
+   (observed live: ECDSA keygen succeeds, EdDSA group key agreed, yet no asgard vault appears). The
+   vault again takes its ed25519 key from the consensus-triggering `MsgTssPool`. Proper hardening must
+   be a **voter-side majority tally** of the reported ed25519 keys (a `TssVoter` change that picks the
+   key a supermajority agree on, decoupled from the secp256k1 id) — tracked as a follow-up.
+3. ✅ **Full live-cluster loop VALIDATED end-to-end (2026-06-30).** On the mocknet cluster: the four
+   validators stay synced through churn, a churn keygen creates a new asgard vault, and that vault
+   carries the **real ed25519 group key** with the XLM inbound address derived from it. Confirmed on a
+   live churn vault: `ed25519_pub_key = tswitchpub1zcjduepq4220n7a8…` and both the vault's XLM address
+   and `/switchly/inbound_addresses` XLM = `GCVJJ6P3U7HR2K3D5IVQ6JEXOFVGMDTBEI74OEU6X3P7YNMPXT3JHAPL`,
+   which equals the strkey encoding of the keygen's raw ed25519 group key. `TestKeygenSuccessHandlerEd25519`
+   additionally pins the storage path deterministically.
+
+   Getting the cluster to churn reliably required two non-EdDSA fixes (the earlier "signers fail to
+   sync"/no-vault symptoms were these, not the EdDSA code):
+   - **`SEEDS` regression (the real chain-sync root cause).** Each follower's `SEEDS` had been reduced
+     to the seed only, so followers PEX-spammed the seed for each other's addresses faster than
+     CometBFT's 10s PEX `minInterval`; the seed disconnected them and they froze below the keygen
+     height. Restored upstream thorchain's full-mesh `SEEDS` (every node lists all others) — stable
+     mesh, no PEX hack needed.
+   - **Stale per-service images (operational trap).** Each `switchlynode-{cat,fox,pig}` builds its own
+     image; rebuilding only `switchlynode` left the followers on an older binary → different app hash →
+     `CONSENSUS FAILURE` at the first state-changing block. **Always rebuild all four switchlynode
+     images (and all four bifrost images) together.**
+   - Inbound-address bug found+fixed during validation: `queryInboundAddresses` derived the XLM address
+     from `vault.PubKey` (secp256k1 placeholder) instead of `vault.PubKeyForChain(XLM)` (ed25519); it
+     would have advertised an unspendable XLM inbound address. `ed25519_pub_key` is now also exposed in
+     the vault query.
+
+#### 9.2.1 Vault-address resolution must use the ed25519 key everywhere (churn/migration correctness)
+
+A vault is identified network-wide by its **secp256k1** key, but on Stellar that key only derives the
+unspendable **placeholder** address. The real account — which receives inbounds, holds the XLM, and
+authorizes the router — is derived from the vault's **ed25519** group key (`PubKeyForChain(XLM)`, or
+on the bifrost side `vaultStellarAddress` → `GetVault` → `PubKeyForChain`). When EdDSA support was
+added, several address derivations were left on the bare secp256k1 key and would have broken churn:
+
+- **Migration is routed through the router** (good): all XLM outbounds — swaps, refunds, **migration**
+  (`MIGRATE:<height>`), ragnarok — go through the Soroban router's `transfer_out(vault, to, …)`;
+  `SignTx` errors if no router is configured (the event carries the full memo). The retiring vault is
+  the source account, authorized by the EdDSA keysign.
+- **Chain side** (fixed): migration **destination** (`migrateFunds`), the migrate/ragnarok observed
+  **from-address** match (`handler_migrate`/`handler_ragnarok`), and the swap **quote** inbound address
+  all now use `PubKeyForChain`. Otherwise migrated XLM lands at the new vault's placeholder (stranded),
+  and the migration outbound fails its consensus match (slashing honest signers).
+- **Bifrost side** (fixed): the inbound **watch address** (block + router event scanners), the outbound
+  **source account / sequence / router `vault` arg**, and **solvency** balance lookups all resolve via
+  `vaultStellarAddress`. Previously only the *signature* used ed25519, so the watched/spent account
+  (secp256k1 placeholder) never matched the signer — inbounds missed, outbounds rejected.
+  `ObservedVaultPubKey` stays the secp256k1 identity (how the chain keys the vault).
+
+Validated: unit tests (`vaultStellarAddress` ed25519 vs placeholder; chain handlers compile, no new
+regressions) + a live cluster regression (churn → ed25519 vault; the vault XLM address equals
+`/inbound_addresses`; no resolver errors in bifrost). **Still to validate (heavy):** a funded-swap
+outbound/migration e2e on the local Stellar net (router deposit → observe → swap → `transfer_out`).
+4. ⏳ Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists on
+   a running network. The placeholder is still the required `GetAddress(XLM)` fallback for legacy/
+   non-ed25519 vaults (e.g. the genesis vault) until every active vault carries an ed25519 key.
 
 Original recipe (for reference):
 
