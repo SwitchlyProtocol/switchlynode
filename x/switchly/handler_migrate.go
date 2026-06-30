@@ -90,7 +90,15 @@ func (h MigrateHandler) handleV3_0_0(ctx cosmos.Context, msg MsgMigrate) (*cosmo
 		// migrate is the memo used by SwitchlyProtocol to identify fund migration between asgard vault.
 		// Migration is the process to move funds from one asgard vault to another
 		// this type of tx out is special , because it doesn't have relevant tx in to trigger it, it is trigger by SwitchlyProtocol itself.
+		// Resolve the source vault's address via PubKeyForChain so a Stellar migration matches its real
+		// ed25519-derived from-address (the bare secp256k1 key only yields the placeholder); falls back
+		// to the bare key for non-ed25519 chains or if the vault is gone.
 		fromAddress, _ := tx.VaultPubKey.GetAddress(tx.Chain)
+		if vault, vErr := h.mgr.Keeper().GetVault(ctx, tx.VaultPubKey); vErr == nil && !vault.IsEmpty() {
+			if a, aErr := vault.PubKeyForChain(tx.Chain).GetAddress(tx.Chain); aErr == nil {
+				fromAddress = a
+			}
+		}
 
 		if tx.InHash.Equals(common.BlankTxID) &&
 			tx.OutHash.IsEmpty() &&
