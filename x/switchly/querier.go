@@ -160,6 +160,7 @@ func (qs queryServer) queryVault(ctx cosmos.Context, req *types.QueryVaultReques
 		Routers:               castVaultRouters(v.Routers),
 		Addresses:             getVaultChainAddresses(ctx, v),
 		Frozen:                v.Frozen,
+		Ed25519PubKey:         v.Ed25519PubKey.String(),
 	}
 	return &resp, nil
 }
@@ -195,6 +196,7 @@ func (qs queryServer) queryAsgardVaults(ctx cosmos.Context, _ *types.QueryAsgard
 				Routers:               castVaultRouters(vault.Routers),
 				Frozen:                vault.Frozen,
 				Addresses:             getVaultChainAddresses(ctx, vault),
+				Ed25519PubKey:         vault.Ed25519PubKey.String(),
 			})
 		}
 	}
@@ -514,7 +516,13 @@ func (qs queryServer) queryInboundAddresses(ctx cosmos.Context, _ *types.QueryIn
 		isChainTradingPaused := k.IsChainTradingHalted(ctx, chain)
 		isChainLpPaused := k.IsLPPaused(ctx, chain)
 
-		vaultAddress, err := vault.PubKey.GetAddress(chain)
+		// Use the chain-appropriate vault key: the ed25519 group key for Stellar (which uses ed25519
+		// accounts), the secp256k1 key for every other chain. Deriving from vault.PubKey directly would
+		// advertise the secp256k1 placeholder address for XLM, sending inbound funds to an unspendable
+		// account. PubKeyForChain falls back to vault.PubKey for non-ed25519 chains, so this is a no-op
+		// for everything except Stellar.
+		pubKeyForChain := vault.PubKeyForChain(chain)
+		vaultAddress, err := pubKeyForChain.GetAddress(chain)
 		if err != nil {
 			ctx.Logger().Error("fail to get address for chain", "error", err)
 			return nil, fmt.Errorf("fail to get address for chain: %w", err)
