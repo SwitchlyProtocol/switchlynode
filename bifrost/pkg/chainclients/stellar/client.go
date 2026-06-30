@@ -631,8 +631,14 @@ func (c *Client) GetAccountByAddress(address string, height *big.Int) (common.Ac
 }
 
 func (c *Client) getNextSequence(vaultPubKey common.PubKey) (int64, error) {
+	// Resolve the vault's real (ed25519-derived) Stellar account; the sequence must come from the
+	// account that actually holds the funds and signs the tx, not the secp256k1 placeholder.
+	addr, err := vaultStellarAddress(c.switchlyBridge, vaultPubKey)
+	if err != nil {
+		return 0, fmt.Errorf("fail to resolve vault stellar address: %w", err)
+	}
 	// Get current account sequence from Horizon (just like the test script)
-	acc, err := c.GetAccount(vaultPubKey, nil)
+	acc, err := c.GetAccountByAddress(addr.String(), nil)
 	if err != nil {
 		return 0, fmt.Errorf("fail to get account from Horizon: %w", err)
 	}
@@ -682,11 +688,12 @@ func (c *Client) assetContractScAddress(mapping StellarAssetMapping) (xdr.ScAddr
 }
 
 // buildTransferOutInvokeOp builds the router `transfer_out(vault, to, asset, amount, memo)`
-// InvokeHostFunction operation carrying the full SwitchlyProtocol memo. The vault is set as the
-// operation source account so the router's `vault.require_auth()` is satisfied via source-account
-// authorization (covered by the transaction signature). This is the pure, network-free core of the
-// router outbound path and is unit tested.
-func (c *Client) buildTransferOutInvokeOp(tx stypes.TxOutItem, memo string) (*txnbuild.InvokeHostFunction, error) {
+// InvokeHostFunction operation carrying the full SwitchlyProtocol memo. vaultAddr is the vault's
+// Stellar account (its ed25519-derived account; see vaultStellarAddress) and is set as the operation
+// source account so the router's `vault.require_auth()` is satisfied via source-account authorization
+// (covered by the transaction signature). This is the pure, network-free core of the router outbound
+// path and is unit tested; the caller resolves vaultAddr.
+func (c *Client) buildTransferOutInvokeOp(tx stypes.TxOutItem, memo, vaultAddr string) (*txnbuild.InvokeHostFunction, error) {
 	if c.routerAddress == "" {
 		return nil, fmt.Errorf("no stellar router address configured")
 	}
@@ -699,7 +706,6 @@ func (c *Client) buildTransferOutInvokeOp(tx stypes.TxOutItem, memo string) (*tx
 		return nil, fmt.Errorf("unsupported asset: %s", coin.Asset)
 	}
 
-	vaultAddr := c.GetAddress(tx.VaultPubKey)
 	if vaultAddr == "" {
 		return nil, fmt.Errorf("fail to get vault address")
 	}
@@ -761,11 +767,19 @@ func (c *Client) buildRouterTransferOutTransaction(tx stypes.TxOutItem, sequence
 		return nil, fmt.Errorf("soroban rpc client not configured")
 	}
 
-	op, err := c.buildTransferOutInvokeOp(tx, memo)
+	// Resolve the vault's real Stellar account (ed25519-derived) for the source account + router vault
+	// arg; the secp256k1 identity only yields the unspendable placeholder, which would not match the
+	// EdDSA signature's account.
+	vaultStellarAddr, err := vaultStellarAddress(c.switchlyBridge, tx.VaultPubKey)
+	if err != nil {
+		return nil, fmt.Errorf("fail to resolve vault stellar address: %w", err)
+	}
+	vaultAddr := vaultStellarAddr.String()
+
+	op, err := c.buildTransferOutInvokeOp(tx, memo, vaultAddr)
 	if err != nil {
 		return nil, err
 	}
-	vaultAddr := op.SourceAccount
 
 	// build constructs a transaction from the current state of op. A fresh SimpleAccount is used
 	// each call so the sequence is deterministic across the simulate and sign builds.
@@ -1227,7 +1241,14 @@ func (c *Client) ReportSolvency(blockHeight int64) error {
 			continue
 		}
 
-		addr := c.GetAddress(vault.PubKey)
+		// Use the vault's real (ed25519-derived) Stellar account so solvency reflects the account that
+		// actually holds the XLM, not the secp256k1 placeholder.
+		xlmAddr, err := vaultStellarAddress(c.switchlyBridge, vault.PubKey)
+		if err != nil {
+			c.logger.Error().Err(err).Str("vault", vault.PubKey.String()).Msg("fail to resolve vault stellar address")
+			continue
+		}
+		addr := xlmAddr.String()
 		account, err := c.GetAccountByAddress(addr, nil)
 		if err != nil {
 			c.logger.Error().Err(err).Str("address", addr).Msg("fail to get account balance")

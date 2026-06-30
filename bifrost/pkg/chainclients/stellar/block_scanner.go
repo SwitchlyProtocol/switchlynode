@@ -752,8 +752,10 @@ func (c *StellarBlockScanner) processPaymentOperation(tx horizon.Transaction, pa
 		return nil, nil
 	}
 
-	// Verify we can get a valid XLM address from this vault pub key
-	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	// Resolve the vault's real XLM account (ed25519-derived) so we watch the address that actually
+	// receives inbounds, not the secp256k1 placeholder. ObservedVaultPubKey stays the secp256k1
+	// identity below (that is how the chain identifies the vault).
+	xlmAddress, err := vaultStellarAddress(c.bridge, vaultPubKey)
 	if err != nil {
 		c.logger.Warn().Err(err).
 			Str("tx_hash", tx.Hash).
@@ -896,8 +898,10 @@ func (c *StellarBlockScanner) processCreateAccountOperation(tx horizon.Transacti
 		return nil, nil
 	}
 
-	// Verify we can get a valid XLM address from this vault pub key
-	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	// Resolve the vault's real XLM account (ed25519-derived) so we watch the address that actually
+	// receives inbounds, not the secp256k1 placeholder. ObservedVaultPubKey stays the secp256k1
+	// identity below (that is how the chain identifies the vault).
+	xlmAddress, err := vaultStellarAddress(c.bridge, vaultPubKey)
 	if err != nil {
 		c.logger.Warn().Err(err).
 			Str("tx_hash", tx.Hash).
@@ -1042,8 +1046,10 @@ func (c *StellarBlockScanner) processRouterDepositEvent(event *RouterEvent, heig
 		return nil, nil
 	}
 
-	// Verify we can get a valid XLM address from this vault pub key
-	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	// Resolve the vault's real XLM account (ed25519-derived) so we watch the address that actually
+	// receives inbounds, not the secp256k1 placeholder. ObservedVaultPubKey stays the secp256k1
+	// identity below (that is how the chain identifies the vault).
+	xlmAddress, err := vaultStellarAddress(c.bridge, vaultPubKey)
 	if err != nil {
 		c.logger.Warn().Err(err).
 			Str("tx_hash", event.TransactionHash).
@@ -1176,8 +1182,10 @@ func (c *StellarBlockScanner) processRouterTransferAllowanceEvent(event *RouterE
 		return nil, nil
 	}
 
-	// Verify we can get a valid XLM address from this vault pub key
-	xlmAddress, err := vaultPubKey.GetAddress(common.StellarChain)
+	// Resolve the vault's real XLM account (ed25519-derived) so we watch the address that actually
+	// receives inbounds, not the secp256k1 placeholder. ObservedVaultPubKey stays the secp256k1
+	// identity below (that is how the chain identifies the vault).
+	xlmAddress, err := vaultStellarAddress(c.bridge, vaultPubKey)
 	if err != nil {
 		c.logger.Warn().Err(err).
 			Str("tx_hash", event.TransactionHash).
