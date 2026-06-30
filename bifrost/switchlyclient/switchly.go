@@ -365,6 +365,16 @@ func (b *switchlyBridge) GetInboundOutbound(txIns common.ObservedTxs) (common.Ob
 			b.logger.Err(err).Msgf("fail to parse observed pool address: %s", tx.ObservedPubKey.String())
 			continue
 		}
+		// Stellar accounts are derived from the vault's ed25519 group key, but ObservedPubKey is the
+		// secp256k1 vault identity (which only yields the unspendable placeholder). Resolve the vault's
+		// real ed25519 address so inbound/outbound classification matches the observed to/from address.
+		if chain.Equals(common.StellarChain) {
+			if vault, vErr := b.GetVault(tx.ObservedPubKey.String()); vErr == nil && !vault.IsEmpty() {
+				if a, aErr := vault.PubKeyForChain(chain).GetAddress(chain); aErr == nil {
+					obAddr = a
+				}
+			}
+		}
 		vaultToAddress := tx.Tx.ToAddress.Equals(obAddr)
 		vaultFromAddress := tx.Tx.FromAddress.Equals(obAddr)
 		var inInboundArray, inOutboundArray bool

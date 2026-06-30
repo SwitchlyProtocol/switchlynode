@@ -52,6 +52,10 @@ type PubKeyManager struct {
 	m          *metrics.Metrics
 	stopChan   chan struct{}
 	callback   []OnNewPubKey
+	// stellarAddrCache memoises secp256k1-vault-pubkey -> ed25519-derived Stellar address. Stellar
+	// accounts come from the vault's ed25519 group key, not the secp256k1 identity, so address
+	// matching for XLM cannot use the bare pubkey. Immutable per vault, so cached forever.
+	stellarAddrCache sync.Map
 }
 
 // NewPubKeyManager create a new instance of PubKeyManager
@@ -302,8 +306,33 @@ func (pkm *PubKeyManager) IsValidPoolAddress(addr string, chain common.Chain) (b
 		if ok {
 			return ok, cpi
 		}
+		// Stellar vault accounts are derived from the ed25519 group key; matchAddress above only checks
+		// the secp256k1 placeholder, so also match the vault's real ed25519-derived Stellar address.
+		if chain.Equals(common.StellarChain) {
+			if a, found := pkm.stellarVaultAddress(pk.PubKey); found && strings.EqualFold(a, addr) {
+				return true, common.ChainPoolInfo{Chain: chain, PubKey: pk.PubKey, PoolAddress: common.Address(a)}
+			}
+		}
 	}
 	return false, common.EmptyChainPoolInfo
+}
+
+// stellarVaultAddress resolves a vault's ed25519-derived Stellar address from its secp256k1 identity
+// via the bridge (cached; the mapping is immutable per vault).
+func (pkm *PubKeyManager) stellarVaultAddress(pubKey common.PubKey) (string, bool) {
+	if v, ok := pkm.stellarAddrCache.Load(pubKey.String()); ok {
+		return v.(string), true
+	}
+	vault, err := pkm.bridge.GetVault(pubKey.String())
+	if err != nil || vault.IsEmpty() {
+		return "", false
+	}
+	a, err := vault.PubKeyForChain(common.StellarChain).GetAddress(common.StellarChain)
+	if err != nil {
+		return "", false
+	}
+	pkm.stellarAddrCache.Store(pubKey.String(), a.String())
+	return a.String(), true
 }
 
 // getPubkeys from SWITCHLYChain
