@@ -352,8 +352,31 @@ added, several address derivations were left on the bare secp256k1 key and would
 
 Validated: unit tests (`vaultStellarAddress` ed25519 vs placeholder; chain handlers compile, no new
 regressions) + a live cluster regression (churn → ed25519 vault; the vault XLM address equals
-`/inbound_addresses`; no resolver errors in bifrost). **Still to validate (heavy):** a funded-swap
-outbound/migration e2e on the local Stellar net (router deposit → observe → swap → `transfer_out`).
+`/inbound_addresses`; no resolver errors in bifrost).
+
+#### 9.2.2 Live funded-deposit e2e — inbound path validated; outbound pending a churn-free run
+
+Driving a real router deposit on the local Stellar net (`stellar contract invoke … deposit`) uncovered
+three more spots that derived the vault's XLM address from the secp256k1 placeholder, now fixed, and
+exercised the inbound path end-to-end:
+
+- **Local native SAC** (`asset_mapping.go`/`client.go`): the native-XLM SAC id is passphrase-derived, so
+  the local standalone net's id differs from the baked-in public testnet/mainnet ids and inbound was
+  rejected as "unsupported asset". Now derived from the detected passphrase and registered under a new
+  `StellarLocal` network (so the public mappings are untouched — a real testnet uses the public SAC).
+- **`GetInboundOutbound`** (`switchlyclient`): classified inbound/outbound against the secp256k1-derived
+  address; now resolves the ed25519 address via `GetVault`→`PubKeyForChain` for Stellar.
+- **`PubKeyManager.IsValidPoolAddress`** (used by the observer to keep a tx + tag its vault): only matched
+  the secp256k1 placeholder; now also matches the vault's ed25519-derived address (cached).
+
+With these, a router deposit to a Stellar vault is **observed end-to-end**: the event is parsed, the asset
+maps to `XLM.XLM`, the ed25519 vault is resolved, and the quorum tx is sent to the chain (`ebifrost`
+injects it). **Still pending:** the deposit must reach observation **quorum** (all bifrosts attesting) and
+the chain must schedule + EdDSA-sign the resulting `transfer_out`. On the live cluster this was blocked by
+churn (the deposit's target vault churned out, orphaning the funds and polluting the other bifrosts'
+scanners with retries, so only one node attested). Finishing needs a **churn-free run** (e.g. set the
+`CHURNINTERVAL` mimir high from genesis, or a single-vault fixture) so all nodes attest the same deposit
+and the outbound is produced. The address-resolution + EdDSA-signing code it exercises is already in place.
 4. ⏳ Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists on
    a running network. The placeholder is still the required `GetAddress(XLM)` fallback for legacy/
    non-ed25519 vaults (e.g. the genesis vault) until every active vault carries an ed25519 key.
