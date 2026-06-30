@@ -272,7 +272,7 @@ serialized; `TssServer.Keygen/KeySign` wrap the DKG/signing — this is the reso
 dropped), and accepting a hex ed25519 key as a keyshare filename. The crypto was already proven in
 `bifrost/tss/eddsacompat`.
 
-### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED (pending version gate + e2e validation)
+### 9.2 Chain storage + Stellar SignTx — IMPLEMENTED + version-gated + storage-validated (consensus-harden + full live churn deferred)
 
 The end-to-end EdDSA path is now wired (additive; ECDSA byte-for-byte unchanged because every new
 field/branch is empty/inactive unless a vault carries an ed25519 key):
@@ -290,15 +290,32 @@ field/branch is empty/inactive unless a vault carries an ed25519 key):
 - ✅ **Stellar SignTx** — `signTransactionWithTSS` looks up the vault ed25519 key, hashes the tx, runs
   `KeySign.RemoteSignEdDSA`, and attaches an `xdr.DecoratedSignature`; placeholder kept as fallback.
 
-**Still remaining before any public network:**
-1. **Version gate.** The feature is currently gated by the `BIFROST_EDDSA_KEYGEN_VALIDATION` env flag
-   (fine for mocknet/cluster). Replace it with a network-version/mimir gate so all validators begin
-   producing+reporting the ed25519 key at the same coordinated-upgrade height.
-2. **Consensus-harden the ed25519 key** — currently taken from the consensus-triggering `MsgTssPool`;
-   fold it into the TSS voter id (or vote on it) so a malicious member can't set a wrong vault key.
-3. **e2e validation on the cluster** — enable the gate, drive a churn → ed25519 vault, then an XLM
-   outbound, and confirm `transfer_out` verifies under the vault's ed25519 key (keygen is already green).
-4. Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists.
+**Progress on the remaining items:**
+1. ✅ **Version gate.** Added the network-wide `EDDSAKEYGENENABLED` mimir gate (`kg.eddsaKeygenEnabled()`):
+   bifrost runs+reports the ed25519 keygen only when the mimir is > 0, so every validator flips at the
+   same height. The `BIFROST_EDDSA_KEYGEN_VALIDATION` env var remains as a per-node dev/mocknet override.
+   Production ECDSA-only churns stay byte-identical until the network opts in.
+2. ⚠️ **Consensus-harden the ed25519 key — deferred (a first attempt was reverted).** Folding the
+   ed25519 key into `getTssID` (so keygen consensus requires agreement on it) was implemented and then
+   **reverted**: the EdDSA keygen is a *separate* ceremony from the ECDSA churn keygen and can
+   independently fail on a subset of members, who then report the secp256k1 placeholder. Those members
+   compute a different id, so the keygen voter never reaches consensus and **no vault is created**
+   (observed live: ECDSA keygen succeeds, EdDSA group key agreed, yet no asgard vault appears). The
+   vault again takes its ed25519 key from the consensus-triggering `MsgTssPool`. Proper hardening must
+   be a **voter-side majority tally** of the reported ed25519 keys (a `TssVoter` change that picks the
+   key a supermajority agree on, decoupled from the secp256k1 id) — tracked as a follow-up.
+3. ✅ **On-chain storage validated deterministically; live keygen green.** The EdDSA threshold keygen is
+   validated on the cluster (§9.1: 3/3 members, consistent ed25519 group key). The consensus-critical
+   **chain storage** path is validated by `TestKeygenSuccessHandlerEd25519` — it drives a full keygen
+   consensus on a `MsgTssPool` carrying a real ed25519 key and asserts the vault stores it, exposes it
+   via `PubKeyForChain(XLM)`, and derives a valid Stellar (strkey `G…`, 56-char) inbound address.
+   The full live churn→vault→XLM-outbound loop is **blocked by environmental mocknet-cluster p2p
+   flakiness** (the 4-node ECDSA `joinParty` intermittently fails with `signers fail to sync`, cycling
+   the blamed node), *not* by the EdDSA code — the storage logic the deterministic test exercises is
+   exactly what runs once a churn completes. Re-attempt the full live loop once the cluster mesh is
+   reliable (or on a less contended host).
+4. ⏳ Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists on
+   a running network (depends on a completed live churn under the gate).
 
 Original recipe (for reference):
 
