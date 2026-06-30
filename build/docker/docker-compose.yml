@@ -323,8 +323,8 @@ services:
     environment:
       <<: *switchlynode-environment
       PEER: switchlynode
-      SEED: switchlynode
-      SEEDS: switchlynode
+      SEED: switchlynode-cat
+      SEEDS: switchlynode,switchlynode-fox,switchlynode-pig
       SIGNER_SEED_PHRASE: "cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat cat crawl"
     volumes:
       - "../scripts:/docker/scripts"
@@ -343,8 +343,8 @@ services:
     environment:
       <<: *switchlynode-environment
       PEER: switchlynode
-      SEED: switchlynode
-      SEEDS: switchlynode
+      SEED: switchlynode-fox
+      SEEDS: switchlynode,switchlynode-cat,switchlynode-pig
       SIGNER_SEED_PHRASE: "fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox fox filter"
     volumes:
       - "../scripts:/docker/scripts"
@@ -363,8 +363,8 @@ services:
     environment:
       <<: *switchlynode-environment
       PEER: switchlynode
-      SEED: switchlynode
-      SEEDS: switchlynode
+      SEED: switchlynode-pig
+      SEEDS: switchlynode,switchlynode-cat,switchlynode-fox
       SIGNER_SEED_PHRASE: "pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig pig quick"
     volumes:
       - "../scripts:/docker/scripts"
