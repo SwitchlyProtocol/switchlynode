@@ -327,6 +327,33 @@ field/branch is empty/inactive unless a vault carries an ed25519 key):
      from `vault.PubKey` (secp256k1 placeholder) instead of `vault.PubKeyForChain(XLM)` (ed25519); it
      would have advertised an unspendable XLM inbound address. `ed25519_pub_key` is now also exposed in
      the vault query.
+
+#### 9.2.1 Vault-address resolution must use the ed25519 key everywhere (churn/migration correctness)
+
+A vault is identified network-wide by its **secp256k1** key, but on Stellar that key only derives the
+unspendable **placeholder** address. The real account — which receives inbounds, holds the XLM, and
+authorizes the router — is derived from the vault's **ed25519** group key (`PubKeyForChain(XLM)`, or
+on the bifrost side `vaultStellarAddress` → `GetVault` → `PubKeyForChain`). When EdDSA support was
+added, several address derivations were left on the bare secp256k1 key and would have broken churn:
+
+- **Migration is routed through the router** (good): all XLM outbounds — swaps, refunds, **migration**
+  (`MIGRATE:<height>`), ragnarok — go through the Soroban router's `transfer_out(vault, to, …)`;
+  `SignTx` errors if no router is configured (the event carries the full memo). The retiring vault is
+  the source account, authorized by the EdDSA keysign.
+- **Chain side** (fixed): migration **destination** (`migrateFunds`), the migrate/ragnarok observed
+  **from-address** match (`handler_migrate`/`handler_ragnarok`), and the swap **quote** inbound address
+  all now use `PubKeyForChain`. Otherwise migrated XLM lands at the new vault's placeholder (stranded),
+  and the migration outbound fails its consensus match (slashing honest signers).
+- **Bifrost side** (fixed): the inbound **watch address** (block + router event scanners), the outbound
+  **source account / sequence / router `vault` arg**, and **solvency** balance lookups all resolve via
+  `vaultStellarAddress`. Previously only the *signature* used ed25519, so the watched/spent account
+  (secp256k1 placeholder) never matched the signer — inbounds missed, outbounds rejected.
+  `ObservedVaultPubKey` stays the secp256k1 identity (how the chain keys the vault).
+
+Validated: unit tests (`vaultStellarAddress` ed25519 vs placeholder; chain handlers compile, no new
+regressions) + a live cluster regression (churn → ed25519 vault; the vault XLM address equals
+`/inbound_addresses`; no resolver errors in bifrost). **Still to validate (heavy):** a funded-swap
+outbound/migration e2e on the local Stellar net (router deposit → observe → swap → `transfer_out`).
 4. ⏳ Remove `DeriveStellarkeyFromVaultPubKey` + the §5.3 compile gate once a real EdDSA vault exists on
    a running network. The placeholder is still the required `GetAddress(XLM)` fallback for legacy/
    non-ed25519 vaults (e.g. the genesis vault) until every active vault carries an ed25519 key.
