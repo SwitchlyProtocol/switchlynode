@@ -42,7 +42,12 @@ func NewMsgTssPool(pks []string, poolpk common.PubKey, secp256k1Signature, keysh
 	if len(ed25519pk) > 0 {
 		edpk = ed25519pk[0]
 	}
-	id, err := getTssID(pks, poolpk, edpk, height, bl)
+	// NOTE: ed25519 is intentionally NOT part of the TSS id. The EdDSA keygen is a separate ceremony
+	// that can independently fail on some members (who then report a placeholder), so folding it into
+	// the id would diverge the ids and prevent the vault from ever reaching keygen consensus. The vault
+	// takes its ed25519 key from the consensus-triggering message; consensus-hardening it (a voter-side
+	// majority tally of the reported ed25519 keys) is a follow-up — see docs §9.2.
+	id, err := getTssID(pks, poolpk, height, bl)
 	if err != nil {
 		return nil, fmt.Errorf("fail to get tss id: %w", err)
 	}
@@ -63,7 +68,7 @@ func NewMsgTssPool(pks []string, poolpk common.PubKey, secp256k1Signature, keysh
 }
 
 // getTssID
-func getTssID(members []string, poolPk, ed25519Pk common.PubKey, height int64, bl Blame) (string, error) {
+func getTssID(members []string, poolPk common.PubKey, height int64, bl Blame) (string, error) {
 	// ensure input pubkeys list is deterministically sorted
 	sort.SliceStable(members, func(i, j int) bool {
 		return members[i] < members[j]
@@ -85,12 +90,6 @@ func getTssID(members []string, poolPk, ed25519Pk common.PubKey, height int64, b
 		sb.WriteString("p:" + item)
 	}
 	sb.WriteString(poolPk.String())
-	// Fold the EdDSA group key into the id so EdDSA keygen consensus requires agreement on it — a member
-	// reporting a different ed25519 key gets a different id and cannot join the honest consensus.
-	// Appended only when present, so ECDSA-only ids stay byte-identical.
-	if !ed25519Pk.IsEmpty() {
-		sb.WriteString("e:" + ed25519Pk.String())
-	}
 	sb.WriteString(fmt.Sprintf("%d", height))
 	hash := sha256.New()
 	_, err := hash.Write([]byte(sb.String()))
