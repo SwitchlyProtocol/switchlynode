@@ -293,6 +293,26 @@ func NewClient(
 		}
 	}
 
+	// A non-public passphrase means a local/standalone network (e.g. mocknet's quickstart), NOT the
+	// public testnet — even though cfg.ChainNetwork is "testnet" there. Identify it as StellarLocal so
+	// its passphrase-derived SAC ids are kept separate and the public testnet/mainnet mappings (which a
+	// real testnet/mainnet deployment relies on) are left intact.
+	if networkPassphrase != network.PublicNetworkPassphrase && networkPassphrase != network.TestNetworkPassphrase {
+		SetNetwork(StellarLocal)
+		logger.Info().Str("network", string(StellarLocal)).Str("passphrase", networkPassphrase).Msg("detected local/standalone Stellar network")
+	}
+
+	// Register the native-XLM SAC for the current network. The SAC id is derived from the passphrase,
+	// so on a local/standalone network it differs from the baked-in public ids; without this, inbound
+	// native-XLM router deposits are rejected as "unsupported asset". On the public networks the derived
+	// id equals the baked-in one, so this is a no-op there.
+	if sac, err := nativeSACAddress(networkPassphrase); err != nil {
+		logger.Warn().Err(err).Msg("fail to derive native XLM SAC; inbound native XLM may not map")
+	} else {
+		RegisterNativeSAC(GetCurrentNetwork(), sac)
+		logger.Info().Str("native_sac", sac).Str("network", string(GetCurrentNetwork())).Msg("registered native XLM SAC")
+	}
+
 	return &Client{
 		logger:              logger,
 		cfg:                 cfg,

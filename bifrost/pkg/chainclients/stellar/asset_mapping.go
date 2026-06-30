@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/stellar/go/strkey"
 	"github.com/stellar/go/txnbuild"
 	"github.com/switchlyprotocol/switchlynode/v3/common"
 	"github.com/switchlyprotocol/switchlynode/v3/common/cosmos"
@@ -17,6 +18,10 @@ type StellarNetwork string
 const (
 	StellarMainnet StellarNetwork = "mainnet"
 	StellarTestnet StellarNetwork = "testnet"
+	// StellarLocal is a local/standalone Stellar network (e.g. mocknet's quickstart). Its contract
+	// ids (SACs) are derived from a non-public passphrase and so differ from the baked-in public
+	// testnet/mainnet ids; keeping it a distinct network avoids overwriting the public mappings.
+	StellarLocal StellarNetwork = "local"
 )
 
 // StellarAssetMapping maps Stellar assets to SwitchlyProtocol assets
@@ -77,6 +82,40 @@ func SetNetwork(network StellarNetwork) {
 // GetCurrentNetwork returns the current network
 func GetCurrentNetwork() StellarNetwork {
 	return currentNetwork
+}
+
+// nativeSACAddress derives the canonical native-XLM Stellar Asset Contract (SAC) address (C...) for a
+// network passphrase. It is deterministic and matches `stellar contract id asset --asset native`, so
+// a local/standalone network yields a different id than the public testnet/mainnet ids baked into the
+// mapping.
+func nativeSACAddress(passphrase string) (string, error) {
+	xdrAsset, err := txnbuild.NativeAsset{}.ToXDR()
+	if err != nil {
+		return "", fmt.Errorf("fail to convert native asset to xdr: %w", err)
+	}
+	hash, err := xdrAsset.ContractID(passphrase)
+	if err != nil {
+		return "", fmt.Errorf("fail to derive native asset contract id: %w", err)
+	}
+	return strkey.Encode(strkey.VersionByteContract, hash[:])
+}
+
+// RegisterNativeSAC records the native-XLM SAC address for a network in the asset mapping. The native
+// SAC id is passphrase-derived, so on a local/standalone network it differs from the public ids; the
+// client derives it from the detected passphrase at startup and registers it here so inbound native
+// XLM router-deposit events (which carry the SAC contract address) map to common.XLMAsset.
+func RegisterNativeSAC(network StellarNetwork, address string) {
+	if address == "" {
+		return
+	}
+	for i := range stellarAssetMappings {
+		if stellarAssetMappings[i].StellarAssetType == "native" {
+			if stellarAssetMappings[i].ContractAddresses == nil {
+				stellarAssetMappings[i].ContractAddresses = map[StellarNetwork]string{}
+			}
+			stellarAssetMappings[i].ContractAddresses[network] = address
+		}
+	}
 }
 
 // updateMappingsForNetwork updates the StellarAssetIssuer field for contract assets based on the current network
